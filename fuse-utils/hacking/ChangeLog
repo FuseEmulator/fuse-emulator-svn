@@ -108,3 +108,5 @@
 20040715 autogen.sh: copy auxiliary files rather than linking them.
 20040715 .cvsignore: ignore libtool generated files.
 20040716 configure.in: bump veersion umber to 0.7.0.
+20040806 snapconv.c,man/snapconv.1: Add -c and -n options to snapconv that
+         allow the writing of uncompressed and completely compressed snapshots.

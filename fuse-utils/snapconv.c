@@ -47,14 +47,31 @@ main( int argc, char **argv )
   unsigned char *buffer; size_t length;
   libspectrum_creator *creator;
   int flags;
+  int compress = 0;
   FILE *f;
 
   int error;
+  int c;
 
   progname = argv[0];
 
-  if( argc < 3 ) {
-    fprintf( stderr, "%s: usage: %s <infile> <outfile>\n", progname,
+  while( ( c = getopt( argc, argv, "cn" ) ) != -1 ) {
+
+    switch( c ) {
+
+    case 'c': compress = LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS;
+      break;
+
+    case 'n': compress = LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION;
+      break;
+
+    }
+  }
+  argc -= optind;
+  argv += optind;
+
+  if( argc < 2 ) {
+    fprintf( stderr, "%s: usage: %s [-c] [-n] <infile> <outfile>\n", progname,
 	     progname );
     return 1;
   }
@@ -63,7 +80,7 @@ main( int argc, char **argv )
 
   error = libspectrum_snap_alloc( &snap ); if( error ) return error;
 
-  if( mmap_file( argv[1], &buffer, &length ) ) {
+  if( mmap_file( argv[0], &buffer, &length ) ) {
     libspectrum_snap_free( snap );
     return 1;
   }
@@ -82,12 +99,12 @@ main( int argc, char **argv )
     return 1;
   }
 
-  error = libspectrum_identify_file_with_class( &type, &class, argv[2], NULL,
-						0 );
+  error = libspectrum_identify_file_with_class( &type, &class, argv[1], NULL,
+                                                0 );
   if( error ) { libspectrum_snap_free( snap ); return error; }
 
   if( class != LIBSPECTRUM_CLASS_SNAPSHOT ) {
-    fprintf( stderr, "%s: '%s' is not a snapshot file\n", progname, argv[2] );
+    fprintf( stderr, "%s: '%s' is not a snapshot file\n", progname, argv[1] );
     libspectrum_snap_free( snap );
     return 1;
   }
@@ -97,7 +114,7 @@ main( int argc, char **argv )
 
   length = 0;
   error = libspectrum_snap_write( &buffer, &length, &flags, snap, type,
-				  creator, 0 );
+                                  creator, compress );
   if( error ) {
     libspectrum_creator_free( creator ); libspectrum_snap_free( snap );
     return error;
@@ -118,16 +135,16 @@ main( int argc, char **argv )
   error = libspectrum_snap_free( snap );
   if( error ) { free( buffer ); return error; }
 
-  f = fopen( argv[2], "w" );
+  f = fopen( argv[1], "w" );
   if( !f ) {
-    fprintf( stderr, "%s: couldn't open '%s': %s\n", progname, argv[2],
+    fprintf( stderr, "%s: couldn't open '%s': %s\n", progname, argv[1],
 	     strerror( errno ) );
     free( buffer );
     return 1;
   }
     
   if( fwrite( buffer, 1, length, f ) != length ) {
-    fprintf( stderr, "%s: error writing to '%s'\n", progname, argv[2] );
+    fprintf( stderr, "%s: error writing to '%s'\n", progname, argv[1] );
     free( buffer );
     return 1;
   }

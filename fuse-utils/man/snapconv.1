@@ -35,6 +35,7 @@ snapconv \- Sinclair ZX Spectrum snapshot convertor
 .SH SYNOPSIS
 .PD 0
 .B snapconv
+[ -c ] [ -n ]
 .I infile outfile
 .PD 1
 .\"
@@ -46,6 +47,15 @@ Snapconv converts between ZX Spectrum snapshot files.
 .\"------------------------------------------------------------------
 .\"
 .SH OPTIONS
+.TP
+.I -c
+specifies that all data in the output snapshot should be compressed,
+even if that compression will result in a bigger file than if some
+data is left uncompressed. This helps compatibility with some buggy
+programs that can only read entirely compressed .z80 files.
+.TP
+.I -n
+specifies that the output snapshot should be uncompressed.
 .TP
 .I infile
 specifies the snapshot to be converted. This file can be in any of the
