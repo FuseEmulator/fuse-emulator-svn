@@ -20,5 +20,6 @@ make-perl
 snap_accessors.c
 stamp-h
 stamp-h.in
+stamp-h1
 tape_accessors.c
 tape_set.c
