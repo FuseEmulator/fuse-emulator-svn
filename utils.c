@@ -38,6 +38,8 @@
 
 #include <libspectrum.h>
 
+#include "utils.h"
+
 extern char *progname;
 
 /* The minimum version of libspectrum we need */

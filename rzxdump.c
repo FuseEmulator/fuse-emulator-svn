@@ -140,7 +140,6 @@ do_file( const char *filename )
   while( ptr < end ) {
 
     unsigned char id;
-    int error;
 
     id = *ptr++;
 
@@ -343,7 +342,7 @@ read_sign_end_block( unsigned char **ptr, unsigned char *end )
 
   length -= 5;
 
-  if( end - *ptr < length ) {
+  if( end - *ptr < (ptrdiff_t)length ) {
     fprintf( stderr, "%s: not enough bytes for sign end block\n", progname );
     return 1;
   }

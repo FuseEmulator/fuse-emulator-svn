@@ -62,3 +62,4 @@
 20031016 Makefile.am, configure.in: no longer need to find path to glib.
 20031020 listbasic.c, snapconv.c: use libspectrum_identify_file_with_class
 	 where appropriate.
+20031203 Some --enable-warnings cleanups.

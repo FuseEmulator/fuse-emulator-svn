@@ -47,9 +47,6 @@ struct options {
 
 char *progname;			/* argv[0] */
 
-void init_options( struct options *options );
-int parse_options( int argc, char **argv, struct options *options );
-
 #define TRD_NAMEOFFSET 0x08F5
 #define TRD_DIRSTART 0x08E2
 #define TRD_DIRLEN 32
@@ -65,14 +62,14 @@ typedef union {
   libspectrum_dword dword;
 } lsb_dword;
 
-unsigned int 
+static unsigned int 
 lsb2ui(unsigned char *mem)
 {
   return (mem[0] + (mem[1] * 256) + (mem[2] * 256 * 256)
           + (mem[3] * 256 * 256 * 256));
 }
 
-void
+static void
 ui2lsb(unsigned char *mem, unsigned int value)
 {
   lsb_dword ret;
@@ -85,7 +82,7 @@ ui2lsb(unsigned char *mem, unsigned int value)
   mem[3] = ret.b.b3;
 }
 
-void 
+static void 
 Scl2Trd(char *oldname, char *newname)
 {
   int TRD, SCL, i;
@@ -240,7 +237,7 @@ Finish:
   free(TRDh);
 }
 
-int
+static int
 parse_options(int argc, char **argv, struct options * options)
 {
   /* Defined by getopt */
@@ -276,7 +273,7 @@ parse_options(int argc, char **argv, struct options * options)
   return 0;
 }
 
-void
+static void
 init_options( struct options *options )
 {
   options->sclfile = NULL;
