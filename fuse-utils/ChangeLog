@@ -11,6 +11,10 @@
 	* Add `scl2trd' utility to convert .scl files to .trd files
 	  (Fredrick Meunier).
 
+	* Add `listbasic' utility to extract the BASIC listing from a
+	  snapshot or tape file. Heavily based on Chris Cowley's SnapList,
+	  http://freestuff.grok.co.uk/snaplist/index.html (Philip Kendall).
+
 2002-12-09  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 
 	* Version 0.5.1 released.
