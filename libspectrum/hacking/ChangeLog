@@ -287,3 +287,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (closes bug #1053346).
 20041230 libspectrum.c,libspectrum.h.in: add identification of .mdr files
 	 (part of patch #1085429) (Gergely Szasz).
+20050102 libspectrum.h.in,microdrive.c: variable length microdrive cartridge
+	 handling (rest of patch #1085429) (Gergely Szasz).

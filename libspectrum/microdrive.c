@@ -1,5 +1,5 @@
 /* microdrive.c: Routines for handling microdrive images
-   Copyright (c) 2004 Philip Kendall
+   Copyright (c) 2004-2005 Philip Kendall
 
    $Id$
 
@@ -25,18 +25,40 @@
 
 #include <config.h>
 
+#include <string.h>
+
 #include "internals.h"
 
 /* The type itself */
 
 struct libspectrum_microdrive {
 
-  libspectrum_byte data[ LIBSPECTRUM_MICRODRIVE_DATA_LENGTH ];
+  libspectrum_byte data[ LIBSPECTRUM_MICRODRIVE_CARTRIDGE_LENGTH ];
   int write_protect;
+  libspectrum_byte cartridge_len;
 
 };
 
-const static size_t MDR_LENGTH = LIBSPECTRUM_MICRODRIVE_DATA_LENGTH + 1;
+struct libspectrum_microdrive_block {
+
+  libspectrum_byte hdflag;		/* bit0 = 1-head, ( 0 - data ) */
+  libspectrum_byte hdbnum;		/* block num 1 -- 254 */
+  libspectrum_word hdblen;		/* not used */
+  libspectrum_byte hdbnam[11];		/* cartridge label + \0 */
+  libspectrum_byte hdchks;		/* header checksum */
+ 
+  libspectrum_byte recflg;		/* bit0 = 0-data, bit1, bit2 */
+  libspectrum_byte recnum;		/* data block num  */
+  libspectrum_word reclen;		/* block length 0 -- 512 */
+  libspectrum_byte recnam[11];		/* record (file) name + \0 */
+  libspectrum_byte rechks;		/* descriptor checksum */
+
+  libspectrum_byte data[512];		/* data bytes */
+  libspectrum_byte datchk;		/* data checksum */
+
+};
+
+const static size_t MDR_LENGTH = LIBSPECTRUM_MICRODRIVE_CARTRIDGE_LENGTH + 1;
 
 /* Constructor/destructor */
 
@@ -95,13 +117,148 @@ libspectrum_microdrive_set_write_protect( libspectrum_microdrive *microdrive,
   microdrive->write_protect = write_protect;
 }
 
+libspectrum_byte
+libspectrum_microdrive_cartridge_len( const libspectrum_microdrive *microdrive )
+{
+  return microdrive->cartridge_len;
+}
+
+void
+libspectrum_microdrive_set_cartridge_len( libspectrum_microdrive *microdrive,
+			     libspectrum_byte len )
+{
+  microdrive->cartridge_len = len;
+}
+
+void
+libspectrum_microdrive_get_block( const libspectrum_microdrive *microdrive,
+				  libspectrum_byte which,
+				  libspectrum_microdrive_block *block )
+{
+  const libspectrum_byte *d;
+  
+  d = microdrive->data + which * LIBSPECTRUM_MICRODRIVE_BLOCK_LEN;
+
+  /* The block header */
+  block->hdflag = *(d++);
+  block->hdbnum = *(d++);
+  block->hdblen = *d + ( *( d + 1 ) << 8 ); d += 2;
+  memcpy( block->hdbnam, d, 10 ); d += 10; block->hdbnam[10] = '\0';
+  block->hdchks = *(d++);
+
+  /* The data header */
+  block->recflg = *(d++);
+  block->recnum = *(d++);
+  block->reclen = *d + ( *( d + 1 ) << 8 ); d += 2;
+  memcpy( block->recnam, d, 10 ); d += 10; block->recnam[10] = '\0';
+  block->rechks = *(d++);
+
+  /* The data itself */
+  memcpy( block->data, d, 512 ); d += 512;
+  block->datchk = *(d++);
+
+}
+
+void
+libspectrum_microdrive_set_block( libspectrum_microdrive *microdrive,
+				  libspectrum_byte which,
+				  libspectrum_microdrive_block *block )
+{
+  libspectrum_byte *d = &microdrive->data[ which * 
+					   LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ];
+  /* The block header */
+  *(d++) = block->hdflag;
+  *(d++) = block->hdbnum;
+  *(d++) = block->hdblen & 0xff; *(d++) = block->hdblen >> 8;
+  memcpy( d, block->hdbnam, 10 ); d += 10;
+  *(d++) = block->hdchks;
+
+  /* The data header */
+  *(d++) = block->recflg;
+  *(d++) = block->recnum;
+  *(d++) = block->reclen & 0xff; *(d++) = block->reclen >> 8;
+  memcpy( d, block->recnam, 10 ); d += 10;
+  *(d++) = block->rechks;
+
+  /* The data itself */
+  memcpy( d, block->data, 512 ); d += 512;
+  *(d++) = block->datchk;
+
+}
+
+int
+libspectrum_microdrive_checksum( libspectrum_microdrive *microdrive,
+				 libspectrum_byte what )
+{
+  libspectrum_byte checksum, *data;
+  libspectrum_microdrive_block b;
+  int i;
+
+  libspectrum_microdrive_get_block( microdrive, 0, &b );
+
+  if( ( b.recflg & 0x02 ) && b.reclen == 0 )
+    return -1;		/* BAD_BLOCK */
+
+/*
+
+LOOP-C:  LD      A,E             ; fetch running sum
+         ADD     A,(HL)          ; add to current location.
+         INC     HL              ; point to next location.
+
+
+         ADC     A,#01           ; avoid the value #FF.
+         JR      Z,LSTCHK        ; forward to STCHK
+
+         DEC     A               ; decrement.
+
+LSTCHK   LD      E,A             ; update the 8-bit sum.
+
+*/  
+  data = &microdrive->data[ what * LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ];
+
+  checksum = 0;
+  for( i = LIBSPECTRUM_MICRODRIVE_HEAD_LEN; i > 1; i-- ) {
+    checksum += *data;	/* ADD A, (HL) */
+    if( checksum < *( data++ ) ) checksum++;
+    if( checksum == 255 ) checksum = 0;
+  }
+  if( *(data++) != checksum ) 
+    return 1;
+
+  checksum = 0;
+  for( i = LIBSPECTRUM_MICRODRIVE_HEAD_LEN; i > 1; i-- ) {
+    checksum += *data;
+    if( checksum < *( data++ ) ) checksum++;
+    if( checksum == 255 ) checksum = 0;
+  }
+  if( *(data++) != checksum ) 
+    return 2;
+
+  checksum = 0;
+  for( i = LIBSPECTRUM_MICRODRIVE_DATA_LEN; i > 0; i-- ) {
+    checksum += *data;
+    if( checksum < *( data++ ) ) checksum++;
+    if( checksum == 255 ) checksum = 0;
+  }
+  if( *(data++) != checksum ) 
+    return 3;
+
+  return 0;
+}
+
 /* .mdr format routines */
 
 libspectrum_error
 libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
 				 libspectrum_byte *buffer, size_t length )
 {
-  if( length < MDR_LENGTH ) {
+  libspectrum_microdrive_block b;
+  libspectrum_byte label[10];
+  libspectrum_byte n;
+  int e, nolabel;
+  
+  if( length < LIBSPECTRUM_MICRODRIVE_BLOCK_LEN * 10 ||
+     ( length % LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ) > 1 ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
       "libspectrum_microdrive_mdr_read: not enough data in buffer"
@@ -109,10 +266,50 @@ libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  memcpy( microdrive->data, buffer, MDR_LENGTH ); buffer += MDR_LENGTH;
+  length = length > MDR_LENGTH ? MDR_LENGTH : length;
+  
+  memcpy( microdrive->data, buffer, length ); buffer += length;
 
-  libspectrum_microdrive_set_write_protect( microdrive, *buffer );
+  if( ( length % LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ) == 1 )
+    libspectrum_microdrive_set_write_protect( microdrive, *buffer );
+  else
+    libspectrum_microdrive_set_write_protect( microdrive, 0 );
 
+  libspectrum_microdrive_set_cartridge_len( microdrive,
+				length / LIBSPECTRUM_MICRODRIVE_BLOCK_LEN );
+ 
+  n = libspectrum_microdrive_cartridge_len( microdrive );
+  nolabel = 1;	/* No real label ! */
+  
+  while( n > 0 ) {
+    n--;
+    if( ( e = libspectrum_microdrive_checksum( microdrive, n ) ) > 0 ) {
+      libspectrum_print_error(
+        LIBSPECTRUM_ERROR_CORRUPT,
+        "libspectrum_microdrive_mdr_read: %s checksum error in #%d record",
+	e == 1 ? "record header" : e == 2 ? "data header" : "data",
+	n
+      );
+      return LIBSPECTRUM_ERROR_CORRUPT;
+    }
+
+    libspectrum_microdrive_get_block( microdrive, 0, &b );
+
+    if( !nolabel && memcmp( label, b.hdbnam, 10 ) ) {
+      libspectrum_print_error(
+        LIBSPECTRUM_ERROR_CORRUPT,
+        "libspectrum_microdrive_mdr_read: inconsistent labels in #%d record",
+	n
+      );
+      return LIBSPECTRUM_ERROR_CORRUPT;
+    }
+
+    if( e == 0 && nolabel ) {
+      memcpy( label, b.hdbnam, 10 );
+      nolabel = 0;
+    }
+  }
+  
   return LIBSPECTRUM_ERROR_NONE;
 }
 
@@ -120,7 +317,8 @@ libspectrum_error
 libspectrum_microdrive_mdr_write( const libspectrum_microdrive *microdrive,
 				  libspectrum_byte **buffer, size_t *length )
 {
-  *buffer = malloc( MDR_LENGTH );
+  *buffer = malloc( *length = microdrive->cartridge_len * 
+				    LIBSPECTRUM_MICRODRIVE_BLOCK_LEN + 1 );
   if( !*buffer ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_MEMORY,
@@ -130,10 +328,10 @@ libspectrum_microdrive_mdr_write( const libspectrum_microdrive *microdrive,
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
-  memcpy( *buffer, microdrive->data, LIBSPECTRUM_MICRODRIVE_DATA_LENGTH );
+  memcpy( *buffer, microdrive->data, *length );
 
   
-  (*buffer)[ LIBSPECTRUM_MICRODRIVE_DATA_LENGTH ] = microdrive->write_protect;
+  (*buffer)[ *length ] = microdrive->write_protect;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
