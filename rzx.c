@@ -1185,21 +1185,9 @@ rzx_read_sign_end( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
 
 libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_rzx *rzx, libspectrum_snap *snap,
+		       libspectrum_rzx *rzx, libspectrum_id_t snap_format,
 		       libspectrum_creator *creator, int compress,
 		       libspectrum_rzx_dsa_key *key )
-{
-  return libspectrum_rzx_write2( buffer, length, rzx, snap,
-				 LIBSPECTRUM_ID_SNAPSHOT_Z80, creator,
-				 compress, key );
-}
-
-libspectrum_error
-libspectrum_rzx_write2( libspectrum_byte **buffer, size_t *length,
-			libspectrum_rzx *rzx, libspectrum_snap *snap,
-			libspectrum_id_t snap_format,
-			libspectrum_creator *creator, int compress,
-			libspectrum_rzx_dsa_key *key )
 {
   libspectrum_error error;
   libspectrum_byte *ptr = *buffer;
