@@ -625,8 +625,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
 
 libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_rzx *rzx,
-		       libspectrum_byte *snap, size_t snap_length,
+		       libspectrum_rzx *rzx, libspectrum_snap *snap,
 		       const char *program, libspectrum_word major,
 		       libspectrum_word minor, int compress );
 
