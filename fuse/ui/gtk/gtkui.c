@@ -318,6 +318,7 @@ ui_init( int *argc, char ***argv )
   if( gtkdisplay_init() ) return 1;
 
   gtk_widget_show_all( gtkui_window );
+  gtkstatusbar_set_visibility( settings_current.statusbar );
 
   return 0;
 }

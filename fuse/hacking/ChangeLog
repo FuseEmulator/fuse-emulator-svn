@@ -502,3 +502,5 @@
 	 core tests in the distribution tarball (Release-0_6_2-branch).
 20040120 ui/gtk: use Fred's tape and disk icons on the GTK+ statusbar
 	 (Release-0_6_2-branch).
+20040122 settings.dat, ui/gtk: make the 'view statusbar' option be
+	 effective under GTK+ (Release-0_6_2-branch).

@@ -1,5 +1,5 @@
 /* statusbar.c: routines for updating the status bar
-   Copyright (c) 2003 Philip Kendall
+   Copyright (c) 2003-2004 Philip Kendall
 
    $Id$
 
@@ -35,10 +35,14 @@
 #include "gtkinternals.h"
 #include "ui/ui.h"
 
-GdkPixmap *pixmap_tape_inactive, *pixmap_tape_active,
+static GtkWidget *status_bar;
+
+static GdkPixmap
+  *pixmap_tape_inactive, *pixmap_tape_active,
   *pixmap_disk_inactive, *pixmap_disk_active;
 
-GtkWidget *disk_status,	/* Is the disk motor running? */
+static GtkWidget
+  *disk_status,		/* Is the disk motor running? */
   *pause_status,	/* Is emulation paused (via the menu option)? */
   *tape_status,		/* Is the tape running? */
   *speed_status;	/* How fast are we running? */
@@ -46,8 +50,6 @@ GtkWidget *disk_status,	/* Is the disk motor running? */
 int
 gtkstatusbar_create( GtkBox *parent )
 {
-  GtkWidget *status_bar;
-
   status_bar = gtk_hbox_new( FALSE, 3 );
   gtk_box_pack_start( parent, status_bar, FALSE, FALSE, 3 );
 
@@ -76,6 +78,18 @@ gtkstatusbar_create( GtkBox *parent )
 
   speed_status = gtk_label_new( "100%" );
   gtk_box_pack_start_defaults( GTK_BOX( status_bar ), speed_status );
+
+  return 0;
+}
+
+int
+gtkstatusbar_set_visibility( int visible )
+{
+  if( visible ) {
+    gtk_widget_show( status_bar );
+  } else {
+    gtk_widget_hide( status_bar );
+  }
 
   return 0;
 }
