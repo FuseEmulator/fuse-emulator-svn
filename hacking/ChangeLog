@@ -39,3 +39,4 @@
 20030901 Remove the find an <n>-bit type stuff as that's now done by
 	 libspectrum.
 20030912 man/: update man pages for the 0.6.1 release.
+20030912 ChangeLog: put in 0.6.0 release date.
