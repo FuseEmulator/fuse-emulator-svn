@@ -1,5 +1,5 @@
-/* myglib.c: Replacements for glib routines
-   Copyright (c) 2001-2003 Matan Ziv-Av, Philip Kendall, Marek Januszewski
+/* gslist.c: Minimal replacement for GSList
+   Copyright (c) 2001-2004 Matan Ziv-Av, Philip Kendall, Marek Januszewski
 
    $Id$
 

@@ -26,4 +26,5 @@ AUTOMAKE_OPTIONS = foreign
 
 noinst_LIBRARIES = libmyglib.a
 
-libmyglib_a_SOURCES = gslist.c
+libmyglib_a_SOURCES = ghash.c \
+		      gslist.c
