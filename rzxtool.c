@@ -1,5 +1,5 @@
 /* rzxtool.c: (Un)compress RZX data and add, remove or extract embedded snaps
-   Copyright (c) 2002 Philip Kendall
+   Copyright (c) 2002-2003 Philip Kendall
 
    $Id$
 
@@ -74,6 +74,8 @@ main( int argc, char **argv )
 
   progname = argv[0];
 
+  if( libspectrum_init() ) return 1;
+
   init_options( &options );
   if( parse_options( argc, argv, &options ) ) return 1;
 
@@ -88,7 +90,7 @@ main( int argc, char **argv )
 
   if( mmap_file( options.rzxfile, &buffer, &length ) ) return 1;
 
-  if( libspectrum_rzx_read( rzx, &snap, buffer, length ) ) {
+  if( libspectrum_rzx_read( rzx, &snap, buffer, length, NULL ) ) {
     munmap( buffer, length );
     return 1;
   }
@@ -179,7 +181,7 @@ main( int argc, char **argv )
 
     length = 0;
     if( libspectrum_rzx_write( &buffer, &length, rzx, snap, creator,
-			       !options.uncompress ) ) {
+			       !options.uncompress, NULL ) ) {
       libspectrum_creator_free( creator );
       if( snap ) libspectrum_snap_free( snap );
       libspectrum_rzx_free( rzx );
