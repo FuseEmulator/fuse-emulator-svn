@@ -1065,16 +1065,23 @@ information on this. Files compressed with bzip2 or gzip will be
 automatically and transparently decompressed.
 
 libspectrum_error
-libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_rzx *rzx,
-		       libspectrum_byte *snap, libspectrum_creator *creator,
-		       int compress, libspectrum_rzx_dsa_key *key )
+libspectrum_rzx_write2( libspectrum_byte **buffer, size_t *length,
+			libspectrum_rzx *rzx,
+		        libspectrum_byte *snap, libspectrum_id_t snap_format,
+			libspectrum_creator *creator,
+		        int compress, libspectrum_rzx_dsa_key *key )
 
 Given input recording data in `rzx' and a snapshot in `snap', create a
 .rzx file in `*buffer'. If no embedded snapshot is required, set
 `snap' to be NULL. Before the call, `*buffer' should be allocated at
 least `*length' bytes (can be zero). After the call, `*length'
 contains the length of the .rzx file.
+
+`snap format' specifies the format for the embedded snap. This can be
+any of the formats supported by `libspectrum_snap_write' or
+LIBSPECTRUM_ID_UNKNOWN, in which case the snap will be embedded as a
+.z80 file, _unless_ that would result in major information loss, in
+which case a .szx file will be embedded instead.
 
 `creator' contains the creator information which should be written
 into the RZX file. If `key' is non-NULL, the RZX file will be
@@ -1162,6 +1169,18 @@ libspectrum_error
 libspectrum_signature_free( libspectrum_rzx_signature *signature )
 
 Note this will not free the data pointed to by `start'.
+
+Deprecated RZX function
+-----------------------
+
+libspectrum_error
+libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_rzx *rzx,
+		       libspectrum_byte *snap, libspectrum_creator *creator,
+		       int compress, libspectrum_rzx_dsa_key *key )
+
+Exactly equivalent to libspectrum_rzx_write2( buffer, length, rzx,
+snap, LIBSPECTRUM_ID_SNAPSHOT_Z80, creator, compress, key ).
 
 Timex dock/exrom handling functions
 ===================================

@@ -39,6 +39,19 @@
 
 #include "internals.h"
 
+/* The strings used for each snapshot type */
+typedef struct snapshot_string_t {
+  libspectrum_id_t format;
+  const char *string;
+} snapshot_string_t;
+
+static snapshot_string_t snapshot_strings[] = {
+  { LIBSPECTRUM_ID_SNAPSHOT_SNA, "SNA" },
+  { LIBSPECTRUM_ID_SNAPSHOT_SZX, "SZX" },
+  { LIBSPECTRUM_ID_SNAPSHOT_Z80, "Z80" },
+  { 0 },	/* End marker */
+};
+
 /* The block types which can appear in RZX files */
 typedef enum libspectrum_rzx_block_t {
 
@@ -115,7 +128,9 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		   size_t *length, libspectrum_creator *creator );
 static libspectrum_error
 rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		    size_t *length, libspectrum_snap *snap, int compress );
+		    size_t *length, libspectrum_snap *snap,
+		    libspectrum_id_t snap_format,
+		    libspectrum_creator *creator, int compress );
 static libspectrum_error
 rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 		 libspectrum_byte **ptr, size_t *length, int compress );
@@ -473,6 +488,8 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
   size_t blocklength, snaplength; libspectrum_error error;
   libspectrum_dword flags;
   const libspectrum_byte *snap_ptr;
+  int done;
+  snapshot_string_t *type;
 
   /* For deflated snapshot data: */
   int compressed;
@@ -564,14 +581,18 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
     return error;
   }
 
-  if( !strcasecmp( *ptr, "Z80" ) ) {
-    error = libspectrum_z80_read( (*snap), snap_ptr, uncompressed_length );
-  } else if( !strcasecmp( *ptr, "SNA" ) ) {
-    error = libspectrum_sna_read( (*snap), snap_ptr, uncompressed_length );
-  } else {
+  for( done = 0, type = snapshot_strings; type->format; type++ ) {
+    if( !strncasecmp( *ptr, type->string, 4 ) ) {
+      error = libspectrum_snap_read( (*snap), snap_ptr, uncompressed_length,
+				     type->format, NULL );
+      done = 1;
+    }
+  }
+
+  if( !done ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_UNKNOWN,
-      "rzx_read_snapshot: unrecognised snapshot format"
+      "%s:rzx_read_snapshot: unrecognised snapshot format", __FILE__
     );
     if( compressed ) free( gzsnap );
     libspectrum_snap_free( *snap );
@@ -876,6 +897,18 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_creator *creator, int compress,
 		       libspectrum_rzx_dsa_key *key )
 {
+  return libspectrum_rzx_write2( buffer, length, rzx, snap,
+				 LIBSPECTRUM_ID_SNAPSHOT_Z80, creator,
+				 compress, key );
+}
+
+libspectrum_error
+libspectrum_rzx_write2( libspectrum_byte **buffer, size_t *length,
+			libspectrum_rzx *rzx, libspectrum_snap *snap,
+			libspectrum_id_t snap_format,
+			libspectrum_creator *creator, int compress,
+			libspectrum_rzx_dsa_key *key )
+{
   libspectrum_error error;
   libspectrum_byte *ptr = *buffer;
   ptrdiff_t sign_offset;
@@ -893,7 +926,8 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   if( snap ) {
-    error = rzx_write_snapshot( buffer, &ptr, length, snap, compress );
+    error = rzx_write_snapshot( buffer, &ptr, length, snap, snap_format,
+				creator, compress );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
 
@@ -979,15 +1013,45 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 static libspectrum_error
 rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		    size_t *length, libspectrum_snap *snap, int compress )
+		    size_t *length, libspectrum_snap *snap,
+		    libspectrum_id_t snap_format,
+		    libspectrum_creator *creator, int compress )
 {
   libspectrum_error error;
   libspectrum_byte *snap_buffer = NULL; size_t snap_length;
   libspectrum_byte *gzsnap = NULL; size_t gzlength;
+  int flags, done;
+  snapshot_string_t *type;
 
   snap_length = 0;
-  error = libspectrum_z80_write( &snap_buffer, &snap_length, snap );
-  if( error ) return error;
+
+  if( snap_format == LIBSPECTRUM_ID_UNKNOWN ) {
+    /* If not given a snap format, try using .z80. If that would result
+       in major information loss, use .szx instead */
+    snap_format = LIBSPECTRUM_ID_SNAPSHOT_Z80;
+    error = libspectrum_snap_write( &snap_buffer, &snap_length, &flags, snap,
+				    snap_format, creator, 0 );
+    if( error ) return error;
+
+    if( flags & LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS ) {
+      free( snap_buffer ); snap_length = 0;
+      snap_format = LIBSPECTRUM_ID_SNAPSHOT_SZX;
+      error = libspectrum_snap_write( &snap_buffer, &snap_length, &flags, snap,
+				      snap_format, creator, 0 );
+      if( error ) return error;
+    }
+
+  } else {
+    error = libspectrum_snap_write( &snap_buffer, &snap_length, &flags, snap,
+				    snap_format, creator, 0 );
+    if( error ) return error;
+  }
+
+  if( flags & LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_WARNING,
+			     "%s:rzx_write_snapshot: embedded snapshot has lost a significant amount of information",
+			     __FILE__ );
+  }
 
   if( compress ) {
 
@@ -1018,7 +1082,23 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
     libspectrum_write_dword( ptr, 17 + snap_length );
     libspectrum_write_dword( ptr, 0 );
   }
-  strcpy( *ptr, "Z80" ); (*ptr) += 4;	/* Snapshot type */
+
+  for( type = snapshot_strings, done = 0; type->format; type++ ) {
+    if( type->format == snap_format ) {
+      strcpy( *ptr, type->string ); (*ptr) += 4;
+      done = 1;
+      break;
+    }
+  }
+
+  if( !done ) {
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_UNKNOWN,
+      "%s:rzx_write_snapshot: unexpected snap type %d", __FILE__, snap_format
+    );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
   libspectrum_write_dword( ptr, snap_length );	/* Snapshot length */
 
   if( compress ) {
