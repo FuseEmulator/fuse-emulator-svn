@@ -97,7 +97,7 @@ typedef enum libspectrum_id_t {
 
 } libspectrum_id_t;
 
-int
+libspectrum_error
 libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
                            const unsigned char *buffer, size_t length );
 
