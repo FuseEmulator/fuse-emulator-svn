@@ -192,6 +192,8 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 
       { LIBSPECTRUM_ID_SNAPSHOT_SNA,  "sna", 3, NULL,		    0, 0, 0 },
       { LIBSPECTRUM_ID_SNAPSHOT_SNP,  "snp", 3, NULL,		    0, 0, 0 },
+      { LIBSPECTRUM_ID_SNAPSHOT_SP,   "sp",  3, "\x53\x50\0",	    0, 3, 1 },
+      { LIBSPECTRUM_ID_SNAPSHOT_SZX,  "szx", 3, "ZXST",		    0, 4, 4 },
       { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "z80", 3, "\0\0",		    6, 2, 1 },
       /* .slt files also dealt with by the .z80 loading code */
       { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "slt", 3, "\0\0",		    6, 2, 1 },
@@ -278,6 +280,7 @@ libspectrum_identify_class( libspectrum_class_t *class, libspectrum_id_t type )
   case LIBSPECTRUM_ID_SNAPSHOT_SNA:
   case LIBSPECTRUM_ID_SNAPSHOT_SNP:
   case LIBSPECTRUM_ID_SNAPSHOT_SP:
+  case LIBSPECTRUM_ID_SNAPSHOT_SZX:
   case LIBSPECTRUM_ID_SNAPSHOT_Z80:
   case LIBSPECTRUM_ID_SNAPSHOT_ZXS:
     *class = LIBSPECTRUM_CLASS_SNAPSHOT; return 0;

@@ -1,4 +1,4 @@
-/* plusd.c: Routines for .zxs snapshots
+/* zxs.c: Routines for .zxs snapshots
    Copyright (c) 1998,2003 Philip Kendall
 
    $Id$
@@ -26,14 +26,7 @@
 
 #include <config.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/mman.h>
 
 #include <zlib.h>
 
@@ -415,7 +408,7 @@ struct read_chunk_t {
 
 };
 
-struct read_chunk_t read_chunks[] = {
+static struct read_chunk_t read_chunks[] = {
 
   { "RIFF", read_riff_chunk,   0 },
   { "fmtz", read_fmtz_chunk,   0 },
@@ -437,7 +430,7 @@ struct read_chunk_t read_chunks[] = {
 
 };
 
-size_t read_chunks_count =
+static size_t read_chunks_count =
   sizeof( read_chunks ) / sizeof( struct read_chunk_t );
 
 static libspectrum_error
