@@ -77,4 +77,11 @@ if test "$ac_cv_prog_gcc" = yes; then
   fi
 fi
 
+dnl Blow away libspectrum.h, forcing it to be regenerated; necessary because
+dnl libspectrum.h appears in the distribution tarball and we don't want
+dnl users having the version from wherever the distribution tarball was
+dnl built
+dnl FIXME: is there a better way to do this?
+rm -rf libspectrum.h
+
 AC_OUTPUT(Makefile)
