@@ -362,6 +362,7 @@ read_sign_end_block( unsigned char **ptr, unsigned char *end )
 
   error = gcry_mpi_aprint( GCRYMPI_FMT_HEX, (void**)&buffer, &length2, a );
   printf( "  r: %s\n", buffer );
+  free( buffer ); gcry_mpi_release( a );
 
   error = gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, *ptr, &length2 );
   if( error ) {
@@ -374,6 +375,7 @@ read_sign_end_block( unsigned char **ptr, unsigned char *end )
 
   error = gcry_mpi_aprint( GCRYMPI_FMT_HEX, (void**)&buffer, &length2, a );
   printf( "  s: %s\n", buffer );
+  free( buffer ); gcry_mpi_release( a );
 
 #endif
 
