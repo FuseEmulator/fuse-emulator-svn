@@ -35,7 +35,7 @@
 
 #include "fuse.h"
 #include "display.h"
-#include "svgadisplay.h"
+#include "uidisplay.h"
 
 static unsigned char *image;
 
@@ -44,11 +44,18 @@ static int colours[16];
 static int svgadisplay_allocate_colours(int numColours, int *colours);
 static int svgadisplay_allocate_image(int width, int height);
 
-int svgadisplay_init(int width, int height)
+/* Never used, so commented out to avoid warning */
+/*  static void svgadisplay_area(int x, int y, int width, int height); */
+
+int uidisplay_init(int width, int height)
 {
 
   vga_init();
+#ifdef G320x240x256V
   vga_setmode(G320x240x256V);
+#else				/* #ifdef G320x240x256V */
+  vga_setmode(G320x240x256);
+#endif				/* #ifdef G320x240x256V */
   
   svgadisplay_allocate_image(DISPLAY_SCREEN_WIDTH, DISPLAY_SCREEN_HEIGHT);
   svgadisplay_allocate_colours(16, colours);  
@@ -100,24 +107,25 @@ static int svgadisplay_allocate_image(int width, int height)
   return 0;
 }
 
-void svgadisplay_putpixel(int x,int y,int colour)
+void uidisplay_putpixel(int x,int y,int colour)
 {
   *(image+x+y*DISPLAY_SCREEN_WIDTH)=colour;
 }
 
-void svgadisplay_line(int y)
+void uidisplay_line(int y)
 {
     vga_drawscansegment(image+y*DISPLAY_SCREEN_WIDTH,0,y,DISPLAY_SCREEN_WIDTH);
 }
 
-void svgadisplay_area(int x, int y, int width, int height)
-{
-    int yy;
-    for(yy=y; yy<y+height; yy++)
-        vga_drawscansegment(image+yy*DISPLAY_SCREEN_WIDTH+x,x,yy,width);
-}
+/* Never used, so commented out to avoid warning */
+/*  static void svgadisplay_area(int x, int y, int width, int height) */
+/*  { */
+/*      int yy; */
+/*      for(yy=y; yy<y+height; yy++) */
+/*          vga_drawscansegment(image+yy*DISPLAY_SCREEN_WIDTH+x,x,yy,width); */
+/*  } */
 
-void svgadisplay_set_border(int line, int pixel_from, int pixel_to, int colour)
+void uidisplay_set_border(int line, int pixel_from, int pixel_to, int colour)
 {
     int x;
   
@@ -125,7 +133,7 @@ void svgadisplay_set_border(int line, int pixel_from, int pixel_to, int colour)
         *(image+line*DISPLAY_SCREEN_WIDTH+x)=colours[colour];
 }
 
-int svgadisplay_end(void)
+int uidisplay_end(void)
 {
     vga_setmode(TEXT);
 
