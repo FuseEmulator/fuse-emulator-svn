@@ -26,7 +26,7 @@ AUTOMAKE_OPTIONS = foreign
 
 lib_LTLIBRARIES = libspectrum.la
 
-libspectrum_la_SOURCES = libspectrum.c rzx.c sna.c tap.c tape.c\
+libspectrum_la_SOURCES = libspectrum.c rzx.c sna.c snapshot.c tap.c tape.c\
 tzx_read.c tzx_write.c z80.c zlib.c myglib.c
 
 BUILT_SOURCES = libspectrum.h
