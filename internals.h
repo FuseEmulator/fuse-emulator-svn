@@ -59,6 +59,7 @@ int libspectrum_make_room( libspectrum_byte **dest, size_t requested,
 			   libspectrum_byte **ptr, size_t *allocated );
 
 /* Read and write (d)words */
+libspectrum_word libspectrum_read_word( const libspectrum_byte **buffer );
 libspectrum_dword libspectrum_read_dword( const libspectrum_byte **buffer );
 int libspectrum_write_word( libspectrum_byte **buffer, libspectrum_word w );
 int libspectrum_write_dword( libspectrum_byte **buffer, libspectrum_dword d );
