@@ -128,6 +128,11 @@ main( int argc, char **argv )
       /* Don't want the old snap anymore */
       if( snap ) { libspectrum_snap_free( snap ); snap = NULL; }
 
+      if( libspectrum_snap_alloc( &snap ) ) {
+	libspectrum_rzx_free( rzx );
+	return 1;
+      }
+
       /* Get the new snap */
       if( mmap_file( options.add, &snap_buffer, &snap_length ) ) {
 	libspectrum_rzx_free( rzx );
