@@ -24,6 +24,10 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-man_MANS = rzxdump.1 rzxtool.1 tapeconv.1 tzxlist.1
+man_MANS = rzxdump.1 \
+	   rzxtool.1 \
+	   scl2trd.1 \
+	   tapeconv.1 \
+	   tzxlist.1
 
 EXTRA_DIST = $(man_MANS)

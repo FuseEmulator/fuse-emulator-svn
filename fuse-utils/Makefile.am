@@ -26,7 +26,11 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = man
 
-bin_PROGRAMS = rzxdump rzxtool tapeconv tzxlist
+bin_PROGRAMS = rzxdump \
+	       rzxtool \
+	       scl2trd \
+	       tapeconv \
+	       tzxlist
 
 INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 
@@ -34,6 +38,8 @@ rzxdump_SOURCES = rzxdump.c
 
 rzxtool_SOURCES = rzxtool.c utils.c
 rzxtool_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+
+scl2trd_SOURCES = scl2trd.c
 
 tapeconv_SOURCES = tapeconv.c utils.c
 tapeconv_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@

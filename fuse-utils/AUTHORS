@@ -2,6 +2,11 @@ The Fuse utilities have been brought to you by:
 
 * Darren Salt: listing multiple files in tzxlist, and the tzxlist man page.
 
+* Fredrick Meunier: scl2trd.
+
+* Dmitry Sanarin: the original scl to trd conversion code, taken from
+  Glukalka (http://glukalka.sf.net/)
+
 * Philip Kendall: everything else.
 
 $Id$

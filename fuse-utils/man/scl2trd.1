@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\"
-.\" tapeconv.1: tapeconv man page
-.\" Copyright (c) 2002 Philip Kendall
+.\" scl2trd.1: scl2trd man page
+.\" Copyright (c) 2001-2003 Darren Salt, Philip Kendall, Fredrick Meunier
 .\"
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -23,37 +23,36 @@
 .\" Postal address: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
 .\"
 .\"
-.TH tapeconv 1 "4th December, 2002" "Version 0.5.1" "Emulators"
+.TH scl2trd 1 "26th March, 2003" "Version 0.5.1" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH NAME
-tapeconv \- Sinclair ZX Spectrum tape file convertor
+scl2trd \- Sinclair ZX Spectrum tape file convertor
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH SYNOPSIS
 .PD 0
-.B tapeconv
-.I tzxfile
+.B scl2trd
+.IR "sclfile" "trdfile"
 .P
 .PD 1
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH DESCRIPTION
-Tapeconv converts a .tzx tape file to a .tap tape file. The .tzx format
-is a superset of the .tap format, so not all information can be
-preserved; warnings will be given if any information may be lost.
-.PP
-The converted .tap file will be written to standard output.
+scl2trd converts a .scl disk file to a 80 track, double sided (640Kb)
+.trd disk file.
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH OPTIONS
 .TP
-.I tzxfile
-specifies a tape file to be converted.
+.I sclfile
+specifies a .scl file whose contents are to be converted.
+.I trdfile
+specifies a .trd file to create.
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -66,7 +65,7 @@ None known.
 .IR fuse "(1),"
 .IR rzxdump "(1),"
 .IR rzxtool "(1),"
-.IR scl2trd "(1),"
+.IR tapeconv "(1),"
 .IR tzxlist "(1),"
 .IR xspect "(1),"
 .IR xzx "(1)"
@@ -79,3 +78,6 @@ The comp.sys.sinclair Spectrum FAQ, at
 .\"
 .SH AUTHOR
 Philip Kendall (pak21-fuse@srcf.ucam.org).
+.PP
+Dmitry Sanarin's conversion routines from his Glukalka emulator are
+used
