@@ -188,7 +188,7 @@ parse_tape_file( const unsigned char *buffer, size_t length,
   libspectrum_tape *tape;
   GSList *block;
   libspectrum_tape_block *tape_block;
-  libspectrum_tape_rom_block *rom_block;
+  libspectrum_byte *data;
   libspectrum_word program_length;
 
   int error;
@@ -202,43 +202,47 @@ parse_tape_file( const unsigned char *buffer, size_t length,
 
     /* Find a ROM block */
     tape_block = block->data;
-    if( tape_block->type != LIBSPECTRUM_TAPE_BLOCK_ROM ) continue;
+    if( libspectrum_tape_block_type( tape_block )
+	!= LIBSPECTRUM_TAPE_BLOCK_ROM             ) continue;
 
     /* Start assuming this block is a BASIC header; firstly, check
        there is another block after this one to hold the data, and
        if there's not, just finish */
     if( !block->next ) break;
 
-    rom_block = &tape_block->types.rom;
-
     /* If it's a header, it must be 19 bytes long */
-    if( rom_block->length != 19 ) continue;
+    if( libspectrum_tape_block_data_length( tape_block ) != 19 ) continue;
+
+    data = libspectrum_tape_block_data( tape_block );
 
     /* The first byte should be zero to indicate a header */
-    if( rom_block->data[0] != 0 ) continue;
+    if( data[0] != 0 ) continue;
 
     /* The second byte should be zero to indicate a BASIC program */
-    if( rom_block->data[1] != 0 ) continue;
+    if( data[1] != 0 ) continue;
 
     /* The program length is stored at offset 16 */
-    program_length = rom_block->data[16] | rom_block->data[17] << 8;
+    program_length = data[16] | data[17] << 8;
 
     /* Now have a look at the next block */
     tape_block = block->next->data;
 
     /* Must be a ROM block */
-    if( tape_block->type != LIBSPECTRUM_TAPE_BLOCK_ROM ) continue;
-
-    rom_block = &tape_block->types.rom;
+    if( libspectrum_tape_block_type( tape_block )
+	!= LIBSPECTRUM_TAPE_BLOCK_ROM             ) continue;
 
     /* Must be at least as long as the program */
-    if( rom_block->length < program_length ) continue;
+    if( libspectrum_tape_block_data_length( tape_block ) < program_length )
+      continue;
+
+    data = libspectrum_tape_block_data( tape_block );
 
     /* Must be a data block */
-    if( rom_block->data[0] != 0xff ) continue;
+    if( data[0] != 0xff ) continue;
 
     /* Now, just read the BASIC out */
-    error = extract_basic( 1, program_length + 1, read_tape_block, rom_block );
+    error = extract_basic( 1, program_length + 1, read_tape_block,
+			   tape_block );
     if( error ) { libspectrum_tape_free( tape ); return error; }
 
     /* Don't parse this block again */
@@ -253,14 +257,14 @@ parse_tape_file( const unsigned char *buffer, size_t length,
 libspectrum_byte
 read_tape_block( libspectrum_word offset, void *data )
 {
-  libspectrum_tape_rom_block *block = data;
+  libspectrum_tape_block *tape_block = data;
 
-  if( offset > block->length ) {
+  if( offset > libspectrum_tape_block_data_length( tape_block ) ) {
     fprintf( stderr, "%s: attempt to read past end of block\n", progname );
     exit( 1 );
   }
 
-  return block->data[ offset ];
+  return libspectrum_tape_block_data( tape_block )[offset];
 }
   
 int
