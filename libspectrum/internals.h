@@ -64,7 +64,13 @@ libspectrum_dword libspectrum_read_dword( const libspectrum_byte **buffer );
 int libspectrum_write_word( libspectrum_byte **buffer, libspectrum_word w );
 int libspectrum_write_dword( libspectrum_byte **buffer, libspectrum_dword d );
 
-/* zlib (de)compression routines */
+/* (de)compression routines */
+
+libspectrum_error
+libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
+			     char **new_filename, libspectrum_id_t type,
+			     const unsigned char *old_buffer,
+			     size_t old_length, const char *old_filename );
 
 libspectrum_error
 libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
@@ -72,6 +78,10 @@ libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
 libspectrum_error
 libspectrum_zlib_compress( const libspectrum_byte *data, size_t length,
 			   libspectrum_byte **gzptr, size_t *gzlength );
+
+libspectrum_error
+libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
+			  libspectrum_byte **outptr, size_t *outlength );
 
 /* Convert a 48K memory dump into separate RAM pages */
 

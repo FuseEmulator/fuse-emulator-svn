@@ -67,8 +67,11 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 		       size_t length, libspectrum_id_t type,
 		       const char *filename )
 {
+  libspectrum_id_t raw_type;
   libspectrum_class_t class;
+  libspectrum_byte *new_buffer;
   libspectrum_error error;
+  int uncompressed;
 
   /* If we don't know what sort of file this is, make a best guess */
   if( type == LIBSPECTRUM_ID_UNKNOWN ) {
@@ -94,37 +97,58 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
+  /* Find out if this file needs decompression */
+  uncompressed = 0; new_buffer = NULL;
+
+  error = libspectrum_identify_file_raw( &raw_type, filename, buffer, length );
+  if( error ) return error;
+
+  error = libspectrum_identify_class( &class, raw_type );
+  if( error ) return error;
+
+  if( class == LIBSPECTRUM_CLASS_COMPRESSED ) {
+
+    size_t new_length;
+
+    error = libspectrum_uncompress_file( &new_buffer, &new_length, NULL,
+					 raw_type, buffer, length, NULL );
+    buffer = new_buffer; length = new_length;
+    uncompressed = 1;
+  }
+
   switch( type ) {
 
   case LIBSPECTRUM_ID_SNAPSHOT_PLUSD:
-    return libspectrum_plusd_read( snap, buffer, length );
+    error = libspectrum_plusd_read( snap, buffer, length ); break;
 
   case LIBSPECTRUM_ID_SNAPSHOT_SNA:
-    return libspectrum_sna_read( snap, buffer, length );
+    error = libspectrum_sna_read( snap, buffer, length ); break;
 
   case LIBSPECTRUM_ID_SNAPSHOT_SNP:
-    return libspectrum_snp_read( snap, buffer, length );
+    error = libspectrum_snp_read( snap, buffer, length ); break;
 
   case LIBSPECTRUM_ID_SNAPSHOT_SP:
-    return libspectrum_sp_read( snap, buffer, length );
+    error = libspectrum_sp_read( snap, buffer, length ); break;
 
   case LIBSPECTRUM_ID_SNAPSHOT_SZX:
-    return libspectrum_szx_read( snap, buffer, length );
+    error = libspectrum_szx_read( snap, buffer, length ); break;
 
   case LIBSPECTRUM_ID_SNAPSHOT_Z80:
-    return libspectrum_z80_read( snap, buffer, length );
+    error = libspectrum_z80_read( snap, buffer, length ); break;
 
   case LIBSPECTRUM_ID_SNAPSHOT_ZXS:
-    return libspectrum_zxs_read( snap, buffer, length );
+    error = libspectrum_zxs_read( snap, buffer, length ); break;
 
-  /* Should never reach here as all non-snapshot types removed above */
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "libspectrum_snap_read: unknown snapshot type %d",
 			     type );
+    free( new_buffer );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
+  free( new_buffer );
+  return error;
 }
 
 libspectrum_error

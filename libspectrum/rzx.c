@@ -305,11 +305,34 @@ libspectrum_rzx_instructions( libspectrum_rzx *rzx )
 
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
-	              const libspectrum_byte *buffer, const size_t length,
+	              const libspectrum_byte *buffer, size_t length,
 		      libspectrum_rzx_signature *signature )
 {
   libspectrum_error error;
   const libspectrum_byte *ptr, *end;
+  int uncompressed;
+  libspectrum_byte *new_buffer;
+  libspectrum_id_t raw_type;
+  libspectrum_class_t class;
+
+  /* Find out if this file needs decompression */
+  uncompressed = 0; new_buffer = NULL;
+
+  error = libspectrum_identify_file_raw( &raw_type, NULL, buffer, length );
+  if( error ) return error;
+
+  error = libspectrum_identify_class( &class, raw_type );
+  if( error ) return error;
+
+  if( class == LIBSPECTRUM_CLASS_COMPRESSED ) {
+
+    size_t new_length;
+
+    error = libspectrum_uncompress_file( &new_buffer, &new_length, NULL,
+					 raw_type, buffer, length, NULL );
+    buffer = new_buffer; length = new_length;
+    uncompressed = 1;
+  }
 
   ptr = buffer; end = buffer + length;
 
@@ -320,7 +343,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
   if( signature ) signature->start = NULL;
 
   error = rzx_read_header( &ptr, end, signature );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  if( error != LIBSPECTRUM_ERROR_NONE ) { free( new_buffer ); return error; }
 
   while( ptr < end ) {
 
@@ -332,27 +355,42 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
 
     case LIBSPECTRUM_RZX_CREATOR_BLOCK:
       error = rzx_read_creator( &ptr, end );
-      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+      if( error != LIBSPECTRUM_ERROR_NONE ) {
+	free( new_buffer );
+	return error;
+      }
       break;
       
     case LIBSPECTRUM_RZX_SNAPSHOT_BLOCK:
       error = rzx_read_snapshot( &ptr, end, snap );
-      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+      if( error != LIBSPECTRUM_ERROR_NONE ) {
+	free( new_buffer );
+	return error;
+      }
       break;
 
     case LIBSPECTRUM_RZX_INPUT_BLOCK:
       error = rzx_read_input( rzx, &ptr, end );
-      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+      if( error != LIBSPECTRUM_ERROR_NONE ) {
+	free( new_buffer );
+	return error;
+      }
       break;
 
     case LIBSPECTRUM_RZX_SIGN_START_BLOCK:
       error = rzx_read_sign_start( &ptr, end, signature );
-      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+      if( error != LIBSPECTRUM_ERROR_NONE ) {
+	free( new_buffer );
+	return error;
+      }
       break;
 
     case LIBSPECTRUM_RZX_SIGN_END_BLOCK:
       error = rzx_read_sign_end( &ptr, end, signature );
-      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+      if( error != LIBSPECTRUM_ERROR_NONE ) {
+	free( new_buffer );
+	return error;
+      }
       break;
 
     default:
@@ -360,10 +398,12 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
 	LIBSPECTRUM_ERROR_UNKNOWN,
         "libspectrum_rzx_read: unknown RZX block ID 0x%02x", id
       );
+      free( new_buffer );
       return LIBSPECTRUM_ERROR_UNKNOWN;
     }
   }
 
+  free( new_buffer );
   return LIBSPECTRUM_ERROR_NONE;
 }
 

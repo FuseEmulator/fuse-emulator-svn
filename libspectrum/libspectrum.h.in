@@ -122,6 +122,10 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_SNAPSHOT_ZXS,		/* .zxs snapshot (zx32) */
   LIBSPECTRUM_ID_SNAPSHOT_SZX,		/* .szx snapshot (Spectaculator) */
 
+  /* Below here, present only in 0.2.1 and later */
+
+  LIBSPECTRUM_ID_COMPRESSED_GZ,		/* gzip compressed file */
+
 } libspectrum_id_t;
 
 /* And 'classes' of file */
@@ -136,11 +140,24 @@ typedef enum libspectrum_class_t {
   LIBSPECTRUM_CLASS_SNAPSHOT,		/* Snapshot */
   LIBSPECTRUM_CLASS_TAPE,		/* Tape */
 
+  /* Below here, present only in 0.2.1 and later */
+
+  LIBSPECTRUM_CLASS_COMPRESSED,		/* A compressed file */
+
 } libspectrum_class_t;
 
 libspectrum_error
 libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
                            const unsigned char *buffer, size_t length );
+
+libspectrum_error
+libspectrum_identify_file_with_class(
+  libspectrum_id_t *type, libspectrum_class_t *class,
+  const char *filename, const unsigned char *buffer, size_t length );
+
+libspectrum_error
+libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
+			       const unsigned char *buffer, size_t length );
 
 libspectrum_error
 libspectrum_identify_class( libspectrum_class_t *class,
@@ -513,7 +530,7 @@ typedef struct libspectrum_rzx_signature {
 
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
-	              const libspectrum_byte *buffer, const size_t length,
+	              const libspectrum_byte *buffer, size_t length,
 		      libspectrum_rzx_signature *signature );
 
 libspectrum_error

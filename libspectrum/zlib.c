@@ -30,8 +30,11 @@
 
 #ifdef HAVE_ZLIB_H
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <zlib.h>
 
@@ -169,6 +172,108 @@ libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
   }
 
   return LIBSPECTRUM_ERROR_LOGIC;	/* This can't happen */
+}
+
+/* We have a fairly huge impedance mismatch between libspectrum and
+   zlib here: libspectrum likes to deal with everything in memory,
+   whilst zlib will only deal with gzip data in files on disk. Hence
+   we have to write the data to a temporary file, and then read the
+   data back from that again. This is particularly silly if we started
+   with a simple file before feeding this to libspectrum... */
+
+/* There is another way to do this. The zlib functions have an
+   undocumented option (setting the window size negative) to assume
+   that there is no zlib header on the file. Would using that be nicer
+   than doing this? (see gzopen and inflateInit2 in zlib for more
+   details). */
+
+/* FIXME: need a better error code to deal with OS errors */
+
+libspectrum_error
+libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
+			  libspectrum_byte **outptr, size_t *outlength )
+{
+  int fd;
+  char tempfile[ 256 ];
+  gzFile f; int gzcount;
+  ssize_t count; off_t offset;
+  size_t length_to_read, allocated;
+
+  strcpy( tempfile, "/tmp/libspectrumXXXXXX" );
+
+  fd = mkstemp( tempfile );
+  if( fd == -1 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "couldn't open temporary gzip file: %s",
+			     strerror( errno ) );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  unlink( tempfile );
+
+  count = write( fd, gzptr, gzlength );
+  if( count == -1 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "error writing to temporary gzip file: %s",
+			     strerror( errno ) );
+    close( fd );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  offset = lseek( fd, 0, SEEK_SET );
+  if( offset == (off_t)-1 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "error seeking in temporary gzip file: %s",
+			     strerror( errno ) );
+    close( fd );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  f = gzdopen( fd, "rb" );
+  if( !f ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			     "out of memory at %s:%d", __FILE__, __LINE__ );
+    close( fd );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  length_to_read = *outlength ? *outlength : gzlength;
+
+  allocated = 0; *outptr = NULL;
+
+  do {
+    
+    libspectrum_byte *buffer, *ptr;
+
+    buffer = realloc( *outptr, allocated + length_to_read );
+    if( !buffer ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			       "out of memory at %s:%d", __FILE__, __LINE__ );
+      free( *outptr ); gzclose( f );
+      return LIBSPECTRUM_ERROR_MEMORY;
+    }
+    (*outptr) = buffer; ptr = buffer + allocated;
+
+    allocated += length_to_read;
+
+    gzcount = gzread( f, ptr, length_to_read );
+
+  } while( gzcount == length_to_read );
+
+  if( gzcount == -1 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "error reading from temporary gzip file: %s",
+			     strerror( errno ) );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  /* Trim the buffer down to fit */
+  *outlength = allocated - length_to_read + gzcount;
+  *outptr = realloc( *outptr, *outlength );
+
+  gzclose( f );
+
+  return LIBSPECTRUM_ERROR_NONE;
 }
 
 libspectrum_error

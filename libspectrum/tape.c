@@ -154,7 +154,11 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 		       size_t length, libspectrum_id_t type,
 		       const char *filename )
 {
+  libspectrum_id_t raw_type;
+  libspectrum_class_t class;
+  libspectrum_byte *new_buffer;
   libspectrum_error error;
+  int uncompressed;
 
   /* If we don't know what sort of file this is, make a best guess */
   if( type == LIBSPECTRUM_ID_UNKNOWN ) {
@@ -171,25 +175,45 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
     }
   }
 
+  /* Find out if this file needs decompression */
+  uncompressed = 0; new_buffer = NULL;
+
+  error = libspectrum_identify_file_raw( &raw_type, filename, buffer, length );
+  if( error ) return error;
+
+  error = libspectrum_identify_class( &class, raw_type );
+  if( error ) return error;
+
+  if( class == LIBSPECTRUM_CLASS_COMPRESSED ) {
+
+    size_t new_length;
+
+    error = libspectrum_uncompress_file( &new_buffer, &new_length, NULL,
+					 raw_type, buffer, length, NULL );
+    buffer = new_buffer; length = new_length;
+    uncompressed = 1;
+  }
+
   switch( type ) {
 
   case LIBSPECTRUM_ID_TAPE_TAP:
-    return libspectrum_tap_read( tape, buffer, length );
+    error = libspectrum_tap_read( tape, buffer, length ); break;
 
   case LIBSPECTRUM_ID_TAPE_TZX:
-    return libspectrum_tzx_read( tape, buffer, length );
+    error = libspectrum_tzx_read( tape, buffer, length ); break;
 
   case LIBSPECTRUM_ID_TAPE_WARAJEVO:
-    return libspectrum_warajevo_read( tape, buffer, length );
+    error = libspectrum_warajevo_read( tape, buffer, length ); break;
 
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "libspectrum_tape_read: not a tape file" );
+    free( new_buffer );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  /* Should never happen */
-  abort();
+  free( new_buffer );
+  return error;
 }
 
 /* Does this tape structure actually contain a tape? */
