@@ -122,6 +122,58 @@ libspectrum_machine_name( libspectrum_machine type )
   }
 }
 
+/* The various capabilities of the different machines */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_AY           = 1 << 0; /* AY-3-8192 */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY   = 1 << 1;
+                                                  /* 128-style memory paging */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY = 1 << 2;
+                                                   /* +3-style memory paging */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK   = 1 << 3;
+                                                      /* +3-style disk drive */
+
+/* Given a machine type, what features does it have? */
+int
+libspectrum_machine_capabilities( libspectrum_machine type )
+{
+  int capabilities = 0;
+
+  /* AY-3-8912 */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
+  case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_AY; break;
+  default:
+    break;
+  }
+
+  /* 128K Spectrum-style 0x7ffd memory paging */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
+  case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY; break;
+  default:
+    break;
+  }
+
+  /* +3 Spectrum-style 0x1ffd memory paging */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY; break;
+  default:
+    break;
+  }
+
+  /* +3 Spectrum-style disk */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_PLUS3:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK; break;
+  default:
+    break;
+  }
+
+  return capabilities;
+}
+
 /* Given a 48K memory dump `data', place it into the
    appropriate bits of `snap' for a 48K machine */
 int

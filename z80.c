@@ -110,8 +110,8 @@ static int
 read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	     const libspectrum_byte **data )
 {
-
   const libspectrum_byte *header = buffer;
+  int capabilities;
 
   snap->a   = header[ 0]; snap->f  = header[ 1];
   snap->bc  = header[ 2] + header[ 3]*0x100;
@@ -213,16 +213,14 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     }
 
-    if( snap->machine >= LIBSPECTRUM_MACHINE_128 ) {
+    capabilities = libspectrum_machine_capabilities( snap->machine );
 
-      if( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH ) {
-	snap->out_plus3_memoryport = extra_header[54];
-      }
+    if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY )
+      snap->out_128_memoryport  = extra_header[3];
 
-      snap->out_128_memoryport  = extra_header[ 3];
+    if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_AY ) {
       snap->out_ay_registerport = extra_header[ 6];
       memcpy( snap->ay_registers, &extra_header[ 7], 16 );
-
     }
 
     /* 1/4 of the number of T-states in a frame */
@@ -239,6 +237,11 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
     if(snap->tstates>=quarter_tstates*4)
       snap->tstates = 0;
     
+    if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) &&
+	( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH                 )    ) {
+      snap->out_plus3_memoryport = extra_header[54];
+    }
+
     (*data) = buffer + LIBSPECTRUM_Z80_HEADER_LENGTH + 2 + extra_length;
 
   } else {	/* v1 .z80 file */
@@ -439,6 +442,8 @@ read_block( const libspectrum_byte *buffer, libspectrum_snap *snap,
 {
   int error;
   libspectrum_byte *uncompressed;
+
+  int capabilities = libspectrum_machine_capabilities( snap->machine );
   
   if( snap->version == 1 ) {
 
@@ -472,7 +477,7 @@ read_block( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     /* Deal with 48K snaps -- first, throw away page 3, as it's a ROM.
        Then remap the numbers slightly */
-    if( snap->machine == LIBSPECTRUM_MACHINE_48 ) {
+    if( !( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) ) {
 
       switch( page ) {
 
@@ -736,6 +741,8 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   libspectrum_dword quarter_states;
 
+  int capabilities = libspectrum_machine_capabilities( snap->machine );
+
   /* +2 here to deal with the two length bytes */
   error = libspectrum_make_room( buffer, LIBSPECTRUM_Z80_V3_LENGTH + 2, ptr,
 				 length );
@@ -778,13 +785,14 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   /* Spectator, MGT and Multiface disabled */
   *(*ptr)++ = '\0'; *(*ptr)++ = '\0'; *(*ptr)++ = '\0';
 
-  /* Is 0x0000 to 0x3fff RAM? Currently iff we're in a +3 special
+  /* Is 0x0000 to 0x7fff RAM? Currently iff we're in a +3 special
      configuration */
-  *(*ptr)++ = ( ( snap->machine >= LIBSPECTRUM_MACHINE_PLUS2A ) && 
-	      ( snap->out_plus3_memoryport & 0x01 ) ? 0xff : 0x00 );
-  /* Ditto for 0x3fff to 0x7fff */
-  *(*ptr)++ = ( ( snap->machine >= LIBSPECTRUM_MACHINE_PLUS2A ) && 
-	      ( snap->out_plus3_memoryport & 0x01 ) ? 0xff : 0x00 );
+  if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) &&
+      ( snap->out_plus3_memoryport & 0x01                          )    ) {
+    *(*ptr)++ = 0xff; *(*ptr)++ = 0xff;
+  } else {
+    *(*ptr)++ = 0x00; *(*ptr)++ = 0x00;
+  }
 
   /* Joystick settings, etc */
   for( i=32; i<=LIBSPECTRUM_Z80_V3_LENGTH; i++ ) *(*ptr)++ = '\0';
@@ -799,7 +807,9 @@ write_pages( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
   int i, error;
   int do_slt;
 
-  if( snap->machine == LIBSPECTRUM_MACHINE_48 ) {
+  int capabilities = libspectrum_machine_capabilities( snap->machine );
+
+  if( !( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) ) {
 
     error = write_page( buffer, ptr, length, 4, snap->pages[2] );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
