@@ -123,7 +123,7 @@ read_tape( char *filename, libspectrum_id_t type, libspectrum_tape **tape )
   }
 
   if( libspectrum_tape_read( *tape, buffer, length, type, filename ) ) {
-    munmap( buffer, length ); libspectrum_tape_free( *tape );
+    munmap( buffer, length );
     return 1;
   }
 

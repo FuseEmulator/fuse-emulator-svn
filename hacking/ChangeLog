@@ -46,3 +46,4 @@
 20030913 configure.in: bump version number to 0.6.1.
 20030921 rzxdump.c: use libgcrypt 1.1.42.
 20031006 rzxcheck.c: return 1 if no signature or unknown key.
+20031007 tapeconv.c: remove double-free bug if tape reading fails.
