@@ -568,7 +568,7 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 int libspectrum_tape_present( const libspectrum_tape *tape );
 
 libspectrum_error
-libspectrum_tape_init_block( libspectrum_tape_block *block );
+libspectrum_tape_init_block( GSList *current_block );
 
 libspectrum_error
 libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,

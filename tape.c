@@ -276,8 +276,10 @@ libspectrum_tape_present( const libspectrum_tape *tape )
 
 /* Called when a new block is started to initialise its internal state */
 libspectrum_error
-libspectrum_tape_init_block( libspectrum_tape_block *block )
+libspectrum_tape_init_block( GSList *current_block )
 {
+  libspectrum_tape_block *block = current_block->data;
+
   switch( block->type ) {
 
   case LIBSPECTRUM_TAPE_BLOCK_ROM:
@@ -504,8 +506,7 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
     }
 
     /* Initialise the new block */
-    block = (libspectrum_tape_block*)tape->current_block->data;
-    error = libspectrum_tape_init_block( block );
+    error = libspectrum_tape_init_block( tape->current_block );
     if( error ) return error;
 
   }
@@ -920,10 +921,7 @@ libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
   }
 
   tape->current_block = new_block;
-
-  libspectrum_tape_init_block(
-    (libspectrum_tape_block*)tape->current_block->data
-  );
+  libspectrum_tape_init_block( tape->current_block );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -939,7 +937,7 @@ libspectrum_tape_append_block( libspectrum_tape *tape,
      start of the tape */
   if( !tape->current_block ) {
     tape->current_block = tape->blocks;
-    libspectrum_tape_init_block((libspectrum_tape_block*)tape->blocks->data);
+    libspectrum_tape_init_block( tape->blocks );
   }
 
   return LIBSPECTRUM_ERROR_NONE;
