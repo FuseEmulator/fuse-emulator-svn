@@ -81,3 +81,6 @@
 	 (fuse-utils_0_6_2-branch).
 20040205 TAG: fuse-utils_0_6_2pre2 (fuse-utils_0_6_2-branch).
 20040206 README, man/: final doc updates for the 0.6.2 release.
+	 (fuse-utils_0_6_2-branch).
+20040207 keys.c: change description of the Fuse key
+	 (fuse-utils_0_6_2-branch).
