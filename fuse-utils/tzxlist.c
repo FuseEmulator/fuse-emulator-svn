@@ -84,8 +84,6 @@ process_tzx( char *filename )
   libspectrum_tape_iterator iterator;
   libspectrum_tape_block *block;
 
-  GSList *ptr;
-
   size_t i;
 
   error = mmap_file( filename, &buffer, &length ); if( error ) return error;
@@ -266,7 +264,8 @@ process_tzx( char *filename )
       break;
     }
 
-    ptr = ptr->next;
+    block = libspectrum_tape_iterator_next( &iterator );
+
   }
 
   error = libspectrum_tape_free( tape );
