@@ -294,7 +294,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
    what sort of file this is */
 libspectrum_error
 libspectrum_identify_file_with_class(
-  libspectrum_id_t *type, libspectrum_class_t *class,
+  libspectrum_id_t *type, libspectrum_class_t *libspectrum_class,
   const char *filename, const unsigned char *buffer, size_t length )
 {
   libspectrum_error error;
@@ -303,17 +303,19 @@ libspectrum_identify_file_with_class(
   error = libspectrum_identify_file_raw( type, filename, buffer, length );
   if( error ) return error;
 
-  error = libspectrum_identify_class( class, *type );
+  error = libspectrum_identify_class( libspectrum_class, *type );
   if( error ) return error;
 
-  if( *class != LIBSPECTRUM_CLASS_COMPRESSED ) return LIBSPECTRUM_ERROR_NONE;
+  if( *libspectrum_class != LIBSPECTRUM_CLASS_COMPRESSED )
+    return LIBSPECTRUM_ERROR_NONE;
 
   error = libspectrum_uncompress_file( &new_buffer, &new_length, &new_filename,
 				       *type, buffer, length, filename );
   if( error ) return error;
 
-  error = libspectrum_identify_file_with_class( type, class, new_filename,
-						new_buffer, new_length );
+  error = libspectrum_identify_file_with_class( type, libspectrum_class,
+						new_filename, new_buffer,
+						new_length );
   if( error ) return error;
 
   free( new_filename ); free( new_buffer );
@@ -420,29 +422,30 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
 
 /* What generic 'class' of file is this file */
 libspectrum_error
-libspectrum_identify_class( libspectrum_class_t *class, libspectrum_id_t type )
+libspectrum_identify_class( libspectrum_class_t *libspectrum_class,
+			    libspectrum_id_t type )
 {
   switch( type ) {
 
   case LIBSPECTRUM_ID_UNKNOWN:
-    *class = LIBSPECTRUM_CLASS_UNKNOWN; return 0;
+    *libspectrum_class = LIBSPECTRUM_CLASS_UNKNOWN; return 0;
   
   case LIBSPECTRUM_ID_CARTRIDGE_DCK:
-    *class = LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX; return 0;
+    *libspectrum_class = LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX; return 0;
 
   case LIBSPECTRUM_ID_COMPRESSED_BZ2:
   case LIBSPECTRUM_ID_COMPRESSED_GZ:
-    *class = LIBSPECTRUM_CLASS_COMPRESSED; return 0;
+    *libspectrum_class = LIBSPECTRUM_CLASS_COMPRESSED; return 0;
 
   case LIBSPECTRUM_ID_DISK_DSK:
-    *class = LIBSPECTRUM_CLASS_DISK_PLUS3; return 0;
+    *libspectrum_class = LIBSPECTRUM_CLASS_DISK_PLUS3; return 0;
 
   case LIBSPECTRUM_ID_DISK_SCL:
   case LIBSPECTRUM_ID_DISK_TRD:
-    *class = LIBSPECTRUM_CLASS_DISK_TRDOS; return 0;
+    *libspectrum_class = LIBSPECTRUM_CLASS_DISK_TRDOS; return 0;
 
   case LIBSPECTRUM_ID_RECORDING_RZX:
-    *class = LIBSPECTRUM_CLASS_RECORDING; return 0;
+    *libspectrum_class = LIBSPECTRUM_CLASS_RECORDING; return 0;
 
   case LIBSPECTRUM_ID_SNAPSHOT_PLUSD:
   case LIBSPECTRUM_ID_SNAPSHOT_SNA:
@@ -451,12 +454,12 @@ libspectrum_identify_class( libspectrum_class_t *class, libspectrum_id_t type )
   case LIBSPECTRUM_ID_SNAPSHOT_SZX:
   case LIBSPECTRUM_ID_SNAPSHOT_Z80:
   case LIBSPECTRUM_ID_SNAPSHOT_ZXS:
-    *class = LIBSPECTRUM_CLASS_SNAPSHOT; return 0;
+    *libspectrum_class = LIBSPECTRUM_CLASS_SNAPSHOT; return 0;
 
   case LIBSPECTRUM_ID_TAPE_TAP:
   case LIBSPECTRUM_ID_TAPE_TZX:
   case LIBSPECTRUM_ID_TAPE_WARAJEVO:
-    *class = LIBSPECTRUM_CLASS_TAPE; return 0;
+    *libspectrum_class = LIBSPECTRUM_CLASS_TAPE; return 0;
 
   }
 
