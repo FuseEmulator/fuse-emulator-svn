@@ -47,6 +47,18 @@ static int libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
 					  size_t buffer_length,
 					  libspectrum_snap *snap );
 
+static libspectrum_error
+write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
+	      size_t *length, libspectrum_byte **sp, libspectrum_snap *snap );
+static libspectrum_error
+write_48k_sna( libspectrum_byte **buffer, libspectrum_byte **ptr,
+	       size_t *length, libspectrum_byte *sp, libspectrum_snap *snap );
+static libspectrum_error
+write_128k_sna( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		size_t *length, libspectrum_snap *snap );
+static libspectrum_error
+write_page( libspectrum_byte *buffer, libspectrum_snap *snap, int page );
+
 libspectrum_error
 libspectrum_sna_read( libspectrum_snap *snap,
 	              const libspectrum_byte *buffer, size_t buffer_length )
@@ -187,12 +199,11 @@ libspectrum_sna_read_data( const libspectrum_byte *buffer,
     memcpy( libspectrum_snap_pages( snap, 5 ), &buffer[0x0000], 0x4000 );
     memcpy( libspectrum_snap_pages( snap, 2 ), &buffer[0x4000], 0x4000 );
 
-    buffer += 0xc000; buffer_length -= 0xc000;
     error = libspectrum_sna_read_128_header( buffer + 0xc000,
 					     buffer_length - 0xc000, snap );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-    page = libspectrum_snap_out_ula( snap ) & 0x07;
+    page = libspectrum_snap_out_128_memoryport( snap ) & 0x07;
     if( page == 5 || page == 2 ) {
       if( memcmp( libspectrum_snap_pages( snap, page ),
 		  &buffer[0x8000], 0x4000 ) ) {
@@ -207,7 +218,7 @@ libspectrum_sna_read_data( const libspectrum_byte *buffer,
     }
 
     buffer += 0xc000 + LIBSPECTRUM_SNA_128_HEADER_LENGTH;
-    buffer_length -= 0xc000 - LIBSPECTRUM_SNA_128_HEADER_LENGTH;
+    buffer_length -= 0xc000 + LIBSPECTRUM_SNA_128_HEADER_LENGTH;
     error = libspectrum_sna_read_128_data( buffer, buffer_length, snap );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
@@ -235,7 +246,7 @@ libspectrum_sna_read_128_header( const libspectrum_byte *buffer,
   }
 
   libspectrum_snap_set_pc( snap, buffer[0] + 0x100 * buffer[1] );
-  libspectrum_snap_set_out_ula( snap, buffer[2] );
+  libspectrum_snap_set_out_128_memoryport( snap, buffer[2] );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -246,7 +257,7 @@ libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
 {
   int i, page;
 
-  page = libspectrum_snap_out_ula( snap ) & 0x07;
+  page = libspectrum_snap_out_128_memoryport( snap ) & 0x07;
 
   for( i=0; i<=7; i++ ) {
 
@@ -271,3 +282,193 @@ libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
 
   return LIBSPECTRUM_ERROR_NONE;
 }
+
+libspectrum_error
+libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
+		       int *out_flags, libspectrum_snap *snap, int in_flags )
+{
+  libspectrum_error error;
+  libspectrum_byte *ptr, *sp;
+
+  /* Minor info loss already due to things like tstate count, halted state,
+     etc which are not stored in .sna format */
+  *out_flags = LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+
+  ptr = *buffer;
+
+  error = write_header( buffer, &ptr, length, &sp, snap );
+  if( error ) return error;
+
+  switch( libspectrum_snap_machine( snap ) ) {
+
+  case LIBSPECTRUM_MACHINE_TC2048:
+  case LIBSPECTRUM_MACHINE_TC2068:
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+    /* Fall through */
+  case LIBSPECTRUM_MACHINE_16:
+  case LIBSPECTRUM_MACHINE_48:
+    error = write_48k_sna( buffer, &ptr, length, sp, snap );
+    break;
+    
+  case LIBSPECTRUM_MACHINE_PLUS2A:
+  case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PENT:
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+    /* Fall through */
+  case LIBSPECTRUM_MACHINE_PLUS2:
+  case LIBSPECTRUM_MACHINE_128:
+    error = write_128k_sna( buffer, &ptr, length, snap );
+    break;
+
+  case LIBSPECTRUM_MACHINE_UNKNOWN:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "Emulated machine type is set to 'unknown'!" );
+    return LIBSPECTRUM_ERROR_LOGIC;
+
+  default:
+    /* Should never happen */
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "libspectrum_sna_write: unknown machine type %d",
+			     libspectrum_snap_machine( snap ) );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  if( error ) return error;
+
+  /* Set length to be actual length, not allocated length */
+  *length = ptr - *buffer;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
+	      size_t *length, libspectrum_byte **sp, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+
+  error = libspectrum_make_room( buffer, LIBSPECTRUM_SNA_HEADER_LENGTH, ptr,
+				 length );
+  if( error ) return error;
+
+  *(*ptr)++ = libspectrum_snap_i ( snap );
+  libspectrum_write_word( ptr, libspectrum_snap_hl_( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_de_( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_bc_( snap ) );
+  *(*ptr)++ = libspectrum_snap_f_( snap );
+  *(*ptr)++ = libspectrum_snap_a_( snap );
+  libspectrum_write_word( ptr, libspectrum_snap_hl ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_de ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_bc ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_iy ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_ix ( snap ) );
+
+  *(*ptr)++ = libspectrum_snap_iff2( snap ) ? 0x04 : 0x00;
+
+  *(*ptr)++ = libspectrum_snap_r ( snap );
+  *(*ptr)++ = libspectrum_snap_f ( snap );
+  *(*ptr)++ = libspectrum_snap_a ( snap );
+
+  /* Store this for later */
+  *sp = *ptr;
+  libspectrum_write_word( ptr, libspectrum_snap_sp ( snap ) );
+
+  *(*ptr)++ = libspectrum_snap_im( snap );
+  *(*ptr)++ = libspectrum_snap_out_ula( snap ) & 0x07;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_48k_sna( libspectrum_byte **buffer, libspectrum_byte **ptr,
+	       size_t *length, libspectrum_byte *sp, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+  libspectrum_byte *stack;
+
+  /* Must have somewhere in RAM to store some registers */
+  if( libspectrum_snap_sp( snap ) < 0x4002 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_INVALID,
+			     "SP is too low (0x%04x) to stack registers",
+			     libspectrum_snap_sp( snap ) );
+    return LIBSPECTRUM_ERROR_INVALID;
+  }
+
+  error = libspectrum_make_room( buffer, 0xc000, ptr, length );
+  if( error ) return error;
+
+  error = write_page( &( (*ptr)[ 0x0000 ] ), snap, 5 );
+  if( error ) return error;
+  error = write_page( &( (*ptr)[ 0x4000 ] ), snap, 2 );
+  if( error ) return error;
+  error = write_page( &( (*ptr)[ 0x8000 ] ), snap, 0 );
+  if( error ) return error;
+
+  /* Overwrite a bit of memory with SP */
+  stack = &( (*ptr)[ libspectrum_snap_sp( snap ) - 0x4000 - 2 ] );
+  libspectrum_write_word( &stack, libspectrum_snap_pc( snap ) );
+
+  *ptr += 0xc000;
+
+  /* Store the new value of SP */
+  libspectrum_write_word( &sp, libspectrum_snap_sp( snap ) );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_128k_sna( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		size_t *length, libspectrum_snap *snap )
+{
+  int page;
+
+  size_t i; libspectrum_error error;
+  
+  page = libspectrum_snap_out_128_memoryport( snap ) & 0x07;
+
+  error = libspectrum_make_room( buffer,
+				 0xc000 + LIBSPECTRUM_SNA_128_HEADER_LENGTH,
+				 ptr, length );
+  if( error ) return error;
+
+  error = write_page( *ptr, snap, 5 ); (*ptr) += 0x4000;
+  if( error ) return error;
+  error = write_page( *ptr, snap, 2 ); (*ptr) += 0x4000;
+  if( error ) return error;
+  error = write_page( *ptr, snap, page ); (*ptr) += 0x4000;
+  if( error ) return error;
+
+  libspectrum_write_word( ptr, libspectrum_snap_pc( snap ) );
+  *(*ptr)++ = libspectrum_snap_out_128_memoryport( snap );
+  *(*ptr)++ = '\0';
+
+  for( i = 0; i < 8; i++ ) {
+
+    /* Already written pages 5, 2 and whatever's paged in */
+    if( i == 5 || i == 2 || i == page ) continue;
+
+    error = libspectrum_make_room( buffer, 0x4000, ptr, length );
+    if( error ) return error;
+
+    error = write_page( *ptr, snap, i ); (*ptr) += 0x4000;
+    if( error ) return error;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_page( libspectrum_byte *buffer, libspectrum_snap *snap, int page )
+{
+  libspectrum_byte *ram;
+
+  ram = libspectrum_snap_pages( snap, page );
+  if( ram ) {
+    memcpy( buffer, ram, 0x4000 );
+  } else {
+    memset( buffer, 0xff, 0x4000 );
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
