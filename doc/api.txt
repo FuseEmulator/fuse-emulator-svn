@@ -3,9 +3,11 @@ libspectrum draft API
 
 $Id$
 
-In general, user code should never use the libspectrum_* objects
-directly, but only pointers to them so binary compatibility can be
-maintained if (when) the data structures change.
+It would be nice if we could get it such that user code should never use
+the libspectrum_* objects directly, but only pointers to them so binary
+compatibility can be maintained if (when) the data structures change.
+However, this hasn't really happened for anything other than the
+libspectrum_rzx object, which is fully encapsulated.
 
 Naming conventions:
 
@@ -19,19 +21,136 @@ Calling conventions:
 * In general, all output parameters (those which may be changed by
   the function) should be before all input parameters
 
-General functions
------------------
+Defined types
+=============
 
-const char* libspectrum_error_message( libspectrum_error error )
-/* Give a message describing `error'
-   Should this be thrown away completely and replaced with the new
-   error stuff? */
+libspectrum defines three standard types which may be of use:
+
+libspectrum_byte		An unsigned 8-bit type
+libspectrum_word		An unsigned 16-bit type
+libspectrum_dword		An unsigned 32-bit type
+
+Error handling
+==============
+
+All libspectrum functions signal errors in two ways: by returning an
+non-zero error code of type `libspectrum_error' and by calling
+`libspectrum_error_function'.  The `libspectrum_error' enum can take the
+following values:
+
+LIBSPECTRUM_ERROR_NONE		No error; guaranteed to have value 0
+LIBSPECTRUM_ERROR_WARNING	A warning, rather than a real error
+LIBSPECTRUM_ERROR_MEMORY	Out of memory
+LIBSPECTRUM_ERROR_UNKNOWN	Data not recognised
+LIBSPECTRUM_ERROR_CORRUPT	Invalid data
+LIBSPECTRUM_ERROR_SIGNATURE	File does not have the right signature
+LIBSPECTRUM_ERROR_SLT		Ugly kludge used to indicate that a .z80
+				file contains .slt data
+LIBSPECTRUM_ERROR_LOGIC		An internal logic error has occured;
+				should never be seen
+
+`libspectrum_error_function' is an object of type
+`libspectrum_error_function_t':
+
+libspectrum_error (*libspectrum_error_function_t)(
+  libspectrum_error error, const char *format, va_list ap
+)
+
+On error, `libspectrum_error_function' will be called, with `error'
+being one of the standard codes, and `format' and `ap' are the standard
+arguments suitable for passing to one of the v*printf functions to
+create a text message giving more details on the error. If
+`libspectrum_error_function' is not set by the user code,
+`libspectrum_default_error_function' will be used: this simply outputs
+the message to stderr, prefixed with "libspectrum error: " and ending
+with a newline.  (Additionally, it will call abort() if the error was of
+type LIBSPECTRUM_ERROR_LOGIC, but that shouldn't happen...)
+
+General functions
+=================
+
+Machine types and capabilities
+------------------------------
+
+In some places (notably in the `libspectrum_snap' structure),
+libspectrum needs to identify the Spectrum variant in use. This is done
+with the `libspectrum_machine' enum, which can take the following
+values:
+
+LIBSPECTRUM_MACHINE_48		48K Spectrum
+LIBSPECTRUM_MACHINE_TC2048	Timex TC2048
+LIBSPECTRUM_MACHINE_128		(Original) 128K Spectrum
+LIBSPECTRUM_MACHINE_PLUS2	Spectrum +2 (the grey one)
+LIBSPECTRUM_MACHINE_PENT	Pentagon 128
+LIBSPECTRUM_MACHINE_PLUS2A	Spectrum +2A (the black one)
+LIBSPECTRUM_MACHINE_PLUS3	Spectrum +3
+
+The `libspectrum_machine_name' function:
 
 const char* libspectrum_machine_name( libspectrum_machine type )
-/* A textual name for `type' */
+
+will return a text string giving the name of the machine (or "unknown"
+if it doesn't recognise the type). This string is statically allocated
+and so should not be modified by user code in any way.
+
+The `libspectrum_machine_capabilities' function:
 
 int libspectrum_machine_capabilities( libspectrum_machine type )
-/* What special memory etc capabilities does `type' have */
+
+will tell you which features (above and beyond those found on the base
+48K machine) a given `libspectrum_machine' has. It returns a bitwise OR
+of the following constants:
+
+LIBSPECTRUM_MACHINE_CAPABILITY_AY
+  This machine has an AY-3-8912 sound chip (as in the 128K and later
+  machines).
+
+LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY
+  This machine has 128K of memory accessible as on the 128K machine
+
+LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY
+  This machine can change into all-RAM configurations as the +2A/+3.
+
+LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK
+  This machine has a disk drive similar to that on the +3.
+
+LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY
+  This machine has memory paging capabilities similar to that of the
+  TC2048 and TC2068.
+
+LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO
+  This machine has additional video modes as found on the TC2048 and
+  TC2068.
+
+File identification
+-------------------
+
+The `libspectrum_identify_file' function will, if given a file's
+contents and optionally its filename, will make a 'best guess' as to
+what sort of file it is:
+
+libspectrum_error
+libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
+                           const unsigned char *buffer, size_t length )
+
+`filename' should be the name of the file to be identified, or NULL if
+it is unknown. `buffer' and `length' are the contents and length of the
+file respectively.
+
+The type of file will be returned in the `type' parameter, and can take
+the following values:
+
+LIBSPECTRUM_ID_UNKNOWN		Couldn't identify this file
+LIBSPECTRUM_ID_RECORDING_RZX	A .rzx input recording
+LIBSPECTRUM_ID_SNAPSHOT_SNA     A .sna snapshot 
+LIBSPECTRUM_ID_SNAPSHOT_Z80	A .z80 snapshot
+LIBSPECTRUM_ID_TAPE_TAP		A .tap tape file
+LIBSPECTRUM_ID_TAPE_TZX		A .tzx tape file
+
+`libspectrum_identify_file' looks for defined signatures in the file as
+well as the extension of the filename and a couple of heuristics in its
+attempts to identify the file.  It's not perfect (especially when given
+files with the wrong extension), but it should work in most cases.
 
 Snapshot functions
 ------------------
