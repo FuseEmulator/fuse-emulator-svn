@@ -908,9 +908,6 @@ create_main_header( libspectrum_tape *tape, const char *loader_name )
   length = ( LOADERPREPIECE - 1 ) - 21;
   *ptr++ = length & 0xff; *ptr++ = length >> 8;
 
-  /* Checksum */
-  *ptr++ = calc_checksum( header, 18 );
-
   error = add_rom_block( tape, 0x00, header, 17 ); if( error ) return error;
 
   return 0;
