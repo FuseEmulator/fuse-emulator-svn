@@ -116,7 +116,7 @@ main( int argc, char **argv )
     return 16;
   }
 
-  libspectrum_rzx_free( rzx );
+  libspectrum_rzx_free( rzx ); free( rzx );
   libspectrum_signature_free( &signature );
 
   if( error == LIBSPECTRUM_ERROR_SIGNATURE ) {
