@@ -527,3 +527,5 @@
 20040205 man/fuse.1: fix typos (Release-0_6_2-branch).
 20040206 ChangeLog, README, man/fuse.1: final doc updates for the 0.6.2
 	 release (Release-0_6_2-branch).
+20040206 rzx.c: change over to using the 'release' key for signing
+	 competition mode files (Release-0_6_2-branch).
