@@ -131,3 +131,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20031107 accessor.pl, snap_accessors.txt, szx.c, z80.c: add support for
 	 the 'last instruction EI' flag.
 20031127 A bunch of --enable-warnings tidy-ups.
+20031214 make-perl.c, myglib.c: add g_slist_prepend to the glib emulation
+	 layer (Marek).

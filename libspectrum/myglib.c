@@ -1,5 +1,5 @@
 /* myglib.c: Replacements for glib routines
-   Copyright (c) 2001 Matan Ziv-Av, Philip Kendall
+   Copyright (c) 2001-2003 Matan Ziv-Av, Philip Kendall, Marek Januszewski
 
    $Id$
 
@@ -32,6 +32,10 @@
 #include <stdlib.h>
 
 #include "internals.h"
+
+static
+gint	first_function		(gconstpointer	 a,
+				 gconstpointer	 b);
 
 static
 gint	last_function		(gconstpointer	 a,
@@ -105,6 +109,19 @@ GSList* g_slist_append		(GSList		*list,
 				 gpointer	 data) {
 
   return g_slist_insert_sorted(list, data, last_function);
+}
+
+GSList* g_slist_prepend		(GSList		*list,
+				 gpointer	 data) {
+
+  return g_slist_insert_sorted(list, data, first_function);
+}
+
+static
+gint	first_function		(gconstpointer	 a,
+				 gconstpointer	 b) {
+
+  return -1;
 }
 
 static
