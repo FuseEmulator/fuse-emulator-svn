@@ -82,8 +82,8 @@ libspectrum_rzx_alloc( libspectrum_rzx **rzx )
 }
 
 libspectrum_error
-libspectrum_rzx_frame( libspectrum_rzx *rzx, size_t instructions,
-		       size_t count, libspectrum_byte *in_bytes )
+libspectrum_rzx_store_frame( libspectrum_rzx *rzx, size_t instructions,
+			     size_t count, libspectrum_byte *in_bytes )
 {
   libspectrum_rzx_frame_t *frame;
 
@@ -134,6 +134,61 @@ libspectrum_rzx_frame( libspectrum_rzx *rzx, size_t instructions,
 }
 
 libspectrum_error
+libspectrum_rzx_start_playback( libspectrum_rzx *rzx )
+{
+  rzx->current_frame = 0; rzx->in_count = 0;
+  rzx->data_frame = rzx->frames;
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished )
+{
+  *finished = 0;
+
+  /* Check we read the correct number of INs during this frame */
+  if( rzx->in_count != rzx->data_frame->count ) {
+    libspectrum_print_error(
+      "libspectrum_rzx_playback_frame: wrong number of INs in frame %d: expected %d, got %d",
+      rzx->current_frame, rzx->data_frame->count, rzx->in_count
+    );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  /* Increment the frame count and see if we've finished with this file */
+  if( ++rzx->current_frame >= rzx->count ) {
+    *finished = 1;
+    return LIBSPECTRUM_ERROR_NONE;
+  }
+
+  /* Move the data frame pointer along, unless we're supposed to be
+     repeating the last frame */
+  if( !rzx->frames[ rzx->current_frame ].repeat_last )
+    rzx->data_frame = &rzx->frames[ rzx->current_frame ];
+
+  /* And start with the first byte of the new frame */
+  rzx->in_count = 0;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_rzx_playback( libspectrum_rzx *rzx, libspectrum_byte *byte )
+{
+  /* Check we're not trying to read off the end of the array */
+  if( rzx->in_count >= rzx->data_frame->count ) {
+    libspectrum_print_error(
+      "More INs during frame %d than stored in RZX file (%d)",
+      rzx->current_frame, rzx->data_frame->count
+    );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  *byte = rzx->data_frame->in_bytes[ rzx->in_count++ ];
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
 libspectrum_rzx_free( libspectrum_rzx *rzx )
 {
   size_t i;
@@ -156,6 +211,12 @@ size_t
 libspectrum_rzx_set_tstates( libspectrum_rzx *rzx, size_t tstates )
 {
   return( rzx->tstates = tstates );
+}
+
+size_t
+libspectrum_rzx_instructions( libspectrum_rzx *rzx )
+{
+  return rzx->frames[ rzx->current_frame ].instructions;
 }
 
 libspectrum_error

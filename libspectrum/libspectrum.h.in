@@ -590,20 +590,34 @@ typedef struct libspectrum_rzx {
 
   size_t tstates;
 
+  /* Playback variables */
+  size_t current_frame;		/* The number of the current playback frame */
+  size_t in_count;		/* How many INs done in current frame */
+  libspectrum_rzx_frame_t *data_frame;
+				/* Which frame we're reading INs from */
+
 } libspectrum_rzx;
 
 libspectrum_error libspectrum_rzx_alloc( libspectrum_rzx **rzx );
-
-libspectrum_error libspectrum_rzx_frame( libspectrum_rzx *rzx,
-					 size_t instructions, 
-					 size_t count,
-					 libspectrum_byte *in_bytes );
-
 libspectrum_error libspectrum_rzx_free( libspectrum_rzx *rzx );
+
+libspectrum_error libspectrum_rzx_store_frame( libspectrum_rzx *rzx,
+					       size_t instructions, 
+					       size_t count,
+					       libspectrum_byte *in_bytes );
+
+libspectrum_error libspectrum_rzx_start_playback( libspectrum_rzx *rzx );
+libspectrum_error libspectrum_rzx_playback_frame( libspectrum_rzx *rzx,
+						  int *finished );
+libspectrum_error libspectrum_rzx_playback( libspectrum_rzx *rzx,
+					    libspectrum_byte *byte );
 
 /* Get and set the tstate counter */
 size_t libspectrum_rzx_tstates( libspectrum_rzx *rzx );
 size_t libspectrum_rzx_set_tstates( libspectrum_rzx *rzx, size_t tstates );
+
+/* Get the current frame's instruction count */
+size_t libspectrum_rzx_instructions( libspectrum_rzx *rzx );
 
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
