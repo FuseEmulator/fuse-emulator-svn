@@ -184,6 +184,7 @@ libspectrum_machine_name( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_PLUS3:  return "Spectrum +3";
   case LIBSPECTRUM_MACHINE_PLUS3E: return "Spectrum +3e";
   case LIBSPECTRUM_MACHINE_SCORP:  return "Scorpion ZS 256";
+  case LIBSPECTRUM_MACHINE_SE:     return "Spectrum SE";
 
   case LIBSPECTRUM_MACHINE_UNKNOWN: return "(unknown)";
   }
@@ -215,6 +216,8 @@ const int LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY = 1 << 10;
                                              /* Scorpion-style memory paging */
 const int LIBSPECTRUM_MACHINE_CAPABILITY_EVEN_M1 = 1 << 11;
                              /* M1 cycles always start on even tstate counts */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_SE_MEMORY = 1 << 12;
+                                             /* SE-style memory paging */
 
 /* Given a machine type, what features does it have? */
 int
@@ -229,6 +232,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_PLUS3E:
   case LIBSPECTRUM_MACHINE_TC2068:
   case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
+  case LIBSPECTRUM_MACHINE_SE:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_AY; break;
   default:
     break;
@@ -240,6 +244,8 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
   case LIBSPECTRUM_MACHINE_PLUS3E:
   case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
+/* FIXME: SE needs to have this capability to be considered a 128k machine */
+  case LIBSPECTRUM_MACHINE_SE:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY; break;
   default:
     break;
@@ -275,6 +281,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_TC2048:
   case LIBSPECTRUM_MACHINE_TC2068:
+  case LIBSPECTRUM_MACHINE_SE:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO; break;
   default:
     break;
@@ -308,6 +315,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   /* Kempston-style joystick ports */
   switch( type ) {
   case LIBSPECTRUM_MACHINE_TC2048:
+  case LIBSPECTRUM_MACHINE_SE:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK; break;
   default:
     break;
@@ -325,6 +333,14 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_SCORP:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_EVEN_M1; break;
+  default:
+    break;
+  }
+
+  /* SE-style 0x7ffd and 0x00fd memory paging */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_SE:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_SE_MEMORY; break;
   default:
     break;
   }

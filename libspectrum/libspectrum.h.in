@@ -195,6 +195,7 @@ typedef enum libspectrum_machine {
 
   LIBSPECTRUM_MACHINE_SCORP,
   LIBSPECTRUM_MACHINE_PLUS3E,
+  LIBSPECTRUM_MACHINE_SE,
 } libspectrum_machine;
 
 const char* libspectrum_machine_name( libspectrum_machine type );
@@ -223,6 +224,8 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY;
                                              /* Scorpion-style memory paging */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_EVEN_M1;
                              /* M1 cycles always start on even tstate counts */
+extern const int LIBSPECTRUM_MACHINE_CAPABILITY_SE_MEMORY;
+                                             /* SE-style memory paging */
 
 /* Get the capabilities of a machine */
 int libspectrum_machine_capabilities( libspectrum_machine type );

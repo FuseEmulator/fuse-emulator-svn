@@ -512,6 +512,10 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SCORP );
     break;
 
+  case 11:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SE );
+    break;
+
   default:
     libspectrum_print_error(
       LIBSPECTRUM_MACHINE_UNKNOWN,
@@ -630,6 +634,10 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
     **ptr = 9; break;
   case LIBSPECTRUM_MACHINE_SCORP:  **ptr = 10; break;
+  case LIBSPECTRUM_MACHINE_SE:
+    /* As we don't currently save dock contents... */
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+    **ptr = 11; break;
 
   case LIBSPECTRUM_MACHINE_UNKNOWN:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
