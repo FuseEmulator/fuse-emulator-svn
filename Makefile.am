@@ -37,7 +37,7 @@ noinst_PROGRAMS = make-sed
 libspectrum.h: libspectrum.h.in generate.sed
 	@SED@ -f generate.sed libspectrum.h.in > libspectrum.h
 
-types.sed: make-sed
+generate.sed: make-sed
 	./make-sed > generate.sed
 
 INCLUDES = @GLIB_CFLAGS@
