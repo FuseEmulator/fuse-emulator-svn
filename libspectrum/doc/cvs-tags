@@ -18,6 +18,11 @@ CVS tags for libspectrum
 | libspectrum_0_1_1pre3
 | libspectrum_0_1_1pre4
 | libspectrum_0_1_1
+|
++-\				bugfix branch for the 0.1.1 release
+| |
+| | libspectrum_0_1_1-bugfix-branch
+|
 | libspectrum_0_2_0pre1
 |
 HEAD
