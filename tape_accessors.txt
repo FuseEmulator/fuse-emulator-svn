@@ -118,6 +118,10 @@ libspectrum_dword	pulse_lengths		1	-1
 	pulses		lengths
 
 libspectrum_tape_state_type	state		0	LIBSPECTRUM_TAPE_STATE_INVALID
+	pure_data
+	raw_data
+	rom
+	turbo
 
 libspectrum_dword	sync1_length		0	-1
 	turbo
