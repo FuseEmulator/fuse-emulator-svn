@@ -203,16 +203,6 @@ libspectrum_warajevo_read( libspectrum_tape *tape,
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
   
-  /* And we're pointing to the first block */
-  tape->current_block = tape->blocks;
-
-  /* Return here if there wasn't any data in the file */
-  if( !tape->blocks ) return LIBSPECTRUM_ERROR_NONE;
-
-  /* Otherwise, initialise the first block */
-  error = libspectrum_tape_init_block( tape->current_block );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
-
   return LIBSPECTRUM_ERROR_NONE;
 }
 
@@ -507,7 +497,8 @@ read_rom_block( libspectrum_tape *tape, const libspectrum_byte *ptr,
   libspectrum_tape_block_set_pause( block, 1000 );
 
   /* Put the block into the block list */
-  tape->blocks = g_slist_append( tape->blocks, (gpointer)block );
+  error = libspectrum_tape_append_block( tape, block );
+  if( error ) { libspectrum_tape_block_free( block ); return error; }
 
   /* And return with no error */
   return LIBSPECTRUM_ERROR_NONE;
@@ -587,7 +578,8 @@ read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
 						status.bits.bits_used + 1 );
 
   /* Put the block into the block list */
-  tape->blocks = g_slist_append( tape->blocks, (gpointer)block );
+  error = libspectrum_tape_append_block( tape, block );
+  if( error ) { libspectrum_tape_block_free( block ); return error; }
 
   /* And return with no error */
   return LIBSPECTRUM_ERROR_NONE;

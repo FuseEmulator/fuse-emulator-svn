@@ -112,17 +112,9 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
     libspectrum_tape_block_set_pause( block, 1000 );
 
     /* Finally, put the block into the block list */
-    tape->blocks = g_slist_append( tape->blocks, (gpointer)block );
+    error = libspectrum_tape_append_block( tape, block );
+    if( error ) { libspectrum_tape_block_free( block ); return error; }
 
-  }
-
-  /* And we're pointing to the first block */
-  tape->current_block = tape->blocks;
-
-  /* Which we should then initialise if it exists */
-  if( tape->current_block ) {
-    error = libspectrum_tape_init_block( tape->current_block );
-    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -132,14 +124,16 @@ libspectrum_error
 libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_tape *tape )
 {
-  GSList *block_ptr;
+  libspectrum_tape_iterator iterator;
+  libspectrum_tape_block *block;
   libspectrum_error error;
 
   libspectrum_byte *ptr = *buffer;
 
-  for( block_ptr = tape->blocks; block_ptr; block_ptr = block_ptr->next ) {
-    libspectrum_tape_block *block = (libspectrum_tape_block*)block_ptr->data;
-
+  for( block = libspectrum_tape_iterator_init( &iterator, tape );
+       block;
+       block = libspectrum_tape_iterator_next( &iterator ) )
+  {
     switch( libspectrum_tape_block_type( block ) ) {
 
     case LIBSPECTRUM_TAPE_BLOCK_ROM:

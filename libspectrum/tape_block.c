@@ -28,6 +28,27 @@
 
 #include "tape_block.h"
 
+/* The number of pilot pulses for the standard ROM loader NB: These
+   disagree with the .tzx specification (they're 5 and 1 less
+   respectively), but are correct. Entering the loop at #04D8 in the
+   48K ROM with HL == #0001 will produce the first sync pulse, not a
+   pilot pulse, which gives a difference of one in both cases. The
+   further difference of 4 in the header count is just a screw-up in
+   the .tzx specification AFAICT */
+static const size_t LIBSPECTRUM_TAPE_PILOTS_HEADER = 0x1f7f;
+static const size_t LIBSPECTRUM_TAPE_PILOTS_DATA   = 0x0c97;
+
+/* Functions to initialise block types */
+
+static libspectrum_error
+rom_init( libspectrum_tape_rom_block *block );
+static libspectrum_error
+turbo_init( libspectrum_tape_turbo_block *block );
+static libspectrum_error
+pure_data_init( libspectrum_tape_pure_data_block *block );
+static libspectrum_error
+raw_data_init( libspectrum_tape_raw_data_block *block );
+
 libspectrum_error
 libspectrum_tape_block_alloc( libspectrum_tape_block **block,
 			      libspectrum_tape_type type )
@@ -143,5 +164,112 @@ libspectrum_tape_block_set_type( libspectrum_tape_block *block,
 				 libspectrum_tape_type type )
 {
   block->type = type;
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+/* Called when a new block is started to initialise its internal state */
+libspectrum_error
+libspectrum_tape_block_init( libspectrum_tape_block *block )
+{
+  switch( libspectrum_tape_block_type( block ) ) {
+
+  case LIBSPECTRUM_TAPE_BLOCK_ROM:
+    return rom_init( &(block->types.rom) );
+  case LIBSPECTRUM_TAPE_BLOCK_TURBO:
+    return turbo_init( &(block->types.turbo) );
+  case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
+    block->types.pure_tone.edge_count = block->types.pure_tone.pulses;
+    break;
+  case LIBSPECTRUM_TAPE_BLOCK_PULSES:
+    block->types.pulses.edge_count = 0;
+    break;
+  case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
+    return pure_data_init( &(block->types.pure_data) );
+  case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
+    return raw_data_init( &(block->types.raw_data) );
+
+  /* These blocks need no initialisation */
+  case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
+  case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
+  case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
+  case LIBSPECTRUM_TAPE_BLOCK_JUMP:
+  case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
+  case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
+  case LIBSPECTRUM_TAPE_BLOCK_SELECT:
+  case LIBSPECTRUM_TAPE_BLOCK_STOP48:
+  case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
+  case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
+  case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
+  case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
+  case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
+    return LIBSPECTRUM_ERROR_NONE;
+
+  default:
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_LOGIC,
+      "libspectrum_tape_init_block: unknown block type 0x%02x",
+      block->type
+    );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+rom_init( libspectrum_tape_rom_block *block )
+{
+  /* Initialise the number of pilot pulses */
+  block->edge_count = block->data[0] & 0x80         ?
+                      LIBSPECTRUM_TAPE_PILOTS_DATA  :
+                      LIBSPECTRUM_TAPE_PILOTS_HEADER;
+
+  /* And that we're just before the start of the data */
+  block->bytes_through_block = -1; block->bits_through_byte = 7;
+  block->state = LIBSPECTRUM_TAPE_STATE_PILOT;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+turbo_init( libspectrum_tape_turbo_block *block )
+{
+  /* Initialise the number of pilot pulses */
+  block->edge_count = block->pilot_pulses;
+
+  /* And that we're just before the start of the data */
+  block->bytes_through_block = -1; block->bits_through_byte = 7;
+  block->state = LIBSPECTRUM_TAPE_STATE_PILOT;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+pure_data_init( libspectrum_tape_pure_data_block *block )
+{
+  libspectrum_error error;
+
+  /* We're just before the start of the data */
+  block->bytes_through_block = -1; block->bits_through_byte = 7;
+  /* Set up the next bit */
+  error = libspectrum_tape_pure_data_next_bit( block );
+  if( error ) return error;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+raw_data_init( libspectrum_tape_raw_data_block *block )
+{
+  libspectrum_error error;
+
+  /* We're just before the start of the data */
+  block->state = LIBSPECTRUM_TAPE_STATE_DATA1;
+  block->bytes_through_block = -1; block->bits_through_byte = 7;
+  block->last_bit = 0x80 & block->data[0];
+  /* Set up the next bit */
+  error = libspectrum_tape_raw_data_next_bit( block );
+  if( error ) return error;
+
   return LIBSPECTRUM_ERROR_NONE;
 }

@@ -24,6 +24,9 @@
 
 */
 
+#ifndef LIBSPECTRUM_TAPE_BLOCK_H
+#define LIBSPECTRUM_TAPE_BLOCK_H
+
 #ifndef LIBSPECTRUM_INTERNALS_H
 #include "internals.h"
 #endif				/* #ifndef LIBSPECTRUM_INTERNALS_H */
@@ -288,3 +291,12 @@ struct libspectrum_tape_block {
   } types;
 
 };
+
+/* Functions needed by both tape.c and tape_block.c */
+libspectrum_error
+libspectrum_tape_pure_data_next_bit( libspectrum_tape_pure_data_block *block );
+libspectrum_error
+libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block );
+
+#endif				/* #ifndef LIBSPECTRUM_TAPE_BLOCK_H */
+

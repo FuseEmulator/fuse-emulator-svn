@@ -107,8 +107,8 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_tape *tape )
 {
   libspectrum_error error;
-
-  GSList *block_ptr;
+  libspectrum_tape_iterator iterator;
+  libspectrum_tape_block *block;
   libspectrum_byte *ptr = *buffer;
 
   /* First, write the .tzx signature and the version numbers */
@@ -119,9 +119,10 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
   *ptr++ = 1;		/* Major version number */
   *ptr++ = 13;		/* Minor version number */
 
-  for( block_ptr = tape->blocks; block_ptr; block_ptr = block_ptr->next ) {
-    libspectrum_tape_block *block = (libspectrum_tape_block*)block_ptr->data;
-
+  for( block = libspectrum_tape_iterator_init( &iterator, tape );
+       block;
+       block = libspectrum_tape_iterator_next( &iterator )       )
+  {
     switch( libspectrum_tape_block_type( block ) ) {
 
     case LIBSPECTRUM_TAPE_BLOCK_ROM:
