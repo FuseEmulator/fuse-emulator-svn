@@ -81,9 +81,9 @@ if test "$glib" = yes; then
     2.0.0,
     glib2=yes
     AC_DEFINE(HAVE_LIB_GLIB)
-    LIBS="$LIBS `pkg-config --libs glib-2.0`"
+    LIBS="$LIBS `pkg-config --libs glib-2.0`",
   )
-  if test "glib2" = no; then
+  if test "$glib2" = no; then
     AM_PATH_GLIB(
       1.2.0,
       AC_DEFINE(HAVE_LIB_GLIB)
