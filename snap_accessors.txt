@@ -82,3 +82,9 @@ libspectrum_byte* zxcf_ram 1
 
 int interface2_active
 libspectrum_byte* interface2_rom 1
+
+int dock_active
+libspectrum_byte exrom_ram 1
+libspectrum_byte* exrom_cart 1
+libspectrum_byte dock_ram 1
+libspectrum_byte* dock_cart 1

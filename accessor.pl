@@ -122,6 +122,13 @@ struct libspectrum_snap {
   int interface2_active;
   libspectrum_byte *interface2_rom[1];
 
+  /* Timex Dock cartridge */
+  int dock_active;
+  libspectrum_byte exrom_ram[8];
+  libspectrum_byte *exrom_cart[8];
+  libspectrum_byte dock_ram[8];
+  libspectrum_byte *dock_cart[8];
+
 };
 
 /* Initialise a libspectrum_snap structure */
@@ -190,6 +197,14 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
 
   libspectrum_snap_set_interface2_active( *snap, 0 );
   libspectrum_snap_set_interface2_rom( *snap, 0, NULL );
+
+  libspectrum_snap_set_dock_active( *snap, 0 );
+  for( i = 0; i < 8; i++ ) {
+    libspectrum_snap_set_exrom_ram( *snap, i, 0 );
+    libspectrum_snap_set_exrom_cart( *snap, i, NULL );
+    libspectrum_snap_set_dock_ram( *snap, i, 0 );
+    libspectrum_snap_set_dock_cart( *snap, i, NULL );
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 }
