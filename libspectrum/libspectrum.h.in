@@ -507,6 +507,9 @@ libspectrum_tape_block_description( libspectrum_tape_block *block,
 libspectrum_error
 libspectrum_tap_create( libspectrum_tape *tape, const libspectrum_byte *buffer,
 			const size_t length );
+libspectrum_error
+libspectrum_tap_write( libspectrum_tape *tape,
+		       libspectrum_byte **buffer, size_t *length );
 
 /*** Routines for .tzx format files ***/
 

@@ -31,6 +31,12 @@
 
 #include "internals.h"
 
+#define DESCRIPTION_LENGTH 256
+
+static libspectrum_error
+write_rom( libspectrum_tape_rom_block *block, libspectrum_byte **buffer,
+	   libspectrum_byte **ptr, size_t *length );
+
 libspectrum_error
 libspectrum_tap_create( libspectrum_tape *tape, const libspectrum_byte *buffer,
 			const size_t length )
@@ -109,6 +115,70 @@ libspectrum_tap_create( libspectrum_tape *tape, const libspectrum_byte *buffer,
             (libspectrum_tape_block*)tape->current_block->data
           );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_tap_write( libspectrum_tape *tape,
+		       libspectrum_byte **buffer, size_t *length )
+{
+  GSList *block_ptr;
+  libspectrum_error error;
+  char description[ DESCRIPTION_LENGTH ];
+
+  libspectrum_byte *ptr = *buffer;
+
+  for( block_ptr = tape->blocks; block_ptr; block_ptr = block_ptr->next ) {
+    libspectrum_tape_block *block = (libspectrum_tape_block*)block_ptr->data;
+
+    switch( block->type ) {
+
+    case LIBSPECTRUM_TAPE_BLOCK_ROM:
+      error = write_rom( &(block->types.rom), buffer, &ptr, length );
+      if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
+      break;
+
+    case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
+    error = libspectrum_tape_block_description( block, description,
+						DESCRIPTION_LENGTH );
+    if( error ) { free( *buffer ); return 1; }
+
+    libspectrum_print_error(
+      "libspectrum_tap_write: skipping %s (ID 0x%02x)\n", description,
+      block->type
+    );
+    break;
+
+    default:
+      if( *length ) free( *buffer );
+      libspectrum_print_error(
+        "libspectrum_tap_write: unknown block type 0x%02x\n", block->type
+      );
+      return LIBSPECTRUM_ERROR_LOGIC;
+
+    }
+  }
+
+  (*length) = ptr - *buffer;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_rom( libspectrum_tape_rom_block *block, libspectrum_byte **buffer,
+	   libspectrum_byte **ptr, size_t *length )
+{
+  libspectrum_error error;
+
+  /* Make room the length and the actual data */
+  error = libspectrum_make_room( buffer, 2 + block->length, ptr, length );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  /* Write out the length and the data */
+  *(*ptr)++ = block->length & 0xff;
+  *(*ptr)++ = ( block->length & 0xff00 ) >> 8;
+  memcpy( *ptr, block->data, block->length ); (*ptr) += block->length;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
