@@ -1,0 +1,5 @@
+*.tar.gz
+*.tgz
+*.tgz.md5
+fuse-xvideo.patch.bz2
+libspectrum.txt
