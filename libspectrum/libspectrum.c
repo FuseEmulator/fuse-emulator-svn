@@ -376,6 +376,14 @@ libspectrum_machine_capabilities( libspectrum_machine type )
     break;
   }
 
+  /* NTSC display */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_TS2068:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_NTSC; break;
+  default:
+    break;
+  }
+
   return capabilities;
 }
 

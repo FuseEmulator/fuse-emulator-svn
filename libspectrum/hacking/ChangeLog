@@ -295,3 +295,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          referring to it (Fred).
 20050108 timings.c: fix Pentagon and Scorpion CPU speeds to give them 50Hz
 	 frame rates (rest of patch #1080531) (Fred).
+20050113 libspectrum.c: Set NTSC capability for the TS2068 (Fred).
