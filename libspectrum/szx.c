@@ -263,8 +263,8 @@ read_cfrp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 
   if( page > 63 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
-			     "%s:read_ramp_chunk: unknown page number %d",
-			     __FILE__, page );
+			     "%s:read_ramp_chunk: unknown page number %lu",
+			     __FILE__, (unsigned long)page );
     free( data );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
@@ -288,8 +288,8 @@ read_ramp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 
   if( page > 15 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
-			     "%s:read_ramp_chunk: unknown page number %d",
-			     __FILE__, page );
+			     "%s:read_ramp_chunk: unknown page number %lu",
+			     __FILE__, (unsigned long)page );
     free( data );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
