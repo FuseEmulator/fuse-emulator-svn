@@ -32,8 +32,10 @@
 #endif			/* #ifndef FUSE_TYPES_H */
 
 BYTE spec48_readbyte(WORD address);
+BYTE spec48_readbyte_internal( WORD address );
 BYTE spec48_read_screen_memory(WORD offset);
 void spec48_writebyte(WORD address, BYTE b);
+void spec48_writebyte_internal( WORD address, BYTE b );
 
 DWORD spec48_contend_memory( WORD address );
 DWORD spec48_contend_port( WORD port );
