@@ -57,7 +57,7 @@
 
 <head>
  <title>$title</title>
- <link rel="stylesheet" type="text/css" href="spectrum.css" />
+ <link rel="stylesheet" title="Fancy theme" type="text/css" href="spectrum.css" />
 </head>
 
 END_HEADER;
