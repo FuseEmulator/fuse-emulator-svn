@@ -173,9 +173,9 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY;
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK;
                                                       /* +3-style disk drive */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY;
-                                            /* TC20[46]8-style memory paging */
+                                                /* Timex-style memory paging */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO;
-                                           /* T[SC]20[46]8-style video modes */
+                                                  /* Timex-style video modes */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK;
                                                    /* TRDOS-style disk drive */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK;
