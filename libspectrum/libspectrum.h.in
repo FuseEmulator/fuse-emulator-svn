@@ -517,12 +517,19 @@ libspectrum_error libspectrum_tape_alloc( libspectrum_tape **tape );
 libspectrum_error libspectrum_tape_clear( libspectrum_tape *tape );
 libspectrum_error libspectrum_tape_free( libspectrum_tape *tape );
 
+/* Does this tape structure actually contain a tape? */
+int libspectrum_tape_present( libspectrum_tape *tape );
+
 libspectrum_error
 libspectrum_tape_init_block( libspectrum_tape_block *block );
 
 libspectrum_error
 libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
 	                        libspectrum_tape *tape );
+
+/* Select the nth block on the tape */
+libspectrum_error
+libspectrum_tape_nth_block( libspectrum_tape *tape, int n );
 
 libspectrum_error
 libspectrum_tape_block_description( char *buffer, size_t length,
