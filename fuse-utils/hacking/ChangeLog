@@ -52,3 +52,5 @@
 20031013 Put libspectrum version into creator information, and ensure that
 	 libspectrum_init is called by all programs which use libspectrum
 	 functions.
+20031014 .cvsignore, configure.in, fuse-utils.gpg.in: add QNX6 package
+	 file (thanks, Mike Gorchak).
