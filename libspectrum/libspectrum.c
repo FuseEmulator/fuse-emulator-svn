@@ -502,7 +502,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 
   case LIBSPECTRUM_ID_COMPRESSED_BZ2:
 
-#ifdef HAVE_BZLIB_H
+#ifdef HAVE_LIBBZ2
 
     if( new_filename ) {
       if( strlen( *new_filename ) >= 4 &&
@@ -515,7 +515,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 				       new_buffer, new_length );
     if( error ) { free( new_filename ); return error; }
 
-#else				/* #ifdef HAVE_BZLIB_H */
+#else				/* #ifdef HAVE_LIBBZ2 */
 
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_UNKNOWN,
@@ -524,7 +524,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
     free( new_filename );
     return LIBSPECTRUM_ERROR_UNKNOWN;
 
-#endif				/* #ifdef HAVE_BZLIB_H */
+#endif				/* #ifdef HAVE_LIBBZ2 */
 
     break;
 

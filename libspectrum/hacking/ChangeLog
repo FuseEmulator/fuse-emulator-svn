@@ -146,3 +146,8 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 update the library soname (libspectrum_0_2_1-branch).
 20040114 ChangeLog: bring up to date.
 20040117 TAG: libspectrum_0_2_1pre1 (libspectrum_0_2_1-branch).
+20040126 libspectrum.c: replace HAVE_BZLIB_H with HAVE_LIBBZ2 as used
+	 since the 20040109 change (patch #884231)
+	 (libspectrum_0_2_1-branch) (Fred).
+
+	
