@@ -541,3 +541,6 @@
 20040209 screenshot.c, ui/gtk/gtkdisplay.c, ui/sdl/sdldisplay.c: avoid
 	 rounding errors when calculating greyscale colours
 	 (Release-0_6_2-branch).
+20040209 ui/options.dat: stop two options having 'b' as their hotkey
+	 (Release-0_6_2-branch).
+
