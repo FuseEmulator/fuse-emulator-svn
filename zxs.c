@@ -56,7 +56,7 @@ inflate_block( libspectrum_byte **uncompressed, size_t *uncompressed_length,
 {
   libspectrum_dword header_length, expected_crc32, actual_crc32;
   libspectrum_byte *zlib_buffer;
-  size_t actual_length;
+  unsigned long actual_length;
   int error;
 
   /* First, look at the compression header */
@@ -117,7 +117,7 @@ inflate_block( libspectrum_byte **uncompressed, size_t *uncompressed_length,
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
       "zxs_inflate_block: block expanded to 0x%04lx, not the expected 0x%04lx bytes",
-      actual_length, *uncompressed_length
+      actual_length, (unsigned long)*uncompressed_length
     );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
