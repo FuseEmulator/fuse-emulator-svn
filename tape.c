@@ -214,6 +214,38 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   return error;
 }
 
+libspectrum_error
+libspectrum_tape_write( libspectrum_byte **buffer, size_t *length,
+			libspectrum_tape *tape, libspectrum_id_t type )
+{
+  libspectrum_class_t class;
+  libspectrum_error error;
+
+  error = libspectrum_identify_class( &class, type );
+  if( error ) return error;
+
+  if( class != LIBSPECTRUM_CLASS_TAPE ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_INVALID,
+			     "libspectrum_tape_write: not a tape format" );
+    return LIBSPECTRUM_ERROR_INVALID;
+  }
+
+  switch( type ) {
+
+  case LIBSPECTRUM_ID_TAPE_TAP:
+    return libspectrum_tap_write( buffer, length, tape );
+
+  case LIBSPECTRUM_ID_TAPE_TZX:
+    return libspectrum_tzx_write( buffer, length, tape );
+
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "libspectrum_tape_write: format not supported" );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+
+  }
+}
+
 /* Does this tape structure actually contain a tape? */
 int
 libspectrum_tape_present( const libspectrum_tape *tape )
