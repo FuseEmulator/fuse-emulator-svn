@@ -260,3 +260,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040718 autogen.sh: add libtoolize.
 20040721 accessor.pl,snap_accessors.txt,z80.c: Add issue 2 keyboard support.
 20040722 szx.c: add issue 2 keyboard support.
+20040722 snapshot.c: initialise issue 2 keyboard setting.
