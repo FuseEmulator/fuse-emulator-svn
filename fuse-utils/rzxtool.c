@@ -178,7 +178,7 @@ main( int argc, char **argv )
     length = 0;
     if( libspectrum_rzx_write( rzx, &buffer, &length, snap_buffer,
 			       snap_length, "rzxtool", 0, 1,
-			       !options.uncompress ) ) {
+			       !options.uncompress, 0 ) ) {
       free( snap_buffer );
       libspectrum_rzx_free( rzx );
       return 1;
