@@ -264,17 +264,25 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
          b.. Any valid 128k identifier should be taken as +2
          c.. Any valid +3 identifier (7 or 8) should be taken as +2A
 
-       Support for Fuller Box / AY sound in 48k mode
+       Support for Fuller Box / AY sound in 48k mode (not implemented)
        
        Spectaculator recognises xzx's extension of setting bit 2 of byte 37 to
        specify AY sound in 48k mode. In addition, if this and also bit 6 is
        set, this specifies Fuller Box emulation.
     */
-    if( snap->machine == LIBSPECTRUM_MACHINE_128 && extra_header[5] & 0x80 )
-      snap->machine = LIBSPECTRUM_MACHINE_PLUS2;
 
-    if( snap->machine == LIBSPECTRUM_MACHINE_PLUS3 && extra_header[5] & 0x80 )
-      snap->machine = LIBSPECTRUM_MACHINE_PLUS2A;
+    if( extra_header[5] & 0x80 ) {
+      switch( snap->machine ) {
+
+      case LIBSPECTRUM_MACHINE_128:
+	snap->machine = LIBSPECTRUM_MACHINE_PLUS2; break;
+      case LIBSPECTRUM_MACHINE_PLUS3:
+	snap->machine = LIBSPECTRUM_MACHINE_PLUS2A; break;
+      default:
+	break;			/* Do nothing */
+
+      }
+    }
 
     capabilities = libspectrum_machine_capabilities( snap->machine );
 
