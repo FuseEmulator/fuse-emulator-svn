@@ -195,6 +195,7 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_TAPE_TZX,      "tzx", "ZXTape!",  0, 7, 3 },
 
       { LIBSPECTRUM_ID_DISK_DSK,      "dsk", NULL,       0, 0, 0 },
+      { LIBSPECTRUM_ID_DISK_SCL,      "scl", NULL,       0, 0, 0 },
       { LIBSPECTRUM_ID_DISK_TRD,      "trd", NULL,       0, 0, 0 },
 
       { -1, NULL, NULL, 0, 0, 0 }, /* End marker */

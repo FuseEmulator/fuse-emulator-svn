@@ -97,6 +97,7 @@ typedef enum libspectrum_id_t {
 
   /* Disk files */
   LIBSPECTRUM_ID_DISK_DSK,
+  LIBSPECTRUM_ID_DISK_SCL,
   LIBSPECTRUM_ID_DISK_TRD,
 
 } libspectrum_id_t;
