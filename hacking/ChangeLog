@@ -212,3 +212,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 add support for saving ZXCF information in .szx snapshots.
 20040521 accessor.pl,sna.c,snap_accessors.txt,snapshot.c,szx.c,z80.c:
          add support for saving interface 2 cart in .szx snapshots.
+20040521 szx.c: remove warnings.
