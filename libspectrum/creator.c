@@ -38,6 +38,9 @@ struct libspectrum_creator {
 
   libspectrum_dword competition_code;
 
+  libspectrum_byte *custom;
+  size_t custom_length;
+
 };
 
 libspectrum_error
@@ -50,12 +53,16 @@ libspectrum_creator_alloc( libspectrum_creator **creator )
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
+  (*creator)->custom = NULL;
+  (*creator)->custom_length = 0;
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 libspectrum_error
 libspectrum_creator_free( libspectrum_creator *creator )
 {
+  if( creator->custom ) free( creator->custom );
   free( creator );
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -116,3 +123,23 @@ libspectrum_creator_competition_code( libspectrum_creator *creator )
   return creator->competition_code;
 }
 
+libspectrum_error
+libspectrum_creator_set_custom( libspectrum_creator *creator,
+				libspectrum_byte *data, size_t length )
+{
+  creator->custom = data;
+  creator->custom_length = length;
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_byte*
+libspectrum_creator_custom( libspectrum_creator *creator )
+{
+  return creator->custom;
+}
+
+size_t
+libspectrum_creator_custom_length( libspectrum_creator *creator )
+{
+  return creator->custom_length;
+}

@@ -905,20 +905,29 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		   size_t *length, libspectrum_creator *creator )
 {
   libspectrum_error error;
+  size_t custom_length, block_length;
 
-  error = libspectrum_make_room( buffer, 29, ptr, length );
+  custom_length = libspectrum_creator_custom_length( creator );
+  block_length = 29 + custom_length;
+
+  error = libspectrum_make_room( buffer, block_length, ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
     libspectrum_print_error( error, "rzx_write_creator: out of memory" );
     return error;
   }
 
   *(*ptr)++ = LIBSPECTRUM_RZX_CREATOR_BLOCK;
-  libspectrum_write_dword( ptr, 29 );	/* Block length */
+  libspectrum_write_dword( ptr, block_length );	/* Block length */
 
   memcpy( *ptr, libspectrum_creator_program( creator ), 20 ); (*ptr) += 20;
 
   libspectrum_write_word( ptr, libspectrum_creator_major( creator ) );
   libspectrum_write_word( ptr, libspectrum_creator_minor( creator ) );
+
+  if( custom_length ) {
+    memcpy( *ptr, libspectrum_creator_custom( creator ), custom_length );
+    (*ptr) += custom_length;
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 }
