@@ -37,7 +37,7 @@ bin_PROGRAMS = listbasic \
 
 EXTRA_PROGRAMS = rzxcheck
 
-INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
+INCLUDES = @LIBSPEC_CFLAGS@
 
 listbasic_SOURCES = listbasic.c utils.c
 listbasic_LDADD = @LIBSPEC_LIBS@
