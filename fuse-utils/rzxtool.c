@@ -170,38 +170,17 @@ main( int argc, char **argv )
       }
 
     }      
-    
-    /* Serialise the RZX file */
-    if( libspectrum_creator_alloc( &creator ) ) {
-      if( snap ) libspectrum_snap_free( snap );
-      libspectrum_rzx_free( rzx );
-      return 1;
-    }
 
-    if( libspectrum_creator_set_program( creator, "rzxtool" ) ) {
+    if( get_creator( &creator, "rzxtool" ) ) {
       if( snap ) libspectrum_snap_free( snap );
       libspectrum_rzx_free( rzx );
-      libspectrum_creator_free( creator );
-      return 1;
-    }
-
-    if( libspectrum_creator_set_major( creator, 0x0006 ) ) {
-      if( snap ) libspectrum_snap_free( snap );
-      libspectrum_rzx_free( rzx );
-      libspectrum_creator_free( creator );
-      return 1;
-    }
-
-    if( libspectrum_creator_set_minor( creator, 0x0100 ) ) {
-      if( snap ) libspectrum_snap_free( snap );
-      libspectrum_rzx_free( rzx );
-      libspectrum_creator_free( creator );
       return 1;
     }
 
     length = 0;
     if( libspectrum_rzx_write( &buffer, &length, rzx, snap, creator,
 			       !options.uncompress ) ) {
+      libspectrum_creator_free( creator );
       if( snap ) libspectrum_snap_free( snap );
       libspectrum_rzx_free( rzx );
       return 1;

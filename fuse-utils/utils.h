@@ -27,6 +27,9 @@
 #ifndef FUSE_UTILS_UTILS_H
 #define FUSE_UTILS_UTILS_H
 
+#include <libspectrum.h>
+
+int get_creator( libspectrum_creator **creator, const char *program );
 int mmap_file( const char *filename, unsigned char **buffer, size_t *length );
 
 #endif				/* #ifndef FUSE_UTILS_UTILS_H */
