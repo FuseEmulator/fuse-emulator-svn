@@ -281,3 +281,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          snap_accessors.txt,snapshot.c,szx.c,z80.c,doc/libspectrum.txt: Add
          support for connected joystick information in snapshots.
 20041031 .cvsignore: ignore stamp-h1.
+20041125 Makefile.am,libspectrum.h.in,microdrive.c: very simple .mdr
+         handling.
