@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-## Copyright (c) 2001-2002 Philip Kendall
+## Copyright (c) 2001-2003 Philip Kendall
 
 ## $Id$
 
@@ -27,7 +27,8 @@ AUTOMAKE_OPTIONS = foreign
 lib_LTLIBRARIES = libspectrum.la
 
 libspectrum_la_SOURCES = libspectrum.c rzx.c sna.c snapshot.c tap.c tape.c\
-tzx_read.c tzx_write.c z80.c zlib.c myglib.c
+	timings.c \
+	tzx_read.c tzx_write.c z80.c zlib.c myglib.c
 
 libspectrum_la_LDFLAGS = -version-info 0:0:0
 

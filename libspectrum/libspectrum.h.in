@@ -140,6 +140,36 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO;
 /* Get the capabilities of a machine */
 int libspectrum_machine_capabilities( libspectrum_machine type );
 
+/* The frame timings of a machine */
+typedef struct libspectrum_timings {
+
+  libspectrum_machine machine;
+
+  /* Line timings in tstates */
+  libspectrum_word left_border, horizontal_screen, right_border,
+	           horizontal_retrace;
+
+  /* Frame timings in lines */
+  libspectrum_word top_border, vertical_screen, bottom_border,
+	           vertical_retrace;
+
+  /* How long after interrupt is the top-level pixel of the main screen
+     displayed */
+  libspectrum_dword top_left_pixel;
+
+  /* DO NOT CHANGE FIELDS ABOVE THIS WITHOUT ALSO CHANGING
+     timings.c:base_timings[] */
+
+  /* Derived fields */
+  libspectrum_word tstates_per_line, lines_per_frame;
+  libspectrum_dword tstates_per_frame;
+
+} libspectrum_timings;
+
+/* Get the frame timings for a machine type */
+libspectrum_error libspectrum_machine_timings( libspectrum_timings *timings,
+					       libspectrum_machine machine );
+
 /*
  * Snap handling routines
  */
