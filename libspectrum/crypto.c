@@ -156,7 +156,8 @@ create_key( GcrySexp *s_key, libspectrum_rzx_dsa_key *key, const char *format )
   if( !error ) error = gcry_mpi_scan( &mpis[1], GCRYMPI_FMT_HEX, key->q, NULL);
   if( !error ) error = gcry_mpi_scan( &mpis[2], GCRYMPI_FMT_HEX, key->g, NULL);
   if( !error ) error = gcry_mpi_scan( &mpis[3], GCRYMPI_FMT_HEX, key->y, NULL);
-  if( !error ) error = gcry_mpi_scan( &mpis[4], GCRYMPI_FMT_HEX, key->x, NULL);
+  if( !error && key->x )
+               error = gcry_mpi_scan( &mpis[4], GCRYMPI_FMT_HEX, key->x, NULL);
 
   if( error ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
