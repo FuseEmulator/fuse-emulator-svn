@@ -115,3 +115,5 @@
 	 functionality.
 20040920 rzxcheck.c: remove small memory leak.
 20041031 .cvsignore: ignore stamp-h1.
+20050209 snapconv.c: correct filename in error message if target format
+	 couldn't be identified.
