@@ -673,7 +673,7 @@ read_block( const libspectrum_byte *buffer, libspectrum_snap *snap,
 			   end );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-    if( page <= 0 || page > 19 ) {
+    if( page <= 0 || page > 18 ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			       "read_block: unknown page %d", page );
       return LIBSPECTRUM_ERROR_UNKNOWN;
