@@ -887,16 +887,18 @@ rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   strcpy( *ptr, rzx_signature ); (*ptr) += strlen( rzx_signature );
   *(*ptr)++ = 0;		/* Major version number */
-  *(*ptr)++ = 13;		/* Minor version number */
 
   /* Flags */
 #ifdef HAVE_GCRYPT_H
+  *(*ptr)++ = sign ? 13 : 12;	/* Minor version number: 12 if we're not
+				   signing, 13 if we are */
   libspectrum_write_dword( ptr, sign ? 0x01 : 0x00 );
 
   /* Store where to start signing data from */
   *sign_offset = *ptr - *buffer;
 
 #else				/* #ifdef HAVE_GCRYPT_H */
+  *(*ptr)++ = 12;		/* Minor version number */
   libspectrum_write_dword( ptr, 0 );
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
