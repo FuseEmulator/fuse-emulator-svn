@@ -46,7 +46,7 @@ rzxcheck_SOURCES = rzxcheck.c keys.c utils.c
 rzxcheck_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
 rzxdump_SOURCES = rzxdump.c utils.c
-rzxdump_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+rzxdump_LDADD = @GCRYPT_LIBS@ @GLIB_LIBS@ @LIBSPEC_LIBS@
 
 rzxtool_SOURCES = rzxtool.c utils.c
 rzxtool_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
