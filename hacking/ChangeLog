@@ -133,3 +133,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20031127 A bunch of --enable-warnings tidy-ups.
 20031214 make-perl.c, myglib.c: add g_slist_prepend to the glib emulation
 	 layer (Marek).
+20031228 libspectrum.c, libspectrum.h.in: rename 'class' to
+	 'libspectrum_class' where its used in libspectrum.h.in for C++
+	 safety (Fred).

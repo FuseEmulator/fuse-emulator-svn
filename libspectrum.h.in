@@ -153,7 +153,7 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 
 libspectrum_error
 libspectrum_identify_file_with_class(
-  libspectrum_id_t *type, libspectrum_class_t *class,
+  libspectrum_id_t *type, libspectrum_class_t *libspectrum_class,
   const char *filename, const unsigned char *buffer, size_t length );
 
 libspectrum_error
@@ -161,7 +161,7 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
 			       const unsigned char *buffer, size_t length );
 
 libspectrum_error
-libspectrum_identify_class( libspectrum_class_t *class,
+libspectrum_identify_class( libspectrum_class_t *libspectrum_class,
                             libspectrum_id_t type );
 
 /* Different Spectrum variants and their capabilities */
