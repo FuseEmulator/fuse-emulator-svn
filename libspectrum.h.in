@@ -354,26 +354,13 @@ libspectrum_error
 libspectrum_tape_block_set_type( libspectrum_tape_block *block,
 				 libspectrum_tape_type type );
 
+libspectrum_error libspectrum_tape_block_init( libspectrum_tape_block *block );
+
 /* Accessor functions */
 LIBSPECTRUM_TAPE_ACCESSORS
 
 /* A linked list of tape blocks */
-typedef struct libspectrum_tape {
-
-  /* All the blocks */
-  GSList* blocks;
-
-  /* The current block */
-  GSList* current_block;
-
-  /* Private data */
-
-  /* Where to return to after a loop, and how many iterations of the loop
-     to do */
-  GSList* loop_block;
-  size_t loop_count;
-
-} libspectrum_tape;
+typedef struct libspectrum_tape libspectrum_tape;
 
 libspectrum_error libspectrum_tape_alloc( libspectrum_tape **tape );
 libspectrum_error libspectrum_tape_clear( libspectrum_tape *tape );
@@ -389,11 +376,21 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 int libspectrum_tape_present( const libspectrum_tape *tape );
 
 libspectrum_error
-libspectrum_tape_init_block( GSList *current_block );
-
-libspectrum_error
 libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
 	                        libspectrum_tape *tape );
+
+/* Get the current block from the tape */
+libspectrum_tape_block*
+libspectrum_tape_current_block( libspectrum_tape *tape );
+
+/* Peek at the next block on the tape */
+libspectrum_tape_block*
+libspectrum_tape_peek_next_block( libspectrum_tape *tape );
+
+/* Cause the next block on the tape to be active, initialise it
+   and return it */
+libspectrum_tape_block*
+libspectrum_tape_select_next_block( libspectrum_tape *tape );
 
 /* Get the position on the tape of the current block */
 libspectrum_error libspectrum_tape_position( int *n, libspectrum_tape *tape );
@@ -435,6 +432,16 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
 libspectrum_error
 libspectrum_warajevo_read( libspectrum_tape *tape,
 			   const libspectrum_byte *buffer, size_t length );
+
+/* Something to step through all the blocks in a tape */
+typedef GSList* libspectrum_tape_iterator;
+
+libspectrum_tape_block*
+libspectrum_tape_iterator_init( libspectrum_tape_iterator *iterator,
+				libspectrum_tape *tape );
+
+libspectrum_tape_block*
+libspectrum_tape_iterator_next( libspectrum_tape_iterator *iterator );
 
 /*
  * Input recording routines
