@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include "fuse.h"
+#include "rzx.h"
 #include "spectrum.h"
 #include "ui/ui.h"
 #include "z80.h"
@@ -104,6 +105,8 @@ void z80_interrupt()
     IFF1=IFF2=0;
 
     writebyte( --SP, PCH ); writebyte( --SP, PCL );
+
+    R++; rzx_instructions++;
 
     switch(IM) {
       case 0: PC = 0x0038; tstates+=12; break;
