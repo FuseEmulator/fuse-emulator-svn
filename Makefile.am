@@ -27,17 +27,17 @@ AUTOMAKE_OPTIONS = foreign
 lib_LTLIBRARIES = libspectrum.la
 
 libspectrum_la_SOURCES = libspectrum.c rzx.c sna.c tap.c tape.c\
-tzx_read.c tzx_write.c z80.c zlib.c
+tzx_read.c tzx_write.c z80.c zlib.c myglib.c
 
 include_HEADERS = libspectrum.h
 noinst_HEADERS = internals.h
 
 noinst_PROGRAMS = make-sed
 
-libspectrum.h: libspectrum.h.in types.sed
-	@SED@ -f types.sed libspectrum.h.in > libspectrum.h
+libspectrum.h: libspectrum.h.in generate.sed
+	@SED@ -f generate.sed libspectrum.h.in > libspectrum.h
 
 types.sed: make-sed
-	./make-sed > types.sed
+	./make-sed > generate.sed
 
 INCLUDES = @GLIB_CFLAGS@
