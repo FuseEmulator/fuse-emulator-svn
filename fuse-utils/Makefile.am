@@ -26,15 +26,15 @@ AUTOMAKE_OPTIONS = foreign
 
 bin_PROGRAMS = rzxdump rzxtool tzxconv tzxlist
 
-INCLUDES = @GLIB_CFLAGS@ @GTK_CFLAGS@ @LIBSPEC_CFLAGS@
+INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 
 rzxdump_SOURCES = rzxdump.c
 
 rzxtool_SOURCES = rzxtool.c
-rzxtool_LDADD = @GLIB_LIBS@ @GTK_LIBS@ @LIBSPEC_LIBS@
+rzxtool_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
 tzxconv_SOURCES = tzxconv.c
-tzxconv_LDADD = @GLIB_LIBS@ @GTK_LIBS@ @LIBSPEC_LIBS@
+tzxconv_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
 tzxlist_SOURCES = tzxlist.c
-tzxlist_LDADD = @GLIB_LIBS@ @GTK_LIBS@ @LIBSPEC_LIBS@
+tzxlist_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@

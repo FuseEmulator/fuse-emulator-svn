@@ -36,15 +36,14 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "types.h"
-#include "ui/ui.h"
+#include "libspectrum.h"
 
 char *progname;
 
 const char *rzx_signature = "RZX!";
 
-WORD read_word( unsigned char **ptr );
-DWORD read_dword( unsigned char **ptr );
+libspectrum_word read_word( unsigned char **ptr );
+libspectrum_dword read_dword( unsigned char **ptr );
 
 static int
 do_file( const char *filename );
@@ -56,19 +55,21 @@ read_snapshot_block( unsigned char **ptr, unsigned char *end );
 static int
 read_input_block( unsigned char **ptr, unsigned char *end );
 
-WORD read_word( unsigned char **ptr )
+libspectrum_word
+read_word( unsigned char **ptr )
 {
-  WORD result = (*ptr)[0] + (*ptr)[1] * 0x100;
+  libspectrum_word result = (*ptr)[0] + (*ptr)[1] * 0x100;
   (*ptr) += 2;
   return result;
 }
 
-DWORD read_dword( unsigned char **ptr )
+libspectrum_dword
+read_dword( unsigned char **ptr )
 {
-  DWORD result = (*ptr)[0]             +
-                 (*ptr)[1] *     0x100 +
-                 (*ptr)[2] *   0x10000 +
-                 (*ptr)[3] * 0x1000000;
+  libspectrum_dword result = (*ptr)[0]             +
+                             (*ptr)[1] *     0x100 +
+                             (*ptr)[2] *   0x10000 +
+                             (*ptr)[3] * 0x1000000;
   (*ptr) += 4;
   return result;
 }
