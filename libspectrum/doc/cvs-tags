@@ -1,0 +1,23 @@
+CVS tags for libspectrum
+
+| libspectrum_start		libspectrum broken out from Fuse
+| libspectrum_0_1_0pre1
+|
++-\				branch for competition mode RZX files
+| |
+| | libspectrum_0_1_0pre1-crypto-branch-1
+| |				branch brought up to date with HEAD after
+| |				libspectrum_0_2_0pre1
+| |
+| | libspectrum_0_1_0pre1-crypto-branch
+|
+| libspectrum_0_1_0pre2
+| libspectrum_0_1_0
+| libspectrum_0_1_1pre1
+| libspectrum_0_1_1pre2
+| libspectrum_0_1_1pre3
+| libspectrum_0_1_1pre4
+| libspectrum_0_1_1
+| libspectrum_0_2_0pre1
+|
+HEAD
