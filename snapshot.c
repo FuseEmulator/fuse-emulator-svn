@@ -113,6 +113,7 @@ libspectrum_machine_name( libspectrum_machine type )
 {
   switch( type ) {
   case LIBSPECTRUM_MACHINE_48:     return "Spectrum 48K";
+  case LIBSPECTRUM_MACHINE_TC2048: return "TC2048";
   case LIBSPECTRUM_MACHINE_128:    return "Spectrum 128K";
   case LIBSPECTRUM_MACHINE_PLUS2:  return "Spectrum +2";
   case LIBSPECTRUM_MACHINE_PENT:   return "Pentagon";
@@ -130,6 +131,10 @@ const int LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY = 1 << 2;
                                                    /* +3-style memory paging */
 const int LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK   = 1 << 3;
                                                       /* +3-style disk drive */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY = 1 << 4;
+                                            /* TC20[46]8-style memory paging */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO  = 1 << 5;
+                                              /* TC20[46]8-style video modes */
 
 /* Given a machine type, what features does it have? */
 int
@@ -167,6 +172,22 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_PLUS3:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK; break;
+  default:
+    break;
+  }
+
+  /* TC20[46]8-style 0x00fd memory paging */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_TC2048:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY; break;
+  default:
+    break;
+  }
+
+  /* TC20[46]8-style 0x00ff video mode selection */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_TC2048:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO; break;
   default:
     break;
   }

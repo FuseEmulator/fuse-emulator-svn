@@ -215,8 +215,15 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     capabilities = libspectrum_machine_capabilities( snap->machine );
 
-    if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY )
+    if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) {
       snap->out_128_memoryport  = extra_header[3];
+    } else if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY ) {
+      snap->out_scld_hsr = extra_header[3];
+    }
+
+    if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) {
+      snap->out_scld_dec = extra_header[4];
+    }
 
     if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_AY ) {
       snap->out_ay_registerport = extra_header[ 6];
@@ -767,8 +774,20 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = 13; break;
   }
 
-  *(*ptr)++ = snap->out_128_memoryport;
-  *(*ptr)++ = '\0';		/* IF1 disabled */
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) {
+    *(*ptr)++ = snap->out_128_memoryport;
+  } else if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY ) {
+    *(*ptr)++ = snap->out_scld_hsr;
+  } else {
+    *(*ptr)++ = '\0';
+  }
+
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) {
+    *(*ptr)++ = snap->out_scld_dec;
+  } else {
+    *(*ptr)++ = '\0';		/* IF1 disabled */
+  }
+
   *(*ptr)++ = '\0';		/* No special emulation features */
   *(*ptr)++ = snap->out_ay_registerport;
   memcpy( *ptr, snap->ay_registers, 16 ); *ptr += 16;
