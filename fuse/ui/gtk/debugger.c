@@ -59,15 +59,10 @@ static int debugger_active;
 int
 ui_debugger_activate( void )
 {
-  char buffer[80];
-
   fuse_emulation_pause();
 
   /* Create the dialog box if it doesn't already exist */
   if( !dialog_created ) if( create_dialog() ) return 1;
-
-  snprintf( buffer, 80, "PC = 0x%04x", PC );
-  gtk_label_set_text( GTK_LABEL( label ), buffer );
 
   gtk_widget_show_all( dialog );
 
@@ -133,7 +128,13 @@ create_dialog( void )
 static int
 activate_debugger( void )
 {
+  char buffer[80];
+
   debugger_active = 1;
+
+  snprintf( buffer, 80, "PC = 0x%04x", PC );
+  gtk_label_set_text( GTK_LABEL( label ), buffer );
+
   gtk_main();
   return 0;
 }
