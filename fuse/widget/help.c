@@ -1,4 +1,4 @@
-/* snapshot-widget.c: Widget for snapshot-related actions
+/* help.c: Help menu
    Copyright (c) 2001,2002 Philip Kendall
 
    $Id$
@@ -30,28 +30,24 @@
 
 #include "display.h"
 #include "keyboard.h"
-#include "snapshot.h"
 #include "ui/uidisplay.h"
 #include "widget.h"
 
-int widget_snapshot_draw( void )
+int widget_help_draw( void )
 {
-  /* Blank the main display area */
-  widget_dialog_with_border( 1, 2, 30, 4 );
+  /* Draw the dialog box */
+  widget_dialog_with_border( 1, 2, 30, 3 );
 
-  widget_printstring( 10, 2, WIDGET_COLOUR_FOREGROUND, "Snapshot Menu" );
-
-  widget_printstring( 2, 4, WIDGET_COLOUR_FOREGROUND, "(O)pen snapshot" );
-  widget_printstring( 2, 5, WIDGET_COLOUR_FOREGROUND,
-		      "(S)ave to 'snapshot.z80'" );
+  widget_printstring( 11, 2, WIDGET_COLOUR_FOREGROUND, "Help" );
+  widget_printstring( 2, 4, WIDGET_COLOUR_FOREGROUND, "(K)eyboard picture" );
 
   uidisplay_lines( DISPLAY_BORDER_HEIGHT + 16,
-		   DISPLAY_BORDER_HEIGHT + 16 + 40 );
+		   DISPLAY_BORDER_HEIGHT + 16 + 24 );
 
   return 0;
 }
 
-void widget_snapshot_keyhandler( int key )
+void widget_help_keyhandler( int key )
 {
   switch( key ) {
     
@@ -59,13 +55,8 @@ void widget_snapshot_keyhandler( int key )
     widget_return[ widget_level ].finished = WIDGET_FINISHED_CANCEL;
     break;
 
-  case KEYBOARD_o:
-    widget_do( WIDGET_TYPE_FILESELECTOR );
-    if( widget_filesel_name ) snapshot_read( widget_filesel_name );
-    break;
-
-  case KEYBOARD_s:
-    snapshot_write( "snapshot.z80" );
+  case KEYBOARD_k:
+    widget_do( WIDGET_TYPE_PICTURE );
     break;
 
   case KEYBOARD_Enter:

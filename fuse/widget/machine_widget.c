@@ -43,7 +43,7 @@ int widget_machine_draw( void )
   /* Blank the main display area */
   widget_dialog_with_border( 1, 2, 30, 6 );
 
-  widget_printstring( 9, 2, WIDGET_COLOUR_FOREGROUND, "Machine Control" );
+  widget_printstring( 9, 2, WIDGET_COLOUR_FOREGROUND, "Machine" );
 
   widget_printstring( 2, 4, WIDGET_COLOUR_FOREGROUND, "(R)eset machine" );
   widget_printstring( 2, 6, WIDGET_COLOUR_FOREGROUND, "(S)witch machines" );
