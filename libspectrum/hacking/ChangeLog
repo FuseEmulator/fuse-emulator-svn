@@ -81,3 +81,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          libspectrum.h.in to z80.c.
 20030912 doc/libspectrum.txt: document the tape routines.
 20030912 ChangeLog, README: small doc updates for the 0.2.0 release.
+20030913 Makefile.am: distribute generate.pl.in, tape_accessors.pl,
+	 tape_set.pl and tape_block.h.
