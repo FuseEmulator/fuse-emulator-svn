@@ -70,6 +70,7 @@ const char *
 libspectrum_machine_name( libspectrum_machine type )
 {
   switch( type ) {
+  case LIBSPECTRUM_MACHINE_16:     return "Spectrum 16K";
   case LIBSPECTRUM_MACHINE_48:     return "Spectrum 48K";
   case LIBSPECTRUM_MACHINE_TC2048: return "Timex TC2048";
   case LIBSPECTRUM_MACHINE_128:    return "Spectrum 128K";
