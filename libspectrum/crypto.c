@@ -49,8 +49,7 @@ static libspectrum_error
 get_hash( gcry_sexp_t *hash, const libspectrum_byte *data,
 	  size_t data_length );
 static libspectrum_error
-create_key( gcry_sexp_t *s_key, libspectrum_rzx_dsa_key *key,
-	    const char *format);
+create_key( gcry_sexp_t *s_key, libspectrum_rzx_dsa_key *key, int secret_key);
 static void free_mpis( gcry_mpi_t *mpis, size_t n );
 static libspectrum_error get_mpi( gcry_mpi_t *mpi, gcry_sexp_t signature,
 				  const char *token );
@@ -86,7 +85,7 @@ get_signature( gcry_mpi_t *r, gcry_mpi_t *s, libspectrum_byte *data,
 
   error = get_hash( &hash, data, data_length ); if( error ) return error;
 
-  error = create_key( &s_key, key, private_key_format );
+  error = create_key( &s_key, key, 1 );
   if( error ) { gcry_sexp_release( hash ); return error; }
 
   error = gcry_pk_sign( &s_signature, hash, s_key );
@@ -160,11 +159,12 @@ get_hash( gcry_sexp_t *hash, const libspectrum_byte *data, size_t data_length )
 
 static libspectrum_error
 create_key( gcry_sexp_t *s_key, libspectrum_rzx_dsa_key *key,
-	    const char *format )
+	    int secret_key )
 {
   int error;
   size_t i;
   gcry_mpi_t mpis[MPI_COUNT];
+  const char *format;
 
   for( i=0; i<MPI_COUNT; i++ ) mpis[i] = NULL;
 
@@ -175,7 +175,7 @@ create_key( gcry_sexp_t *s_key, libspectrum_rzx_dsa_key *key,
     error = gcry_mpi_scan( &mpis[2], GCRYMPI_FMT_HEX, key->g, 0, NULL );
   if( !error )
     error = gcry_mpi_scan( &mpis[3], GCRYMPI_FMT_HEX, key->y, 0, NULL );
-  if( !error && key->x )
+  if( !error && secret_key )
     error = gcry_mpi_scan( &mpis[4], GCRYMPI_FMT_HEX, key->x, 0, NULL );
 
   if( error ) {
@@ -185,6 +185,8 @@ create_key( gcry_sexp_t *s_key, libspectrum_rzx_dsa_key *key,
     free_mpis( mpis, MPI_COUNT );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
+
+  format = secret_key ? private_key_format : public_key_format;
   
   error = gcry_sexp_build( s_key, NULL, format,
 			   mpis[0], mpis[1], mpis[2], mpis[3], mpis[4] );
@@ -198,8 +200,17 @@ create_key( gcry_sexp_t *s_key, libspectrum_rzx_dsa_key *key,
 
   free_mpis( mpis, MPI_COUNT );
 
-  /* FIXME: Use gcry_pk_testkey once it is able to check public keys
-     as well as private keys */
+  /* FIXME: Test public keys as well once gcry_pk_testkey acquires this
+     functionality */
+  if( secret_key ) {
+    error = gcry_pk_testkey( *s_key );
+    if( error ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			       "create_key: key is not sane: %s",
+			       gcry_strerror( error ) );
+      return LIBSPECTRUM_ERROR_LOGIC;
+    }
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -298,7 +309,7 @@ libspectrum_verify_signature( libspectrum_rzx_signature *signature,
   error = get_hash( &hash, signature->start, signature->length );
   if( error ) return error;
 
-  error = create_key( &key_sexp, key, public_key_format );
+  error = create_key( &key_sexp, key, 0 );
   if( error ) { gcry_sexp_release( hash ); return error; }
 
   error = gcry_sexp_build( &signature_sexp, NULL, signature_format,
