@@ -190,14 +190,32 @@ int
 libspectrum_microdrive_checksum( libspectrum_microdrive *microdrive,
 				 libspectrum_byte what )
 {
-  libspectrum_byte checksum, *data;
+  libspectrum_byte *data;
   libspectrum_microdrive_block b;
+  unsigned int checksum, carry;
   int i;
 
   libspectrum_microdrive_get_block( microdrive, 0, &b );
 
   if( ( b.recflg & 0x02 ) && b.reclen == 0 )
     return -1;		/* BAD_BLOCK */
+
+#define DO_CHECK \
+    checksum += *data;		/* LD    A,E */ \
+				/* ADD A, (HL) */ \
+    if( checksum > 255 ) {	/* ... ADD A, (HL) --> CY*/ \
+      carry = 1;		\
+      checksum -= 256;		\
+    } else {			\
+      carry = 0;		\
+    }				\
+    data++;			/* INC HL */ \
+    checksum += carry + 1;	/* ADC A, #01 */ \
+    if( checksum == 256 ) {	/* JR Z,LSTCHK */ \
+      checksum -= 256;		/* LD E,A */\
+    } else {			\
+      checksum--;		/* DEC A */ \
+    }
 
 /*
 
@@ -214,33 +232,31 @@ LOOP-C:  LD      A,E             ; fetch running sum
 LSTCHK   LD      E,A             ; update the 8-bit sum.
 
 */  
-  data = &microdrive->data[ what * LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ];
+  data = &(microdrive->data[ what * LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ]);
+  
+  if( ( *( data + 15 ) & 2 ) && 
+        ( *( data + 17 ) == 0 ) && ( *( data + 18 ) == 0 ) ) {
+    return -1;		/* PRESET BAD BLOCK */
+  }
 
   checksum = 0;
   for( i = LIBSPECTRUM_MICRODRIVE_HEAD_LEN; i > 1; i-- ) {
-    checksum += *data;	/* ADD A, (HL) */
-    if( checksum < *( data++ ) ) checksum++;
-    if( checksum == 255 ) checksum = 0;
+    DO_CHECK;
   }
   if( *(data++) != checksum ) 
     return 1;
 
   checksum = 0;
   for( i = LIBSPECTRUM_MICRODRIVE_HEAD_LEN; i > 1; i-- ) {
-    checksum += *data;
-    if( checksum < *( data++ ) ) checksum++;
-    if( checksum == 255 ) checksum = 0;
+    DO_CHECK;
   }
   if( *(data++) != checksum ) 
     return 2;
 
-  checksum = 0;
   for( i = LIBSPECTRUM_MICRODRIVE_DATA_LEN; i > 0; i-- ) {
-    checksum += *data;
-    if( checksum < *( data++ ) ) checksum++;
-    if( checksum == 255 ) checksum = 0;
+    DO_CHECK;
   }
-  if( *(data++) != checksum ) 
+  if( *(data++) != checksum )
     return 3;
 
   return 0;
