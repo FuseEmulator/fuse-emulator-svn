@@ -63,8 +63,6 @@ BUILT_SOURCES = libspectrum.h snap_accessors.c tape_accessors.c tape_set.c
 nodist_include_HEADERS = libspectrum.h
 noinst_HEADERS = internals.h
 
-noinst_PROGRAMS = make-perl
-
 AM_CFLAGS = -DLIBSPECTRUM_EXPORTS
 
 make-perl$(EXEEXT): make-perl.c
@@ -90,12 +88,14 @@ INCLUDES = @GLIB_CFLAGS@
 
 EXTRA_DIST = accessor.pl \
 	     generate.pl.in \
-             libspectrum.h.in \
-             snap_accessors.txt \
+	     make-perl.c \
 	     tape_accessors.pl \
 	     tape_accessors.txt \
+	     tape_block.h \
 	     tape_set.pl \
-	     tape_block.h
+	     libspectrum.h.in \
+	     snap_accessors.txt
+
 
 SUBDIRS = doc \
 	  myglib
