@@ -1,19 +1,21 @@
-libspectrum 0.1.1
+libspectrum 0.2.0
 =================
 
 libspectrum is a fairly simple library designed to make the handling
 of various ZX Spectrum emulator-related file formats easy.  So far it
-handles .sna and .z80 snapshots (.sna read only), .tap and .tzx tape
-images and .rzx input recording files.
+handles:
+
+* Snapshots: .z80, .szx, .sna (all read/write), .zxs, .sp., .snp and
+  +D snapshots (read only).
+* Tape images: .tzx, .tap (read/write) and Warajevo .tap (read only).
+* Input recordings: .rzx (read/write).
+* Timex cartridges: .dck (read only).
+
+There are also some subsidiary functions which may be generally useful
+for Spectrum-related utilities.
 
 General conventions
 ===================
-
-It would be nice if we could get it such that user code should never use
-the libspectrum_* objects directly, but only pointers to them so binary
-compatibility can be maintained if (when) the data structures change.
-However, this hasn't really happened for anything other than the
-libspectrum_rzx object, which is fully encapsulated.
 
 Naming conventions:
 
@@ -30,11 +32,16 @@ Calling conventions:
 Defined types
 =============
 
-libspectrum defines three standard types which may be of use:
+libspectrum defines eight standard types which may be of use:
 
-libspectrum_byte		An unsigned 8-bit type
-libspectrum_word		An unsigned 16-bit type
-libspectrum_dword		An unsigned 32-bit type
+libspectrum_byte		An unsigned 8-bit integer
+libspectrum_signed_byte		A signed 8-bit integer
+libspectrum_word		An unsigned 16-bit integer
+libspectrum_signed_word		A signed 16-bit integer
+libspectrum_dword		An unsigned 32-bit integer
+libspectrum_signed_dword	A signed 32-bit integer
+libspectrum_qword		An unsigned 64-bit integer
+libspectrum_signed_qword	A signed 64-bit integer
 
 Error handling
 ==============
@@ -111,18 +118,28 @@ will tell you which features (above and beyond those found on the base
 48K machine) a given `libspectrum_machine' has. It returns a bitwise OR
 of the following constants:
 
+LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY
+  This machine has 128K of memory accessible as on the 128K machine.
+
 LIBSPECTRUM_MACHINE_CAPABILITY_AY
   This machine has an AY-3-8912 sound chip (as in the 128K and later
   machines).
 
-LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY
-  This machine has 128K of memory accessible as on the 128K machine
+LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK
+  This machine has built-in Kempston joystick ports as on the TC2048.
 
 LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY
   This machine can change into all-RAM configurations as the +2A/+3.
 
 LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK
   This machine has a disk drive similar to that on the +3.
+
+LIBSPECTRUM_MACHINE_CAPABILITY_SINCLAIR_JOYSTICK
+  This machine has built-in Sinclair joystick ports as on the +2/+2A/+3.
+
+LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK
+  This machine has a `dock' (cartridge port) similar to that found on
+  the TC2068.
 
 LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY
   This machine has memory paging capabilities similar to that of the
@@ -154,20 +171,50 @@ The type of file will be returned in the `type' parameter, and can take
 the following values:
 
 LIBSPECTRUM_ID_UNKNOWN		Couldn't identify this file
+
 LIBSPECTRUM_ID_CARTRIDGE_DCK	A .dck Timex dock image
-LIBSPECTRUM_ID_DISK_DSK		A .dsk disk file
-LIBSPECTRUM_ID_DISK_SCL		A .scl disk file
-LIBSPECTRUM_ID_DISK_TRD		A .trd disk file
+
+LIBSPECTRUM_ID_DISK_DSK		A .dsk +3 disk file
+LIBSPECTRUM_ID_DISK_SCL		A .scl TRDOS disk file
+LIBSPECTRUM_ID_DISK_TRD		A .trd TRDOS disk file
+
 LIBSPECTRUM_ID_RECORDING_RZX	A .rzx input recording
+
+LIBSPECTRUM_ID_SNAPSHOT_PLUSD   A +D snapshot 
 LIBSPECTRUM_ID_SNAPSHOT_SNA     A .sna snapshot 
+LIBSPECTRUM_ID_SNAPSHOT_SNP     A .snp snapshot 
+LIBSPECTRUM_ID_SNAPSHOT_SP      A .sp snapshot 
+LIBSPECTRUM_ID_SNAPSHOT_SZX     A .szx snapshot (as used by Spectaculator)
 LIBSPECTRUM_ID_SNAPSHOT_Z80	A .z80 snapshot
-LIBSPECTRUM_ID_TAPE_TAP		A .tap tape file
-LIBSPECTRUM_ID_TAPE_TZX		A .tzx tape file
+LIBSPECTRUM_ID_SNAPSHOT_ZXS	A .zxs snapshot (as used by zx32)
+
+LIBSPECTRUM_ID_TAPE_TAP		A `normal' (Z80-style) .tap tape image
+LIBSPECTRUM_ID_TAPE_TZX		A .tzx tape image
+LIBSPECTRUM_ID_TAPE_WARAJEVO	A Warajevo-style .tap tape image
 
 `libspectrum_identify_file' looks for defined signatures in the file as
 well as the extension of the filename and a couple of heuristics in its
 attempts to identify the file.  It's not perfect (especially when given
 files with the wrong extension), but it should work in most cases.
+
+What in many cases may be more useful than the specific type of the
+file is whether the file is a snapshot, a tape image or whatever. This
+can be done with the `libspectrum_identify_class' function:
+
+libspectrum_error libspectrum_identify_class( libspectrum_class_t *class,
+                                              libspectrum_id_t type )
+
+which returns the type of file represented by the `type' parameter in
+`*class'. The available values are:
+
+LIBSPECTRUM_CLASS_UNKNOWN		An unknown file type
+
+LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX	A Timex dock cartridge
+LIBSPECTRUM_CLASS_DISK_PLUS3		A +3 disk image
+LIBSPECTRUM_CLASS_DISK_TRDOS		A TRDOS disk image
+LIBSPECTRUM_CLASS_RECORDING		An input recording
+LIBSPECTRUM_CLASS_SNAPSHOT		A snapshot
+LIBSPECTRUM_CLASS_TAPE			A tape image
 
 Machine timings
 ---------------
@@ -229,64 +276,64 @@ libspectrum_timings_top_left_pixel( libspectrum_machine machine )
 How many tstates after interrupt is the top-left pixel of the screen
 displayed.
 
+Creator information
+-------------------
+
+Some formats (.szx snapshots and .rzx input recordings) allow
+utilities to store some information regarding the creator of the file.
+libspectrum provides a `libspectrum_creator' structure to store this
+information.
+
+libspectrum_error libspectrum_creator_alloc( libspectrum_creator **creator );
+
+Allocate a new `libspectrum_creator' structure.
+
+libspectrum_error libspectrum_creator_free( libspectrum_creator *creator );
+
+Free the memory used by a `libspectrum_creator' structure.
+
+libspectrum_error
+libspectrum_creator_set_program( libspectrum_creator *creator,
+				 const libspectrum_byte *program );
+const libspectrum_byte*
+libspectrum_creator_program( libspectrum_creator *creator );
+
+Set and retrieve the name of the program which created this file.
+
+libspectrum_error libspectrum_creator_set_major( libspectrum_creator *creator,
+						 libspectrum_word major );
+libspectrum_word
+libspectrum_creator_major( libspectrum_creator *creator );
+
+Set and retrieve the major version number of the program which created
+this file.
+
+libspectrum_error libspectrum_creator_set_minor( libspectrum_creator *creator,
+						 libspectrum_word minor );
+libspectrum_word
+libspectrum_creator_minor( libspectrum_creator *creator );
+
+Set and retrieve the minor version number of the program which created
+this file.
+
+libspectrum_error
+libspectrum_creator_set_competition_code( libspectrum_creator *creator,
+					  libspectrum_dword competition_code );
+libspectrum_dword
+libspectrum_creator_competition_code( libspectrum_creator *creator );
+
+Set and retrieve the `competition code' of the program which created
+this file. The competition code can be used for on-line tournaments to
+determine that a certain file was made after a specific code was
+released. If you don't understand the previous, you almost certainly
+don't need to worry about it!
+
 Snapshot functions
 ==================
 
-Functions for dealing with snapshot files. These act on a
-`libspectrum_snap' structure:
-
-typedef struct libspectrum_snap {
-
-  /* Which machine are we using here? */
-
-  libspectrum_machine machine;
-
-  /* Registers and the like */
-
-  libspectrum_byte a , f ; libspectrum_word bc , de , hl ;
-  libspectrum_byte a_, f_; libspectrum_word bc_, de_, hl_;
-
-  libspectrum_word ix, iy; libspectrum_byte i, r;
-  libspectrum_word sp, pc;
-
-  libspectrum_byte iff1, iff2, im;
-
-  /* RAM */
-
-  libspectrum_byte *pages[8];
-
-  /* Data from .slt files */
-
-  libspectrum_byte *slt[256];   /* Level data */
-  size_t slt_length[256];       /* Length of each level */
-
-  libspectrum_byte *slt_screen; /* Loading screen */
-  int slt_screen_level;         /* The id of the loading screen. Not used
-                                   for anything AFAIK, but copy it
-				   around just in case */
-
-  /* Peripheral status */
-
-  libspectrum_byte out_ula; libspectrum_dword tstates;
-
-  libspectrum_byte out_128_memoryport;
-
-  libspectrum_byte out_ay_registerport, ay_registers[16];
-
-  libspectrum_byte out_plus3_memoryport;
-
-  /* Timex-specific bits */
-  libspectrum_byte out_scld_hsr, out_scld_dec;
-
-} libspectrum_snap;
-
-Most of that should be fairly self-explanatory; the a_, f_, bc_, de_
-and hl_ members represent the A', F', BC', DE' and HL' registers. For
-48K snaps, 0x4000 to 0x7fff is stored in `pages[5]', 0x8000 to 0xbfff
-in `pages[2]' and 0xc000 to 0xffff in `pages[0]' (This is equivalent
-to the default mapping on the 128K machines).
-
-The actual routines for dealing with snaps are:
+Functions for dealing with snapshot files. These act on an opaque
+`libspectrum_snap' structure, which can be accessed via the following
+routines:
 
 libspectrum_error libspectrum_snap_alloc( libspectrum_snap **snap )
 
@@ -295,6 +342,83 @@ Allocate a new libspectrum_snap structure.
 libspectrum_error libspectrum_snap_free( libspectrum_snap *snap )
 
 Release a structure allocated with `libspectrum_snap_alloc'.
+
+There is a family of functions which can be used to retrieve and set
+the properties of a snapshot. The `retrieve' functions have the form
+
+<type> libspectrum_snap_<name>( libspectrum_snap *snap )
+
+which retrieves the value of the property <name>, while the `set'
+functions have the form
+
+void libspectrum_snap_set_<name>( libspectrum_snap *snap, <type> new_value )
+
+which sets the value of <name> to `new_value'. For array properties,
+the retrieval function has the form
+
+<type> libspectrum_snap_<name>( libspectrum_snap *snap, int idx )
+
+which retrieves the <name>[`idx'] and the set function has the form
+
+void libspectrum_snap_set_<name>( libspectrum_snap *snap,
+				  int idx, <type> new_value )
+
+which sets <name>[`idx'].
+
+The available properties (along with their types) are:
+
+* libspectrum_machine machine
+
+* libspectrum_byte a
+* libspectrum_byte f
+* libspectrum_word bc
+* libspectrum_word de
+* libspectrum_word hl
+* libspectrum_byte a_
+* libspectrum_byte f_
+* libspectrum_word bc_
+* libspectrum_word de_
+* libspectrum_word hl_
+* libspectrum_word ix
+* libspectrum_word iy
+* libspectrum_byte i
+* libspectrum_byte r
+* libspectrum_word sp
+* libspectrum_word pc
+* libspectrum_byte iff1
+* libspectrum_byte iff2
+* libspectrum_byte im
+
+* libspectrum_dword tstates
+
+* int halted
+
+* libspectrum_byte out_ula
+
+* libspectrum_byte out_128_memoryport
+* libspectrum_byte out_plus3_memoryport
+
+* libspectrum_byte out_ay_registerport
+* libspectrum_byte ay_registers[16]
+
+* libspectrum_byte out_scld_hsr
+* libspectrum_byte out_scld_dec
+
+* libspectrum_byte* pages[8]
+
+* libspectrum_byte* slt[256]
+* size_t slt_length[256]
+* libspectrum_byte* slt_screen
+* int slt_screen_level
+
+Most of those should be fairly self-explanatory; the a_, f_, bc_, de_
+and hl_ members represent the A', F', BC', DE' and HL' registers. For
+48K snaps, 0x4000 to 0x7fff is stored in `pages[5]', 0x8000 to 0xbfff
+in `pages[2]' and 0xc000 to 0xffff in `pages[0]' (This is equivalent
+to the default mapping on the 128K machines).
+
+With all those housekeeping routines out of the way, there are two
+main workhorses of the snapshot routines:
 
 libspectrum_error
 libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
@@ -307,6 +431,41 @@ is `LIBSPECTRUM_ID_UNKNOWN', guess the file format via
 `libspectrum_identify_file'; `filename' is used only to help with the
 identification process and can be set to NULL (or anything else) if
 `type' is not `LIBSPECTRUM_ID_UNKNOWN'.
+
+libspectrum_error
+libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
+			int *out_flags, libspectrum_snap *snap,
+	 		libspectrum_id_t type, libspectrum_creator *creator,
+			int in_flags );
+
+Take the snapshot in `snap' and serialise it into `*buffer' as a
+snapshot of `type'. On entry, '*buffer' is assumed to be allocated
+'*length' bytes, and will grow if necessary; if '*length' is zero,
+'*buffer' can be uninitialised on entry. `in_flags' can be used
+specify minor changes to the snapshot; currently the only available
+option is LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION, which specifies
+that the snapshot should not be compressed for formats where it would
+normally be (.z80 and .szx). `out_flags' will return the logical OR of
+some extra information from the serialisation:
+
+LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS
+  A small amount of information was lost in serialisation. The
+  resultant snapshot may not work correctly.
+
+LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS
+  A large amount of information was lost in serialisation. It is
+  highly likely that the resultant snapshot won't work.
+
+`creator' gives the information which will be written into the
+snapshot to specify the creator of the file. This can be NULL, in
+which case no information will be written. Currently, only the .szx
+format will make any use of this information.
+
+The only formats for which serialisation is supported are .sna, .szx
+and .z80.
+
+There are also three format-specific functions. However, *these
+functions are deprecated and should not be used in new code*:
 
 libspectrum_error libspectrum_sna_read( libspectrum_snap *snap,
 		                        const libspectrum_byte *buffer,
@@ -329,9 +488,6 @@ Take the snapshot in `snap' and serialise it into a .z80 file at
 '*buffer'. On entry, '*buffer' is assumed to be allocated '*length'
 bytes, and will grow if necessary; if '*length' is zero, '*buffer' can
 be uninitialised on entry.
-
-Note that there is (currently) no function to serialise to a .sna
-snapshot.
 
 Tape functions
 ==============
