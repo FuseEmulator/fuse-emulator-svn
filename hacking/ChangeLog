@@ -254,3 +254,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040709 configure.in: bump version number to 0.2.2pre1.
 20040709 TAG: libspectrum_0_2_2pre1
 20040715 README,doc/libspectrum.3: doc updates for 0.2.2.
+20040715 z80.c: fix possible segfault if a snap had a page 19 (Stuart).
