@@ -268,23 +268,24 @@ static void reverse_block (libspectrum_byte *BufferOut, libspectrum_byte *Buffer
     *(BOut --) = *(BIn ++);
 }
  
-void create_out_filename()
+static void
+create_out_filename( void )
 {
-	strcpy(out_filename, filename);
-	int last = strlen(out_filename)-1;
-	while (out_filename[last] != '.' && last > 0)
-	{
-		last--;
-	}
-	if (last == 0)
-	{
-		// No extension ???
-		return;
-	}
-	out_filename[last+1]='t';
-	out_filename[last+2]='z';
-	out_filename[last+3]='x';
-	out_filename[last+4]=0;
+  int last;
+
+  strcpy( out_filename, filename );
+
+  last = strlen(out_filename)-1;
+
+  while (out_filename[last] != '.' && last > 0 ) last--;
+
+  /* No extension */
+  if( last == 0 ) return;
+
+  out_filename[last+1]='t';
+  out_filename[last+2]='z';
+  out_filename[last+3]='x';
+  out_filename[last+4]=0;
 }
 
 char * get_file_only(char *path)
@@ -321,24 +322,18 @@ void create_loader_name()
 	loader_name[len]=0;
 }
 
-void center_name(char name[])
+static void
+center_name( char *name )
 {
-        int i;
+  int i, num;
 
-	for (i=31; i >=0 && name[i]==' '; i--);
-	int num = 31-i;
+  for( i=31; i >=0 && name[i]==' '; i-- );
+  num = 31-i;
 
-	if (num>1)
-	{
-		for (i=31; i >= num/2; i--)
-		{
-			name[i] = name[i-(num/2)];
-		}
-		for (i=0; i < num/2; i++)
-		{
-			name[i]=' ';
-		}
-	}
+  if( num>1 ) {
+    for( i=31; i >= num/2; i-- ) name[i] = name[i-(num/2)];
+    for( i=0; i < num/2; i++ ) name[i]=' ';
+  }
 }
 
 static void
@@ -913,47 +908,51 @@ libspectrum_byte calc_checksum(libspectrum_byte data[], int len)
 	return xx;
 }
 
-void create_main_header()
+static void
+create_main_header( void )
 {
-  int len = ( LOADERPREPIECE - 1 ) + 768, i;
+  int len, i, var, tlen;
 
-  // Fill in the name
-  int tlen = strlen( loader_name );
+  len = ( LOADERPREPIECE - 1 ) + 768;
+
+  /* Fill in the name */
+  tlen = strlen( loader_name );
   for( i=0; i < tlen; i++ )
     tzx_header[ 9 + i ] = loader_name[ i ];
 
-  // Fill in the length of data
+  /* Fill in the length of data */
   tzx_header[17] = len & 0xff;
   tzx_header[18] = len >> 8;
 
-  int var = ( LOADERPREPIECE - 1 ) - 21;	// Variables start here
-  // Fill in proper variable area
+  var = ( LOADERPREPIECE - 1 ) - 21;	/* Variables start here */
+  /* Fill in proper variable area */
   tzx_header[21] = var & 0xff;
   tzx_header[22] = var >> 8;
 
-  // Calc checksum
+  /* Calc checksum */
   tzx_header[23] = calc_checksum( tzx_header + 5, 18 );
 }
 
-void set_loader_speed()
+static void
+set_loader_speed( void )
 {
-	turbo_loader[94] = turbo_vars[speed_value]._Compare;
-	turbo_loader[118]= turbo_vars[speed_value]._Delay;
-	libspectrum_byte xor_colour;
-	if (load_colour == -1)
-	{
-		load_colour = libspectrum_snap_out_ula( snap ) & 0x07;
-	}
-    if (load_colour == 0x00)      
-	{
-		/* Border is going to be black ? */
-		xor_colour = 0x41;                           /* Then use blue as counter colour (black/black cannot be seen....) */
-	}
-	else
-	{
-		xor_colour = 0x40 | load_colour;           /* Use the ultimate colour as counter colour for the loading stripes */
-	}
-	turbo_loader[134]= xor_colour;
+  libspectrum_byte xor_colour;
+
+  turbo_loader[ 94] = turbo_vars[speed_value]._Compare;
+  turbo_loader[118] = turbo_vars[speed_value]._Delay;
+	
+  if( load_colour == -1 )
+    load_colour = libspectrum_snap_out_ula( snap ) & 0x07;
+
+  if( load_colour == 0 ) {
+    /* If border is going to be black, use blue as the counter colour */
+    xor_colour = 0x41;
+  } else {
+    /* Use the ultimate colour as counter colour for the loading stripes */
+    xor_colour = 0x40 | load_colour;
+  }
+
+  turbo_loader[134] = xor_colour;
 }
 
 #define POS_TABLE			0x16C		//  Loader table
@@ -986,11 +985,19 @@ void set_loader_speed()
 #define POS_F				0x142		//  F
 #define POS_A				0x143		//  A
 		
-void create_main_data()
+static void
+create_main_data( void )
 {
   char tempc[256];
+  int len, i, j, loader_start_pos, loader_table_pos, pp, main_checksum,
+    num_pages, capabilities, mode_128, shortpage, load, loader_table_entry,
+    smallpage, reverse_off, ppay;
+  PageOrder_s *page_order;
+  libspectrum_machine machine;
+  libspectrum_word add, pagelen, loadlen, rr;
+  libspectrum_byte num, external_screen[ 6912 ], addhi;
 
-  int len = (LOADERPREPIECE-1) + 768 + 2, i, j;
+  len = (LOADERPREPIECE-1) + 768 + 2;
 
   // Fill in the length of data
   tzx_header_data[3] = len & 0xff;
@@ -1012,17 +1019,16 @@ void create_main_data()
 
   add_data( SpectrumBASICData, LOADERPREPIECE-1 );
 
-  int loader_start_pos = data_pos;	// Remember where the main loader
-					// starts so we can fill the table
-					// later
+  loader_start_pos = data_pos; /* Remember where the main loader starts so
+				  we can fill the table later */
 
-  int loader_table_pos = loader_start_pos + POS_TABLE;
+  loader_table_pos = loader_start_pos + POS_TABLE;
 
-  int pp = loader_start_pos;
+  pp = loader_start_pos;
 
   add_data( loader_data, 768 );
 
-  int main_checksum = data_pos;
+  main_checksum = data_pos;
 
   data_pos++;
 
@@ -1050,15 +1056,9 @@ void create_main_data()
 
   // We only need to write proper lenght later !
 
-  int num_pages;
-  PageOrder_s *page_order;
-
-  int capabilities;
-
-  libspectrum_machine machine = libspectrum_snap_machine( snap );
+  machine = libspectrum_snap_machine( snap );
   capabilities = libspectrum_machine_capabilities( machine );
-
-  int mode_128 = capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY;
+  mode_128 = capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY;
 
   if( mode_128 ) {
 
@@ -1083,17 +1083,9 @@ void create_main_data()
   }
 
 	
-  int loader_table_entry = 0;
-  libspectrum_word add;
-  libspectrum_byte num;
-  libspectrum_word pagelen;
-  libspectrum_word loadlen;
-  int smallpage;
+  loader_table_entry = 0;
 
-  libspectrum_byte external_screen[6912];
-
-  int shortpage = 2;	// The page which contains loader - 1 on 48k and
-			// 2 on 128k !
+  shortpage = 2; /* The page which contains loader - 1 on 48k and 2 on 128k! */
 
   for( i=0; i < num_pages; i++ )
     if( page_order[i].PageStart == 0x8000 )
@@ -1101,8 +1093,6 @@ void create_main_data()
 
   // Get the information on which pages need to be loaded in !
   // Pages that are not loaded in are filled with 0 !
-
-  int load;
 
   for( i=0; i < 8; i++ ) {
 
@@ -1148,6 +1138,7 @@ void create_main_data()
 
       // External Loading screen
       FILE * exfile = NULL;
+
       exfile = fopen(external_filename, "rb");
       if (exfile == NULL) {
 	print_error("Could not read the Loading Screen!");
@@ -1164,7 +1155,7 @@ void create_main_data()
 
       // Fill in the table data
       add = add+(pagelen-1);
-      libspectrum_byte addhi = (add>>8)&255;
+      addhi = ( add >> 8 ) & 0xff;
       
       snap_bin[loader_table_pos+(loader_table_entry*4)] = 0x10;
       snap_bin[loader_table_pos+(loader_table_entry*4)+1] = addhi;
@@ -1197,11 +1188,11 @@ void create_main_data()
 
       if( load_page[num] ) {
 
+	libspectrum_byte realnum;
+
 	// This page needs to be loaded
 	add = page_order[i].PageStart;
 	pagelen = 16384;
-
-	libspectrum_byte realnum;
 
 	if( mode_128 ) {
 
@@ -1240,7 +1231,7 @@ void create_main_data()
 
 	}
 
-	int reverse_off = 0;
+	reverse_off = 0;
 
 	if( loadlen != 0 ) {
 	  // Check if it would overwrite itself ?
@@ -1257,7 +1248,7 @@ void create_main_data()
 
 	// Fill in the table data
 	add = add+(pagelen-1);
-	libspectrum_byte addhi = (add>>8)&255;
+	addhi = ( add >> 8 ) & 0xff;
 				
 	snap_bin[loader_table_pos+(loader_table_entry*4)] = realnum;
 	snap_bin[loader_table_pos+(loader_table_entry*4)+1] = addhi;
@@ -1292,6 +1283,8 @@ void create_main_data()
 
   if( load_768 ) {
 
+    int cstart;
+
     // Area where the loader is was not empty - need to load it in
     print_verbose("- Adding Extra ROM Loading Block");
 		
@@ -1300,7 +1293,7 @@ void create_main_data()
     tzx_header_data[5] = 0x55;		// Flag is 0x55
 
     add_data(tzx_header_data, 6);
-    int cstart = data_pos-1;
+    cstart = data_pos-1;
     add_data( libspectrum_snap_pages( snap, smallpage ) + 16384 - 768, 768 );
     snap_bin[data_pos]= calc_checksum(snap_bin+cstart, 769);
     data_pos++;
@@ -1381,8 +1374,8 @@ void create_main_data()
   snap_bin[pp+POS_F2] = libspectrum_snap_f_( snap );
   snap_bin[pp+POS_A2] = libspectrum_snap_a_( snap );
 
-  libspectrum_word rr = (libspectrum_word) libspectrum_snap_r( snap );
-  rr-=0x0a;	// Compensate for the instructions after R is loaded !
+  rr = libspectrum_snap_r( snap );
+  rr -= 0x0a;	/* Compensate for the instructions after R is loaded! */
 
   snap_bin[pp+POS_R] = rr & 0xff;
   snap_bin[pp+POS_I] = libspectrum_snap_i( snap );
@@ -1399,7 +1392,7 @@ void create_main_data()
   snap_bin[pp+POS_F] = libspectrum_snap_f( snap );
   snap_bin[pp+POS_A] = libspectrum_snap_a( snap );
 
-  int ppay = POS_AYREG+1;
+  ppay = POS_AYREG+1;
   for( i=0; i < 16; i++ ) {
     snap_bin[pp+ppay] = libspectrum_snap_ay_registers( snap, 15 - i );
     ppay+=2;

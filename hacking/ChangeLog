@@ -67,3 +67,4 @@
 20031212 Makefile.am, snap2tzx.c: libspectrum-ify the snap reading part
 	 of snap2tzx.
 20031212 snap2tzx.c: coding style tidyups.
+20031212 snap2tzx.c: C89 and coding style fixups.
