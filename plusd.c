@@ -50,12 +50,6 @@ libspectrum_plusd_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
   /* All +D snaps are of the 48K machine */
   libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 );
 
-  /* Black border, in the absence of any other information */
-  libspectrum_snap_set_out_ula( snap, 0x00 );
-
-  /* Just before an interrupt */
-  libspectrum_snap_set_tstates( snap, 69664 );
-
   libspectrum_snap_set_iy ( snap, buffer[ 0] + buffer[ 1] * 0x100 );
   libspectrum_snap_set_ix ( snap, buffer[ 2] + buffer[ 3] * 0x100 );
   libspectrum_snap_set_de_( snap, buffer[ 4] + buffer[ 5] * 0x100 );

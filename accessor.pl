@@ -115,6 +115,31 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
+  libspectrum_snap_set_a   ( *snap, 0x00 );
+  libspectrum_snap_set_f   ( *snap, 0x00 );
+  libspectrum_snap_set_bc  ( *snap, 0x0000 );
+  libspectrum_snap_set_de  ( *snap, 0x0000 );
+  libspectrum_snap_set_hl  ( *snap, 0x0000 );
+
+  libspectrum_snap_set_a_  ( *snap, 0x00 );
+  libspectrum_snap_set_f_  ( *snap, 0x00 );
+  libspectrum_snap_set_bc_ ( *snap, 0x0000 );
+  libspectrum_snap_set_de_ ( *snap, 0x0000 );
+  libspectrum_snap_set_hl_ ( *snap, 0x0000 );
+
+  libspectrum_snap_set_ix  ( *snap, 0x0000 );
+  libspectrum_snap_set_iy  ( *snap, 0x0000 );
+  libspectrum_snap_set_i   ( *snap, 0x00 );
+  libspectrum_snap_set_r   ( *snap, 0x00 );
+  libspectrum_snap_set_sp  ( *snap, 0x0000 );
+  libspectrum_snap_set_pc  ( *snap, 0x0000 );
+
+  libspectrum_snap_set_iff1( *snap, 1 );
+  libspectrum_snap_set_iff2( *snap, 1 );
+  libspectrum_snap_set_im  ( *snap, 1 );
+
+  libspectrum_snap_set_halted( *snap, 0 );
+
   for( i = 0; i < 8; i++ ) libspectrum_snap_set_pages( *snap, i, NULL );
   for( i = 0; i < 256; i++ ) {
     libspectrum_snap_set_slt( *snap, i, NULL );
@@ -122,6 +147,18 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
   }
   libspectrum_snap_set_slt_screen( *snap, NULL );
   libspectrum_snap_set_slt_screen_level( *snap, 0 );
+
+  libspectrum_snap_set_out_ula( *snap, 0x00 );
+  libspectrum_snap_set_tstates( *snap, 69664 );
+  libspectrum_snap_set_out_128_memoryport( *snap, 0x07 );
+
+  libspectrum_snap_set_out_ay_registerport( *snap, 0x0e );
+  for( i = 0; i < 16; i++ ) libspectrum_snap_set_ay_registers( *snap, i, 0 );
+
+  libspectrum_snap_set_out_plus3_memoryport( *snap, 0x08 );
+
+  libspectrum_snap_set_out_scld_hsr( *snap, 0x00 );
+  libspectrum_snap_set_out_scld_dec( *snap, 0x00 );
 
   return LIBSPECTRUM_ERROR_NONE;
 }

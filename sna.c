@@ -137,10 +137,6 @@ libspectrum_sna_read_header( const libspectrum_byte *buffer,
 
   libspectrum_snap_set_out_ula( snap, buffer[26] & 0x07 );
 
-  /* A bit before an interrupt. Why this value? Because it's what
-     z80's `convert' uses :-) */
-  libspectrum_snap_set_tstates( snap, 69664 );
-
   return LIBSPECTRUM_ERROR_NONE;
 }
 
