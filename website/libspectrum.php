@@ -91,6 +91,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
    <li><a href="http://www.netbsd.org/">NetBSD</a> has 0.2.0.1 as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/libspectrum/">emulators/libspectrum</a></li>
    <li><a href="http://www.openbsd.org/">OpenBSD</a> users can find a port of v0.1.0 in <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/devel/libspectrum/">ports/devel/libspectrum</a></li>
    <li><a href="http://www.pld.net.pl/">PLD</a> users have an RPM available</li>
+   <li><a href="http://www.unix-city.co.uk/rh9_x86/index.html">RedHat 9</a> (0.2.0.1), with thanks to Ian Chapman.
    <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has made a <a href="libspectrum-0.2.0.1-i386-1spec.tgz">Slackware 9.1</a> (<a href="libspectrum-0.2.0.1-i386-1spec.tgz.md5">md5 sum</a>) package of 0.2.0.1.</li>
   </ul>
 
