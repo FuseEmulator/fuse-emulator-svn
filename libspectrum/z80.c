@@ -789,12 +789,28 @@ read_v2_block( const libspectrum_byte *buffer, libspectrum_byte **block,
 
 }
 
+/* DEPRECATED: use libspectrum_snap_write() instead */
 libspectrum_error
 libspectrum_z80_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_snap *snap )
 {
+  int out_flags;
+
+  return libspectrum_z80_write2( buffer, length, &out_flags, snap, 0 );
+}
+
+libspectrum_error
+libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
+			int *out_flags, libspectrum_snap *snap, int in_flags )
+{
   libspectrum_error error;
   libspectrum_byte *ptr = *buffer;
+
+  *out_flags = 0;
+
+  /* .z80 format doesn't store the 'halted' state */
+  if( libspectrum_snap_halted( snap ) )
+    *out_flags |= LIBSPECTRUM_FLAG_MINOR_INFO_LOSS;
 
   error = write_header( buffer, &ptr, length, snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
