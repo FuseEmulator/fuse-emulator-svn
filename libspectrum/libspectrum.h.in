@@ -558,6 +558,12 @@ libspectrum_error libspectrum_tape_alloc( libspectrum_tape **tape );
 libspectrum_error libspectrum_tape_clear( libspectrum_tape *tape );
 libspectrum_error libspectrum_tape_free( libspectrum_tape *tape );
 
+/* Read in a tape file, optionally guessing what sort of file it is */
+libspectrum_error
+libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		       size_t length, libspectrum_id_t type,
+		       const char *filename );
+
 /* Does this tape structure actually contain a tape? */
 int libspectrum_tape_present( const libspectrum_tape *tape );
 
