@@ -2,4 +2,6 @@ See also `AUTHORS'
 
 * Russell Marks: for many bug fixes and the like.
 
+* Simon Owen: for some Win32 and C++ compatibility fixes.
+
 $Id$
