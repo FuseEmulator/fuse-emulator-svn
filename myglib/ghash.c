@@ -42,27 +42,18 @@
 
 #define HASH_TABLE_SIZE 241
 
-typedef struct _GHashNode      GHashNode;
-
-struct _GHashNode
-{
-  gpointer   key;
-  gpointer   value;
-  GHashNode *next;
-};
-
 struct _GHashTable
 {
   GHashNode   **nodes;
   GHashFunc	hash_func;
-  GEqualFunc	key_equal_func;
+  GCompareFunc	key_equal_func;
 };
 
 static GHashNode *node_free_list = NULL;
 
 GHashTable*
 g_hash_table_new (GHashFunc	hash_func,
-		  GEqualFunc	key_equal_func)
+		  GCompareFunc	key_equal_func)
 {
   GHashTable *hash_table;
   guint i;
