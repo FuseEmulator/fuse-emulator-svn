@@ -186,6 +186,10 @@ int rzx_stop_recording( void )
 
   ui_menu_activate_recording( 0 );
 
+  libspectrum_creator_set_competition_code(
+    fuse_creator, settings_current.competition_code
+  );
+
   length = 0;
   libspec_error =
     libspectrum_rzx_write( &buffer, &length, rzx, rzx_snap, fuse_creator,
