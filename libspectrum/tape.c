@@ -1,5 +1,5 @@
 /* tape.c: Routines for handling tape files
-   Copyright (c) 2001, 2002 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2003 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -28,8 +28,6 @@
 
 #include <stdio.h>
 #include <string.h>
-
-#include <glib.h>
 
 #include "internals.h"
 #include "tape_block.h"
