@@ -63,8 +63,9 @@ noinst_PROGRAMS = make-perl
 libspectrum.h: libspectrum.h.in generate.pl snap_accessors.txt tape_accessors.txt
 	@PERL@ -p generate.pl libspectrum.h.in > libspectrum.h
 
-generate.pl: make-perl
+generate.pl: make-perl generate.pl.in
 	./make-perl > generate.pl
+	cat generate.pl.in >> generate.pl
 
 snap_accessors.c: accessor.pl snap_accessors.txt
 	@PERL@ accessor.pl snap_accessors.txt > snap_accessors.c
