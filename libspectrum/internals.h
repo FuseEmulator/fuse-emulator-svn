@@ -92,6 +92,16 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
 int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 				    const libspectrum_byte* data );
 
+/* Sizes of some of the arrays in the snap structure */
+#define SNAPSHOT_RAM_PAGES 16
+#define SNAPSHOT_SLT_PAGES 256
+#define SNAPSHOT_ZXCF_PAGES 64
+#define SNAPSHOT_DOCK_EXROM_PAGES 8
+
+/* Get memory for a snap */
+
+libspectrum_error libspectrum_snap_alloc_internal( libspectrum_snap **snap );
+
 /* Format specific snapshot routines */
 
 libspectrum_error

@@ -707,21 +707,7 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 
   while( buffer < end ) {
     error = read_chunk( snap, version, &buffer, end );
-    if( error ) {
-
-      /* Tidy up any RAM pages we may have allocated */
-      size_t i;
-
-      for( i = 0; i < 16; i++ ) {
-	libspectrum_byte *page = libspectrum_snap_pages( snap, i );
-	if( page ) {
-	  free( page );
-	  libspectrum_snap_set_pages( snap, i, NULL );
-	}
-      }
-
-      return error;
-    }
+    if( error ) return error;
   }
 
   return LIBSPECTRUM_ERROR_NONE;
