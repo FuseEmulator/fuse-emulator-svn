@@ -95,6 +95,7 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_TAPE_WARAJEVO,		/* Warajevo-style .tap tape image */ 
   LIBSPECTRUM_ID_SNAPSHOT_PLUSD,	/* +D snapshot */
   LIBSPECTRUM_ID_SNAPSHOT_ZXS,		/* .zxs snapshot (zx32) */
+  LIBSPECTRUM_ID_SNAPSHOT_SNP,		/* .snp snapshot */
 
 } libspectrum_id_t;
 
@@ -230,6 +231,12 @@ libspectrum_plusd_read( libspectrum_snap *snap,
 libspectrum_error
 libspectrum_sna_read( libspectrum_snap *snap,
 	              const libspectrum_byte *buffer, size_t buffer_length );
+
+/* .snp specific routines */
+
+libspectrum_error
+libspectrum_snp_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
+		      size_t length );
 
 /* .z80 specific routines */
 
