@@ -143,12 +143,11 @@ ui_joystick_init( void )
 }
 
 
-int
+void
 ui_joystick_end( void )
 {
   int i;
   for( i = 0; i < joysticks_supported; i++ ) JSClose( &jsd[i] );
-  return 0;
 }
 
 
