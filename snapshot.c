@@ -93,6 +93,18 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
   libspectrum_snap_set_out_scld_hsr( *snap, 0x00 );
   libspectrum_snap_set_out_scld_dec( *snap, 0x00 );
 
+  libspectrum_snap_set_zxatasp_active( *snap, 0 );
+  libspectrum_snap_set_zxatasp_upload( *snap, 0 );
+  libspectrum_snap_set_zxatasp_writeprotect( *snap, 0 );
+  libspectrum_snap_set_zxatasp_port_a( *snap, 0 );
+  libspectrum_snap_set_zxatasp_port_b( *snap, 0 );
+  libspectrum_snap_set_zxatasp_port_c( *snap, 0 );
+  libspectrum_snap_set_zxatasp_control( *snap, 0 );
+  libspectrum_snap_set_zxatasp_pages( *snap, 0 );
+  libspectrum_snap_set_zxatasp_current_page( *snap, 0 );
+  for( i = 0; i < SNAPSHOT_ZXATASP_PAGES; i++ )
+    libspectrum_snap_set_zxatasp_ram( *snap, i, NULL );
+
   libspectrum_snap_set_zxcf_active( *snap, 0 );
   libspectrum_snap_set_zxcf_upload( *snap, 0 );
   libspectrum_snap_set_zxcf_memctl( *snap, 0x00 );

@@ -227,3 +227,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040601 libspectrum.c,libspectrum.h.in: Add LIBSPECTRUM_CLASS_CARTRIDGE_IF2
          and LIBSPECTRUM_ID_CARTRIDGE_IF2.
 20040601 szx.c: save/restore state of ZXCF upload jumper.
+20040602 accessor.pl,internals.h,sna.c,snap_accessors.txt,snapshot.c,
+	 szx.c,z80.c: save/restore ZXATASP state in .szx snaps.
+
+	

@@ -95,6 +95,7 @@ int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 /* Sizes of some of the arrays in the snap structure */
 #define SNAPSHOT_RAM_PAGES 16
 #define SNAPSHOT_SLT_PAGES 256
+#define SNAPSHOT_ZXATASP_PAGES 32
 #define SNAPSHOT_ZXCF_PAGES 64
 #define SNAPSHOT_DOCK_EXROM_PAGES 8
 
