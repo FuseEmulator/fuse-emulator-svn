@@ -252,24 +252,6 @@ select_sensible_scaler( void )
   return 0;
 }
 
-void uidisplay_putpixel(int x,int y,int colour)
-{
-#ifdef USE_LIBPNG
-  screenshot_screen[y][x] = colour;
-#endif			/* #ifdef USE_LIBPNG */
-
-  switch(gtkdisplay_current_size) {
-  case 1:
-    if(x%2!=0) return;
-    gdk_image_put_pixel( image, x>>1, y, gtkdisplay_colours[colour] );
-    break;
-  case 2:
-    gdk_image_put_pixel( image,x,  y<<1   , gtkdisplay_colours[colour] );
-    gdk_image_put_pixel( image,x, (y<<1)+1, gtkdisplay_colours[colour] );
-    break;
-  }
-}
-
 void
 uidisplay_frame_end( void ) 
 {
