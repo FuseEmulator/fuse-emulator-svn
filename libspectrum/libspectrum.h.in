@@ -145,6 +145,8 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY;
                                             /* TC20[46]8-style memory paging */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO;
                                               /* TC20[46]8-style video modes */
+extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK;
+                                                   /* TRDOS-style disk drive */
 
 /* Get the capabilities of a machine */
 int libspectrum_machine_capabilities( libspectrum_machine type );
