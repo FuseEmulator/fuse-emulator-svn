@@ -1,5 +1,5 @@
-/* gtkui.h: GTK+ routines for dealing with the user interface
-   Copyright (c) 2000-2001 Philip Kendall
+/* fbui.c: Routines for dealing with the linux fbdev user interface
+   Copyright (c) 2000-2001 Philip Kendall, Matan Ziv-Av
 
    $Id$
 
@@ -24,14 +24,47 @@
 
 */
 
-#ifndef FUSE_GTKUI_H
-#define FUSE_GTKUI_H
+#include <config.h>
 
-#ifndef __GTK_H__
-#include <gtk/gtk.h>
-#endif
+#ifdef UI_FB			/* Use this iff we're using fbdev */
 
-extern GtkWidget* gtkui_window;
-extern GtkWidget* gtkui_drawing_area;
+#include <stdio.h>
 
-#endif			/* #ifndef FUSE_GTKUI_H */
+#include "fuse.h"
+#include "fbkeyboard.h"
+#include "ui.h"
+#include "uidisplay.h"
+
+int ui_init(int *argc, char ***argv, int width, int height)
+{
+  int error;
+
+  error = uidisplay_init(width, height);
+  if(error) return error;
+
+  error = fbkeyboard_init();
+  if(error) return error;
+
+  return 0;
+}
+
+int ui_event()
+{
+  keyboard_update();
+  return 0;
+}
+
+int ui_end(void)
+{
+  int error;
+
+  error = fbkeyboard_end();
+  if(error) return error;
+
+  error = uidisplay_end();
+  if(error) return error;
+
+  return 0;
+}
+
+#endif				/* #ifdef UI_FB */

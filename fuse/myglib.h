@@ -1,5 +1,5 @@
-/* gtkui.h: GTK+ routines for dealing with the user interface
-   Copyright (c) 2000-2001 Philip Kendall
+/* myglib.h: Replacements for glib routines
+   Copyright (c) 2001 Matan Ziv-Av, Philip Kendall
 
    $Id$
 
@@ -24,14 +24,38 @@
 
 */
 
-#ifndef FUSE_GTKUI_H
-#define FUSE_GTKUI_H
+#ifndef FUSE_MYGLIB_H
+#define FUSE_MYGLIB_H
 
-#ifndef __GTK_H__
-#include <gtk/gtk.h>
-#endif
+typedef int gint;
+typedef const void * gconstpointer;
+typedef void * gpointer;
 
-extern GtkWidget* gtkui_window;
-extern GtkWidget* gtkui_drawing_area;
+typedef struct _GSList GSList;
 
-#endif			/* #ifndef FUSE_GTKUI_H */
+struct _GSList {
+    gpointer data;
+    GSList *next;
+};
+
+typedef void		(*GFunc)		(gpointer	data,
+						 gpointer	user_data);
+
+typedef gint		(*GCompareFunc)		(gconstpointer	a,
+						 gconstpointer	b);
+
+
+GSList* g_slist_insert_sorted	(GSList		*list,
+				 gpointer	 data,
+				 GCompareFunc	 func);
+
+GSList* g_slist_remove		(GSList		*list,
+				 gpointer	 data);
+
+void	g_slist_foreach		(GSList		*list,
+				 GFunc		 func,
+				 gpointer	 user_data);
+
+void	g_slist_free		(GSList		*list);
+
+#endif				/* #ifndef FUSE_MYGLIB_H */

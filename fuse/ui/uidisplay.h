@@ -1,4 +1,4 @@
-/* gtkui.h: GTK+ routines for dealing with the user interface
+/* uidisplay.h: Low-level display routines
    Copyright (c) 2000-2001 Philip Kendall
 
    $Id$
@@ -24,14 +24,16 @@
 
 */
 
-#ifndef FUSE_GTKUI_H
-#define FUSE_GTKUI_H
+#ifndef FUSE_UIDISPLAY_H
+#define FUSE_UIDISPLAY_H
 
-#ifndef __GTK_H__
-#include <gtk/gtk.h>
-#endif
+int uidisplay_init(int width, int height);
 
-extern GtkWidget* gtkui_window;
-extern GtkWidget* gtkui_drawing_area;
+void uidisplay_putpixel(int x,int y,int colour);
+void uidisplay_line(int y);
+void uidisplay_set_border(int line, int pixel_from, int pixel_to,
+			  int colour);
 
-#endif			/* #ifndef FUSE_GTKUI_H */
+int uidisplay_end(void);
+
+#endif			/* #ifndef FUSE_UIDISPLAY_H */

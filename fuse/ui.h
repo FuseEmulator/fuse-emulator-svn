@@ -1,4 +1,4 @@
-/* gtkui.h: GTK+ routines for dealing with the user interface
+/* ui.h: General UI event handling routines
    Copyright (c) 2000-2001 Philip Kendall
 
    $Id$
@@ -24,14 +24,11 @@
 
 */
 
-#ifndef FUSE_GTKUI_H
-#define FUSE_GTKUI_H
+#ifndef FUSE_UI_H
+#define FUSE_UI_H
 
-#ifndef __GTK_H__
-#include <gtk/gtk.h>
-#endif
+int ui_init(int *argc, char ***argv, int width, int height);
+int ui_event(void);
+int ui_end(void);
 
-extern GtkWidget* gtkui_window;
-extern GtkWidget* gtkui_drawing_area;
-
-#endif			/* #ifndef FUSE_GTKUI_H */
+#endif			/* #ifndef FUSE_UI_H */

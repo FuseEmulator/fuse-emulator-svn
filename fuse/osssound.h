@@ -1,7 +1,5 @@
-/* gtkui.h: GTK+ routines for dealing with the user interface
-   Copyright (c) 2000-2001 Philip Kendall
-
-   $Id$
+/* osssound.h: OSS (e.g. Linux) sound I/O
+   Copyright (c) 2000-2001 Russell Marks, Matan Ziv-Av, Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,21 +15,13 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-   Author contact information:
-
-   E-mail: pak@ast.cam.ac.uk
-   Postal address: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
-
 */
 
-#ifndef FUSE_GTKUI_H
-#define FUSE_GTKUI_H
+#ifndef FUSE_OSSSOUND_H
+#define FUSE_OSSSOUND_H
 
-#ifndef __GTK_H__
-#include <gtk/gtk.h>
-#endif
+int osssound_init(int *freqptr,int *stereoptr);
+void osssound_end(void);
+void osssound_frame(unsigned char *data,int len);
 
-extern GtkWidget* gtkui_window;
-extern GtkWidget* gtkui_drawing_area;
-
-#endif			/* #ifndef FUSE_GTKUI_H */
+#endif				/* #ifndef FUSE_OSSSOUND_H */

@@ -1,5 +1,5 @@
-/* gtkui.h: GTK+ routines for dealing with the user interface
-   Copyright (c) 2000-2001 Philip Kendall
+/* fbkeyboard.h: routines for dealing with the buttons interface
+   Copyright (c) 2000-2001 Philip Kendall, Matan Ziv-Av
 
    $Id$
 
@@ -15,7 +15,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+   Foundation, Inc., 49 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
    Author contact information:
 
@@ -24,14 +24,16 @@
 
 */
 
-#ifndef FUSE_GTKUI_H
-#define FUSE_GTKUI_H
+#ifndef FUSE_FBKEYBOARD_H
+#define FUSE_FBKEYBOARD_H
 
-#ifndef __GTK_H__
-#include <gtk/gtk.h>
-#endif
+int fbkeyboard_init(void);
 
-extern GtkWidget* gtkui_window;
-extern GtkWidget* gtkui_drawing_area;
+int fbkeyboard_keypress(int keysym);
+void fbkeyboard_keyrelease(int keysym);
 
-#endif			/* #ifndef FUSE_GTKUI_H */
+int fbkeyboard_end(void);
+
+void keyboard_update(void);
+
+#endif			/* #ifndef FUSE_FBKEYBOARD_H */
