@@ -73,6 +73,10 @@ enum {
   Z80_MACHINE_TC2048 = 14,
   Z80_MACHINE_TC2068 = 15,
   Z80_MACHINE_TS2068 = 128,
+
+  /* The first extension ID; anything here or greater applies to both
+     v2 and v3 files */
+  Z80_MACHINE_FIRST_EXTENSION = Z80_MACHINE_PLUS3,
 };
 
 /* The signature used to designate the .slt extensions */
@@ -82,6 +86,14 @@ static size_t slt_signature_length = 6;
 static libspectrum_error
 read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	     const libspectrum_byte **data, int *version, int *compressed );
+static libspectrum_error
+get_machine_type( libspectrum_snap *snap, libspectrum_byte type, int version );
+static libspectrum_error
+get_machine_type_v2( libspectrum_snap *snap, libspectrum_byte type );
+static libspectrum_error
+get_machine_type_v3( libspectrum_snap *snap, libspectrum_byte type );
+static libspectrum_error
+get_machine_type_extension( libspectrum_snap *snap, libspectrum_byte type );
 static libspectrum_error
 read_blocks( const libspectrum_byte *buffer, size_t buffer_length,
 	     libspectrum_snap *snap, int version, int compressed );
@@ -170,6 +182,7 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
   const libspectrum_byte *header = buffer;
   int capabilities;
   size_t i;
+  libspectrum_error error;
 
   libspectrum_snap_set_a  ( snap, header[ 0] );
   libspectrum_snap_set_f  ( snap, header[ 1] );
@@ -226,75 +239,10 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     libspectrum_snap_set_pc( snap, extra_header[0] + extra_header[1] * 0x100 );
 
-    switch( *version ) {
+    error = get_machine_type( snap, extra_header[2], *version );
+    if( error ) return error;
 
-    case 2:
-
-      switch( extra_header[2] ) {
-      case Z80_MACHINE_48_V2:
-      case Z80_MACHINE_48_IF1_V2:
-      case Z80_MACHINE_48_SAMRAM_V2:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 ); break;
-      case Z80_MACHINE_128_V2:
-      case Z80_MACHINE_128_IF1_V2:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 ); break;
-      case Z80_MACHINE_TC2048:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2048 );
-	break;
-      case Z80_MACHINE_TC2068:
-      case Z80_MACHINE_TS2068: /* Load TS2068 snaps as TC2068 for now */
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2068 );
-	break;
-      default:
-        libspectrum_print_error(
-          LIBSPECTRUM_ERROR_UNKNOWN,
-          "libspectrum_read_z80_header: unknown v2 machine type %d",
-	  extra_header[2]
-        );
-	return LIBSPECTRUM_ERROR_UNKNOWN;
-      }
-
-      break;
-
-    case 3:
-
-      switch( extra_header[2] ) {
-      case Z80_MACHINE_48:
-      case Z80_MACHINE_48_IF1:
-      case Z80_MACHINE_48_SAMRAM:
-      case Z80_MACHINE_48_MGT:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 ); break;
-      case Z80_MACHINE_128:
-      case Z80_MACHINE_128_IF1:
-      case Z80_MACHINE_128_MGT:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 ); break;
-      case Z80_MACHINE_PLUS3:
-      case Z80_MACHINE_PLUS3_XZX_ERROR:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS3 ); break;
-      case Z80_MACHINE_PENTAGON:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PENT ); break;
-      case Z80_MACHINE_SCORPION:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SCORP ); break;
-      case Z80_MACHINE_PLUS2:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS2 ); break;
-      case Z80_MACHINE_PLUS2A:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS2A );
-	break;
-      case Z80_MACHINE_TC2048:
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2048 );
-	break;
-      case Z80_MACHINE_TC2068:
-      case Z80_MACHINE_TS2068: /* Load TS2068 snaps as TC2068 for now */
-	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2068 );
-	break;
-      default:
-        libspectrum_print_error(
-          LIBSPECTRUM_ERROR_UNKNOWN,
-          "libspectrum_read_z80_header: unknown v3 machine type %d",
-	  extra_header[2]
-        );
-	return LIBSPECTRUM_ERROR_UNKNOWN;
-      }
+    if( *version >= 3 ) {
 
       quarter_tstates =
 	libspectrum_timings_tstates_per_frame(
@@ -312,16 +260,6 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
       /* Stop broken files from causing trouble... */
       if( libspectrum_snap_tstates( snap ) >= quarter_tstates * 4 )
 	libspectrum_snap_set_tstates( snap, 0 );
-      
-      break;
-
-    default:
-      libspectrum_print_error(
-        LIBSPECTRUM_ERROR_LOGIC,
-        "libspectrum_read_z80_header: unknown snap version %d", *version
-      );
-      return LIBSPECTRUM_ERROR_LOGIC;
-
     }
 
     /* I don't like this any more than you do but here is support for the
@@ -402,6 +340,115 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
   return LIBSPECTRUM_ERROR_NONE;
 
+}
+
+static libspectrum_error
+get_machine_type( libspectrum_snap *snap, libspectrum_byte type, int version )
+{
+  libspectrum_error error;
+
+  if( type < Z80_MACHINE_FIRST_EXTENSION ) {
+
+    switch( version ) {
+
+    case 2:
+      error = get_machine_type_v2( snap, type ); if( error ) return error;
+      break;
+
+    case 3:
+      error = get_machine_type_v3( snap, type ); if( error ) return error;
+      break;
+
+    default:
+      libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			       "%s:get_machine_type: unknown version %d",
+			       __FILE__, version );
+      return LIBSPECTRUM_ERROR_LOGIC;
+    }
+
+  } else {
+    error = get_machine_type_extension( snap, type ); if( error ) return error;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+get_machine_type_v2( libspectrum_snap *snap, libspectrum_byte type )
+{
+  switch( type ) {
+
+  case Z80_MACHINE_48_V2:
+  case Z80_MACHINE_48_IF1_V2:
+  case Z80_MACHINE_48_SAMRAM_V2:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 ); break;
+  case Z80_MACHINE_128_V2:
+  case Z80_MACHINE_128_IF1_V2:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 ); break;
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "%s:get_machine_type: unknown v2 machine type %d",
+			     __FILE__, type );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+get_machine_type_v3( libspectrum_snap *snap, libspectrum_byte type )
+{
+  switch( type ) {
+    
+  case Z80_MACHINE_48:
+  case Z80_MACHINE_48_IF1:
+  case Z80_MACHINE_48_SAMRAM:
+  case Z80_MACHINE_48_MGT:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 ); break;
+  case Z80_MACHINE_128:
+  case Z80_MACHINE_128_IF1:
+  case Z80_MACHINE_128_MGT:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 ); break;
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "%s:get_machine_type: unknown v3 machine type %d",
+			     __FILE__, type );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+get_machine_type_extension( libspectrum_snap *snap, libspectrum_byte type )
+{
+  switch( type ) {
+
+  case Z80_MACHINE_PLUS3:
+  case Z80_MACHINE_PLUS3_XZX_ERROR:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS3 ); break;
+  case Z80_MACHINE_PENTAGON:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PENT ); break;
+  case Z80_MACHINE_SCORPION:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SCORP ); break;
+  case Z80_MACHINE_PLUS2:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS2 ); break;
+  case Z80_MACHINE_PLUS2A:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS2A ); break;
+  case Z80_MACHINE_TC2048:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2048 ); break;
+  case Z80_MACHINE_TC2068:
+  case Z80_MACHINE_TS2068: /* Load TS2068 snaps as TC2068 for now */
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2068 ); break;
+  default:
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_UNKNOWN,
+      "%s:get_machine_type: unknown extension machine type %d", __FILE__, type
+    );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
