@@ -76,7 +76,7 @@ struct libspectrum_snap {
 
   /* RAM */
 
-  libspectrum_byte *pages[8];
+  libspectrum_byte *pages[16];
 
   /* Data from .slt files */
 
@@ -142,7 +142,7 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
   libspectrum_snap_set_halted( *snap, 0 );
   libspectrum_snap_set_last_instruction_ei( *snap, 0 );
 
-  for( i = 0; i < 8; i++ ) libspectrum_snap_set_pages( *snap, i, NULL );
+  for( i = 0; i < 16; i++ ) libspectrum_snap_set_pages( *snap, i, NULL );
   for( i = 0; i < 256; i++ ) {
     libspectrum_snap_set_slt( *snap, i, NULL );
     libspectrum_snap_set_slt_length( *snap, i, 0 );

@@ -233,6 +233,8 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS3 ); break;
       case 9:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PENT ); break;
+      case 10:
+	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SCORP ); break;
       case 12:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS2 ); break;
       case 13:
@@ -581,14 +583,14 @@ read_block( const libspectrum_byte *buffer, libspectrum_snap *snap,
 			   end );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-    if( page <= 0 || page > 11 ) {
+    if( page <= 0 || page > 19 ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			       "read_block: unknown page %d", page );
       return LIBSPECTRUM_ERROR_UNKNOWN;
     }
 
     /* If it's a ROM page, just throw it away */
-    if( page < 3 || page > 10 ) {
+    if( page < 3 || page == 11 ) {
       free( uncompressed );
       return LIBSPECTRUM_ERROR_NONE;
     }
@@ -612,6 +614,7 @@ read_block( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     /* Now map onto RAM page numbers */
     page -= 3;
+    if( page > 7 ) page--;
 
     if( libspectrum_snap_pages( snap, page ) == NULL ) {
       libspectrum_snap_set_pages( snap, page, uncompressed );
@@ -917,6 +920,8 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = 7; break;
   case LIBSPECTRUM_MACHINE_PENT:
     *(*ptr)++ = 9; break;
+  case LIBSPECTRUM_MACHINE_SCORP:
+    *(*ptr)++ = 10; break;
   case LIBSPECTRUM_MACHINE_PLUS2:
     *(*ptr)++ = 12; break;
   case LIBSPECTRUM_MACHINE_PLUS2A:
@@ -977,7 +982,7 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   /* Is 0x0000 to 0x7fff RAM? Currently iff we're in a +3 special
      configuration */
   if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) &&
-      ( libspectrum_snap_out_plus3_memoryport( snap ) & 0x01                          )    ) {
+      ( libspectrum_snap_out_plus3_memoryport( snap ) & 0x01 )		) {
     *(*ptr)++ = 0xff; *(*ptr)++ = 0xff;
   } else {
     *(*ptr)++ = 0x00; *(*ptr)++ = 0x00;
@@ -1020,6 +1025,16 @@ write_pages( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
 	error = write_page( buffer, ptr, length, i+3,
 			    libspectrum_snap_pages( snap, i ), compress );
 	if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+      }
+    }
+
+    if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY ) {
+      for( i = 8; i < 16; i++ ) {
+        if( libspectrum_snap_pages( snap, i ) ) {
+          error = write_page( buffer, ptr, length, i+4,
+                              libspectrum_snap_pages( snap, i ), compress );
+          if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+        }
       }
     }
 

@@ -182,6 +182,7 @@ libspectrum_machine_name( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_PENT:   return "Pentagon 128K";
   case LIBSPECTRUM_MACHINE_PLUS2A: return "Spectrum +2A";
   case LIBSPECTRUM_MACHINE_PLUS3:  return "Spectrum +3";
+  case LIBSPECTRUM_MACHINE_SCORP:  return "Scorpion ZS 256";
   default:			   return "unknown";
   }
 }
@@ -206,6 +207,8 @@ const int LIBSPECTRUM_MACHINE_CAPABILITY_SINCLAIR_JOYSTICK = 1 << 8;
                                             /* Sinclair-style joystick ports */
 const int LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK = 1 << 9;
                                             /* Kempston-style joystick ports */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY = 1 << 10;
+                                             /* Scorpion-style memory paging */
 
 /* Given a machine type, what features does it have? */
 int
@@ -218,7 +221,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
   case LIBSPECTRUM_MACHINE_TC2068:
-  case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_AY; break;
   default:
     break;
@@ -228,7 +231,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
-  case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY; break;
   default:
     break;
@@ -237,6 +240,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   /* +3 Spectrum-style 0x1ffd memory paging */
   switch( type ) {
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_SCORP:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY; break;
   default:
     break;
@@ -270,7 +274,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
 
   /* TRDOS-style disk */
   switch( type ) {
-  case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK; break;
   default:
     break;
@@ -297,6 +301,14 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_TC2048:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK; break;
+  default:
+    break;
+  }
+
+  /* Scorpion-style 0x1ffd memory paging */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_SCORP:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY; break;
   default:
     break;
   }
