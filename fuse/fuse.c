@@ -119,6 +119,8 @@ static int fuse_init(int argc, char **argv)
 
   if(display_init(&argc,&argv)) return 1;
 
+  if( libspectrum_init() ) return 1;
+
   /* Drop root privs if we have them */
   if( !geteuid() ) { setuid( getuid() ); }
 
