@@ -25,13 +25,14 @@
 */
 
 #include <config.h>
-#include <types.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
+
+#include "libspectrum.h"
 
 struct options {
 
@@ -54,11 +55,11 @@ int parse_options( int argc, char **argv, struct options *options );
 
 typedef union {
 #ifdef WORDS_BIGENDIAN
-  struct { BYTE b3, b2, b1, b0; } b;
+  struct { libspectrum_byte b3, b2, b1, b0; } b;
 #else
-  struct { BYTE b0, b1, b2, b3; } b;
+  struct { libspectrum_byte b0, b1, b2, b3; } b;
 #endif
-  DWORD dword;
+  libspectrum_dword dword;
 } lsb_dword;
 
 unsigned int 
