@@ -51,6 +51,9 @@ unsigned long gtkdisplay_colours[16];
    DISPLAY_ASPECT WIDTH x DISPLAY_SCREEN_HEIGHT */
 int image_scale;
 
+/* The height and width of a 1x1 image in pixels */
+int image_width, image_height;
+
 /* An RGB image of the Spectrum screen */
 static guchar rgb_image[DISPLAY_SCREEN_HEIGHT * DISPLAY_SCREEN_WIDTH * 4];
 static const gint rgb_pitch = DISPLAY_SCREEN_WIDTH * 4;
@@ -152,6 +155,7 @@ uidisplay_init( int width, int height )
 {
   int error;
 
+  image_width = width; image_height = height;
   image_scale = width / DISPLAY_ASPECT_WIDTH;
 
   error = register_scalers(); if( error ) return error;
@@ -237,25 +241,26 @@ uidisplay_area( int x, int y, int w, int h )
   float scale = (float)gtkdisplay_current_size / image_scale;
   int scaled_x, scaled_y, xx, yy;
 
-  /* Extend the dirty region by 1 pixel for scalers
-     that "smear" the screen, e.g. 2xSAI */
-  if( scaler_flags & SCALER_EXPAND_1_PIXEL ) {
-    x--;
-    y--;
-    w += 2;   
-    h += 2;
-  } else if ( scaler_flags & SCALER_EXPAND_2_Y_PIXELS ) {
-    y -= 2;
-    h += 4;
-  }
+  if( scaler_flags ) {
 
-  /* clip */
-  if ( x < 0 ) { w += x; x=0; }
-  if ( y < 0 ) { h += y; y=0; }
-  if ( w > image_scale * DISPLAY_ASPECT_WIDTH - x )
-    w = image_scale * DISPLAY_ASPECT_WIDTH - x;
-  if ( h > image_scale * DISPLAY_SCREEN_HEIGHT - y )
-    h = image_scale * DISPLAY_SCREEN_HEIGHT - y;
+    /* Extend the dirty region by 1 pixel for scalers
+       that "smear" the screen, e.g. 2xSAI */
+    if( scaler_flags & SCALER_EXPAND_1_PIXEL ) {
+      x--;
+      y--;
+      w += 2;   
+      h += 2;
+    } else if ( scaler_flags & SCALER_EXPAND_2_Y_PIXELS ) {
+      y -= 2;
+      h += 4;
+    }
+
+    /* clip */
+    if ( x < 0 ) { w += x; x=0; }
+    if ( y < 0 ) { h += y; y=0; }
+    if ( w > image_width - x ) w = image_width - x;
+    if ( h > image_height - y ) h = image_height - y;
+  }
 
   scaled_x = scale * x; scaled_y = scale * y;
 
