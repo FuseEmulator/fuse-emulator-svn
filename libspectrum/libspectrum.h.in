@@ -1,5 +1,5 @@
 /* libspectrum.h: the library for dealing with ZX Spectrum emulator files
-   Copyright (c) 2001-2005 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2005 Philip Kendall, Darren Salt, Fredrick Meunier
 
    $Id$
 
@@ -224,6 +224,9 @@ typedef enum libspectrum_machine {
   LIBSPECTRUM_MACHINE_SCORP,
   LIBSPECTRUM_MACHINE_PLUS3E,
   LIBSPECTRUM_MACHINE_SE,
+
+  LIBSPECTRUM_MACHINE_TS2068,
+
 } libspectrum_machine;
 
 const char* libspectrum_machine_name( libspectrum_machine type );
@@ -253,7 +256,9 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY;
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_EVEN_M1;
                              /* M1 cycles always start on even tstate counts */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_SE_MEMORY;
-                                             /* SE-style memory paging */
+                                                   /* SE-style memory paging */
+extern const int LIBSPECTRUM_MACHINE_CAPABILITY_NTSC;
+                                                             /* NTSC display */
 
 /* Get the capabilities of a machine */
 int WIN32_DLL libspectrum_machine_capabilities( libspectrum_machine type );

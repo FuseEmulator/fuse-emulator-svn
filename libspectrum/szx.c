@@ -1,5 +1,6 @@
 /* szx.c: Routines for .szx snapshots
    Copyright (c) 1998,2003 Philip Kendall
+   Copyright (c) 2004 Fredrick Meunier
 
    $Id$
 
@@ -75,6 +76,7 @@ typedef enum szx_machine_type {
   SZX_MACHINE_TC2068,
   SZX_MACHINE_SCORPION,
   SZX_MACHINE_SE,
+  SZX_MACHINE_TS2068,
 
 } szx_machine_type;
 
@@ -1012,6 +1014,10 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2068 );
     break;
 
+  case SZX_MACHINE_TS2068:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TS2068 );
+    break;
+
   case SZX_MACHINE_SCORPION:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SCORP );
     break;
@@ -1176,6 +1182,7 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   case LIBSPECTRUM_MACHINE_PENT:   **ptr = SZX_MACHINE_PENTAGON; break;
   case LIBSPECTRUM_MACHINE_TC2048: **ptr = SZX_MACHINE_TC2048; break;
   case LIBSPECTRUM_MACHINE_TC2068: **ptr = SZX_MACHINE_TC2068; break;
+  case LIBSPECTRUM_MACHINE_TS2068: **ptr = SZX_MACHINE_TS2068; break;
   case LIBSPECTRUM_MACHINE_SCORP:  **ptr = SZX_MACHINE_SCORPION; break;
   case LIBSPECTRUM_MACHINE_SE: **ptr = SZX_MACHINE_SE; break;
 

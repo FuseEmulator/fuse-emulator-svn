@@ -1,5 +1,5 @@
 /* z80.c: Routines for handling .z80 snapshots
-   Copyright (c) 2001-2004 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2004 Philip Kendall, Darren Salt, Fredrick Meunier
 
    $Id$
 
@@ -484,8 +484,9 @@ get_machine_type_extension( libspectrum_snap *snap, libspectrum_byte type )
   case Z80_MACHINE_TC2048:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2048 ); break;
   case Z80_MACHINE_TC2068:
-  case Z80_MACHINE_TS2068: /* Load TS2068 snaps as TC2068 for now */
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2068 ); break;
+  case Z80_MACHINE_TS2068:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TS2068 ); break;
   default:
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_UNKNOWN,
@@ -1234,6 +1235,8 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = Z80_MACHINE_TC2048; break;
   case LIBSPECTRUM_MACHINE_TC2068:
     *(*ptr)++ = Z80_MACHINE_TC2068; break;
+  case LIBSPECTRUM_MACHINE_TS2068:
+    *(*ptr)++ = Z80_MACHINE_TS2068; break;
 
   case LIBSPECTRUM_MACHINE_UNKNOWN:
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
