@@ -114,3 +114,4 @@
 20040909 rzxtool.c: fix up so it at least compiles and has some
 	 functionality.
 20040920 rzxcheck.c: remove small memory leak.
+20041031 .cvsignore: ignore stamp-h1.
