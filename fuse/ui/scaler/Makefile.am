@@ -26,7 +26,7 @@ AUTOMAKE_OPTIONS = foreign
 
 noinst_LIBRARIES = libscaler.a
 
-INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
+INCLUDES = @GTK_CFLAGS@ @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 
 libscaler_a_SOURCES = scaler.c
 
