@@ -117,15 +117,6 @@ read_tape( char *filename, libspectrum_id_t type, libspectrum_tape **tape )
 
   if( mmap_file( filename, &buffer, &length ) ) return 1;
 
-  if( type == LIBSPECTRUM_ID_UNKNOWN ) {
-
-    if( libspectrum_identify_file( &type, filename, buffer, length ) ) {
-      munmap( buffer, length );
-      return 1;
-    }
-
-  }
-
   if( libspectrum_tape_alloc( tape ) ) {
     munmap( buffer, length );
     return 1;
