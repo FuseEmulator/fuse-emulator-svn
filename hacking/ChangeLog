@@ -47,3 +47,4 @@
 20030921 rzxdump.c: use libgcrypt 1.1.42.
 20031006 rzxcheck.c: return 1 if no signature or unknown key.
 20031007 tapeconv.c: remove double-free bug if tape reading fails.
+20031009 utils.c: add information from uname() into creator custom data.
