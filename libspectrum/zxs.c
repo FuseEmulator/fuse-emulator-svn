@@ -28,7 +28,9 @@
 
 #include <string.h>
 
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
+#endif				/* #ifdef HAVE_ZLIB_H */
 
 #include "internals.h"
 
@@ -47,6 +49,9 @@ static libspectrum_error
 inflate_block( libspectrum_byte **uncompressed, size_t *uncompressed_length,
 	       const libspectrum_byte **compressed, size_t compressed_length )
 {
+
+#ifdef HAVE_ZLIB_H
+
   libspectrum_dword header_length, expected_crc32, actual_crc32;
   libspectrum_byte *zlib_buffer;
   unsigned long actual_length;
@@ -131,6 +136,14 @@ inflate_block( libspectrum_byte **uncompressed, size_t *uncompressed_length,
   }
 
   return LIBSPECTRUM_ERROR_NONE;
+
+#else				/* #ifdef HAVE_ZLIB_H */
+
+  /* No zlib, so can't inflate the block */
+  return LIBSPECTRUM_ERROR_UNKNOWN;
+
+#endif				/* #ifdef HAVE_ZLIB_H */
+
 }
 
 static libspectrum_error
