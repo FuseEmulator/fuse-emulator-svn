@@ -41,7 +41,7 @@ fuse_section (NULL, "What is it?", <<<END_SECTION
   <ul>
    <li>A "buggy snapshot" of a Win32 port is available; see the <a href="#What_s_new">What's New</a> section for more details.</li>
    <li>Fuse 0.4.0 was ported to the PocketPC by Anders Holmberg as <a href="http://pocketclive.emuunlim.com/">PocketClive</a>.</li>
-   <li>And PocketClive has been ported to the <a href="http://www.davemoller-nz.demon.co.uk/PocketClive.html">Nokia Smartphone</a>.</li>
+   <li>And PocketClive has been ported to the <a href="http://www.surrealservices.dsl.pipex.com/PocketClive.html">Nokia Smartphone</a>.</li>
   </ul>
 
 END_SECTION
