@@ -192,6 +192,8 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	snap->machine = LIBSPECTRUM_MACHINE_PLUS3;  break;
       case 9:
 	snap->machine = LIBSPECTRUM_MACHINE_PENT;   break;
+      case 12:
+	snap->machine = LIBSPECTRUM_MACHINE_PLUS2;  break;
       case 13:
 	snap->machine = LIBSPECTRUM_MACHINE_PLUS2A; break;
       default:
@@ -211,7 +213,7 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     }
 
-    if( snap->machine != LIBSPECTRUM_MACHINE_48 ) {
+    if( snap->machine >= LIBSPECTRUM_MACHINE_128 ) {
 
       if( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH ) {
 	snap->out_plus3_memoryport = extra_header[54];
@@ -752,6 +754,8 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = 7; break;
   case LIBSPECTRUM_MACHINE_PENT:
     *(*ptr)++ = 9; break;
+  case LIBSPECTRUM_MACHINE_PLUS2:
+    *(*ptr)++ = 12; break;
   case LIBSPECTRUM_MACHINE_PLUS2A:
     *(*ptr)++ = 13; break;
   }
