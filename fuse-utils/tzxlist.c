@@ -97,7 +97,6 @@ process_tzx( char *filename )
   error = libspectrum_tzx_read( tape, buffer, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
     munmap( buffer, length );
-    libspectrum_tape_free( tape );
     return error;
   }
 

@@ -16,8 +16,8 @@
 	* snap2tzx: new utility to convert snapshots to tape files.
 	  Heavily based on Tomaz Kac's 'z802tzx' (Philip Kendall).
 
-	* tapeconv: remove double-free bug if tape reading fails (Philip
-	  Kendall).
+	* tapeconv, tzxlist: remove double-free bug if tape reading
+	  fails (Philip Kendall).
 
 2003-09-13  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 

@@ -86,3 +86,5 @@
 	 (fuse-utils_0_6_2-branch).
 20040211 configure.in: bump version number to 0.6.2
 	 (fuse-utils_0_6_2-branch).
+20040211 tzxlist.c: fix double-free bug on failed tape open
+	 (fuse-utils_0_6_2-branch).
