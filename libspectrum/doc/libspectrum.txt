@@ -131,6 +131,9 @@ LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO
   This machine has additional video modes as found on the TC2048 and
   TC2068.
 
+LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK
+  This machine has a disk drive similar to a TR-DOS device
+
 File identification
 -------------------
 
@@ -150,6 +153,8 @@ The type of file will be returned in the `type' parameter, and can take
 the following values:
 
 LIBSPECTRUM_ID_UNKNOWN		Couldn't identify this file
+LIBSPECTRUM_ID_DISK_DSK		A .dsk disk file
+LIBSPECTRUM_ID_DISK_TRD		A .trd disk file
 LIBSPECTRUM_ID_RECORDING_RZX	A .rzx input recording
 LIBSPECTRUM_ID_SNAPSHOT_SNA     A .sna snapshot 
 LIBSPECTRUM_ID_SNAPSHOT_Z80	A .z80 snapshot

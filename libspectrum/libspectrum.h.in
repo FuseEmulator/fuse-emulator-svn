@@ -95,6 +95,10 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_TAPE_TAP,
   LIBSPECTRUM_ID_TAPE_TZX,
 
+  /* Disk files */
+  LIBSPECTRUM_ID_DISK_DSK,
+  LIBSPECTRUM_ID_DISK_TRD,
+
 } libspectrum_id_t;
 
 libspectrum_error
