@@ -9,6 +9,7 @@ config.h.in
 config.log
 config.status
 configure
+createhdf
 fuse-utils.qpg
 listbasic
 rzxcheck

@@ -26,7 +26,8 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = man
 
-bin_PROGRAMS = listbasic \
+bin_PROGRAMS = createhdf \
+	       listbasic \
 	       @RZXCHECK@ \
 	       rzxdump \
 	       rzxtool \
