@@ -246,6 +246,8 @@ libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
 {
   int i, page;
 
+  page = libspectrum_snap_out_ula( snap ) & 0x07;
+
   for( i=0; i<=7; i++ ) {
 
     if( i==2 || i==5 || i==page ) continue; /* Already got this page */
