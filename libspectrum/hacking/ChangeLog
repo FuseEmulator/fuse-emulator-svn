@@ -300,3 +300,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 #1098337).
 20050125 libspectrum.h.in: Warn about use of deprecated interfaces with GCC
 	 (Fred).
+20050204 szx.c,rzx.c: More compilation fixes when zlib not present (Fred).

@@ -248,9 +248,13 @@ read_ram_page( libspectrum_byte **data, size_t *page,
 	       const libspectrum_byte **buffer, size_t data_length,
 	       libspectrum_word *flags )
 {
+#ifdef HAVE_ZLIB_H
+
   size_t uncompressed_length;
 
   libspectrum_error error;
+
+#endif			/* #ifdef HAVE_ZLIB_H */
 
   if( data_length < 3 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
@@ -265,6 +269,8 @@ read_ram_page( libspectrum_byte **data, size_t *page,
 
   if( *flags & ZXSTRF_COMPRESSED ) {
 
+#ifdef HAVE_ZLIB_H
+
     uncompressed_length = 0x4000;
 
     error = libspectrum_zlib_inflate( *buffer, data_length - 3, data,
@@ -272,6 +278,17 @@ read_ram_page( libspectrum_byte **data, size_t *page,
     if( error ) return error;
 
     *buffer += data_length - 3;
+
+#else			/* #ifdef HAVE_ZLIB_H */
+
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_UNKNOWN,
+      "%s:read_ram_page: zlib needed for decompression\n",
+      __FILE__
+    );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+
+#endif			/* #ifdef HAVE_ZLIB_H */
 
   } else {
 
@@ -764,6 +781,9 @@ read_if2r_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 		 const libspectrum_byte **buffer,
 		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
+
+#ifdef HAVE_ZLIB_H
+
   libspectrum_byte *buffer2;
 
   size_t compressed_length;
@@ -794,6 +814,18 @@ read_if2r_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   libspectrum_snap_set_interface2_rom( snap, 0, buffer2 );
 
   return LIBSPECTRUM_ERROR_NONE;
+
+#else			/* #ifdef HAVE_ZLIB_H */
+
+  libspectrum_print_error(
+    LIBSPECTRUM_ERROR_UNKNOWN,
+    "%s:read_if2r_chunk: zlib needed for decompression\n",
+    __FILE__
+  );
+  return LIBSPECTRUM_ERROR_UNKNOWN;
+
+#endif			/* #ifdef HAVE_ZLIB_H */
+
 }
 
 static libspectrum_error

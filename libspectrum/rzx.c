@@ -1394,7 +1394,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 {
   libspectrum_error error;
   libspectrum_byte *snap_buffer = NULL; size_t snap_length;
-  libspectrum_byte *gzsnap = NULL; size_t gzlength;
+  libspectrum_byte *gzsnap = NULL; size_t gzlength = 0;
   int flags, done;
   snapshot_string_t *type;
 
@@ -1430,6 +1430,8 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   if( compress ) {
 
+#ifdef HAVE_ZLIB_H
+
     error = libspectrum_zlib_compress( snap_buffer, snap_length,
 				       &gzsnap, &gzlength );
     if( error != LIBSPECTRUM_ERROR_NONE ) {
@@ -1438,6 +1440,15 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
     }
 
     error = libspectrum_make_room( buffer, 17 + gzlength, ptr, length );
+
+#else				/* #ifdef HAVE_ZLIB_H */
+
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "rzx_write_snapshot: compression needs zlib" );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+
+#endif				/* #ifdef HAVE_ZLIB_H */
+
   } else {
     error = libspectrum_make_room( buffer, 17 + snap_length, ptr, length );
   }
