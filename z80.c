@@ -185,9 +185,11 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
       switch( extra_header[2] ) {
       case 0: case 1: case 2:
-	snap->machine = LIBSPECTRUM_MACHINE_48;    break;
+	snap->machine = LIBSPECTRUM_MACHINE_48;     break;
       case 3: case 4:
-	snap->machine = LIBSPECTRUM_MACHINE_128;   break;
+	snap->machine = LIBSPECTRUM_MACHINE_128;    break;
+      case 14:
+	snap->machine = LIBSPECTRUM_MACHINE_TC2048; break;
       default:
         libspectrum_print_error(
           LIBSPECTRUM_ERROR_UNKNOWN,
