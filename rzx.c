@@ -752,7 +752,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
     memcpy( *ptr, gzsnap, gzlength ); (*ptr) += gzlength;
     free( gzsnap );
   } else {
-    memcpy( *ptr, snap, snap_length ); (*ptr) += snap_length;
+    memcpy( *ptr, snap_buffer, snap_length ); (*ptr) += snap_length;
   }
 
   free( snap_buffer );
