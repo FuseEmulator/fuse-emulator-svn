@@ -47,9 +47,9 @@ char *progname;			/* argv[0] */
 static libspectrum_snap *snap;
 static const char *filename;
 static char out_filename[512];
-static char loader_name[9] = "";
+static char loader_name[9];
 
-static char game_name[33] = "                                ";
+static char game_name[33];
 static char info1[33]     = "                                ";
 static char info2[33]     = "                                ";
 
@@ -202,7 +202,8 @@ int test_decz80(libspectrum_byte *source, int final_len, int source_len)
 	return overwrite;
 }
 
-int test_rev_decz80(libspectrum_byte *source, int final_len, int source_len)
+static int
+test_rev_decz80( libspectrum_byte *source, int final_len, int source_len )
 {
   /* source is reversed !!! */
 
@@ -267,48 +268,71 @@ center_name( char *name )
   }
 }
 
-void print_usage(int title)
+static void
+print_usage( int title )
 {
-	if (title)
-	{
-		printf("\nZ80 Snapshot to TZX Tape Converter  v1.0\n");
-		printf(  "\n  ->by Tom-Cat<-\n\n");
-	}
-	printf("Usage:\n\n");
-	printf("  Z802TZX Filename.z80 [Options]\n\n");
-	printf("  Options:\n");
-	printf("  -v    Verbose Output (Info on conversion)\n");
-	printf("  -s n  Loading Speed (n: 0=1500  1=2250  2=3000  3=6000 bps) Default: 3\n");
-	printf("  -b n  Border (0=Black 1=Blue 2=Red 3=Magenta 4=Green 5=Cyan 6=Yellow 7=White)\n");
-	printf("  -r    Use Bright Colour when filling in the last attribute line\n");
-	printf("  -$ f  Use External Loading Screen in file f (.scr 6912 bytes long file)\n");
-	printf("  -o f  Use f as the Output File (Default: Input File with .tzx extension)\n");
-	printf("  -l s  Use String s as the ZX Loader Name (Loading: name) Up To 8 Chars!\n");
-	printf("  -g s  Use String s as the Game Name (Shown when Loading starts)\n");
-	printf("  -i1 s Show a line of info when loading (first line)\n");
-	printf("  -i2 s Show another line of info when loading (second line)\n");
-	printf("\nStrings (s) can be Up To 32 chars long. Use '~' as (C) char.If no Border Colour\n"); 
-	printf("is selected then it will be gathered from the snapshot file. Loading and Game\n");
-	printf("Name will be taken from the Filename if you don't use the -l or -g parameters!\n");
+  char *buffer, *buffer2;
+
+  buffer = strdup( progname );
+  if( !buffer ) {
+    print_error( "out of memory at %s:%d", __FILE__, __LINE__ );
+    return;
+  }
+
+  buffer2 = basename( buffer );
+  
+  if( title ) {
+    printf(
+	    "\n"
+	    "snap2tzx: snapshot to TZX converter\n"
+	    "\n"
+	    "Copyright (c) 1997-2001 ThunderWare Research Center,\n"
+	    "              2003 Tomaz Kac,\n"
+	    "              2003 Philip Kendall.\n"
+	    "\n"
+	    "This program is distributed in the hope that it will be useful, but WITHOUT\n"
+	    "ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or\n"
+	    "FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for\n"
+	    "more details.\n"
+	  );
+  }
+
+  printf(
+	 "\n"
+	  "Usage: %s [options] <snapshot>\n"
+	  "\n"
+	  "Options:\n"
+	  "\n"
+	  "  -1 s  Show string 's' when loading (max 32 characters)\n"
+	  "  -2 s  Another line when loading (max 32 characters)\n"
+	  "  -b n  Border colour\n"
+	  "  -g s  Use 's' as the game name when loading (max 32 characters)\n"
+	  "  -l s  Use 's' as the BASIC filename (max 8 characters)\n"
+	  "  -o f  Output to file 'f'\n"
+	  "  -r    Make final attribute line BRIGHT\n"
+	  "  -s n  Set loading speed: 0: 1500 1: 2250 2:3000 3: 6000 bps\n"
+	  "  -v    Verbose output\n"
+	  "  -$ f  Use .scr file 'f' as the loading screen\n"
+	  "\n"
+	  "In string parameters, the copyright symbol will be substituted for '~'.\n"
+	  "\n",
+	  buffer2
+	);
 }
 
-void change_copyright(char * st)
+/* Replace any occurences of '~' in 'buffer' with the copyright symbol
+   (0x7f in the Spectrum's character set) */
+static void
+change_copyright( char *buffer )
 {
-	int len = strlen(st), jj;
-	for (jj=0; jj < len; jj++)
-	{
-		if (st[jj] == '~')
-		{
-			st[jj] = 0x7f;
-		}
-	}
+  for( ; *buffer; buffer++ ) if( *buffer == '~' ) *buffer = 0x7f;
 }
 
 static int
 parse_args( int argc, char **argv )
 {
   int c, got_game_name, got_loader_name, got_out_filename;
-  char *buffer, *buffer2;
+  char *buffer, *buffer2, *last_dot;
 
   got_game_name = got_loader_name = got_out_filename = 0;
 
@@ -346,8 +370,7 @@ parse_args( int argc, char **argv )
 
       /* Loader Name (Loading: Name) */
     case 'l':
-      strncpy( loader_name, optarg, 8 );
-      loader_name[8] = 0;
+      snprintf( loader_name, 9, "%-8s", optarg );
       got_loader_name = 1;
       break;
       
@@ -391,6 +414,10 @@ parse_args( int argc, char **argv )
   /* Snapshot filename */
   filename = argv[ optind ];
 
+  /* Get the basename without the last extension. Not always going to
+     be exactly what we want ('gamename.z80.gz') but will be close to
+     right in most cases */
+  
   buffer = strdup( filename );
   if( !buffer ) {
     print_error( "out of memory at %s:%d", __FILE__, __LINE__ );
@@ -398,25 +425,21 @@ parse_args( int argc, char **argv )
   }
 
   buffer2 = basename( buffer );
+  last_dot = strrchr( buffer2, '.' ); if( last_dot ) *last_dot = '\0';
 
   if( !got_out_filename ) {
-
-    char *last;
 
     /* 4 characters less than the size of the buffer so we will always
        have room to append ".tzx" */
     strncpy( out_filename, buffer2, 507 ); out_filename[507] = '\0';
-
-    last = strrchr( out_filename, '.' ); if( last ) *last = '\0';
-    
     strcat( out_filename, ".tzx" );
   }
 
-  if( !got_loader_name ) {
-    strncpy( loader_name, buffer2, 8 ); loader_name[8] = '\0';
-  }
+  if( !got_loader_name ) snprintf( loader_name, 9, "%-8s", buffer2 );
   if( !got_game_name ) {
-    strncpy( game_name, buffer2, 32 ); game_name[32] = '\0';
+    snprintf( game_name, 33, "%-32s", buffer2 );
+    change_copyright( game_name );
+    center_name( game_name );
   }
 
   free( buffer );
@@ -535,7 +558,7 @@ static struct TurboLoadVars
   XOR COL is on 134
 */
 
-libspectrum_byte turbo_loader[144+1]   = 
+static libspectrum_byte turbo_loader[ 144+1 ] = 
   { "\xCD\x5B\xBF"        /* LD_BLOCK  CALL LD_BYTES         */
     "\xD8"                /*           RET  C                */
     "\xCF"                /*           RST  0008,ERROR_1     */
@@ -682,10 +705,12 @@ libspectrum_byte turbo_loader[144+1]   =
     "\x37"                /*           SCF                   4       */
     "\xC9" };            /*           RET                   10      */
 
-libspectrum_byte tzx_start[10]={'Z','X','T','a','p','e','!',0x1a, 1, 13};
+static libspectrum_byte tzx_start[10] =
+  { 'Z','X', 'T','a','p','e','!', 0x1a, 1, 13 };
 
 #define tzx_header_size  5+1+17+1
-libspectrum_byte tzx_header[tzx_header_size] =
+
+static libspectrum_byte tzx_header[tzx_header_size] =
 							{	0x10, 0x00, 0x00, 0x13, 0x00,
 								0x00, 0x00,			/* Basic */
 								0x11, 0x05, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,		/* Filename */
@@ -718,41 +743,40 @@ struct tzx_turbo_head_str
     libspectrum_word PageStart;      /* Normal (non-paged) start address of this 16Kb chunk */
   } PageOrder_s;	/* Notice that the 3 blocks for an 48K machine have different block numbers for a 48K and 128K snapshot! */
 
-struct PageOrder_s      PageOrder48S[4]           = {{255, 0xC000 },	/* Loading screen (external) */
-						     { 0, 0x8000 },  /* + With alternate loading screen */
-						     { 2, 0xC000 },  /* + */
-						     { 5, 0x4000 }}; /* + Must be decompressed ! */
+static PageOrder_s PageOrder48S[4]  = {{255, 0xC000 },	/* Loading screen (external) */
+				       { 0, 0x8000 },  /* + With alternate loading screen */
+				       { 2, 0xC000 },  /* + */
+				       { 5, 0x4000 }}; /* + Must be decompressed ! */
 
-struct PageOrder_s      PageOrder128S[9]          = {{255, 0xC000 },	/* Loading screen (external) */
-						     { 2, 0x8000 },  /* + */
-                                                        { 1, 0xC000 },
-                                                        { 3, 0xC000 },
-                                                        { 4, 0xC000 },
-                                                        { 6, 0xC000 },
-                                                        { 7, 0xC000 },
-						     { 0, 0xC000 },  /* + */
-						     { 5, 0x4000 }}; /* + Must be decompressed */
+static PageOrder_s PageOrder128S[9] = {{255, 0xC000 },	/* Loading screen (external) */
+				       { 2, 0x8000 },  /* + */
+				       { 1, 0xC000 },
+				       { 3, 0xC000 },
+				       { 4, 0xC000 },
+				       { 6, 0xC000 },
+				       { 7, 0xC000 },
+				       { 0, 0xC000 },  /* + */
+				       { 5, 0x4000 }}; /* + Must be decompressed */
 
-struct PageOrder_s      PageOrder48N[3]            = {{ 5, 0xC000 },  /* + Loading screen from memory */
-						      { 2, 0x8000 },  /* + */
-						      { 0, 0xC000 }}; /* + */
+static PageOrder_s PageOrder48N[3]  = {{ 5, 0xC000 },  /* + Loading screen from memory */
+				       { 2, 0x8000 },  /* + */
+				       { 0, 0xC000 }}; /* + */
 
-struct PageOrder_s      PageOrder128N[8]           = {{ 5, 0xC000 },  /* + Loading screen from memory */
-						      { 2, 0x8000 },  /* + */
-                                                        { 1, 0xC000 },
-                                                        { 3, 0xC000 },
-                                                        { 4, 0xC000 },
-                                                        { 6, 0xC000 },
-                                                        { 7, 0xC000 },
-						      { 0, 0xC000 }}; /* + */
+static PageOrder_s PageOrder128N[8] = {{ 5, 0xC000 },  /* + Loading screen from memory */
+				       { 2, 0x8000 },  /* + */
+				       { 1, 0xC000 },
+				       { 3, 0xC000 },
+				       { 4, 0xC000 },
+				       { 6, 0xC000 },
+				       { 7, 0xC000 },
+				       { 0, 0xC000 }}; /* + */
 
+static libspectrum_byte tzx_turbo_head[20];
 
-libspectrum_byte tzx_turbo_head[20];
+static int load_page[8];
+static int load_768 = 0;
 
-int load_page[8];
-int load_768 = 0;
-
-libspectrum_byte loader_data[768] = /* 768 */
+static libspectrum_byte loader_data[768] = /* 768 */
 {0xF3,0x31,0x00,0xC0,0xCD,0x91,0xBE,0xDD,0x21,0x6C,0xBE,0x21,0xBB,0xBB,0x11
 ,0xCC,0xCC,0x01,0xDD,0xDD,0xD9,0xFD,0x21,0xFF,0xFF,0xDD,0x7E,0x00,0xA7,0x28
 ,0x50,0xDD,0x66,0x01,0x2E,0xFF,0xDD,0x5E,0x02,0xDD,0x56,0x03,0x01,0xFD,0x7F
@@ -807,24 +831,24 @@ libspectrum_byte loader_data[768] = /* 768 */
 ,0x00,0x00,0x00};
 /* end binary data. size = 768 bytes */
 
-int data_pos = 0;
+static int data_pos = 0;
 
-void add_data(void * dat, int len)
+static void
+add_data( void *dat, int len )
 {
-	memcpy(snap_bin+data_pos, dat, len);
-	data_pos+=len;
+  memcpy( snap_bin + data_pos, dat, len );
+  data_pos += len;
 }
 
-libspectrum_byte calc_checksum(libspectrum_byte data[], int len)
+static libspectrum_byte
+calc_checksum( libspectrum_byte *data, size_t length )
 {
-	libspectrum_byte xx = 0;
-	int i;
+  int i;
+  libspectrum_byte checksum;
 
-	for (i=0; i < len; i++)
-	{
-		xx ^= data[i];
-	}
-	return xx;
+  for( i=0, checksum = 0; i < length; i++, data++ ) checksum ^= *data;
+
+  return checksum;
 }
 
 static void
@@ -914,6 +938,8 @@ create_main_data( void )
   libspectrum_machine machine;
   libspectrum_word add, pagelen, loadlen, rr;
   libspectrum_byte num, external_screen[ 6912 ], addhi;
+
+  smallpage = -1;		/* Keep gcc happy */
 
   len = (LOADERPREPIECE-1) + 768 + 2;
 
