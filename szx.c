@@ -116,7 +116,7 @@ write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 static libspectrum_error
 write_ram_page( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, const char *id, const libspectrum_byte *data,
-		int page, int compress, int extra_flags );
+		size_t data_length, int page, int compress, int extra_flags );
 static libspectrum_error
 write_ay_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, libspectrum_snap *snap );
@@ -848,10 +848,7 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   case LIBSPECTRUM_MACHINE_TC2048: **ptr = SZX_MACHINE_TC2048; break;
   case LIBSPECTRUM_MACHINE_TC2068: **ptr = SZX_MACHINE_TC2068; break;
   case LIBSPECTRUM_MACHINE_SCORP:  **ptr = SZX_MACHINE_SCORPION; break;
-  case LIBSPECTRUM_MACHINE_SE:
-    /* As we don't currently save dock contents... */
-    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
-    **ptr = SZX_MACHINE_SE; break;
+  case LIBSPECTRUM_MACHINE_SE: **ptr = SZX_MACHINE_SE; break;
 
   case LIBSPECTRUM_MACHINE_UNKNOWN:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
@@ -1051,8 +1048,8 @@ write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   data = libspectrum_snap_pages( snap, page );
 
-  error = write_ram_page( buffer, ptr, length, "RAMP", data, page, compress,
-                          0x00 );
+  error = write_ram_page( buffer, ptr, length, "RAMP", data, 0x4000, page,
+			  compress, 0x00 );
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -1061,11 +1058,11 @@ write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 static libspectrum_error
 write_ram_page( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, const char *id, const libspectrum_byte *data,
-		int page, int compress, int extra_flags )
+		size_t data_length, int page, int compress, int extra_flags )
 {
   libspectrum_error error;
   libspectrum_byte *block_length, *flags, *compressed_data;
-  size_t data_length, compressed_length;
+  size_t compressed_length;
   int use_compression;
 
   /* 8 for the chunk header, 3 for the flags and the page number */
@@ -1083,18 +1080,17 @@ write_ram_page( libspectrum_byte **buffer, libspectrum_byte **ptr,
   *(*ptr)++ = (libspectrum_byte)page;
 
   use_compression = 0;
-  data_length = 0x4000;
   compressed_data = NULL;
 
 #ifdef HAVE_ZLIB_H
 
   if( compress ) {
 
-    error = libspectrum_zlib_compress( data, 0x4000,
+    error = libspectrum_zlib_compress( data, data_length,
 				       &compressed_data, &compressed_length );
     if( error ) return error;
 
-    if( compressed_length < 0x4000 ) {
+    if( compressed_length < data_length ) {
       use_compression = 1;
       data = compressed_data;
       data_length = compressed_length;
@@ -1200,8 +1196,8 @@ write_cfrp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   data = libspectrum_snap_zxcf_ram( snap, page );
 
-  error = write_ram_page( buffer, ptr, length, "CFRP", data, page, compress,
-                          0x00 );
+  error = write_ram_page( buffer, ptr, length, "CFRP", data, 0x4000, page,
+			  compress, 0x00 );
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -1263,8 +1259,8 @@ write_dock_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   extra_flags  = (writeable ? ZXSTDP_RAM : 0x00);
   extra_flags |= (exrom_dock ? ZXSTDP_EXROMDOCK : 0x00);
 
-  error = write_ram_page( buffer, ptr, length, "DOCK", data, page, compress,
-                          extra_flags );
+  error = write_ram_page( buffer, ptr, length, "DOCK", data, 0x2000, page,
+			  compress, extra_flags );
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
