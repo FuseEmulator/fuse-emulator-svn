@@ -226,6 +226,47 @@ block_free( gpointer data, gpointer user_data GCC_UNUSED )
   }
 }
 
+/* Read in a tape file, optionally guessing what sort of file it is */
+libspectrum_error
+libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		       size_t length, libspectrum_id_t type,
+		       const char *filename )
+{
+  libspectrum_error error;
+
+  /* If we don't know what sort of file this is, make a best guess */
+  if( type == LIBSPECTRUM_ID_UNKNOWN ) {
+    error = libspectrum_identify_file( &type, filename, buffer, length );
+    if( error ) return error;
+
+    /* If we still can't identify it, give up */
+    if( type == LIBSPECTRUM_ID_UNKNOWN ) {
+      libspectrum_print_error(
+        LIBSPECTRUM_ERROR_UNKNOWN,
+	"libspectrum_tape_read: couldn't identify file"
+      );
+      return LIBSPECTRUM_ERROR_UNKNOWN;
+    }
+  }
+
+  switch( type ) {
+
+  case LIBSPECTRUM_ID_TAPE_TAP:
+    return libspectrum_tap_read( tape, buffer, length );
+
+  case LIBSPECTRUM_ID_TAPE_TZX:
+    return libspectrum_tzx_read( tape, buffer, length );
+
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "libspectrum_tape_read: not a snapshot file" );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  /* Should never happen */
+  abort();
+}
+
 /* Does this tape structure actually contain a tape? */
 int
 libspectrum_tape_present( const libspectrum_tape *tape )
