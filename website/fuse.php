@@ -101,7 +101,7 @@ fuse_section ("Requirements", "What do I need to run Fuse?", <<<END_SECTION
   </dl>
 
   <h3>Mac OS X</h3>
-  <p>A port to OS X by <a href="mailto:fredm@spamcop.net">Fredrick Meunier</a> is available below. All comments, bug reports, etc on this version should go to Fred in the first instance.</p>
+  <p>A native port to OS X by <a href="mailto:fredm@spamcop.net">Fredrick Meunier</a> is available below, or the original will compile on OS X 10.3 (Panther) or later.</p>
 
 END_SECTION
 );
