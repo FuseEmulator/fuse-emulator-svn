@@ -151,7 +151,7 @@ fuse_section (NULL, "What's new?", <<<END_SECTION
   <ul>
    <li>Compilation and other bugfixes for 0.6.2.</li>
   </ul>
-  <p>Full details are available in the <a href="https://sourceforge.net/forum/forum.php?forum_id=353610">release announcement</a>.</p>
+  <p>Full details are available in the <a href="http://sourceforge.net/forum/forum.php?forum_id=353610">release announcement</a>.</p>
 
   <h3>0.6.2</h3>
   <ul>
@@ -162,7 +162,7 @@ fuse_section (NULL, "What's new?", <<<END_SECTION
    <li>Improved interrupt handling in the Z80 core.</li>
    <li>(fuse-utils) New snap2tzx utility for converting snapshots to .tzx files.</li>
   </ul>
-  <p>See the <a href="https://sourceforge.net/forum/forum.php?forum_id=351904">release announcement</a> for more details.</p>
+  <p>See the <a href="http://sourceforge.net/forum/forum.php?forum_id=351904">release announcement</a> for more details.</p>
 
   <h3>1 January 2004</h3>
   <p>An alpha version of a port of Fuse to Win32 is now <a href="fuse-win32.zip">available</a>. See the <a href="http://sourceforge.net/forum/forum.php?forum_id=341379">announcement</a> for more details.</p>
