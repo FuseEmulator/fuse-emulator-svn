@@ -136,3 +136,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20031228 libspectrum.c, libspectrum.h.in: rename 'class' to
 	 'libspectrum_class' where its used in libspectrum.h.in for C++
 	 safety (Fred).
+20040109 bzip2.c, configure.in: check we have libbz2 1.x (0.9.x and
+	 earlier use different function names).
