@@ -59,6 +59,9 @@ size_t rzx_in_allocated;
 /* Are we currently recording a .rzx file? */
 int rzx_recording;
 
+/* Is the .rzx file being recorded in competition mode? */
+int rzx_competition_mode;
+
 /* The filename we'll save this recording into */
 static char *rzx_filename;
 
@@ -136,6 +139,8 @@ int rzx_start_recording( const char *filename, int embed_snapshot )
 
   /* Note that we're recording */
   rzx_recording = 1;
+  rzx_competition_mode = settings_current.competition_mode;
+
   ui_menu_activate_recording( 1 );
 
   return 0;
@@ -155,7 +160,7 @@ int rzx_stop_recording( void )
   libspec_error =
     libspectrum_rzx_write( &buffer, &length, rzx, rzx_snap, fuse_creator,
 			   settings_current.rzx_compression,
-			   settings_current.competition_mode ? &rzx_key : NULL
+			   rzx_competition_mode ? &rzx_key : NULL
 			 );
   if( libspec_error != LIBSPECTRUM_ERROR_NONE ) {
     libspectrum_rzx_free( rzx );

@@ -109,8 +109,7 @@ timer_signal( int signo GCC_UNUSED )
     timer_count += 1.0;
 
     /* End competition mode if time has slipped too much */
-    if( timer_count > 25 &&
-	settings_current.competition_mode && rzx_recording ) {
+    if( timer_count > 25 && rzx_recording && rzx_competition_mode ) {
       ui_error(
         UI_ERROR_INFO,
 	"Emulator speed dropped; stopping competition mode RZX recording"

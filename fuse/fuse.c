@@ -325,7 +325,7 @@ int fuse_emulation_pause(void)
   int error;
 
   /* Stop recording any competition mode RZX file */
-  if( settings_current.competition_mode && rzx_recording ) {
+  if( rzx_recording && rzx_competition_mode ) {
     ui_error( UI_ERROR_INFO, "Stopping competition mode RZX recording" );
     error = rzx_stop_recording(); if( error ) return error;
   }
