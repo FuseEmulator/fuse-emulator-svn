@@ -127,7 +127,8 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 libspectrum_error
 libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
 			int *out_flags, libspectrum_snap *snap,
-	 		libspectrum_id_t type, int in_flags )
+	 		libspectrum_id_t type, libspectrum_creator *creator,
+			int in_flags )
 {
   libspectrum_class_t class;
   libspectrum_error error;
@@ -144,7 +145,8 @@ libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
   switch( type ) {
 
   case LIBSPECTRUM_ID_SNAPSHOT_SZX:
-    return libspectrum_szx_write( buffer, length, out_flags, snap, in_flags );
+    return libspectrum_szx_write( buffer, length, out_flags, snap, creator,
+				  in_flags );
 
   case LIBSPECTRUM_ID_SNAPSHOT_Z80:
     return libspectrum_z80_write2( buffer, length, out_flags, snap, in_flags );

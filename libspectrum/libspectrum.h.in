@@ -256,7 +256,8 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 libspectrum_error
 libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
 			int *out_flags, libspectrum_snap *snap,
-	 		libspectrum_id_t type, int in_flags );
+	 		libspectrum_id_t type, libspectrum_creator *creator,
+			int in_flags );
 
 /* The flags that may be returned from libspectrum_snap_write() */
 extern const int LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;

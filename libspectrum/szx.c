@@ -48,6 +48,9 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 	      size_t *length, int *out_flags, libspectrum_snap *snap );
 
 static libspectrum_error
+write_crtr_chunk( libspectrum_byte **bufer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_creator *creator );
+static libspectrum_error
 write_z80r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap );
 static libspectrum_error
@@ -444,7 +447,8 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 
 libspectrum_error
 libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
-		       int *out_flags, libspectrum_snap *snap, int in_flags )
+		       int *out_flags, libspectrum_snap *snap,
+		       libspectrum_creator *creator, int in_flags )
 {
   libspectrum_byte *ptr = *buffer;
   int capabilities;
@@ -457,6 +461,11 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
 
   error = write_file_header( buffer, &ptr, length, out_flags, snap );
   if( error ) return error;
+
+  if( creator ) {
+    error = write_crtr_chunk( buffer, &ptr, length, creator );
+    if( error ) return error;
+  }
 
   error = write_z80r_chunk( buffer, &ptr, length, snap );
   if( error ) return error;
@@ -519,6 +528,22 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   /* Reserved byte */
   *(*ptr)++ = '\0';
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_crtr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_creator *creator )
+{
+  libspectrum_error error;
+
+  error = write_chunk_header( buffer, ptr, length, "CRTR", 36 );
+  if( error ) return error;
+
+  memcpy( *ptr, libspectrum_creator_program( creator ), 32 ); *ptr += 32;
+  libspectrum_write_word( ptr, libspectrum_creator_major( creator ) );
+  libspectrum_write_word( ptr, libspectrum_creator_minor( creator ) );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
