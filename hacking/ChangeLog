@@ -246,3 +246,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040626 Makefile.am: bump soname.
 20040626 AUTHORS,README,TODO,doc/{libspectrum.3,libspectrum.txt}: doc
 	 updates in preparation for a 0.2.2 release.
+20040703 libspectrum.h.in,rzx.c,doc/libspectrum.txt: add ability to
+	 select the format of the embedded snap in .rzx files.
