@@ -55,8 +55,7 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		   libspectrum_word minor );
 static libspectrum_error
 rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		    size_t *length, libspectrum_byte *snap,
-		    size_t snap_length, int compress );
+		    size_t *length, libspectrum_snap *snap, int compress );
 static libspectrum_error
 rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 		 libspectrum_byte **ptr, size_t *length, int compress );
@@ -572,8 +571,7 @@ rzx_read_frames( libspectrum_rzx *rzx,
 
 libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_rzx *rzx,
-		       libspectrum_byte *snap, size_t snap_length,
+		       libspectrum_rzx *rzx, libspectrum_snap *snap,
 		       const char *program, libspectrum_word major,
 		       libspectrum_word minor, int compress )
 {
@@ -587,8 +585,7 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   if( snap ) {
-    error = rzx_write_snapshot( buffer, &ptr, length, snap, snap_length,
-				compress );
+    error = rzx_write_snapshot( buffer, &ptr, length, snap, compress );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
 
@@ -650,18 +647,24 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 static libspectrum_error
 rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		    size_t *length, libspectrum_byte *snap,
-		    size_t snap_length, int compress )
+		    size_t *length, libspectrum_snap *snap, int compress )
 {
   libspectrum_error error;
+  libspectrum_byte *snap_buffer; size_t snap_length;
   libspectrum_byte *gzsnap = NULL; size_t gzlength;
+
+  snap_length = 0;
+  error = libspectrum_z80_write( &snap_buffer, &snap_length, snap );
+  if( error ) return error;
 
   if( compress ) {
 
-    error = libspectrum_zlib_compress( snap, snap_length, &gzsnap, &gzlength );
+    error = libspectrum_zlib_compress( snap_buffer, snap_length,
+				       &gzsnap, &gzlength );
     if( error != LIBSPECTRUM_ERROR_NONE ) {
       libspectrum_print_error( "rzx_write_snapshot: compression error: %s",
 			       libspectrum_error_message( error ) );
+      free( snap_buffer );
       return error;
     }
     error = libspectrum_make_room( buffer, 17 + gzlength, ptr, length );
@@ -670,7 +673,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
   }
 
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    if( gzsnap ) free( gzsnap );
+    if( gzsnap ) free( gzsnap ); free( snap_buffer );
     libspectrum_print_error( "rzx_write_snapshot: out of memory" );
     return error;
   }
@@ -692,6 +695,8 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
   } else {
     memcpy( *ptr, snap, snap_length ); (*ptr) += snap_length;
   }
+
+  free( snap_buffer );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
