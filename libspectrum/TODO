@@ -1,7 +1,7 @@
 libspectrum TODO
 ================
 
-For the 0.2.1 release
----------------------
+* Add Scorpion support to the .szx code. Requires the online .szx
+  documentation to be updated first, though...
 
 $Id$

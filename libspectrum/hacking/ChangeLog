@@ -169,3 +169,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040223 TAG: libspectrum-0_2_1-merge-1
 20040227 accessor.pl,libspectrum.c,libspectrum.h.in,szx.c,timings.c,z80.c:
 	 Scorpion support (part of patch #874504) (Stuart Brady).
+20040229 accessor.pl, libspectrum.c, z80.c: the Scorpion no longer has
+	 CAPABILITY_PLUS3_MEMORY.
