@@ -44,6 +44,37 @@ static const int LIBSPECTRUM_Z80_HEADER_LENGTH = 30;
 /* Length of xzx's extensions */
 #define LIBSPECTRUM_Z80_V3X_LENGTH 55
 
+/* The constants used for each machine type */
+enum {
+
+  /* v2 constants */
+  Z80_MACHINE_48_V2 = 0,
+  Z80_MACHINE_48_IF1_V2 = 1,
+  Z80_MACHINE_48_SAMRAM_V2 = 2,
+  Z80_MACHINE_128_V2 = 3,
+  Z80_MACHINE_128_IF1_V2 = 4,
+
+  /* v3 constants */
+  Z80_MACHINE_48 = 0,
+  Z80_MACHINE_48_IF1 = 1,
+  Z80_MACHINE_48_SAMRAM = 2,
+  Z80_MACHINE_48_MGT = 3,
+  Z80_MACHINE_128 = 4,
+  Z80_MACHINE_128_IF1 = 5,
+  Z80_MACHINE_128_MGT = 6,
+
+  /* Extensions */
+  Z80_MACHINE_PLUS3 = 7,
+  Z80_MACHINE_PLUS3_XZX_ERROR = 8,
+  Z80_MACHINE_PENTAGON = 9,
+  Z80_MACHINE_SCORPION = 10,
+  Z80_MACHINE_PLUS2 = 12,
+  Z80_MACHINE_PLUS2A = 13,
+  Z80_MACHINE_TC2048 = 14,
+  Z80_MACHINE_TC2068 = 15,
+  Z80_MACHINE_TS2068 = 128,
+};
+
 /* The signature used to designate the .slt extensions */
 static libspectrum_byte slt_signature[] = "\0\0\0SLT";
 static size_t slt_signature_length = 6;
@@ -200,15 +231,18 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
     case 2:
 
       switch( extra_header[2] ) {
-      case 0: case 1: case 2:
+      case Z80_MACHINE_48_V2:
+      case Z80_MACHINE_48_IF1_V2:
+      case Z80_MACHINE_48_SAMRAM_V2:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 ); break;
-      case 3: case 4:
+      case Z80_MACHINE_128_V2:
+      case Z80_MACHINE_128_IF1_V2:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 ); break;
-      case 14:
+      case Z80_MACHINE_TC2048:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2048 );
 	break;
-      case 15:
-      case 128: /* Load TS2068 snaps as TC2068 for now */
+      case Z80_MACHINE_TC2068:
+      case Z80_MACHINE_TS2068: /* Load TS2068 snaps as TC2068 for now */
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2068 );
 	break;
       default:
@@ -225,26 +259,32 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
     case 3:
 
       switch( extra_header[2] ) {
-      case 0: case 1: case 2: case 3:
+      case Z80_MACHINE_48:
+      case Z80_MACHINE_48_IF1:
+      case Z80_MACHINE_48_SAMRAM:
+      case Z80_MACHINE_48_MGT:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 ); break;
-      case 4: case 5: case 6:
+      case Z80_MACHINE_128:
+      case Z80_MACHINE_128_IF1:
+      case Z80_MACHINE_128_MGT:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 ); break;
-      case 7: case 8: /* 8 mistakenly written by some versions of xzx */
+      case Z80_MACHINE_PLUS3:
+      case Z80_MACHINE_PLUS3_XZX_ERROR:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS3 ); break;
-      case 9:
+      case Z80_MACHINE_PENTAGON:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PENT ); break;
-      case 10:
+      case Z80_MACHINE_SCORPION:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SCORP ); break;
-      case 12:
+      case Z80_MACHINE_PLUS2:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS2 ); break;
-      case 13:
+      case Z80_MACHINE_PLUS2A:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS2A );
 	break;
-      case 14:
+      case Z80_MACHINE_TC2048:
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2048 );
 	break;
-      case 15:
-      case 128: /* Load TS2068 snaps as TC2068 for now */
+      case Z80_MACHINE_TC2068:
+      case Z80_MACHINE_TS2068: /* Load TS2068 snaps as TC2068 for now */
 	libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2068 );
 	break;
       default:
@@ -938,29 +978,29 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   switch( libspectrum_snap_machine( snap ) ) {
   case LIBSPECTRUM_MACHINE_16:
   case LIBSPECTRUM_MACHINE_48:
-    *(*ptr)++ = 0; break;
+    *(*ptr)++ = Z80_MACHINE_48; break;
   case LIBSPECTRUM_MACHINE_SE:
     *flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
     /* fall through */
   case LIBSPECTRUM_MACHINE_128:
-    *(*ptr)++ = 4; break;
+    *(*ptr)++ = Z80_MACHINE_128; break;
   case LIBSPECTRUM_MACHINE_PLUS3E:
     *flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
     /* fall through */
   case LIBSPECTRUM_MACHINE_PLUS3:
-    *(*ptr)++ = 7; break;
+    *(*ptr)++ = Z80_MACHINE_PLUS3; break;
   case LIBSPECTRUM_MACHINE_PENT:
-    *(*ptr)++ = 9; break;
+    *(*ptr)++ = Z80_MACHINE_PENTAGON; break;
   case LIBSPECTRUM_MACHINE_SCORP:
-    *(*ptr)++ = 10; break;
+    *(*ptr)++ = Z80_MACHINE_SCORPION; break;
   case LIBSPECTRUM_MACHINE_PLUS2:
-    *(*ptr)++ = 12; break;
+    *(*ptr)++ = Z80_MACHINE_PLUS2; break;
   case LIBSPECTRUM_MACHINE_PLUS2A:
-    *(*ptr)++ = 13; break;
+    *(*ptr)++ = Z80_MACHINE_PLUS2A; break;
   case LIBSPECTRUM_MACHINE_TC2048:
-    *(*ptr)++ = 14; break;
+    *(*ptr)++ = Z80_MACHINE_TC2048; break;
   case LIBSPECTRUM_MACHINE_TC2068:
-    *(*ptr)++ = 15; break;
+    *(*ptr)++ = Z80_MACHINE_TC2068; break;
 
   case LIBSPECTRUM_MACHINE_UNKNOWN:
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
