@@ -306,3 +306,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20050204 configure.in,Makefile.am: Mark libspectrum.h as a nodist file instead
 	 of deleting it when configure is run, remember to make distribution
 	 tarballs with 'make dist-gzip' (Fred).
+20050213 szx.c: make uncompressed snaps with DOCK data work (and don't waste
+	 memory when loading compressed snaps with DOCK data).

@@ -246,11 +246,9 @@ write_chunk_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 static libspectrum_error
 read_ram_page( libspectrum_byte **data, size_t *page,
 	       const libspectrum_byte **buffer, size_t data_length,
-	       libspectrum_word *flags )
+	       size_t uncompressed_length, libspectrum_word *flags )
 {
 #ifdef HAVE_ZLIB_H
-
-  size_t uncompressed_length;
 
   libspectrum_error error;
 
@@ -271,8 +269,6 @@ read_ram_page( libspectrum_byte **data, size_t *page,
 
 #ifdef HAVE_ZLIB_H
 
-    uncompressed_length = 0x4000;
-
     error = libspectrum_zlib_inflate( *buffer, data_length - 3, data,
 				      &uncompressed_length );
     if( error ) return error;
@@ -292,14 +288,14 @@ read_ram_page( libspectrum_byte **data, size_t *page,
 
   } else {
 
-    if( data_length < 3 + 0x4000 ) {
+    if( data_length < 3 + uncompressed_length ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			       "%s:read_ram_page: length %lu too short",
 			       __FILE__, (unsigned long)data_length );
       return LIBSPECTRUM_ERROR_UNKNOWN;
     }
 
-    *data = malloc( 0x4000 * sizeof( libspectrum_byte ) );
+    *data = malloc( uncompressed_length * sizeof( libspectrum_byte ) );
     if( !( *data ) ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 			       "%s:read_ram_page: out of memory at %d",
@@ -307,7 +303,9 @@ read_ram_page( libspectrum_byte **data, size_t *page,
       return LIBSPECTRUM_ERROR_MEMORY;
     }
 
-    memcpy( *data, *buffer, 0x4000 ); *buffer += 0x4000;
+    memcpy( *data, *buffer, uncompressed_length );
+    *buffer += uncompressed_length;
+
   }
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -323,7 +321,7 @@ read_atrp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   libspectrum_error error;
   libspectrum_word flags;
 
-  error = read_ram_page( &data, &page, buffer, data_length, &flags );
+  error = read_ram_page( &data, &page, buffer, data_length, 0x4000, &flags );
   if( error ) return error;
 
   if( page >= SNAPSHOT_ZXATASP_PAGES ) {
@@ -406,7 +404,7 @@ read_cfrp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   libspectrum_error error;
   libspectrum_word flags;
 
-  error = read_ram_page( &data, &page, buffer, data_length, &flags );
+  error = read_ram_page( &data, &page, buffer, data_length, 0x4000, &flags );
   if( error ) return error;
 
   if( page >= SNAPSHOT_ZXCF_PAGES ) {
@@ -602,7 +600,7 @@ read_ramp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   libspectrum_word flags;
 
 
-  error = read_ram_page( &data, &page, buffer, data_length, &flags );
+  error = read_ram_page( &data, &page, buffer, data_length, 0x4000, &flags );
   if( error ) return error;
 
   if( page > 15 ) {
@@ -839,7 +837,7 @@ read_dock_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   libspectrum_word flags;
   libspectrum_byte writeable;
 
-  error = read_ram_page( &data, &page, buffer, data_length, &flags );
+  error = read_ram_page( &data, &page, buffer, data_length, 0x2000, &flags );
   if( error ) return error;
 
   if( page > 7 ) {
