@@ -514,3 +514,5 @@
 	 statusbar (Release-0_6_2-branch).
 20040129 ui/gtk/{gtkinternals.h,pixmaps.c,statusbar.c}: add pause icon
 	 (Release-0_6_2-branch).
+20040130 ui/gtk/{browse.c,gtkinternals.h,pixmaps.c}: add simple pixmap
+	 to mark the current tape location (Release-0_6_2-branch).

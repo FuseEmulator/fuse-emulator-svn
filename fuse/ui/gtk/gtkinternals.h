@@ -67,6 +67,7 @@ extern char *gtkpixmap_disk_inactive[];
 extern char *gtkpixmap_disk_active[];
 extern char *gtkpixmap_pause_inactive[];
 extern char *gtkpixmap_pause_active[];
+extern char *gtkpixmap_tape_marker[];
 
 /*
  * Poke finder routines (pokefinder.c)
