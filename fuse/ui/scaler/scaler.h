@@ -67,8 +67,6 @@ extern void Normal3x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
 	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
 extern void TV2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
                BYTE *dstPtr, DWORD dstPitch, int width, int height);
-extern void Timex1x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
-		    DWORD dstPitch, int width, int height);
 extern void TimexTV(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
                DWORD dstPitch, int width, int height);
 

@@ -45,7 +45,7 @@
 int display_ui_initialised = 0;
 
 /* A copy of every pixel on the screen */
-WORD display_image[DISPLAY_SCREEN_HEIGHT][DISPLAY_SCREEN_WIDTH];
+WORD display_image[2*DISPLAY_SCREEN_HEIGHT][DISPLAY_SCREEN_WIDTH];
 ptrdiff_t display_pitch = DISPLAY_SCREEN_WIDTH * sizeof( WORD );
 
 /* The current border colour */
@@ -214,7 +214,7 @@ void display_line(void)
      send to the screen, send it now */
   else {
 
-    int scale = machine_current->timex ? 16 : 8;
+    int scale = machine_current->timex ? 2 : 1;
 
     /* Force all rectangles into the inactive list */
     error = end_line( display_next_line ); if( error ) return;
@@ -224,15 +224,15 @@ void display_line(void)
 
       if( display_redraw_all ) {
 	uidisplay_area( 0, 0,
-			machine_current->timex ? DISPLAY_SCREEN_WIDTH
-			                       : DISPLAY_ASPECT_WIDTH,
-			DISPLAY_SCREEN_HEIGHT );
+			scale * DISPLAY_ASPECT_WIDTH,
+			scale * DISPLAY_SCREEN_HEIGHT );
 	display_redraw_all = 0;
       } else {
 	for( i = 0, ptr = inactive_rectangle;
 	     i < inactive_rectangle_count;
 	     i++, ptr++ ) {
-	  uidisplay_area( scale * ptr->x, ptr->y, scale * ptr->w, ptr->h );
+	  uidisplay_area( 8 * scale * ptr->x, scale * ptr->y,
+			  8 * scale * ptr->w, scale * ptr->h );
 	}
       }
 
@@ -591,7 +591,25 @@ display_plot8( int x, int y, BYTE data, BYTE ink, BYTE paper )
 
   if( machine_current->timex ) {
 
-    x <<= 1;
+    x <<= 1; y <<= 1;
+    display_image[y][x+ 0] = ( data & 0x80 ) ? ink : paper;
+    display_image[y][x+ 1] = ( data & 0x80 ) ? ink : paper;
+    display_image[y][x+ 2] = ( data & 0x40 ) ? ink : paper;
+    display_image[y][x+ 3] = ( data & 0x40 ) ? ink : paper;
+    display_image[y][x+ 4] = ( data & 0x20 ) ? ink : paper;
+    display_image[y][x+ 5] = ( data & 0x20 ) ? ink : paper;
+    display_image[y][x+ 6] = ( data & 0x10 ) ? ink : paper;
+    display_image[y][x+ 7] = ( data & 0x10 ) ? ink : paper;
+    display_image[y][x+ 8] = ( data & 0x08 ) ? ink : paper;
+    display_image[y][x+ 9] = ( data & 0x08 ) ? ink : paper;
+    display_image[y][x+10] = ( data & 0x04 ) ? ink : paper;
+    display_image[y][x+11] = ( data & 0x04 ) ? ink : paper;
+    display_image[y][x+12] = ( data & 0x02 ) ? ink : paper;
+    display_image[y][x+13] = ( data & 0x02 ) ? ink : paper;
+    display_image[y][x+14] = ( data & 0x01 ) ? ink : paper;
+    display_image[y][x+15] = ( data & 0x01 ) ? ink : paper;
+
+    y++;
     display_image[y][x+ 0] = ( data & 0x80 ) ? ink : paper;
     display_image[y][x+ 1] = ( data & 0x80 ) ? ink : paper;
     display_image[y][x+ 2] = ( data & 0x40 ) ? ink : paper;
@@ -650,15 +668,19 @@ display_plot16( int x, int y, WORD data, BYTE ink, BYTE paper )
 static void
 set_border( int x, int y, BYTE colour )
 {
-  int i, count;
+  size_t i;
 
   if( machine_current->timex ) {
-    x <<= 4; count = 16;
+    x <<= 4; y <<= 1;
+    for( i = 0; i < 16; i++ ) {
+      display_image[y  ][x+i] = colour;
+      display_image[y+1][x+i] = colour;
+    }
   } else {
-    x <<= 3; count =  8;
+    x <<= 3;
+    for( i = 0; i < 16; i++ ) display_image[y][x+i] = colour;
   }
 
-  for( i = 0; i < count; i++ ) display_image[y][x+i] = colour;
 }
 
 /* Get the attributes for the eight pixels starting at

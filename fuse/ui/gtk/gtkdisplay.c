@@ -38,6 +38,7 @@
 #include "gtkui.h"
 #include "machine.h"
 #include "screenshot.h"
+#include "ui/ui.h"
 #include "ui/uidisplay.h"
 #include "ui/scaler/scaler.h"
 #include "scld.h"
@@ -63,6 +64,7 @@ static ScalerProc *scaler_proc;
 static int gtkdisplay_allocate_colours( unsigned long *pixel_values );
 static void gtkdisplay_area(int x, int y, int width, int height);
 static int gtkdisplay_configure_notify( int width );
+static int select_sensible_scaler( void );
 
 /* Callbacks */
 
@@ -121,8 +123,12 @@ uidisplay_init_scalers( void )
 int
 uidisplay_init( int width, int height )
 {
+  int error;
+
   image_width = width;
   image_height = height;
+
+  error = select_sensible_scaler(); if( error ) return error;
 
   display_refresh_all();
 
@@ -195,7 +201,7 @@ static int gtkdisplay_allocate_colours( unsigned long *pixel_values )
   
 static int gtkdisplay_configure_notify( int width )
 {
-  int size;
+  int size, error;
 
   size = width / DISPLAY_ASPECT_WIDTH;
 
@@ -208,6 +214,17 @@ static int gtkdisplay_configure_notify( int width )
 			 size * DISPLAY_ASPECT_WIDTH,
 			 size * DISPLAY_SCREEN_HEIGHT );
 
+  error = select_sensible_scaler(); if( error ) return error;
+
+  /* Redraw the entire screen... */
+  display_refresh_all();
+
+  return 0;
+}
+
+static int
+select_sensible_scaler( void )
+{
   switch( gtkdisplay_current_size ) {
 
   case 1:
@@ -219,15 +236,16 @@ static int gtkdisplay_configure_notify( int width )
     break;
   case 2:
     if( machine_current->timex ) {
-      scaler_proc = Timex1x;
+      scaler_proc = Normal1x;
     } else {
       scaler_proc = Normal2x;
     }
     break;
+  default:
+    ui_error( UI_ERROR_ERROR, "Unknown GTK+ display size %d",
+	      gtkdisplay_current_size );
+    return 1;
   }
-
-  /* Redraw the entire screen... */
-  display_refresh_all();
 
   return 0;
 }
@@ -262,13 +280,13 @@ uidisplay_area( int x, int y, int w, int h )
   int timex = machine_current->timex;
   float scale = timex ? gtkdisplay_current_size / 2.0
                       : gtkdisplay_current_size;
-  int scaled_x = scale * x, scaled_y = gtkdisplay_current_size * y, xx, yy;
+  int scaled_x = scale * x, scaled_y = scale * y, xx, yy;
 
   /* Create scaled image */
   scaler_proc( (BYTE*)&display_image[y][x], display_pitch, NULL, 
 	       (BYTE*)&scaled_image[scaled_y][scaled_x], scaled_pitch, w, h );
 
-  w *= scale; h *= gtkdisplay_current_size;
+  w *= scale; h *= scale;
 
   /* Call putpixel multiple times */
   for( yy = scaled_y; yy < scaled_y + h; yy++ )

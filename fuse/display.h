@@ -67,7 +67,7 @@
 
 extern int display_ui_initialised;
 
-extern WORD display_image[DISPLAY_SCREEN_HEIGHT][DISPLAY_SCREEN_WIDTH];
+extern WORD display_image[2*DISPLAY_SCREEN_HEIGHT][DISPLAY_SCREEN_WIDTH];
 extern ptrdiff_t display_pitch;
 
 extern BYTE display_lores_border;
