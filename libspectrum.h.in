@@ -118,6 +118,8 @@ typedef enum libspectrum_machine {
      hardware should be used */
   LIBSPECTRUM_MACHINE_UNKNOWN,
 
+  LIBSPECTRUM_MACHINE_16,
+
 } libspectrum_machine;
 
 const char* libspectrum_machine_name( libspectrum_machine type );

@@ -85,6 +85,7 @@ libspectrum needs to identify the Spectrum variant in use. This is done
 with the `libspectrum_machine' enum, which can take the following
 values:
 
+LIBSPECTRUM_MACHINE_16		16K Spectrum
 LIBSPECTRUM_MACHINE_48		48K Spectrum
 LIBSPECTRUM_MACHINE_TC2048	Timex TC2048
 LIBSPECTRUM_MACHINE_128		(Original) 128K Spectrum
