@@ -120,4 +120,5 @@ dnl FIXME: is there a better way to do this?
 rm -rf libspectrum.h
 
 AC_OUTPUT(Makefile \
+doc/Makefile \
 libspectrum.qpg)

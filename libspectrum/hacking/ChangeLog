@@ -155,3 +155,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (libspectrum_0_2_1-branch).
 20040129 libspectrum.c: prevent the 'Secure memory is not locked into
 	 core' message appearing (libspectrum_0_2_1-branch).
+20040205 Makefile.am, README, configure.in, doc/: doc updates
+	 (libspectrum_0_2_1-branch).

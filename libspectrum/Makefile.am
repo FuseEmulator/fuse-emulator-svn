@@ -81,7 +81,6 @@ tape_set.c: tape_set.pl tape_accessors.txt
 INCLUDES = @GLIB_CFLAGS@
 
 EXTRA_DIST = accessor.pl \
-	     doc/libspectrum.txt \
 	     generate.pl.in \
              libspectrum.h.in \
              snap_accessors.txt \
@@ -90,3 +89,4 @@ EXTRA_DIST = accessor.pl \
 	     tape_set.pl \
 	     tape_block.h
 
+SUBDIRS = doc
