@@ -191,3 +191,4 @@
 	 Spectrum as being available when changing machine.
 	 (Release-0_6_1-branch)
 20030913 Makefile.am: distribute compat.h (Release-0_6_1-branch)
+20030913 lib/Makefile.am: distribute disk_plus3.z80 (Release-0_6_1-branch)
