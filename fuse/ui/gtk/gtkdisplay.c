@@ -214,6 +214,7 @@ register_scalers( void )
     case 1:
       scaler_register( GFX_DOUBLESIZE );
       scaler_register( GFX_TV2X );
+      scaler_register( GFX_ADVMAME2X );
       scaler_select_scaler( GFX_DOUBLESIZE );
       return 0;
     case 2:
