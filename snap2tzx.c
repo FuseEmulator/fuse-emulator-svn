@@ -506,8 +506,10 @@ load_snap( libspectrum_snap **snap, const char *filename )
   return 0;
 }
 
-#define LOADERPREPIECE  (224+1)-87+12-1+41+41                                                  /* Length of the BASIC part before the loader code */
-static libspectrum_byte SpectrumBASICData[LOADERPREPIECE] = {
+/* Length of the BASIC part before the loader code */
+#define basic_length 224-87+12-1+41+41	/* == 230 == 0xe6 */
+
+static const libspectrum_byte SpectrumBASICData[ basic_length + 1 ] = {
 
 	/* 0 {INK 255}{PAPER 255}BORDER PI-PI : PAPER PI-PI : INK PI-PI : CLS
 		PRINT "{AT 6,0}{INK 5}
@@ -531,6 +533,12 @@ static libspectrum_byte SpectrumBASICData[LOADERPREPIECE] = {
 	"\x01\x00\x03"         /*           LD   BC,+0300                                                             */
 	"\xED\xB0"             /*           LDIR                  ; Move it into place                                */
 	"\xC3\x00\xBD" };      /*           JP   BD00,LDSTART     ; And run it!                                       */
+
+/* The offsets into SpectrumBASICData where the user-settable strings
+   are stored */
+static const size_t basic_game_name_offset = 32;
+static const size_t basic_info1_offset = 103;
+static const size_t basic_info2_offset = 144;
 
 /**********************************************************************************************************************************/
 /* The custom loader. Any speed can be handled by it.                                                                             */
@@ -583,7 +591,7 @@ typedef struct turbo_variables_t {
 
 } turbo_variables_t;
 
-static turbo_variables_t turbo_variables[] = {
+static const turbo_variables_t turbo_variables[] = {
 
   { 0x80 + 41, 20, 2168, 667, 855 },	/* ROM values => 1364 bps */
   { 0x80 + 24, 11, 2000, 600, 518 },	/* 2250 bps */
@@ -592,11 +600,13 @@ static turbo_variables_t turbo_variables[] = {
 
 };
 
+#define turbo_loader_length 144
+
 /* 'compare'    is at offset 94
    'delay'      is at offset 118
    'xor colour' is at offset 134 */
 
-static libspectrum_byte turbo_loader[ 144+1 ] = 
+static const libspectrum_byte turbo_loader[ turbo_loader_length + 1 ] = 
   { "\xCD\x5B\xBF"        /* LD_BLOCK  CALL LD_BYTES         */
     "\xD8"                /*           RET  C                */
     "\xCF"                /*           RST  0008,ERROR_1     */
@@ -743,43 +753,59 @@ static libspectrum_byte turbo_loader[ 144+1 ] =
     "\x37"                /*           SCF                   4       */
     "\xC9" };            /*           RET                   10      */
 
-typedef struct PageOrder_s     /* Each page as found in a Z80 file */
+typedef struct page_t     /* Each page as found in a Z80 file */
 {
-  libspectrum_byte PageNumber;     /* Spectrum value, not Z80 value! (= +3) */
-  libspectrum_word PageStart;      /* Normal (non-paged) start address of this 16Kb chunk */
-} PageOrder_s;
+  libspectrum_byte page;	/* Spectrum value, not value from .z80 file */
+  libspectrum_word address;     /* Normal (non-paged) start address of this
+				   16Kb chunk */
+} page_t;
 
-static PageOrder_s PageOrder48S[4]  = {{255, 0xC000 },	/* Loading screen (external) */
-				       { 2, 0x8000 },  /* + With alternate loading screen */
-				       { 0, 0xC000 },  /* + */
-				       { 5, 0x4000 }}; /* + Must be decompressed ! */
+static const page_t PageOrder48S[4] = {
 
-static PageOrder_s PageOrder128S[9] = {{255, 0xC000 },	/* Loading screen (external) */
-				       { 2, 0x8000 },  /* + */
-				       { 1, 0xC000 },
-				       { 3, 0xC000 },
-				       { 4, 0xC000 },
-				       { 6, 0xC000 },
-				       { 7, 0xC000 },
-				       { 0, 0xC000 },  /* + */
-				       { 5, 0x4000 }}; /* + Must be decompressed */
+  { 255, 0xc000 },  /* external loading screen */
+  {   2, 0x8000 },
+  {   0, 0xc000 },
+  {   5, 0x4000 }   /* must be decompressed */
 
-static PageOrder_s PageOrder48N[3]  = {{ 5, 0xC000 },  /* + Loading screen from memory */
-				       { 2, 0x8000 },  /* + */
-				       { 0, 0xC000 }}; /* + */
+};
 
-static PageOrder_s PageOrder128N[8] = {{ 5, 0xC000 },  /* + Loading screen from memory */
-				       { 2, 0x8000 },  /* + */
-				       { 1, 0xC000 },
-				       { 3, 0xC000 },
-				       { 4, 0xC000 },
-				       { 6, 0xC000 },
-				       { 7, 0xC000 },
-				       { 0, 0xC000 }}; /* + */
+static const page_t PageOrder128S[9] = {
+
+  { 255, 0xc000 },	/* external loading screen */
+  {   2, 0x8000 },
+  {   1, 0xc000 },
+  {   3, 0xc000 },
+  {   4, 0xc000 },
+  {   6, 0xc000 },
+  {   7, 0xc000 },
+  {   0, 0xc000 },
+  {   5, 0x4000 }	/* must be decompressed */
+};
+
+static const page_t PageOrder48N[3] = {
+
+  {   5, 0xc000 },	/* loading screen from memory */
+  {   2, 0x8000 },
+  {   0, 0xc000 }
+
+};
+
+static const page_t PageOrder128N[8] = {
+
+  {   5, 0xc000 },	/* loading screen from memory */
+  {   2, 0x8000 },
+  {   1, 0xc000 },
+  {   3, 0xc000 },
+  {   4, 0xc000 },
+  {   6, 0xc000 },
+  {   7, 0xc000 },
+  {   0, 0xc000 }
+
+};
 
 static const size_t loader_length = 0x300;
 
-static libspectrum_byte loader_data[ 0x300 ] =
+static const libspectrum_byte loader_data[ 0x300 ] =
 {0xF3,0x31,0x00,0xC0,0xCD,0x91,0xBE,0xDD,0x21,0x6C,0xBE,0x21,0xBB,0xBB,0x11
 ,0xCC,0xCC,0x01,0xDD,0xDD,0xD9,0xFD,0x21,0xFF,0xFF,0xDD,0x7E,0x00,0xA7,0x28
 ,0x50,0xDD,0x66,0x01,0x2E,0xFF,0xDD,0x5E,0x02,0xDD,0x56,0x03,0x01,0xFD,0x7F
@@ -898,14 +924,14 @@ create_main_header( libspectrum_tape *tape, const char *loader_name )
   for( i = 0; i < 8; i++ ) *ptr++ = ( i <= length ? loader_name[i] : 0x08 );
 
   /* Length of data block */
-  length = ( LOADERPREPIECE - 1 ) + loader_length;
+  length = basic_length + loader_length;
   *ptr++ = length & 0xff; *ptr++ = length >> 8;
 
   /* Autostart line number */
   *ptr++ = '\0'; *ptr++ = '\0';
 
   /* Start of the variables area */
-  length = ( LOADERPREPIECE - 1 ) - 21;
+  length = basic_length - 21;
   *ptr++ = length & 0xff; *ptr++ = length >> 8;
 
   error = add_rom_block( tape, 0x00, header, 17 ); if( error ) return error;
@@ -914,22 +940,23 @@ create_main_header( libspectrum_tape *tape, const char *loader_name )
 }
 
 static void
-set_loader_speed( int speed, libspectrum_byte border_colour )
+set_loader_speed( libspectrum_byte *buffer, int speed,
+		  libspectrum_byte border_colour )
 {
   libspectrum_byte xor_colour;
-  turbo_variables_t *ptr;
+  const turbo_variables_t *ptr;
 
   ptr = &turbo_variables[ speed ];
 
-  turbo_loader[ 94] = ptr->compare;
-  turbo_loader[118] = ptr->delay;
+  buffer[ 94] = ptr->compare;
+  buffer[118] = ptr->delay;
 
   /* In general, use black/<final border colour> as the colours for the
      loading stripes, unless the final colour is black, in which case we
      (somewhat arbitrarily) use black/blue */
   xor_colour = ( border_colour == 0 ? 0x41 : 0x40 | border_colour );
 
-  turbo_loader[134] = xor_colour;
+  buffer[134] = xor_colour;
 }
 
 static const size_t table_offset = 0x0253;
@@ -983,84 +1010,77 @@ snap_mode_128( libspectrum_snap *snap )
 }
 
 static int
-create_loader( libspectrum_snap *snap, const settings_t *settings )
+create_loader( libspectrum_byte *buffer, libspectrum_snap *snap,
+	       const settings_t *settings )
 {
   int border_colour;
   size_t i, ppay;
-  libspectrum_byte attributes;
+  libspectrum_byte machine, attributes;
 
   border_colour = settings->load_colour;
 
   if( border_colour == -1 )
     border_colour = libspectrum_snap_out_ula( snap ) & 0x07;
 
-  /* Fill the loader with appropriate speed values and colour */
-  set_loader_speed( settings->speed, border_colour );
+  /* Place the loader data into the buffer */
+  memcpy( buffer, loader_data, loader_length );
 
-  /* Copy the loader to its position in the data */
-  memcpy( loader_data + 341 + 256, turbo_loader, 144 );
+  /* And then put the turbo loader code itself in */
+  memcpy( buffer + 341 + 256, turbo_loader, turbo_loader_length );
+
+  /* Fill the loader with appropriate speed values and colour */
+  set_loader_speed( buffer + 341 + 256, settings->speed, border_colour );
 
   /* Set the registers etc */
 
-  write_word( &loader_data[ POS_HL2 ], libspectrum_snap_hl_( snap ) );
-  write_word( &loader_data[ POS_DE2 ], libspectrum_snap_de_( snap ) );
-  write_word( &loader_data[ POS_BC2 ], libspectrum_snap_bc_( snap ) );
-  write_word( &loader_data[ POS_IY  ], libspectrum_snap_iy( snap ) );
+  write_word( buffer + POS_HL2, libspectrum_snap_hl_( snap ) );
+  write_word( buffer + POS_DE2, libspectrum_snap_de_( snap ) );
+  write_word( buffer + POS_BC2, libspectrum_snap_bc_( snap ) );
+  write_word( buffer + POS_IY, libspectrum_snap_iy( snap ) );
 
   attributes = border_colour | ( border_colour << 3 ) | settings->bright;
-  loader_data[ POS_LAST_ATTR ] = attributes;
+  buffer[ POS_LAST_ATTR ] = attributes;
 
-  if( snap_mode_128( snap ) ) {
-    loader_data[ POS_48K_1 ] = 0x57;
-    loader_data[ POS_48K_2 ] = 0x57;
-  } else {
-    loader_data[ POS_48K_1 ] = 0x56;
-    loader_data[ POS_48K_2 ] = 0x56;
-  }
+  machine = snap_mode_128( snap ) ? 0x57 : 0x56;
+  buffer[ POS_48K_1 ] = buffer[ POS_48K_2 ] = machine;
 
-  loader_data[ POS_LAST_AY ] = libspectrum_snap_out_ay_registerport( snap );
+  buffer[ POS_LAST_AY ] = libspectrum_snap_out_ay_registerport( snap );
 
-  write_word( &loader_data[ POS_SP ], libspectrum_snap_sp( snap ) );
+  write_word( buffer + POS_SP, libspectrum_snap_sp( snap ) );
 
   switch( libspectrum_snap_im( snap ) ) {
-  case 0: loader_data[ POS_IM ] = 0x46; break;
-  case 1: loader_data[ POS_IM ] = 0x56; break;
-  case 2: loader_data[ POS_IM ] = 0x5E; break;
+  case 0: buffer[ POS_IM ] = 0x46; break;
+  case 1: buffer[ POS_IM ] = 0x56; break;
+  case 2: buffer[ POS_IM ] = 0x5E; break;
   }
 
-  if( libspectrum_snap_iff1( snap ) ) {
-    loader_data[ POS_DIEI ] = 0xfb;
-  } else {
-    loader_data[ POS_DIEI ] = 0xf3;		
-  }
+  buffer[ POS_DIEI ] = libspectrum_snap_iff1( snap ) ? 0xfb : 0xf3;
 
-  write_word( &loader_data[ POS_PC ], libspectrum_snap_pc( snap ) );
+  write_word( buffer + POS_PC, libspectrum_snap_pc( snap ) );
 
-  loader_data[ POS_BORDER ] = border_colour;
+  buffer[ POS_BORDER ] = border_colour;
 
-  if( snap_mode_128( snap ) ) {
-    loader_data[ POS_PAGE ] = libspectrum_snap_out_128_memoryport( snap );
-  } else {
-    loader_data[ POS_PAGE ] = 0x10;
-  }
+  buffer[ POS_PAGE ] = snap_mode_128( snap ) ?
+    libspectrum_snap_out_128_memoryport( snap ) :
+    0x10;
 
-  write_word( &loader_data[ POS_IX ], libspectrum_snap_ix( snap ) );
+  write_word( buffer + POS_IX, libspectrum_snap_ix( snap ) );
 
-  loader_data[ POS_F2 ] = libspectrum_snap_f_( snap );
-  loader_data[ POS_A2 ] = libspectrum_snap_a_( snap );
+  buffer[ POS_F2 ] = libspectrum_snap_f_( snap );
+  buffer[ POS_A2 ] = libspectrum_snap_a_( snap );
 
-  loader_data[ POS_R ] = libspectrum_snap_r( snap ) - 0x0a;
-  loader_data[ POS_I ] = libspectrum_snap_i( snap );
+  buffer[ POS_R ] = libspectrum_snap_r( snap ) - 0x0a;
+  buffer[ POS_I ] = libspectrum_snap_i( snap );
 
-  write_word( &loader_data[ POS_HL ], libspectrum_snap_hl( snap ) );
-  write_word( &loader_data[ POS_DE ], libspectrum_snap_de( snap ) );
-  write_word( &loader_data[ POS_BC ], libspectrum_snap_bc( snap ) );
+  write_word( buffer + POS_HL, libspectrum_snap_hl( snap ) );
+  write_word( buffer + POS_DE, libspectrum_snap_de( snap ) );
+  write_word( buffer + POS_BC, libspectrum_snap_bc( snap ) );
 
-  loader_data[ POS_F ] = libspectrum_snap_f( snap );
-  loader_data[ POS_A ] = libspectrum_snap_a( snap );
+  buffer[ POS_F ] = libspectrum_snap_f( snap );
+  buffer[ POS_A ] = libspectrum_snap_a( snap );
 
   for( i=0, ppay = POS_AYREG + 1; i < 16; i++, ppay += 2 )
-    loader_data[ ppay ] = libspectrum_snap_ay_registers( snap, 15 - i );
+    buffer[ ppay ] = libspectrum_snap_ay_registers( snap, 15 - i );
 
   return 0;
 }
@@ -1071,10 +1091,11 @@ add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
 {
   libspectrum_tape_block *block;
   libspectrum_error error;
+  libspectrum_byte *basic;
   size_t length;
   int error2;
 
-  length = LOADERPREPIECE - 1 + loader_length + 2;
+  length = basic_length + loader_length + 2;
 
   *loader = malloc( length * sizeof( libspectrum_byte ) );
   if( !(*loader) ) {
@@ -1091,20 +1112,21 @@ add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
 
   (*loader)[0] = 0xff;		/* Data block */
 
-  /* Copy the game name and info lines into the BASIC code */
-  memcpy( SpectrumBASICData+32, settings->game_name, 32 );
-  memcpy( SpectrumBASICData+103, settings->info1, 32 );
-  memcpy( SpectrumBASICData+144, settings->info2, 32 );
+  /* The BASIC data starts just after the flag byte */
+  basic = *loader + 1;
 
   /* Put the BASIC code into the buffer */
-  memcpy( &(*loader)[1], SpectrumBASICData, LOADERPREPIECE - 1 );
+  memcpy( basic, SpectrumBASICData, basic_length );
 
-  error2 = create_loader( snap, settings );
+  /* Copy the game name and info lines into the BASIC code */
+  memcpy( basic + basic_game_name_offset, settings->game_name, 32 );
+  memcpy( basic + basic_info1_offset, settings->info1, 32 );
+  memcpy( basic + basic_info2_offset, settings->info2, 32 );
+
+  /* Put the loader into the buffer */
+  error2 = create_loader( basic + basic_length, snap, settings );
   if( error2 ) { libspectrum_tape_block_free( block ); return error; }
   
-  /* And put the whole loader into the buffer */
-  memcpy( &(*loader)[ LOADERPREPIECE ], loader_data, loader_length );
-
   /* We don't calculate the checksum yet as we need to do it after
      we've put the page lengths in the data */
 
@@ -1118,7 +1140,7 @@ add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
 static int
 create_turbo_header( libspectrum_tape_block *block, int speed )
 {
-  turbo_variables_t *ptr;
+  const turbo_variables_t *ptr;
   libspectrum_dword pilot_length;
 
   ptr = &turbo_variables[ speed ];
@@ -1328,7 +1350,7 @@ add_page( libspectrum_tape *tape, libspectrum_snap *snap, int page,
 /* Add a block to overwrite our loader code if needed */
 static int
 add_extra_block( libspectrum_tape *tape, libspectrum_snap *snap,
-		 PageOrder_s *page_order, size_t num_pages,
+		 const page_t *page_order, size_t num_pages,
 		 libspectrum_byte *loader )
 {
   libspectrum_byte *page;
@@ -1339,9 +1361,9 @@ add_extra_block( libspectrum_tape *tape, libspectrum_snap *snap,
 
   for( i = 0; i < num_pages; i++ ) {
 
-    if( page_order[i].PageStart != 0x8000 ) continue;
+    if( page_order[i].address != 0x8000 ) continue;
 
-    page = libspectrum_snap_pages( snap, page_order[i].PageNumber );
+    page = libspectrum_snap_pages( snap, page_order[i].page );
 
     for( empty = 1, j = 0x4000 - loader_length; j < 0x4000; j++ )
       if( page[j] ) { empty = 0; break; }
@@ -1381,7 +1403,7 @@ create_main_data( libspectrum_tape *tape, libspectrum_snap *snap,
 		  const settings_t *settings )
 {
   int i, num_pages, error;
-  PageOrder_s *page_order;
+  const page_t *page_order;
   libspectrum_byte *loader;
   size_t loader_table_entry;
 
@@ -1414,8 +1436,8 @@ create_main_data( libspectrum_tape *tape, libspectrum_snap *snap,
 
   for( i = 0; i < num_pages; i++ ) {
     error =
-      add_page( tape, snap, page_order[i].PageNumber, page_order[i].PageStart,
-		loader, &loader_table_entry, settings );
+      add_page( tape, snap, page_order[i].page, page_order[i].address, loader,
+		&loader_table_entry, settings );
     if( error ) return error;
   }
 
@@ -1423,8 +1445,8 @@ create_main_data( libspectrum_tape *tape, libspectrum_snap *snap,
   if( error ) return error;
 
   /* And finally, put in the checksum for the loader block */
-  loader[ LOADERPREPIECE + loader_length ] =
-    calc_checksum( loader, LOADERPREPIECE + loader_length );
+  loader[ basic_length + loader_length + 1 ] =
+    calc_checksum( loader, basic_length + loader_length + 1 );
 
   return 0;
 }
