@@ -223,9 +223,15 @@ static libspectrum_error
 write_cfrp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap, int page,
 		  int compress );
+
+#ifdef HAVE_ZLIB_H
+
 static libspectrum_error
 write_if2r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, libspectrum_snap *snap );
+
+#endif				/* #ifdef HAVE_ZLIB_H */
+
 static libspectrum_error
 write_dock_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap, int exrom_dock,
@@ -1494,7 +1500,6 @@ write_ram_page( libspectrum_byte **buffer, libspectrum_byte **ptr,
 {
   libspectrum_error error;
   libspectrum_byte *block_length, *flags, *compressed_data;
-  size_t compressed_length;
   int use_compression;
 
   /* 8 for the chunk header, 3 for the flags and the page number */
@@ -1517,6 +1522,8 @@ write_ram_page( libspectrum_byte **buffer, libspectrum_byte **ptr,
 #ifdef HAVE_ZLIB_H
 
   if( compress ) {
+
+    size_t compressed_length;
 
     error = libspectrum_zlib_compress( data, data_length,
 				       &compressed_data, &compressed_length );
