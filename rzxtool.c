@@ -286,8 +286,11 @@ int
 write_snapshot( libspectrum_snap *snap )
 {
   unsigned char *buffer; size_t length = 0;
+  int flags;
 
-  if( libspectrum_z80_write( &buffer, &length, snap ) ) return 1;
+  if( libspectrum_snap_write( &buffer, &length, &flags, snap,
+			      LIBSPECTRUM_ID_SNAPSHOT_Z80, NULL, 0 ) )
+    return 1;
   
   if( fwrite( buffer, 1, length, stdout ) != length ) {
     fprintf( stderr, "%s: error writing output: %s\n", progname,
