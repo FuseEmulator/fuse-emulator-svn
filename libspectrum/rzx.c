@@ -113,7 +113,8 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 		 libspectrum_byte **ptr, size_t *length, int compress );
 static libspectrum_error
 rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
-			size_t *length, libspectrum_rzx_dsa_key *key );
+			size_t *length, libspectrum_rzx_dsa_key *key,
+			libspectrum_creator *creator );
 static libspectrum_error
 rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		      size_t *length, ptrdiff_t sign_offset,
@@ -820,7 +821,7 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   if( key ) {
-    error = rzx_write_signed_start( buffer, &ptr, length, key );
+    error = rzx_write_signed_start( buffer, &ptr, length, key, creator );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
 
@@ -1073,7 +1074,8 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 
 static libspectrum_error
 rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
-			size_t *length, libspectrum_rzx_dsa_key *key )
+			size_t *length, libspectrum_rzx_dsa_key *key,
+			libspectrum_creator *creator )
 {
 #ifdef HAVE_GCRYPT_H
   libspectrum_error error;
@@ -1103,7 +1105,12 @@ rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
   );
 
   /* Week code */
-  libspectrum_write_dword( ptr, 0 );
+  if( creator ) {
+    libspectrum_write_dword( ptr,
+			     libspectrum_creator_competition_code( creator ) );
+  } else {
+    libspectrum_write_dword( ptr, 0 );
+  }
 
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
