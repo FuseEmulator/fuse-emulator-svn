@@ -270,3 +270,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 compatability fixes.
 20040905 libspectrum.h.in,rzx.c: support multiple input recording blocks
 	 in an RZX file.
+20040906 crypto.c,libspectrum.h.in,rzx.c: re-add support for creator and
+	 signature blocks in RZX files.
