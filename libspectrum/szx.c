@@ -752,7 +752,8 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
     if( error ) return error;
   }
 
-  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY ) {
+  if( capabilities & ( LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY |
+                       LIBSPECTRUM_MACHINE_CAPABILITY_SE_MEMORY ) ) {
     error = write_scld_chunk( buffer, &ptr, length, snap );
     if( error ) return error;
   }
