@@ -231,3 +231,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 szx.c,z80.c: save/restore ZXATASP state in .szx snaps.
 20040603 Makefile.am,myglib/{.cvsignore,Makefile.am}: build the glib
 	 replacement as PIC.
+20040611 szx.c: skip those chunks we don't support.
