@@ -79,6 +79,9 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 
   switch( type ) {
 
+  case LIBSPECTRUM_ID_SNAPSHOT_PLUSD:
+    return libspectrum_plusd_read( snap, buffer, length );
+
   case LIBSPECTRUM_ID_SNAPSHOT_SNA:
     return libspectrum_sna_read( snap, buffer, length );
 
@@ -90,9 +93,6 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 			     "libspectrum_snap_read: not a snapshot file" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
-
-  /* Should never happen */
-  abort();
 }
 
 /* Given a 48K memory dump `data', place it into the

@@ -82,30 +82,18 @@ libspectrum_default_error_function( libspectrum_error error,
 /* Various types of file we might manage to identify */
 typedef enum libspectrum_id_t {
 
-  /* Unidentified file */
-  LIBSPECTRUM_ID_UNKNOWN = 0,
-  
-  /* Input recording files */
-  LIBSPECTRUM_ID_RECORDING_RZX,
-
-  /* Snapshot files */
-  LIBSPECTRUM_ID_SNAPSHOT_SNA,
-  LIBSPECTRUM_ID_SNAPSHOT_Z80,
-
-  /* Tape files */
-  LIBSPECTRUM_ID_TAPE_TAP,
-  LIBSPECTRUM_ID_TAPE_TZX,
-
-  /* Disk files */
-  LIBSPECTRUM_ID_DISK_DSK,
-  LIBSPECTRUM_ID_DISK_SCL,
-  LIBSPECTRUM_ID_DISK_TRD,
-
-  /* Timex DOCK/EXROM files */
-  LIBSPECTRUM_ID_CARTRIDGE_DCK,
-
-  /* Tape files */
-  LIBSPECTRUM_ID_TAPE_WARAJEVO,
+  LIBSPECTRUM_ID_UNKNOWN = 0,		/* Unidentified file */
+  LIBSPECTRUM_ID_RECORDING_RZX,		/* RZX input recording */
+  LIBSPECTRUM_ID_SNAPSHOT_SNA,		/* .sna snapshot */
+  LIBSPECTRUM_ID_SNAPSHOT_Z80,		/* .z80 snapshot */
+  LIBSPECTRUM_ID_TAPE_TAP,		/* Z80-style .tap tape image */
+  LIBSPECTRUM_ID_TAPE_TZX,		/* TZX tape image */
+  LIBSPECTRUM_ID_DISK_DSK,		/* .dsk +3 disk image */
+  LIBSPECTRUM_ID_DISK_SCL,		/* .scl TR-DOS disk image */
+  LIBSPECTRUM_ID_DISK_TRD,		/* .trd TR-DOS disk image */
+  LIBSPECTRUM_ID_CARTRIDGE_DCK,		/* .dck Timex cartridge image */
+  LIBSPECTRUM_ID_TAPE_WARAJEVO,		/* Warajevo-style .tap tape image */ 
+  LIBSPECTRUM_ID_SNAPSHOT_PLUSD,	/* +D snapshot */
 
 } libspectrum_id_t;
 
@@ -228,7 +216,13 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 		       const char *filename );
 
 /* Accessor functions */
-/* LIBSPECTRUM_SNAP_ACCESSORS */
+LIBSPECTRUM_SNAP_ACCESSORS
+
+/* +D snapshot routines */
+
+libspectrum_error
+libspectrum_plusd_read( libspectrum_snap *snap,
+                        const libspectrum_byte *buffer, size_t buffer_length );
 
 /* .sna specific routines */
 
