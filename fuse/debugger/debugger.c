@@ -71,8 +71,18 @@ debugger_check( void )
   switch( debugger_mode ) {
 
   case DEBUGGER_MODE_INACTIVE: return 0;
-  case DEBUGGER_MODE_ACTIVE:   return( PC == debugger_breakpoint );
-  case DEBUGGER_MODE_STEP:     return 1;
+
+  case DEBUGGER_MODE_ACTIVE:
+    if( PC == debugger_breakpoint ) {
+      debugger_mode = DEBUGGER_MODE_HALTED;
+      return 1;
+    }
+
+  case DEBUGGER_MODE_STEP:	/* Stop after this instruction */
+    debugger_mode = DEBUGGER_MODE_HALTED;
+    return 0;
+
+  case DEBUGGER_MODE_HALTED: return 1;
 
   }
   return 0;	/* Keep gcc happy */

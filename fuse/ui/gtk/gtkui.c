@@ -37,6 +37,7 @@
 
 #include <glib.h>
 
+#include "debugger/debugger.h"
 #include "display.h"
 #include "fuse.h"
 #include "gtkkeyboard.h"
@@ -607,7 +608,7 @@ gtkui_select_done( GtkWidget *widget GCC_UNUSED, gpointer user_data )
 static void
 gtkui_break( GtkWidget *widget GCC_UNUSED, gpointer data GCC_UNUSED )
 {
-  ui_debugger_activate();
+  debugger_mode = DEBUGGER_MODE_HALTED;
 }
     
 /* Called by the menu when Tape/Open selected */

@@ -37,18 +37,49 @@
 #include "z80/z80.h"
 #include "z80/z80_macros.h"
 
-static void gtkui_debugger_done_step( GtkWidget *widget,
-				      gpointer user_data GCC_UNUSED );
+static int create_dialog( void );
+static int activate_debugger( void );
+static int deactivate_debugger( void );
+
+static void gtkui_debugger_done_step( GtkWidget *widget, gpointer user_data );
 static void gtkui_debugger_done_continue( GtkWidget *widget,
-					  gpointer user_data GCC_UNUSED );
+					  gpointer user_data );
+static void gtkui_debugger_done_close( GtkWidget *widget, gpointer user_data );
+
+/* The debugger dialog box and the PC printout */
+static GtkWidget *dialog, *continue_button, *label;
+
+/* Have we created the above yet? */
+static int dialog_created = 0;
+
+/* Is the debugger window active (as opposed to the debugger itself)? */
+static int debugger_active;
 
 int
 ui_debugger_activate( void )
 {
-  GtkWidget *dialog, *label, *step_button, *continue_button;
+  fuse_emulation_pause();
+
   char buffer[80];
 
-  fuse_emulation_pause();
+  /* Create the dialog box if it doesn't already exist */
+  if( !dialog_created ) if( create_dialog() ) return 1;
+
+  snprintf( buffer, 80, "PC = 0x%04x", PC );
+  gtk_label_set_text( GTK_LABEL( label ), buffer );
+
+  gtk_widget_show_all( dialog );
+
+  gtk_widget_set_sensitive( continue_button, 1 );
+  activate_debugger();
+
+  return 0;
+}
+
+static int
+create_dialog( void )
+{
+  GtkWidget *step_button, *close_button;
 
   dialog = gtk_dialog_new();
 
@@ -60,54 +91,76 @@ ui_debugger_activate( void )
   gtk_container_add( GTK_CONTAINER( GTK_DIALOG( dialog )->action_area ),
 		     continue_button );
 
-  snprintf( buffer, 80, "PC = 0x%04x", PC );
-  label = gtk_label_new( buffer );
+  close_button = gtk_button_new_with_label( "Close" );
+  gtk_container_add( GTK_CONTAINER( GTK_DIALOG( dialog )->action_area ),
+		     close_button );
+
+  label = gtk_label_new( NULL );
+
   gtk_box_pack_start_defaults( GTK_BOX( GTK_DIALOG( dialog )->vbox ), label );
 
-  gtk_signal_connect_object( GTK_OBJECT( step_button ), "clicked",
-			     GTK_SIGNAL_FUNC( gtkui_debugger_done_step ),
-			     GTK_OBJECT( dialog ) );
-  gtk_signal_connect_object( GTK_OBJECT( continue_button ), "clicked",
-			     GTK_SIGNAL_FUNC( gtkui_debugger_done_continue ),
+  gtk_signal_connect( GTK_OBJECT( step_button ), "clicked",
+		      GTK_SIGNAL_FUNC( gtkui_debugger_done_step ), NULL );
+  gtk_signal_connect( GTK_OBJECT( continue_button ), "clicked",
+		      GTK_SIGNAL_FUNC( gtkui_debugger_done_continue ), NULL );
+  gtk_signal_connect_object( GTK_OBJECT( close_button ), "clicked",
+			     GTK_SIGNAL_FUNC( gtkui_debugger_done_close ),
 			     GTK_OBJECT( dialog ) );
 
   gtk_signal_connect( GTK_OBJECT( dialog ), "delete_event",
-		      GTK_SIGNAL_FUNC( gtkui_destroy_widget_and_quit ),
+		      GTK_SIGNAL_FUNC( gtkui_debugger_done_close ),
 		      (gpointer) NULL );
 
   /* Esc `cancels' the selector by just continuing with emulation */
-  gtk_widget_add_accelerator( continue_button, "clicked",
+  gtk_widget_add_accelerator( close_button, "clicked",
                               gtk_accel_group_get_default(),
                               GDK_Escape, 0, 0 );
 
-  gtk_window_set_modal( GTK_WINDOW( dialog ), TRUE );
-  gtk_widget_show_all( dialog );
-
-  gtk_main();
-
-  fuse_emulation_unpause();
+  dialog_created = 1;
 
   return 0;
 }
 
-static void
-gtkui_debugger_done_step( GtkWidget *widget, gpointer user_data GCC_UNUSED )
+static int
+activate_debugger( void )
 {
-  debugger_mode = DEBUGGER_MODE_STEP;
+  debugger_active = 1;
+  gtk_main();
+  return 0;
+}
 
-  gtk_widget_destroy( widget );
+static int
+deactivate_debugger( void )
+{
   gtk_main_quit();
+  debugger_active = 0;
+  fuse_emulation_unpause();
+  return 0;
 }
 
 static void
-gtkui_debugger_done_continue( GtkWidget *widget,
+gtkui_debugger_done_step( GtkWidget *widget GCC_UNUSED,
+			  gpointer user_data GCC_UNUSED )
+{
+  debugger_mode = DEBUGGER_MODE_STEP;
+  if( debugger_active ) deactivate_debugger();
+}
+
+static void
+gtkui_debugger_done_continue( GtkWidget *widget GCC_UNUSED,
 			      gpointer user_data GCC_UNUSED )
 {
   debugger_mode = 
     debugger_breakpoint == DEBUGGER_BREAKPOINT_UNSET ?
     DEBUGGER_MODE_INACTIVE			     :
     DEBUGGER_MODE_ACTIVE;
+  gtk_widget_set_sensitive( continue_button, 0 );
+  if( debugger_active ) deactivate_debugger();
+}
 
-  gtk_widget_destroy( widget );
-  gtk_main_quit();
+static void
+gtkui_debugger_done_close( GtkWidget *widget, gpointer user_data GCC_UNUSED )
+{
+  gtk_widget_hide_all( widget );
+  gtkui_debugger_done_continue( NULL, NULL );
 }

@@ -37,7 +37,9 @@ enum debugger_mode_t
   DEBUGGER_MODE_INACTIVE,	/* No breakpoint set */
 
   DEBUGGER_MODE_ACTIVE,		/* Breakpoint set, but emulator running */
-  DEBUGGER_MODE_STEP,		/* Single step execution */
+  DEBUGGER_MODE_STEP,		/* Execute one instruction and then enter
+				   DEBUGGER_MODE_HALTED state */
+  DEBUGGER_MODE_HALTED,		/* Execution not happening */
 };
 
 extern enum debugger_mode_t debugger_mode;
