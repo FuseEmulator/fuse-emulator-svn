@@ -188,7 +188,7 @@ int main(void)
 
 #ifdef HAVE_GCRYPT_H
 
-  printf( "  $_ = \"  /* The DSA signature parameters 'r' and 's' */\\n  GcryMPI r, s;\\n\";\n\n" );
+  printf( "  $_ = \"  /* The DSA signature parameters 'r' and 's' */\\n  gcry_mpi_t r, s;\\n\";\n\n" );
 
 #else
 
