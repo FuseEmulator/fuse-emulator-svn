@@ -24,7 +24,7 @@
 .\" Postal address: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
 .\"
 .\"
-.TH fuse 1 "11th February, 2004" "Version 0.6.2" "Emulators"
+.TH fuse 1 "19th February, 2004" "Version 0.6.2.1" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -225,6 +225,29 @@ Give brief usage help, listing available options.
 Emulate an issue 2 keyboard. Same as the General Options dialog's
 .I "Issue 2 keyboard"
 option.
+.RE
+.PP
+.I -j
+.br
+.I "--joystick-1 device"
+.RS
+Read from
+.I device
+to emulate the first joystick. Fuse will use either
+.RI ` /dev/input/js0 '
+or
+.RI ` /dev/js0 '
+by default.
+.RE
+.PP
+.I "--joystick-2 device"
+.RS
+As for
+.I --joystick-1
+but for the second joystick; the default here is either
+.RI ` /dev/input/js1 '
+or
+.RI ` /dev/js1 "'."
 .RE
 .PP
 .I --kempston

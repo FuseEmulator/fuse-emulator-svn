@@ -1,3 +1,25 @@
+2004-02-19  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+
+	* Fuse 0.6.2.1 released.
+
+	* Compilation fixes:
+	  + sdljoystick.h missing from tarball (thanks, Owen Dunn).
+	  + Link failure if a widget UI in use and lib765 not available
+	    (thanks, Jamie Glendinning).
+	  + Compilation failure if ROMSDIR defined (Darren Salt).
+
+	* Bugfixes:
+	  + Use of the SDL icons could cause screen corruption (Simon
+	    Tatham).
+	  + The reverse page mapping for 0xc000 - 0xffff would
+	    occasionally be wrong on the +2A/+3 (Philip Kendall).
+
+	* Miscellaneous:
+	  + Allow selectable devices to be used for the real joysticks
+	    (Darren Salt).
+	  + Use glib 2.0 if available (Darren Salt).
+	  + Allow ROMSDIR to be set when configuring (Darren Salt).
+
 2004-02-11  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 
 	* Fuse 0.6.2 released.

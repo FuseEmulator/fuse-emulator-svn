@@ -568,3 +568,6 @@
 	 (Release-0_6_2-branch) (Darren).
 20040218 ui/uijoystick.c: open_stick should be open_joystick
 	 (Release-0_6_2-branch).
+20040219 ChangeLog, README, configure.in, man/fuse.1: documenation etc
+	 updates for the 0.6.2.1 release (Release-0_6_2-branch).
+20040219 TAG: Release-0_6_2_1 (Release-0_6_2-branch).
