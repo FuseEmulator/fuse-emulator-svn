@@ -24,7 +24,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-man_MANS = rzxdump.1 \
+man_MANS = listbasic.1 \
+	   rzxdump.1 \
 	   rzxtool.1 \
 	   scl2trd.1 \
 	   tapeconv.1 \
