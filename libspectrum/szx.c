@@ -1532,6 +1532,8 @@ write_ram_page( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_byte *block_length, *flags, *compressed_data;
   int use_compression;
 
+  if( !data ) return LIBSPECTRUM_ERROR_NONE;
+
   /* 8 for the chunk header, 3 for the flags and the page number */
   error = libspectrum_make_room( buffer, 8 + 3, ptr, length );
   if( error ) return error;
