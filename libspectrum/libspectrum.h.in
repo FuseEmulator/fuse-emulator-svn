@@ -168,9 +168,13 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK;
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY;
                                             /* TC20[46]8-style memory paging */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO;
-                                              /* TC20[46]8-style video modes */
+                                           /* T[SC]20[46]8-style video modes */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK;
                                                    /* TRDOS-style disk drive */
+extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK;
+                                           /* T[SC]2068-style cartridge port */
+extern const int LIBSPECTRUM_MACHINE_CAPABILITY_SINCLAIR_JOYSTICK;
+                                            /* Sinclair-style joystick ports */
 
 /* Get the capabilities of a machine */
 int libspectrum_machine_capabilities( libspectrum_machine type );
