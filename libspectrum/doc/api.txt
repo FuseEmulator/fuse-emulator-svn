@@ -14,6 +14,11 @@ Naming conventions:
 *_read:  restore object from serialised form
 *_write: serialise object
 
+Calling conventions:
+
+* In general, all output parameters (those which may be changed by
+  the function) should be before all input parameters
+
 General functions
 -----------------
 
@@ -34,12 +39,12 @@ Snapshot functions
 libspectrum_error libspectrum_snap_alloc( libspectrum_snap **snap )
 libspectrum_error libspectrum_snap_free( libspectrum_snap *snap )
 
-libspectrum_error libspectrum_sna_read( const libspectrum_byte *buffer,
-				        size_t buffer_length,
-					libspectrum_snap *snap )
-libspectrum_error libspectrum_z80_read( const libspectrum_byte *buffer,
-					size_t buffer_length,
-					libspectrum_snap *snap )
+libspectrum_error libspectrum_sna_read( libspectrum_snap *snap,
+		                        const libspectrum_byte *buffer,
+				        size_t buffer_length )
+libspectrum_error libspectrum_z80_read( libspectrum_snap *snap,
+		                        const libspectrum_byte *buffer,
+					size_t buffer_length )
 libspectrum_error libspectrum_z80_write( libspectrum_byte **buffer,
 					 size_t *length,
 					 libspectrum_snap *snap )
@@ -50,29 +55,29 @@ Tape functions
 libspectrum_error libspectrum_tape_alloc( libspectrum_tape **tape )
 libspectrum_error libspectrum_tape_free( libspectrum_tape *tape )
 
-libspectrum_error libspectrum_tape_get_next_edge( libspectrum_tape *tape,
-                                                  libspectrum_dword *tstates,
-						  int *flags )
+libspectrum_error libspectrum_tape_get_next_edge( libspectrum_dword *tstates,
+						  int *flags,
+						  libspectrum_tape *tape )
 /* How long will it be until the next edge from this tape? */
 
 libspectrum_error
-libspectrum_tape_block_description( libspectrum_tape_block *block,
-				    char *buffer, size_t length )
+libspectrum_tape_block_description( char *buffer, size_t length,
+				    libspectrum_tape_block *block )
 /* Give a textual representation of the type of `block' */
 
 libspectrum_error
 libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 	              const size_t length )
 libspectrum_error
-libspectrum_tap_write( libspectrum_tape *tape, libspectrum_byte **buffer,
-		       size_t *length )
+libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_tape *tape )
 
 libspectrum_error
 libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 		      const size_t length )
 libspectrum_error
-libspectrum_tzx_write( libspectrum_tape *tape, libspectrum_byte **buffer,
-		       size_t *length )
+libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_tape *tape )
 
 RZX functions
 -------------
@@ -87,11 +92,11 @@ libspectrum_error libspectrum_rzx_frame( libspectrum_rzx *rzx,
 /* Add a frame to the current RZX recording */
 
 libspectrum_error
-libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
-		      const size_t length, libspectrum_snap **snap )
+libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
+		      const libspectrum_byte *buffer, const size_t length )
 libspectrum_error
-libspectrum_rzx_write( libspectrum_rzx *rzx,
-		       libspectrum_byte **buffer, size_t *length,
+libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_rzx *rzx,
 		       libspectrum_byte *snap, size_t snap_length,
 		       const char *program, libspectrum_word major,
 		       libspectrum_word minor, int compress )

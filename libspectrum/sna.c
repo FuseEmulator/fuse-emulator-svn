@@ -48,9 +48,9 @@ static int libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
 					  size_t buffer_length,
 					  libspectrum_snap *snap );
 
-int
-libspectrum_sna_read( const libspectrum_byte *buffer, size_t buffer_length,
-		      libspectrum_snap *snap )
+libspectrum_error
+libspectrum_sna_read( libspectrum_snap *snap,
+	              const libspectrum_byte *buffer, size_t buffer_length )
 {
   int error;
 

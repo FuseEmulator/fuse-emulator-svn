@@ -147,8 +147,8 @@ libspectrum_rzx_free( libspectrum_rzx *rzx )
 }
 
 libspectrum_error
-libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
-		      const size_t length, libspectrum_snap **snap )
+libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
+	              const libspectrum_byte *buffer, const size_t length )
 {
   libspectrum_error error;
   const libspectrum_byte *ptr, *end;
@@ -321,9 +321,9 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
   }
 
   if( !strcasecmp( *ptr, "Z80" ) ) {
-    error = libspectrum_z80_read( snap_ptr, uncompressed_length, (*snap) );
+    error = libspectrum_z80_read( (*snap), snap_ptr, uncompressed_length );
   } else if( !strcasecmp( *ptr, "SNA" ) ) {
-    error = libspectrum_sna_read( snap_ptr, uncompressed_length, (*snap) );
+    error = libspectrum_sna_read( (*snap), snap_ptr, uncompressed_length );
   } else {
     libspectrum_print_error(
       "rzx_read_snapshot: unrecognised snapshot format"
@@ -497,8 +497,8 @@ rzx_read_frames( libspectrum_rzx *rzx,
 }
 
 libspectrum_error
-libspectrum_rzx_write( libspectrum_rzx *rzx,
-		       libspectrum_byte **buffer, size_t *length,
+libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_rzx *rzx,
 		       libspectrum_byte *snap, size_t snap_length,
 		       const char *program, libspectrum_word major,
 		       libspectrum_word minor, int compress )
