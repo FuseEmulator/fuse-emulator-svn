@@ -32,7 +32,7 @@ INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 
 rzxdump_SOURCES = rzxdump.c
 
-rzxtool_SOURCES = rzxtool.c
+rzxtool_SOURCES = rzxtool.c utils.c
 rzxtool_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
 tapeconv_SOURCES = tapeconv.c
