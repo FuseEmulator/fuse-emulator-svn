@@ -82,10 +82,8 @@ main( int argc, char **argv )
     return 1;
   }
 
-  error = libspectrum_identify_file( &type, argv[2], NULL, 0 );
-  if( error ) { libspectrum_snap_free( snap ); return error; }
-
-  error = libspectrum_identify_class( &class, type );
+  error = libspectrum_identify_file_with_class( &type, &class, argv[2], NULL,
+						0 );
   if( error ) { libspectrum_snap_free( snap ); return error; }
 
   if( class != LIBSPECTRUM_CLASS_SNAPSHOT ) {

@@ -60,3 +60,5 @@
 	 against libgcrypt (except rzxdump) or zlib.
 20031015 Makefile.am: no need to explicitly link against glib either.
 20031016 Makefile.am, configure.in: no longer need to find path to glib.
+20031020 listbasic.c, snapconv.c: use libspectrum_identify_file_with_class
+	 where appropriate.
