@@ -39,7 +39,7 @@ fuse_section (NULL, "What is it?", <<<END_SECTION
   <p>Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat unsurprisingly, a Spectrum emulator for Unix. However, it has now also been ported to Mac OS X, which may or may not count as a Unix variant depending on your advocacy position.</p>
 
   <ul>
-   <li>There's also been at least <a href="http://groups.google.com/groups?selm=9372C2F8Agasmanrawworg%40127.0.0.1">one report</a> of a very slightly modified version of Fuse compiling under <a href="http://www.cygwin.com/">Cygwin</a>.</li>
+   <li>An alpha version of a Win32 port is available; see the <a href="#What_s_new">What's New</a> section for more details.</li>
    <li>Fuse 0.4.0 was ported to the PocketPC by Anders Holmberg as <a href="http://pocketclive.emuunlim.com/">PocketClive</a>.</li>
    <li>And PocketClive has been ported to the <a href="http://www.davemoller-nz.demon.co.uk/PocketClive.html">Nokia Smartphone</a>.</li>
   </ul>
@@ -92,7 +92,7 @@ fuse_section ("Requirements", "What do I need to run Fuse?", <<<END_SECTION
    <dd>
     <ul>
      <li>If you want +3 support, you'll need John Elliott's lib765 installed; this is available from the bottom of the <a href="http://www.seasip.demon.co.uk/Unix/LibDsk/">libdsk homepage</a>; if you also have libdsk installed, you'll also get support for extended .dsk files.</li>
-     <li><a href="http://www.gnu.org/directory/security/libgcrypt.html">libgcrypt</a>: the ability to digitally sign RZX files (note that Fuse requires version <a href="ftp://ftp.gnupg.org/gcrypt/alpha/libgcrypt/libgcrypt-1.1.12.tar.gz">1.1.12</a>, not 1.1.42 or later).</li>
+     <li><a href="http://www.gnu.org/directory/security/libgcrypt.html">libgcrypt</a>: the ability to digitally sign RZX files (note that Fuse requires version 1.1.42 or later).</li>
      <li><a href="http://www.libpng.org/pub/png/libpng.html">libpng</a>: the ability to save screenshots.</li>
      <li><a href="http://xmlsoft.org/">libxml2</a>: the ability to load and save Fuse's current configuration.</li>
      <li><a href="http://www.gzip.org/zlib/">zlib</a>: support for compressed RZX files.</li>
@@ -115,12 +115,12 @@ fuse_section ("Download", "Where can I get it from?", <<<END_SECTION
   <h3>Source</h3>
   $img
   <ul>
-   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.6.1.1.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.6.1.1.tar.gz.sig?download">PGP signature</a>).</li>
-   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.6.1.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.6.1.tar.gz.sig?download">PGP signature</a>). Note that
+   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.6.2.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.6.2.tar.gz.sig?download">PGP signature</a>).</li>
+   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.6.2.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.6.2.tar.gz.sig?download">PGP signature</a>). Note that
 you'll still need <a href="libspectrum.php">libspectrum</a> installed to run these.</li>
    <li>The above are also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.1.1.tar.gz">Fuse source</a> (<a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.1.1.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.1.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.1.tar.gz.sig">signature</a>).</li>
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.2.tar.gz">Fuse source</a> (<a
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.2.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.2.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.2.tar.gz.sig">signature</a>).</li>
    <li>The source code releases above are signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.6.0(.1) releases as I forgot the passphrase for that key <tt>:-(</tt>.</li>
   </ul>
 
@@ -147,24 +147,19 @@ END_SECTION
 #<!-- ======================================================= -->
 
 fuse_section (NULL, "What's new?", <<<END_SECTION
-  <h3>17 January 2004</h3>
-  <p>Beta versions of the upcoming version 0.6.2 of Fuse and the utilities are now available. See the <a href="http://sourceforge.net/forum/forum.php?forum_id=345729">announcement</a> for more details.</p>
+  <h3>0.6.2</h3>
+  <ul>
+   <li>Support for using real joysticks.</li>
+   <li>The 'poke finder': a built-in Lifeguard like utility.</li>
+   <li>Black and white TV emulation (optional!)</li>
+   <li>'Undoable' disks: writes to disk images will not be committed to disk unless explicitly requested by the user.</li>
+   <li>Improved interrupt handling in the Z80 core.</li>
+   <li>(fuse-utils) New snap2tzx utility for converting snapshots to .tzx files.</li>
+  </ul>
+  <p>See the <a href="https://sourceforge.net/forum/forum.php?forum_id=351904">release announcement</a> for more details.
 
   <h3>1 January 2004</h3>
   <p>An alpha version of a port of Fuse to Win32 is now <a href="fuse-win32.zip">available</a>. See the <a href="http://sourceforge.net/forum/forum.php?forum_id=341379">announcement</a> for more details.</p>
-
-  <h3>0.6.1</h3>
-  <ul>
-   <li>RZX competition mode.</li>
-   <li>Conditional breakpoints in the debugger.</li>
-   <li>AY logging.</li>
-   <li>Fuse will now use read() and malloc() if mmap() fails; allows Fuse to open files on filesystems which don't support mmap() (e.g. NTFS).</li>
-  </ul>
-
-  <h3>0.6.1.1</h3>
-  <ul>
-   <li>Bugfixes to the RZX code and to allow the SVGAlib user interface to compile.</li>
-  </ul>
 
 END_SECTION
 );

@@ -61,6 +61,7 @@ fuse_section ("Supported formats", "Which formats does it support?", <<<END_SECT
    <li>Timex cartridges:
     <ul><li>read only: .dck</li></ul>
    </li>
+   <li>Compressed files: reading of gzipped and bzipped files is transparently supported.</li>
   </ul>
 
   <p>There are also some useful utility routines to do things like identify Spectrum files, or give the timings for various machines. For more details, see the <a href="libspectrum.txt">supplied documentation</a>.</p>
@@ -76,9 +77,8 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
 
   <h3>Source</h3>
   <ul>
-   <li><a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.2.0.1.tar.gz?download">libspectrum-0.2.0.1.tar.gz</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.2.0.1.tar.gz.sig?download">PGP signature</a>) or from <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.2.0.1.tar.gz">World of Spectrum</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.2.0.1.tar.gz.sig">signature</a>).</li>
-   <li>The source code release above is signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F
-2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.1.1 release as I forgot the passphrase for that key <tt>:-(</tt>.</li>
+   <li><a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.2.1.tar.gz?download">libspectrum-0.2.1.tar.gz</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.2.1.tar.gz.sig?download">PGP signature</a>) or from <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.2.1.tar.gz">World of Spectrum</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.2.1.tar.gz.sig">signature</a>).</li>
+   <li>The source code release above is signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.1.1 release as I forgot the passphrase for that key <tt>:-(</tt>.</li>
   </ul>
 
   <h3>Binaries</h3>
@@ -101,8 +101,6 @@ END_SECTION
 #<!-- ======================================================= -->
 
 fuse_section (NULL, "Development", <<<END_SECTION
-  <p>17 January 2004: A beta version of the upcoming libspectrum 0.2.1 is now available. See the <a href="http://sourceforge.net/forum/forum.php?forum_id=345729">announcement</a> for more details.</p>
-
   <p>If you're interested in working on libspectrum, subscribe to the <a href="http://lists.sourceforge.net/lists/listinfo/fuse-emulator-devel">fuse-emulator-devel</a> mailing list and/or see the <a href="http://sourceforge.net/projects/fuse-emulator/">project page</a> on SourceForge. If you just want news of new versions, you probably want the (low volume) <a href="http://lists.sourceforge.net/lists/listinfo/fuse-emulator-announce">fuse-emulator-announce</a> list instead.</p>
 
   <p>Finally, the <a href="libspectrum-cvs.tar.gz">latest development version</a> should always be available. Don't expect any support for this, or even that it can be compiled...</p>
