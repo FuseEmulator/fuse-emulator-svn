@@ -102,7 +102,8 @@ BYTE readport(WORD port)
     /* Check we're not trying to read off the end of the array */
     if( rzx_in_count >= rzx.frames[ rzx_current_frame ].count ) {
       ui_error( UI_ERROR_ERROR,
-		"More INs during frame than stored in RZX file" );
+		"More INs during frame %d than stored in RZX file (%d)",
+		rzx_current_frame, rzx.frames[ rzx_current_frame ].count );
       rzx_end();
       /* And get the byte normally */
       return readport( port );
