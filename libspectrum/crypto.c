@@ -53,8 +53,8 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 		GcryMPI r, GcryMPI s );
 
 static libspectrum_error
-restore_mpis( GcryMPI *r, GcryMPI *s, const libspectrum_byte *signature,
-	      size_t signature_length );
+create_signature( GcrySexp *s_signature, const libspectrum_byte *signature,
+		  size_t signature_length );
 
 libspectrum_error
 libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
@@ -211,6 +211,7 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 {
   int error;
   size_t length, length_s;
+  char *ptr;
 
   error = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &length, r );
   if( error ) {
@@ -242,8 +243,8 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
-  length = *signature_length - length;
-  error = gcry_mpi_print( GCRYMPI_FMT_PGP, *signature + length, &length, s );
+  ptr = *signature + length; length = *signature_length - length;
+  error = gcry_mpi_print( GCRYMPI_FMT_PGP, ptr, &length, s );
   if( error ) {
     libspectrum_print_error( "serialise_mpis: printing s: %s",
 			     gcry_strerror( error ) );
@@ -262,31 +263,17 @@ libspectrum_verify_signature( const libspectrum_byte *signature,
 {
   libspectrum_error error;
   GcrySexp hash, s_key, s_signature;
-  GcryMPI r, s;
 
   error = get_hash( &hash, data, length ); if( error ) return error;
 
   error = create_key( &s_key, key, public_key_format );
   if( error ) { gcry_sexp_release( hash ); return error; }
 
-  error = restore_mpis( &r, &s, signature, signature_length );
+  error = create_signature( &s_signature, signature, signature_length );
   if( error ) {
     gcry_sexp_release( s_key ); gcry_sexp_release( hash );
     return error;
   }
-
-  error = gcry_sexp_build( &s_signature, NULL, signature_format, r, s );
-  if( error ) {
-    libspectrum_print_error(
-      "libspectrum_verify_signature: error building signature sexp: %s",
-      gcry_strerror( error )
-    );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
-    gcry_sexp_release( s_key ); gcry_sexp_release( hash );
-    return LIBSPECTRUM_ERROR_LOGIC;
-  }
-
-  gcry_mpi_release( r ); gcry_mpi_release( s );
 
   error = gcry_pk_verify( s_signature, hash, s_key );
 
@@ -309,27 +296,40 @@ libspectrum_verify_signature( const libspectrum_byte *signature,
 }
 
 static libspectrum_error
-restore_mpis( GcryMPI *r, GcryMPI *s, const libspectrum_byte *signature,
-	      size_t signature_length )
+create_signature( GcrySexp *s_signature, const libspectrum_byte *signature,
+		  size_t signature_length )
 {
   size_t length; int error;
+  GcryMPI r, s;
 
   length = signature_length;
-  error = gcry_mpi_scan( r, GCRYMPI_FMT_PGP, signature, &length );
+  error = gcry_mpi_scan( &r, GCRYMPI_FMT_PGP, signature, &length );
   if( error ) {
-    libspectrum_print_error( "restore_mpis: reading r: %s",
+    libspectrum_print_error( "create_signature: reading r: %s",
 			     gcry_strerror( error ) );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  length = signature_length - length;
-  error = gcry_mpi_scan( s, GCRYMPI_FMT_PGP, signature + length, &length );
+  signature += length; length = signature_length - length;
+  error = gcry_mpi_scan( &s, GCRYMPI_FMT_PGP, signature, &length );
   if( error ) {
-    libspectrum_print_error( "restore_mpis: reading s: %s",
+    libspectrum_print_error( "create_signature: reading s: %s",
 			     gcry_strerror( error ) );
-    gcry_mpi_release( *r );
+    gcry_mpi_release( r );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
+
+  error = gcry_sexp_build( s_signature, NULL, signature_format, r, s );
+  if( error ) {
+    libspectrum_print_error(
+      "create_signature: error building signature sexp: %s",
+      gcry_strerror( error )
+    );
+    gcry_mpi_release( r ); gcry_mpi_release( s );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  gcry_mpi_release( r ); gcry_mpi_release( s );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
