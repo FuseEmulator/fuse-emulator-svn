@@ -121,3 +121,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 we're not signing the data.
 20031019 Transparent reading of gzipped files.
 20031019 libspectrum.c: better chance of compiling if zlib not available.
+20031020 Transparent reading of bzipped files.

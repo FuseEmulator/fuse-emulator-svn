@@ -370,6 +370,7 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_DISK_SCL,      "scl", 3, "SINCLAIR",         0, 8, 4 },
       { LIBSPECTRUM_ID_DISK_TRD,      "trd", 3, NULL,		    0, 0, 0 },
 
+      { LIBSPECTRUM_ID_COMPRESSED_BZ2,"bz2", 3, "BZh",		    0, 3, 4 },
       { LIBSPECTRUM_ID_COMPRESSED_GZ, "gz",  3, "\x1f\x8b",	    0, 2, 4 },
 
       { -1 }, /* End marker */
@@ -429,6 +430,7 @@ libspectrum_identify_class( libspectrum_class_t *class, libspectrum_id_t type )
   case LIBSPECTRUM_ID_CARTRIDGE_DCK:
     *class = LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX; return 0;
 
+  case LIBSPECTRUM_ID_COMPRESSED_BZ2:
   case LIBSPECTRUM_ID_COMPRESSED_GZ:
     *class = LIBSPECTRUM_CLASS_COMPRESSED; return 0;
 
@@ -494,6 +496,34 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
   *new_length = 0;
   
   switch( type ) {
+
+  case LIBSPECTRUM_ID_COMPRESSED_BZ2:
+
+#ifdef HAVE_BZLIB_H
+
+    if( new_filename ) {
+      if( strlen( *new_filename ) >= 4 &&
+	  !strcasecmp( &(*new_filename)[ strlen( *new_filename ) - 4 ],
+		       ".bz2" ) )
+	(*new_filename)[ strlen( *new_filename ) - 4 ] = '\0';
+    }
+
+    error = libspectrum_bzip2_inflate( old_buffer, old_length,
+				       new_buffer, new_length );
+    if( error ) { free( new_filename ); return error; }
+
+#else				/* #ifdef HAVE_BZLIB_H */
+
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_UNKNOWN,
+      "libbz2 not available to decompress bzipped file"
+    );
+    free( new_filename );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+
+#endif				/* #ifdef HAVE_BZLIB_H */
+
+    break;
 
   case LIBSPECTRUM_ID_COMPRESSED_GZ:
 

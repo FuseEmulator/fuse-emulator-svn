@@ -26,7 +26,8 @@ AUTOMAKE_OPTIONS = foreign
 
 lib_LTLIBRARIES = libspectrum.la
 
-libspectrum_la_SOURCES = creator.c \
+libspectrum_la_SOURCES = bzip2.c \
+			 creator.c \
 			 crypto.c \
 			 dck.c \
 			 libspectrum.c \
