@@ -48,6 +48,10 @@ static const int LIBSPECTRUM_Z80_HEADER_LENGTH = 30;
 static libspectrum_byte slt_signature[] = "\0\0\0SLT";
 static size_t slt_signature_length = 6;
 
+/* What to set the tstates counter to if it's not specified in the file.
+   Why this value? Because it's what z80's `convert' uses :-) */
+static const libspectrum_dword DEFAULT_TSTATES = 69664;
+
 static libspectrum_error
 read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	     const libspectrum_byte **data );
@@ -187,11 +191,14 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
       default:
         libspectrum_print_error(
           LIBSPECTRUM_ERROR_UNKNOWN,
-          "libspectrum_read_z80_header: unknown machine type %d",
+          "libspectrum_read_z80_header: unknown v2 machine type %d",
 	  extra_header[2]
         );
 	return LIBSPECTRUM_ERROR_UNKNOWN;
       }
+
+      snap->tstates = DEFAULT_TSTATES;
+
       break;
 
     case 3:
@@ -214,11 +221,25 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
       default:
         libspectrum_print_error(
           LIBSPECTRUM_ERROR_UNKNOWN,
-          "libspectrum_read_z80_header: unknown machine type %d",
+          "libspectrum_read_z80_header: unknown v3 machine type %d",
 	  extra_header[2]
         );
 	return LIBSPECTRUM_ERROR_UNKNOWN;
       }
+
+      /* 1/4 of the number of T-states in a frame */
+      quarter_tstates = ( snap->machine==LIBSPECTRUM_MACHINE_48 ) ?
+	17472 : 17727;
+
+      /* This is correct, even if it does disagree with Z80 v3.05's
+	 `z80dump'; thanks to Pedro Gimeno for pointing this out when
+	 this code was part of SnapConv */
+      snap->tstates= ( ( (extra_header[25]+1) % 4 ) + 1 ) * quarter_tstates -
+	( extra_header[23] + extra_header[24]*0x100 + 1 );
+    
+      /* Stop broken files from causing trouble... */
+      if( snap->tstates >= quarter_tstates * 4 ) snap->tstates = 0;
+      
       break;
 
     default:
@@ -247,20 +268,6 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
       memcpy( snap->ay_registers, &extra_header[ 7], 16 );
     }
 
-    /* 1/4 of the number of T-states in a frame */
-    quarter_tstates = ( snap->machine==LIBSPECTRUM_MACHINE_48 ) ?
-      17472 : 17727;
-
-    /* This is correct, even if it does disagree with Z80 v3.05's
-       `z80dump'; thanks to Pedro Gimeno for pointing this out when
-       this code was part of SnapConv */
-    snap->tstates= ( ( (extra_header[25]+1) % 4 ) + 1 ) * quarter_tstates -
-      ( extra_header[23] + extra_header[24]*0x100 + 1 );
-    
-    /* Stop broken files from causing trouble... */
-    if(snap->tstates>=quarter_tstates*4)
-      snap->tstates = 0;
-    
     if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) &&
 	( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH                 )    ) {
       snap->out_plus3_memoryport = extra_header[54];
@@ -276,9 +283,8 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
     /* Need to flag this for later */
     snap->compressed = ( header[12] & 0x20 ) ? 1 : 0;
 
-    /* A bit before an interrupt. Why this value? Because it's what
-       z80's `convert' uses :-) */
-    snap->tstates = 69664;
+    /* Not specified in the file, so choose the default */
+    snap->tstates = DEFAULT_TSTATES;
 
     (*data) = buffer + LIBSPECTRUM_Z80_HEADER_LENGTH;
 
