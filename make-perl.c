@@ -39,7 +39,7 @@ int main(void)
     fprintf( stderr, "No plausible 8 bit types found\n" );
     return 1;
   }
-  printf( " libspectrum_byte;/\n" );
+  printf( " libspectrum_byte;/;\n" );
 
   printf( "s/LIBSPECTRUM_DEFINE_WORD/typedef " );
   if( sizeof( unsigned short ) == 2 ) {
@@ -50,7 +50,7 @@ int main(void)
     fprintf( stderr, "No plausible 16 bit types found\n" );
     return 1;
   }
-  printf( " libspectrum_word;/\n" );
+  printf( " libspectrum_word;/;\n" );
 
   printf( "s/LIBSPECTRUM_DEFINE_DWORD/typedef " );
   if( sizeof( unsigned int ) == 4 ) {
@@ -61,68 +61,87 @@ int main(void)
     fprintf( stderr, "No plausible 32 bit types found\n" );
     return 1;
   }
-  printf( " libspectrum_dword;/\n" );
+  printf( " libspectrum_dword;/;\n" );
 
-  printf( "s/LIBSPECTRUM_GLIB_REPLACEMENT/"
-
-  /* Text to be inserted starts here */
+  printf( "\nif( /LIBSPECTRUM_GLIB_REPLACEMENT/ ) {\n\n" );
 
 #ifdef HAVE_LIB_GLIB
 
-"#include <glib.h>"
+  printf( "  $_ = \"#include <glib.h>\";\n\n" );
 
 #else				/* #ifdef HAVE_LIB_GLIB */
 
-"typedef int gint;\\\n"
-"typedef unsigned int guint;\\\n"
-"typedef const void * gconstpointer;\\\n"
-"typedef void * gpointer;\\\n"
-"\\\n"
-"typedef struct _GSList GSList;\\\n"
-"\\\n"
-"struct _GSList {\\\n"
-"    gpointer data;\\\n"
-"    GSList *next;\\\n"
-"};\\\n"
-"\\\n"
-"typedef void		(*GFunc)		(gpointer	data,\\\n"
-"						 gpointer	user_data);\\\n"
-"\\\n"
-"typedef gint		(*GCompareFunc)		(gconstpointer	a,\\\n"
-"						 gconstpointer	b);\\\n"
-"\\\n"
-"\\\n"
-"GSList* g_slist_insert_sorted	(GSList		*list,\\\n"
-"				 gpointer	 data,\\\n"
-"				 GCompareFunc	 func);\\\n"
-"\\\n"
-"GSList* g_slist_append		(GSList		*list,\\\n"
-"				 gpointer	 data);\\\n"
-"\\\n"
-"GSList* g_slist_remove		(GSList		*list,\\\n"
-"				 gpointer	 data);\\\n"
-"\\\n"
-"void	g_slist_foreach		(GSList		*list,\\\n"
-"				 GFunc		 func,\\\n"
-"				 gpointer	 user_data);\\\n"
-"\\\n"
-"void	g_slist_free		(GSList		*list);\\\n"
-"\\\n"
-"GSList* g_slist_nth		(GSList		*list,\\\n"
-"				 guint		n);\\\n"
-"\\\n"
-"GSList* g_slist_find_custom	(GSList		*list,\\\n"
-"				 gpointer	data,\\\n"
-"				 GCompareFunc	func );\\\n"
-"\\\n"
-"gint	g_slist_position	(GSList		*list,\\\n"
-"				 GSList		*llink);"
+  printf( "  $_ = << \"CODE\";\n"
+"/* Glib emulation */\n"
+"typedef int gint;\n"
+"typedef unsigned int guint;\n"
+"typedef const void * gconstpointer;\n"
+"typedef void * gpointer;\n"
+"\n"
+"typedef struct _GSList GSList;\n"
+"\n"
+"struct _GSList {\n"
+"    gpointer data;\n"
+"    GSList *next;\n"
+"};\n"
+"\n"
+"typedef void		(*GFunc)		(gpointer	data,\n"
+"						 gpointer	user_data);\n"
+"\n"
+"typedef gint		(*GCompareFunc)		(gconstpointer	a,\n"
+"						 gconstpointer	b);\n"
+"\n"
+"\n"
+"GSList* g_slist_insert_sorted	(GSList		*list,\n"
+"				 gpointer	 data,\n"
+"				 GCompareFunc	 func);\n"
+"\n"
+"GSList* g_slist_append		(GSList		*list,\n"
+"				 gpointer	 data);\n"
+"\n"
+"GSList* g_slist_remove		(GSList		*list,\n"
+"				 gpointer	 data);\n"
+"\n"
+"void	g_slist_foreach		(GSList		*list,\n"
+"				 GFunc		 func,\n"
+"				 gpointer	 user_data);\n"
+"\n"
+"void	g_slist_free		(GSList		*list);\n"
+"\n"
+"GSList* g_slist_nth		(GSList		*list,\n"
+"				 guint		n);\n"
+"\n"
+"GSList* g_slist_find_custom	(GSList		*list,\n"
+"				 gpointer	data,\n"
+"				 GCompareFunc	func );\n"
+"\n"
+"gint	g_slist_position	(GSList		*list,\n"
+"				 GSList		*llink);\n"
+"CODE\n" );
 
 #endif				/* #ifdef HAVE_LIB_GLIB */
 
-  /* Generated sed command continues here */
+  printf( "}\n" );
 
-  "/\n" );
+  printf( "\nif( /LIBSPECTRUM_SNAP_ACCESSORS/ ) {\n\n"
+"  open( DATAFILE, \"< snap_accessors.txt\" ) or die \"Couldn't open `snap_accessors.txt': $!\";\n\n"
+"  $_ = '';\n"
+"  while( <DATAFILE> ) {\n\n"
+"    next if /^\\s*$/; next if /^\\s*#/;\n\n"
+"    my( $type, $name, $indexed ) = split;\n\n"
+"    if( $indexed ) {\n\n"
+"	print << \"CODE\";\n"
+"$type libspectrum_snap_$name( libspectrum_snap *snap, int idx );\n"
+"void libspectrum_snap_set_$name( libspectrum_snap *snap, int idx, $type $name );\n"
+"CODE\n\n"
+"    } else {\n\n"
+"	print << \"CODE\";\n"
+"$type libspectrum_snap_$name( libspectrum_snap *snap );\n"
+"void libspectrum_snap_set_$name( libspectrum_snap *snap, $type $name );\n"
+"CODE\n\n"
+"    }\n"
+"  }\n"
+"}\n" );
 
   return 0;
 }

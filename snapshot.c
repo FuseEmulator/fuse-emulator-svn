@@ -30,40 +30,24 @@
 
 #include "internals.h"
 
-/* Initialise a libspectrum_snap structure (constructor!) */
-libspectrum_error
-libspectrum_snap_alloc( libspectrum_snap **snap )
-{
-  int i;
-
-  (*snap) = (libspectrum_snap*)malloc( sizeof( libspectrum_snap ) );
-  if( !(*snap) ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_snap_alloc: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
-  for( i=0; i<8; i++ ) (*snap)->pages[i]=NULL;
-  for( i=0; i<256; i++ ) { (*snap)->slt[i]=NULL; (*snap)->slt_length[i]=0; }
-  (*snap)->slt_screen = NULL;
-
-  return LIBSPECTRUM_ERROR_NONE;
-}
-
 /* Free all memory used by a libspectrum_snap structure (destructor...) */
 libspectrum_error
 libspectrum_snap_free( libspectrum_snap *snap )
 {
   int i;
 
-  for( i=0; i<8; i++ ) if( snap->pages[i] ) free( snap->pages[i] );
-  for( i=0; i<256; i++ ) {
-    if( snap->slt_length[i] ) {
-      free( snap->slt[i] );
-      snap->slt_length[i] = 0;
+  for( i = 0; i < 8; i++ )
+    if( libspectrum_snap_pages( snap, i ) )
+	free( libspectrum_snap_pages( snap, i ) );
+
+  for( i = 0; i < 256; i++ ) {
+    if( libspectrum_snap_slt_length( snap, i ) ) {
+      free( libspectrum_snap_slt( snap, i ) );
+      libspectrum_snap_set_slt_length( snap, i, 0 );
     }
   }
-  if( snap->slt_screen ) { free( snap->slt_screen ); }
+  if( libspectrum_snap_slt_screen( snap ) )
+  free( libspectrum_snap_slt_screen( snap ) );
 
   free( snap );
 
@@ -117,8 +101,12 @@ int
 libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 				const libspectrum_byte* data )
 {
+  libspectrum_byte *buffer;
+
   /* If any of the three pages are already occupied, barf */
-  if( snap->pages[5] || snap->pages[2] || snap->pages[0] ) {
+  if( libspectrum_snap_pages( snap, 5 ) ||
+      libspectrum_snap_pages( snap, 2 ) ||
+      libspectrum_snap_pages( snap, 0 )    ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_LOGIC,
       "libspectrum_split_to_48k_pages: RAM page already in use"
@@ -126,38 +114,21 @@ libspectrum_split_to_48k_pages( libspectrum_snap *snap,
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
-  /* Allocate memory for the three pages */
-  snap->pages[5] =
-    (libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
-  if( snap->pages[5] == NULL ) {
+  buffer = malloc( 3 * 0x4000 * sizeof( libspectrum_byte ) );
+  if( !buffer ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 			     "libspectrum_split_to_48k_pages: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
-  snap->pages[2] =
-    (libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
-  if( snap->pages[2] == NULL ) {
-    free( snap->pages[5] ); snap->pages[5] = NULL;
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_split_to_48k_pages: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-    
-  snap->pages[0] =
-    (libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
-  if( snap->pages[0] == NULL ) {
-    free( snap->pages[5] ); snap->pages[5] = NULL;
-    free( snap->pages[2] ); snap->pages[2] = NULL;
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_split_to_48k_pages: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  libspectrum_snap_set_pages( snap, 5, &buffer[0x0000] );
+  libspectrum_snap_set_pages( snap, 2, &buffer[0x4000] );
+  libspectrum_snap_set_pages( snap, 0, &buffer[0x8000] );
 
   /* Finally, do the copies... */
-  memcpy( snap->pages[5], &data[0x0000], 0x4000 );
-  memcpy( snap->pages[2], &data[0x4000], 0x4000 );
-  memcpy( snap->pages[0], &data[0x8000], 0x4000 );
+  memcpy( libspectrum_snap_pages( snap, 5 ), &data[0x0000], 0x4000 );
+  memcpy( libspectrum_snap_pages( snap, 2 ), &data[0x4000], 0x4000 );
+  memcpy( libspectrum_snap_pages( snap, 0 ), &data[0x8000], 0x4000 );
 
   return LIBSPECTRUM_ERROR_NONE;
     
