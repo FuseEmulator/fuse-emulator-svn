@@ -298,6 +298,8 @@ libspectrum_timings_bottom_border( libspectrum_machine machine );
 libspectrum_word WIN32_DLL
 libspectrum_timings_vertical_retrace( libspectrum_machine machine );
 libspectrum_word WIN32_DLL
+libspectrum_timings_interrupt_length( libspectrum_machine machine );
+libspectrum_word WIN32_DLL
 libspectrum_timings_top_left_pixel( libspectrum_machine machine );
 libspectrum_word WIN32_DLL
 libspectrum_timings_tstates_per_line( libspectrum_machine machine );

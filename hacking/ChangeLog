@@ -316,3 +316,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20050302 Makefile.am: Stop automake trying to build make-perl (Fred).
 20050302 make-perl.c,myglib/ghash.c: Add g_hash_table_size to the glib
          replacement code (Fred).
+20050305 libspectrum.h.in,timings.c: add interrupt length to timings
+	 information.

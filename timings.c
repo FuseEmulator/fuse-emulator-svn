@@ -47,6 +47,9 @@ typedef struct timings_t {
   libspectrum_word top_border, vertical_screen, bottom_border,
 	           vertical_retrace;
 
+  /* How long does an interrupt last in tstates */
+  libspectrum_word interrupt_length;
+
   /* How long after interrupt is the top-level pixel of the main screen
      displayed */
   libspectrum_dword top_left_pixel;
@@ -56,24 +59,35 @@ typedef struct timings_t {
 /* The actual data from which the full timings are constructed */
 static timings_t base_timings[] = {
 
-  /* FIXME: These are almost certainly wrong in many places, but I don't know
-            what the correct values are. Corrections very welcome */
-
                    /* /- Horizonal -\  /-- Vertical -\ */
-  { 3500000,       0, 24, 128, 24, 48, 48, 192, 48, 24, 14336 }, /* 48K */
-  { 3500000,       0, 24, 128, 24, 48, 47, 192, 48, 25, 14336 }, /* TC2048 */
-  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 14362 }, /* 128K */
-  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 14362 }, /* +2 */
-  { 3584000, 1792000, 36, 128, 28, 32, 64, 192, 48, 16, 17988 }, /* Pentagon */
-  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 14362 }, /* +2A */
-  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 14362 }, /* +3 */
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },			  /* Unknown machine */
-  { 3500000,       0, 24, 128, 24, 48, 48, 192, 48, 24, 14336 }, /* 16K */
-  { 3500000, 1750000, 24, 128, 24, 48, 47, 192, 48, 25, 14336 }, /* TC2068 */
-  { 3500000, 1750000, 24, 128, 32, 40, 48, 192, 48, 24, 14336 }, /* Scorpion */
-  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 14362 }, /* +3e */
-  { 3500000, 1750000, 24, 128, 24, 48, 47, 192, 48, 25, 14336 }, /* SE */
-  { 3528000, 1764000, 24, 128, 24, 48, 24, 192, 25, 21,  9184 }, /* TS2068 */
+  /* 48K */
+  { 3500000,       0, 24, 128, 24, 48, 48, 192, 48, 24, 32, 14336 },
+  /* TC2048 */
+  { 3500000,       0, 24, 128, 24, 48, 47, 192, 48, 25, 32, 14336 },
+  /* 128K */
+  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 36, 14362 },
+  /* +2 */
+  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 36, 14362 },
+  /* Pentagon */
+  { 3584000, 1792000, 36, 128, 28, 32, 64, 192, 48, 16, 36, 17988 },
+  /* +2A */
+  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 32, 14362 },
+  /* +3 */
+  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 32, 14362 },
+  /* Unknown machine */
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  /* 16K */
+  { 3500000,       0, 24, 128, 24, 48, 48, 192, 48, 24, 32, 14336 },
+  /* TC2068 */
+  { 3500000, 1750000, 24, 128, 24, 48, 47, 192, 48, 25, 32, 14336 },
+  /* Scorpion */
+  { 3500000, 1750000, 24, 128, 32, 40, 48, 192, 48, 24, 36, 14336 },
+  /* +3e */
+  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 32, 14362 },
+  /* SE */
+  { 3500000, 1750000, 24, 128, 24, 48, 47, 192, 48, 25, 32, 14336 },
+  /* TS2068 */
+  { 3528000, 1764000, 24, 128, 24, 48, 24, 192, 25, 21, 32,  9184 },
 };
 
 libspectrum_dword
@@ -134,6 +148,12 @@ libspectrum_word
 libspectrum_timings_vertical_retrace( libspectrum_machine machine )
 {
   return base_timings[ machine ].vertical_retrace;
+}
+
+libspectrum_word
+libspectrum_timings_interrupt_length( libspectrum_machine machine )
+{
+  return base_timings[ machine ].interrupt_length;
 }
 
 libspectrum_word
