@@ -1,5 +1,5 @@
 /* uidisplay.h: Low-level display routines
-   Copyright (c) 2000-2002 Philip Kendall
+   Copyright (c) 2000-2003 Philip Kendall
 
    $Id$
 
@@ -35,7 +35,6 @@
 
 int uidisplay_init( int width, int height );
 
-inline void uidisplay_putpixel(int x,int y,int colour);
 void uidisplay_area( int x, int y, int w, int h );
 void uidisplay_frame_end( void );
 void uidisplay_hotswap_gfx_mode( void );

@@ -1,5 +1,5 @@
 /* widget.c: Simple dialog boxes for all user interfaces.
-   Copyright (c) 2001,2002 Matan Ziv-Av, Philip Kendall, Russell Marks
+   Copyright (c) 2001-2003 Matan Ziv-Av, Philip Kendall, Russell Marks
 
    $Id$
 
@@ -47,6 +47,7 @@
 #include "widget_internals.h"
 
 static void printchar(int x, int y, int col, int ch);
+static void widget_putpixel( int x, int y, int colour );
 
 static char widget_font[768];
 
@@ -123,10 +124,7 @@ static void printchar(int x, int y, int col, int ch) {
         int b;
         b=widget_font[ch*8+my];
         for(mx=0; mx<8; mx++) {
-            if(b&128) {
-	      uidisplay_putpixel((mx<<1)+DISPLAY_BORDER_WIDTH+16*x, my+DISPLAY_BORDER_HEIGHT+8*y, col);
-	      uidisplay_putpixel((mx<<1)+1+DISPLAY_BORDER_WIDTH+16*x, my+DISPLAY_BORDER_HEIGHT+8*y, col);
-	    }
+            if( b & 0x80 ) widget_putpixel( mx + 8 * x, my + 8 * y, col );
             b<<=1;
         }
     }
@@ -149,12 +147,9 @@ void widget_rectangle( int x, int y, int w, int h, int col )
 {
     int mx, my;
     
-    for(my=0;my<h;my++)for(mx=0;mx<w;mx++) {
-        uidisplay_putpixel( DISPLAY_BORDER_WIDTH  + ( (x+mx) << 1 )    ,
-			    DISPLAY_BORDER_HEIGHT +    y+my, col );
-        uidisplay_putpixel( DISPLAY_BORDER_WIDTH  + ( (x+mx) << 1 ) + 1,
-			    DISPLAY_BORDER_HEIGHT +    y+my, col );
-    }
+    for( my = 0; my < h; my++ )
+      for( mx = 0; mx < w; mx++ )
+        widget_putpixel( x + mx, y + my, col );
 }
 
 /* Force screen lines y to (y+h) inclusive to be redrawn */
@@ -367,65 +362,36 @@ int widget_dialog_with_border( int x, int y, int width, int height )
 		    WIDGET_COLOUR_BACKGROUND );
   
   for( i=(8*x)-1; i<(8*(x+width))+1; i++ ) {
-    uidisplay_putpixel( (i<<1)           + DISPLAY_BORDER_WIDTH,
-			(8* y        )-4 + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (i<<1)+1         + DISPLAY_BORDER_WIDTH,
-			(8* y        )-4 + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (i<<1)           + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+3 + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (i<<1)+1         + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+3 + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( i, 8 *   y            - 4, WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( i, 8 * ( y + height ) + 3, WIDGET_COLOUR_FOREGROUND );
   }
 
   for( i=(8*y)-1; i<(8*(y+height))+1; i++ ) {
-    uidisplay_putpixel( (16* x       )-4 + DISPLAY_BORDER_WIDTH,
-			i                + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16* x       )-3 + DISPLAY_BORDER_WIDTH,
-			i                + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+3 + DISPLAY_BORDER_WIDTH,
-			i                + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+4 + DISPLAY_BORDER_WIDTH,
-			i                + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 *   x           - 4, i, WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 * ( x + width ) + 3, i, WIDGET_COLOUR_FOREGROUND );
   }
 
   for( i=0; i<2; i++ ) {
-    uidisplay_putpixel( (16* x       )-3+i + DISPLAY_BORDER_WIDTH,
-			(8* y        )-2-i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16* x       )-2+i + DISPLAY_BORDER_WIDTH,
-			(8* y        )-2-i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+2-i + DISPLAY_BORDER_WIDTH,
-			(8* y        )-2-i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+3-i + DISPLAY_BORDER_WIDTH,
-			(8* y        )-2-i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16* x       )-3+i + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+1+i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16* x       )-2+i + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+1+i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+2-i + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+1+i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+3-i + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+1+i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 *   x           - 3 + i, 8 *   y            - 2 - i,
+		     WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 * ( x + width ) + 2 - i, 8 *   y            - 2 - i,
+		     WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 *   x           - 3 + i, 8 * ( y + height ) + 1 + i,
+		     WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 * ( x + width ) + 2 - i, 8 * ( y + height ) + 1 + i,
+		     WIDGET_COLOUR_FOREGROUND );
   }
 
   widget_display_lines( y-1, height+2 );
 
   return 0;
+}
+
+static void
+widget_putpixel( int x, int y, int colour )
+{
+  display_putpixel( x + DISPLAY_BORDER_ASPECT_WIDTH, y + DISPLAY_BORDER_HEIGHT,
+		    colour );
 }
 
 /* General functions used by the options dialogs */

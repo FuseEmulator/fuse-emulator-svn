@@ -1,5 +1,5 @@
 /* sdldisplay.c: Routines for dealing with the SDL display
-   Copyright (c) 2000-2002 Philip Kendall, Matan Ziv-Av, Fredrick Meunier
+   Copyright (c) 2000-2003 Philip Kendall, Matan Ziv-Av, Fredrick Meunier
 
    $Id$
 
@@ -295,12 +295,6 @@ uidisplay_hotswap_gfx_mode( void )
   display_refresh_all();
 
   fuse_emulation_unpause();
-}
-
-void
-uidisplay_putpixel( int x, int y, int colour )
-{
-  /* FIXME: Do something here */
 }
 
 void

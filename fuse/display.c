@@ -581,6 +581,13 @@ static void display_dirty64(WORD address)
   for( i=0; i<8; i++ ) display_is_dirty[y+i] |= ( (QWORD)1 << x );
 }
 
+/* Set one pixel in the display */
+void
+display_putpixel( int x, int y, int colour )
+{
+  display_image[y][x] = colour;
+}
+
 /* Print the 8 pixels in `data' using ink colour `ink' and paper
    colour `paper' to the screen at ( (8*x) , y ) */
 void

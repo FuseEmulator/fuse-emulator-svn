@@ -1,5 +1,5 @@
 /* uidisplay.c: UI display functions
-   Copyright (c) 2002 Philip Kendall
+   Copyright (c) 2002-2003 Philip Kendall
 
    $Id$
 
@@ -37,27 +37,19 @@ void uidisplay_spectrum_screen( const BYTE *screen, int border )
   BYTE attr,data; int ink, paper;
 
   for( y=0; y < DISPLAY_BORDER_HEIGHT; y++ ) {
-    for( x=0; x < DISPLAY_SCREEN_WIDTH; x+=2 ) {
-      uidisplay_putpixel( x, y, border );
-      uidisplay_putpixel( x+1, y, border );
-      uidisplay_putpixel( x, y + DISPLAY_BORDER_HEIGHT + DISPLAY_HEIGHT,
-			  border );
-      uidisplay_putpixel( x+1, y + DISPLAY_BORDER_HEIGHT + DISPLAY_HEIGHT,
-			  border );
+    for( x=0; x < DISPLAY_ASPECT_WIDTH; x++ ) {
+      display_putpixel( x, y, border );
+      display_putpixel( x, y + DISPLAY_BORDER_HEIGHT + DISPLAY_HEIGHT,
+			border );
     }
   }
 
   for( y=0; y<DISPLAY_HEIGHT; y++ ) {
 
     for( x=0; x < DISPLAY_BORDER_WIDTH; x++ ) {
-      uidisplay_putpixel( x<<1,
-			  y + DISPLAY_BORDER_HEIGHT, border );
-      uidisplay_putpixel( (x<<1) + 1,
-			  y + DISPLAY_BORDER_HEIGHT, border );
-      uidisplay_putpixel( (x<<1) + DISPLAY_BORDER_WIDTH + DISPLAY_WIDTH,
-			  y + DISPLAY_BORDER_HEIGHT, border );
-      uidisplay_putpixel( (x<<1) + 1 + DISPLAY_BORDER_WIDTH + DISPLAY_WIDTH,
-			  y + DISPLAY_BORDER_HEIGHT, border );
+      display_putpixel( x, y + DISPLAY_BORDER_HEIGHT, border );
+      display_putpixel( x + DISPLAY_ASPECT_WIDTH - DISPLAY_BORDER_ASPECT_WIDTH,
+			y + DISPLAY_BORDER_HEIGHT, border );
     }
 
     for( x=0; x < DISPLAY_WIDTH_COLS; x++ ) {
@@ -71,7 +63,7 @@ void uidisplay_spectrum_screen( const BYTE *screen, int border )
 
       data = screen[ display_line_start[y]+x ];
 
-      display_plot8( x<<1, y, data, ink, paper );
+      display_plot8( x, y, data, ink, paper );
     }
   }
 

@@ -1,5 +1,5 @@
 /* display.h: Routines for printing the Spectrum's screen
-   Copyright (c) 1999-2000 Philip Kendall
+   Copyright (c) 1999-2003 Philip Kendall
 
    $Id$
 
@@ -82,6 +82,7 @@ int display_init(int *argc, char ***argv);
 void display_line(void);
 
 void display_dirty( WORD address );
+void display_putpixel( int x, int y, int colour );
 void display_plot8(int x, int y, BYTE data, BYTE ink, BYTE paper);
 void display_plot16(int x, int y, WORD data, BYTE ink, BYTE paper);
 
