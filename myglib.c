@@ -30,7 +30,8 @@
 				   `proper' glib */
 
 #include <stdlib.h>
-#include "myglib.h"
+
+#include "internals.h"
 
 static
 gint	last_function		(gconstpointer	 a,
