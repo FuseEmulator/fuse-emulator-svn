@@ -516,7 +516,7 @@ end_line( int y )
 }
 
 /* Mark as `dirty' the pixels which have been changed by a write to byte
-   `address'; 0x4000 <= address < 0x5b00 */
+   `address'; 0x4000 <= `address' */
 void display_dirty( WORD address )
 {
   switch ( scld_last_dec.mask.scrnmode ) {
