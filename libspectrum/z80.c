@@ -593,7 +593,15 @@ read_block( const libspectrum_byte *buffer, libspectrum_snap *snap,
     }
 
     /* If it's a ROM page, just throw it away */
-    if( page < 3 || page == 11 ) {
+    if( page < 3 ) {
+      free( uncompressed );
+      return LIBSPECTRUM_ERROR_NONE;
+    }
+
+    /* Page 11 is the Multiface ROM unless we're emulating something
+       Scorpion-like */
+    if( page == 11 &&
+	!( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY ) ) {
       free( uncompressed );
       return LIBSPECTRUM_ERROR_NONE;
     }
@@ -617,7 +625,6 @@ read_block( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     /* Now map onto RAM page numbers */
     page -= 3;
-    if( page > 7 ) page--;
 
     if( libspectrum_snap_pages( snap, page ) == NULL ) {
       libspectrum_snap_set_pages( snap, page, uncompressed );
@@ -1046,7 +1053,7 @@ write_pages( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
     if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY ) {
       for( i = 8; i < 16; i++ ) {
         if( libspectrum_snap_pages( snap, i ) ) {
-          error = write_page( buffer, ptr, length, i+4,
+          error = write_page( buffer, ptr, length, i + 3,
                               libspectrum_snap_pages( snap, i ), compress );
           if( error != LIBSPECTRUM_ERROR_NONE ) return error;
         }
