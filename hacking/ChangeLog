@@ -235,3 +235,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040611 szx.c: small changes to the ZXAT and ZXCF chunks to make them
 	 more consistent with how the rest of the .szx format does things.
 20040612 acconfig.h,configure.in: remove use of acconfig.h
+20040612 szx.c: remove duplicated literal constants from the code.
