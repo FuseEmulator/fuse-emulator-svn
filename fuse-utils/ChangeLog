@@ -1,3 +1,22 @@
+200?-??-??  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+
+	* Add some small bits of system information (OS, libspectrum
+	  version) into creator custom data for formats which support this
+	  (Philip Kendall).
+
+	* QNX6 compilation fixes and package file (Mike Gorchak).
+
+	* rzxcheck: return 1 if the RZX file does not have a good
+	  signature (Philip Kendall).
+
+	* rzxdump: use libgcrypt 1.1.42 or later (Philip Kendall).
+
+	* snap2tzx: new utility to convert snapshots to tape files.
+	  Heavily based on Tomaz Kac's 'z802tzx' (Philip Kendall).
+
+	* tapeconv: remove double-free bug if tape reading fails (Philip
+	  Kendall).
+
 2003-09-13  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 
 	* Version 0.6.1 released
