@@ -301,7 +301,7 @@ display_draw_line( int y )
               break;
 	    }
 	    hires_data = (data << 8) + data2;
-	    display_plot16( screen_x<<1, screen_y, hires_data, ink, paper );
+	    display_plot16( screen_x, screen_y, hires_data, ink, paper );
 	  } else {
 	    display_plot8( screen_x, screen_y, data, ink, paper );
 	  }    
@@ -645,8 +645,26 @@ void
 display_plot16( int x, int y, WORD data, BYTE ink, BYTE paper )
 {
   x = (x << 4) + DISPLAY_BORDER_WIDTH;
-  y += DISPLAY_BORDER_HEIGHT;
+  y = ( y + DISPLAY_BORDER_HEIGHT ) << 1;
 
+  display_image[y][x+ 0] = ( data & 0x8000 ) ? ink : paper;
+  display_image[y][x+ 1] = ( data & 0x4000 ) ? ink : paper;
+  display_image[y][x+ 2] = ( data & 0x2000 ) ? ink : paper;
+  display_image[y][x+ 3] = ( data & 0x1000 ) ? ink : paper;
+  display_image[y][x+ 4] = ( data & 0x0800 ) ? ink : paper;
+  display_image[y][x+ 5] = ( data & 0x0400 ) ? ink : paper;
+  display_image[y][x+ 6] = ( data & 0x0200 ) ? ink : paper;
+  display_image[y][x+ 7] = ( data & 0x0100 ) ? ink : paper;
+  display_image[y][x+ 8] = ( data & 0x0080 ) ? ink : paper;
+  display_image[y][x+ 9] = ( data & 0x0040 ) ? ink : paper;
+  display_image[y][x+10] = ( data & 0x0020 ) ? ink : paper;
+  display_image[y][x+11] = ( data & 0x0010 ) ? ink : paper;
+  display_image[y][x+12] = ( data & 0x0008 ) ? ink : paper;
+  display_image[y][x+13] = ( data & 0x0004 ) ? ink : paper;
+  display_image[y][x+14] = ( data & 0x0002 ) ? ink : paper;
+  display_image[y][x+15] = ( data & 0x0001 ) ? ink : paper;
+
+  y++;
   display_image[y][x+ 0] = ( data & 0x8000 ) ? ink : paper;
   display_image[y][x+ 1] = ( data & 0x4000 ) ? ink : paper;
   display_image[y][x+ 2] = ( data & 0x2000 ) ? ink : paper;
