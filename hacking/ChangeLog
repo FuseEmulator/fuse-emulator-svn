@@ -285,3 +285,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          handling.
 20041221 rzx.c: fix compilation when gcrypt not present (thanks, Erik Kunze)
 	 (closes bug #1053346).
+20041230 libspectrum.c,libspectrum.h.in: add identification of .mdr files
+	 (part of patch #1085429) (Gergely Szasz).
