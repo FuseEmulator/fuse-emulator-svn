@@ -96,3 +96,4 @@
 20040616 acconfig.h,configure.in: remove use of acconfig.h.
 20040616 .cvsignore,createhdf.c,Makefile.am: add createhdf utility for
 	 creating empty .hdf files.
+20040620 README,autogen.sh: add script to do the autotools invocation.
