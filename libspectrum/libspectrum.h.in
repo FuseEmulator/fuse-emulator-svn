@@ -62,6 +62,7 @@ typedef enum libspectrum_error {
   LIBSPECTRUM_ERROR_CORRUPT,
   LIBSPECTRUM_ERROR_SIGNATURE,
   LIBSPECTRUM_ERROR_SLT,	/* .slt data found at end of a .z80 file */
+  LIBSPECTRUM_ERROR_INVALID,	/* Invalid parameter supplied */
 
   LIBSPECTRUM_ERROR_LOGIC = -1,
 
@@ -228,54 +229,29 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 		       size_t length, libspectrum_id_t type,
 		       const char *filename );
 
+/* Write a snapshot */
+libspectrum_error
+libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
+			int *out_flags, libspectrum_snap *snap,
+	 		libspectrum_id_t type, int in_flags );
+
 /* Accessor functions */
 LIBSPECTRUM_SNAP_ACCESSORS
 
-/* +D snapshot routines */
-
-libspectrum_error
-libspectrum_plusd_read( libspectrum_snap *snap,
-                        const libspectrum_byte *buffer, size_t buffer_length );
-
-/* .sna specific routines */
-
+/* DEPRECATED: use libspectrum_snap_read() instead */
 libspectrum_error
 libspectrum_sna_read( libspectrum_snap *snap,
 	              const libspectrum_byte *buffer, size_t buffer_length );
 
-/* .snp specific routines */
-
-libspectrum_error
-libspectrum_snp_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
-		      size_t length );
-
-/* .sp specific routines */
-
-libspectrum_error
-libspectrum_sp_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
-		     size_t length );
-
-/* .szx specific routines */
-
-libspectrum_error
-libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
-		      size_t length );
-
-/* .z80 specific routines */
-
+/* DEPRECATED: use libspectrum_snap_read() instead */
 libspectrum_error
 libspectrum_z80_read( libspectrum_snap *snap,
 	              const libspectrum_byte *buffer, size_t buffer_length );
 
+/* DEPRECATED: use libspectrum_snap_write() instead */
 libspectrum_error
 libspectrum_z80_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_snap *snap );
-
-/* .zxs snapshot routines */
-
-libspectrum_error
-libspectrum_zxs_read( libspectrum_snap *snap,
-	              const libspectrum_byte *buffer, size_t buffer_length );
 
 /*
  * Tape handling routines
