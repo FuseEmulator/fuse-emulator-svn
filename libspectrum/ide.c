@@ -81,7 +81,7 @@ libspectrum_ide_insert( libspectrum_ide_channel *chn,
   if ( !filename ) return LIBSPECTRUM_ERROR_NONE;
   
   /* Open the file */
-  f = fopen( filename, "r+" );
+  f = fopen( filename, "rb+" );
   if( !f ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_UNKNOWN,

@@ -176,3 +176,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040318 Makefile.am,ide.c,libspectrum.h.in: support for .hdf hard disk
 	 images. Basically just Garry's patch with some coding style
 	 changes (patch #916186) (Garry Lancaster).
+20040318 ide.c: open .hdf files in binary mode.
