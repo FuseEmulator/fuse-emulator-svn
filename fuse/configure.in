@@ -230,8 +230,21 @@ if test "$UI" != gtk; then
   glib=yes)
   AC_MSG_RESULT($glib)
   if test "$glib" = yes; then
-    AM_PATH_GLIB(1.2.0,AC_DEFINE(HAVE_LIB_GLIB),
-	         AC_MSG_WARN(glib not found - using libspectrum's replacement))
+    glib2=no
+    AM_PATH_GLIB_2_0(
+      2.0.0,
+      glib2=yes
+      AC_DEFINE(HAVE_LIB_GLIB)
+      LIBS="$LIBS `pkg-config --libs glib-2.0`",
+    )
+    if test "$glib2" = no; then
+      AM_PATH_GLIB(
+        1.2.0,
+        AC_DEFINE(HAVE_LIB_GLIB)
+        LIBS="$LIBS `glib-config --libs`",
+        AC_MSG_WARN(glib not found - using libspectrum's replacement)
+      )
+    fi
   fi
 fi
 

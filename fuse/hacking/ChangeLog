@@ -559,3 +559,5 @@
 	 (Release-0_6_2-branch).
 20040216 ui/sdl/sdldisplay.c: don't overrun the rectangles array in
 	 sdl_blit_icon() (thanks, Simon Tatham) (Release-0_6_2-branch).
+20040216 configure.in: use glib 2.0 if available (Release-0_6_2-branch)
+	 (Darren).
