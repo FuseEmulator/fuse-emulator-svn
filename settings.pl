@@ -46,6 +46,7 @@ int settings_init( void )
 int settings_defaults( settings_info *settings )
 {
   settings->issue2 = 0;
+  settings->joy_kempston = 0;
   settings->tape_traps = 1;
   settings->stereo_ay = 0;
 
@@ -55,9 +56,10 @@ int settings_defaults( settings_info *settings )
 /* Copy one settings object to another */
 int settings_copy( settings_info *dest, settings_info *src )
 {
-  dest->issue2     = src->issue2;
-  dest->tape_traps = src->tape_traps;
-  dest->stereo_ay  = src->stereo_ay;
+  dest->issue2       = src->issue2;
+  dest->joy_kempston = src->joy_kempston;
+  dest->tape_traps   = src->tape_traps;
+  dest->stereo_ay    = src->stereo_ay;
 
   return 0;
 }

@@ -32,6 +32,7 @@
 typedef struct settings_info {
 
   int issue2;		/* Issue 2 keyboard emulation? */
+  int joy_kempston;	/* Kempston joystick emulation? */
   int tape_traps;	/* Use tape loading traps? */
   int stereo_ay;	/* Stereo separation for AY channels? */
 
