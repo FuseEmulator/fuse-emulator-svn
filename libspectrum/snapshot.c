@@ -32,6 +32,7 @@
 
 /* Some flags which may be returned from libspectrum_snap_write() */
 const int LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS = 1 << 0;
+const int LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS = 1 << 1;
 
 /* Free all memory used by a libspectrum_snap structure (destructor...) */
 libspectrum_error
@@ -141,6 +142,9 @@ libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
   }
 
   switch( type ) {
+
+  case LIBSPECTRUM_ID_SNAPSHOT_SZX:
+    return libspectrum_szx_write( buffer, length, out_flags, snap, in_flags );
 
   case LIBSPECTRUM_ID_SNAPSHOT_Z80:
     return libspectrum_z80_write2( buffer, length, out_flags, snap, in_flags );

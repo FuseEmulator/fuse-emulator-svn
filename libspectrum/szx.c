@@ -44,6 +44,31 @@ typedef libspectrum_error (*read_chunk_fn)( libspectrum_snap *snap,
 					    size_t data_length );
 
 static libspectrum_error
+write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
+	      size_t *length, int *out_flags, libspectrum_snap *snap );
+
+static libspectrum_error
+write_z80r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap );
+static libspectrum_error
+write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap );
+static libspectrum_error
+write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		 size_t *length, libspectrum_snap *snap );
+static libspectrum_error
+write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap, int page );
+static libspectrum_error
+write_ay_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		size_t *length, libspectrum_snap *snap );
+
+static libspectrum_error
+write_chunk_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		    size_t *length, const char *id,
+		    libspectrum_dword block_length );
+
+static libspectrum_error
 read_ay_chunk( libspectrum_snap *snap, libspectrum_word version,
 	       const libspectrum_byte **buffer, const libspectrum_byte *end,
 	       size_t data_length )
@@ -156,7 +181,7 @@ read_spcr_chunk( libspectrum_snap *snap, libspectrum_word version,
   libspectrum_snap_set_out_128_memoryport( snap, **buffer ); (*buffer)++;
   libspectrum_snap_set_out_plus3_memoryport( snap, **buffer ); (*buffer)++;
 
-  if( version >= 0x0101 ) out_ula |= **buffer & 0x18;
+  if( version >= 0x0101 ) out_ula |= **buffer & 0xf8;
   (*buffer)++;
 
   libspectrum_snap_set_out_ula( snap, out_ula );
@@ -413,6 +438,271 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
       return error;
     }
   }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
+		       int *out_flags, libspectrum_snap *snap, int in_flags )
+{
+  libspectrum_byte *ptr = *buffer;
+  int capabilities;
+  libspectrum_error error;
+
+  *out_flags = 0;
+
+  capabilities =
+    libspectrum_machine_capabilities( libspectrum_snap_machine( snap ) );
+
+  error = write_file_header( buffer, &ptr, length, out_flags, snap );
+  if( error ) return error;
+
+  error = write_z80r_chunk( buffer, &ptr, length, snap );
+  if( error ) return error;
+
+  error = write_spcr_chunk( buffer, &ptr, length, snap );
+  if( error ) return error;
+
+  error = write_ram_pages( buffer, &ptr, length, snap );
+  if( error ) return error;
+
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_AY ) {
+    error = write_ay_chunk( buffer, &ptr, length, snap );
+    if( error ) return error;
+  }
+
+  /* Set length to be actual length, not allocated length */
+  *length = ptr - *buffer;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		   size_t *length, int *out_flags, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+
+  error = libspectrum_make_room( buffer, 8, ptr, length );
+  if( error ) return error;
+
+  memcpy( *ptr, signature, 4 ); *ptr += 4;
+  
+  /* We currently write version 1.1 files (major, minor) */
+  *(*ptr)++ = 0x01; *(*ptr)++ = 0x01;
+
+  switch( libspectrum_snap_machine( snap ) ) {
+
+  case LIBSPECTRUM_MACHINE_16:     **ptr = 0; break;
+
+  /* For now, Timex machines will have to save as just 48K */
+  case LIBSPECTRUM_MACHINE_TC2048:
+  case LIBSPECTRUM_MACHINE_TC2068:
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+    /* Fall through */
+  case LIBSPECTRUM_MACHINE_48:     **ptr = 1; break;
+
+  case LIBSPECTRUM_MACHINE_128:    **ptr = 2; break;
+  case LIBSPECTRUM_MACHINE_PLUS2:  **ptr = 3; break;
+  case LIBSPECTRUM_MACHINE_PLUS2A: **ptr = 4; break;
+  case LIBSPECTRUM_MACHINE_PLUS3:  **ptr = 5; break;
+  /* 6 = +3e */
+  case LIBSPECTRUM_MACHINE_PENT:   **ptr = 7; break;
+
+  case LIBSPECTRUM_MACHINE_UNKNOWN:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "Emulated machine type is set to 'unknown'!" );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+  (*ptr)++;
+
+  /* Reserved byte */
+  *(*ptr)++ = '\0';
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_z80r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_dword tstates;
+
+  libspectrum_error error;
+
+  error = write_chunk_header( buffer, ptr, length, "Z80R", 37 );
+  if( error ) return error;
+
+  *(*ptr)++ = libspectrum_snap_a ( snap );
+  *(*ptr)++ = libspectrum_snap_f ( snap );
+  libspectrum_write_word( ptr, libspectrum_snap_bc  ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_de  ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_hl  ( snap ) );
+
+  *(*ptr)++ = libspectrum_snap_a_( snap );
+  *(*ptr)++ = libspectrum_snap_f_( snap );
+  libspectrum_write_word( ptr, libspectrum_snap_bc_ ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_de_ ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_hl_ ( snap ) );
+
+  libspectrum_write_word( ptr, libspectrum_snap_ix  ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_iy  ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_sp  ( snap ) );
+  libspectrum_write_word( ptr, libspectrum_snap_pc  ( snap ) );
+
+  *(*ptr)++ = libspectrum_snap_i   ( snap );
+  *(*ptr)++ = libspectrum_snap_r   ( snap );
+  *(*ptr)++ = libspectrum_snap_iff1( snap );
+  *(*ptr)++ = libspectrum_snap_iff2( snap );
+  *(*ptr)++ = libspectrum_snap_im  ( snap );
+
+  tstates = libspectrum_snap_tstates( snap );
+
+  libspectrum_write_dword( ptr, tstates );
+
+  /* Number of tstates remaining in which an interrupt can occur */
+  if( tstates < 48 ) {
+    *(*ptr)++ = (unsigned char)(48 - tstates);
+  } else {
+    *(*ptr)++ = '\0';
+  }
+
+  /* Flags; 'last instruction EI' flag not supported, but 'halted' is */
+  *(*ptr)++ = libspectrum_snap_halted( snap ) ? 0x02 : 0x00;
+
+  /* Hidden register not supported */
+  *(*ptr)++ = '\0';
+
+  /* Reserved byte */
+  *(*ptr)++ = '\0';
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+  int capabilities;
+
+  error = write_chunk_header( buffer, ptr, length, "SPCR", 8 );
+  if( error ) return error;
+
+  capabilities =
+    libspectrum_machine_capabilities( libspectrum_snap_machine( snap ) );
+
+  /* Border colour */
+  *(*ptr)++ = libspectrum_snap_out_ula( snap ) & 0x07;
+
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) {
+    *(*ptr)++ = libspectrum_snap_out_128_memoryport( snap );
+  } else {
+    *(*ptr)++ = '\0';
+  }
+  
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) {
+    *(*ptr)++ = libspectrum_snap_out_plus3_memoryport( snap );
+  } else {
+    *(*ptr)++ = '\0';
+  }
+
+  *(*ptr)++ = libspectrum_snap_out_ula( snap );
+
+  /* Reserved bytes */
+  libspectrum_write_dword( ptr, 0 );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		 size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_machine machine;
+  int capabilities; 
+  libspectrum_error error;
+
+  machine = libspectrum_snap_machine( snap );
+  capabilities = libspectrum_machine_capabilities( machine );
+
+  error = write_ramp_chunk( buffer, ptr, length, snap, 5 );
+  if( error ) return error;
+
+  if( machine != LIBSPECTRUM_MACHINE_16 ) {
+    error = write_ramp_chunk( buffer, ptr, length, snap, 2 );
+    if( error ) return error;
+    error = write_ramp_chunk( buffer, ptr, length, snap, 0 );
+    if( error ) return error;
+  }
+
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) {
+    error = write_ramp_chunk( buffer, ptr, length, snap, 1 );
+    if( error ) return error;
+    error = write_ramp_chunk( buffer, ptr, length, snap, 3 );
+    if( error ) return error;
+    error = write_ramp_chunk( buffer, ptr, length, snap, 4 );
+    if( error ) return error;
+    error = write_ramp_chunk( buffer, ptr, length, snap, 6 );
+    if( error ) return error;
+    error = write_ramp_chunk( buffer, ptr, length, snap, 7 );
+    if( error ) return error;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap, int page )
+{
+  libspectrum_error error;
+
+  /* FIXME: compression */
+
+  error = write_chunk_header( buffer, ptr, length, "RAMP", 3 + 0x4000 );
+  if( error ) return error;
+
+  libspectrum_write_word( ptr, 0 );	/* Flags */
+  *(*ptr)++ = (libspectrum_byte)page;
+
+  memcpy( *ptr, libspectrum_snap_pages( snap, page ), 0x4000 ); *ptr += 0x4000;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_ay_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+  size_t i;
+
+  error = write_chunk_header( buffer, ptr, length, "AY\0\0", 18 );
+  if( error ) return error;
+
+  *(*ptr)++ = '\0';			/* Flags */
+  *(*ptr)++ = libspectrum_snap_out_ay_registerport( snap );
+
+  for( i = 0; i < 16; i++ )
+    *(*ptr)++ = libspectrum_snap_ay_registers( snap, i );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_chunk_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		    size_t *length, const char *id,
+		    libspectrum_dword block_length )
+{
+  libspectrum_error error;
+
+  error = libspectrum_make_room( buffer, 8 + block_length, ptr, length );
+  if( error ) return error;
+
+  memcpy( *ptr, id, 4 ); *ptr += 4;
+  libspectrum_write_dword( ptr, block_length );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
