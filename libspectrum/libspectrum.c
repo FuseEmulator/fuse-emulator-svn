@@ -124,8 +124,9 @@ libspectrum_machine_name( libspectrum_machine type )
 
 /* Given a 48K memory dump `data', place it into the
    appropriate bits of `snap' for a 48K machine */
-int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
-				    const uchar* data )
+int
+libspectrum_split_to_48k_pages( libspectrum_snap *snap,
+				const libspectrum_byte* data )
 {
   /* If any of the three pages are already occupied, barf */
   if( snap->pages[5] || snap->pages[2] || snap->pages[0] ) {
@@ -136,20 +137,23 @@ int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
   }
 
   /* Allocate memory for the three pages */
-  snap->pages[5] = (uchar*)malloc( 0x4000 * sizeof(uchar) );
+  snap->pages[5] =
+    (libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
   if( snap->pages[5] == NULL ) {
     libspectrum_print_error("libspectrum_split_to_48k_pages: out of memory\n");
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
-  snap->pages[2] = (uchar*)malloc( 0x4000 * sizeof(uchar) );
+  snap->pages[2] =
+    (libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
   if( snap->pages[2] == NULL ) {
     free( snap->pages[5] ); snap->pages[5] = NULL;
     libspectrum_print_error("libspectrum_split_to_48k_pages: out of memory\n");
     return LIBSPECTRUM_ERROR_MEMORY;
   }
     
-  snap->pages[0] = (uchar*)malloc( 0x4000 * sizeof(uchar) );
+  snap->pages[0] =
+    (libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
   if( snap->pages[0] == NULL ) {
     free( snap->pages[5] ); snap->pages[5] = NULL;
     free( snap->pages[2] ); snap->pages[2] = NULL;
@@ -169,8 +173,9 @@ int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 /* Ensure there is room for `requested' characters after the current
    position `ptr' in `buffer'. If not, realloc() and update the
    pointers as necessary */
-int libspectrum_make_room( uchar **dest, size_t requested, uchar **ptr,
-			   size_t *allocated )
+int
+libspectrum_make_room( libspectrum_byte **dest, size_t requested,
+		       libspectrum_byte **ptr, size_t *allocated )
 {
   size_t current_length;
 
@@ -180,7 +185,7 @@ int libspectrum_make_room( uchar **dest, size_t requested, uchar **ptr,
 
     (*allocated) = requested;
 
-    *dest = (uchar*)malloc( requested * sizeof(uchar) );
+    *dest = (libspectrum_byte*)malloc( requested * sizeof(libspectrum_byte) );
     if( *dest == NULL ) return 1;
 
   } else {
@@ -195,7 +200,8 @@ int libspectrum_make_room( uchar **dest, size_t requested, uchar **ptr,
       current_length + requested :
       2 * (*allocated);
 
-    *dest = (uchar*)realloc( *dest, (*allocated) * sizeof(uchar) );
+    *dest = (libspectrum_byte*)
+      realloc( *dest, (*allocated) * sizeof( libspectrum_byte ) );
     if( *dest == NULL ) return 1;
 
   }
@@ -224,7 +230,8 @@ libspectrum_read_dword( const libspectrum_byte **buffer )
 }
 
 /* Write an (LSB) word to buffer */
-int libspectrum_write_word( uchar **buffer, libspectrum_word w )
+int
+libspectrum_write_word( libspectrum_byte **buffer, libspectrum_word w )
 {
   *(*buffer)++ = w & 0xff;
   *(*buffer)++ = w >> 8;

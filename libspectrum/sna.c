@@ -35,21 +35,22 @@
 
 static int libspectrum_sna_identify( size_t buffer_length, 
 				     libspectrum_machine *type );
-static int libspectrum_sna_read_header( const uchar *buffer,
+static int libspectrum_sna_read_header( const libspectrum_byte *buffer,
 					size_t buffer_length,
 					libspectrum_snap *snap );
-static int libspectrum_sna_read_data( const uchar *buffer,
+static int libspectrum_sna_read_data( const libspectrum_byte *buffer,
 				      size_t buffer_length,
 				      libspectrum_snap *snap );
-static int libspectrum_sna_read_128_header( const uchar *buffer,
+static int libspectrum_sna_read_128_header( const libspectrum_byte *buffer,
 					    size_t buffer_length,
 					    libspectrum_snap *snap );
-static int libspectrum_sna_read_128_data( const uchar *buffer,
+static int libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
 					  size_t buffer_length,
 					  libspectrum_snap *snap );
 
-int libspectrum_sna_read( const uchar *buffer, size_t buffer_length,
-			  libspectrum_snap *snap )
+int
+libspectrum_sna_read( const libspectrum_byte *buffer, size_t buffer_length,
+		      libspectrum_snap *snap )
 {
   int error;
 
@@ -87,8 +88,8 @@ static int libspectrum_sna_identify( size_t buffer_length,
 }
 
 static int
-libspectrum_sna_read_header( const uchar *buffer, size_t buffer_length,
-			     libspectrum_snap *snap )
+libspectrum_sna_read_header( const libspectrum_byte *buffer,
+			     size_t buffer_length, libspectrum_snap *snap )
 {
   if( buffer_length < LIBSPECTRUM_SNA_HEADER_LENGTH ) {
     libspectrum_print_error(
@@ -125,8 +126,8 @@ libspectrum_sna_read_header( const uchar *buffer, size_t buffer_length,
 }
 
 static int
-libspectrum_sna_read_data( const uchar *buffer, size_t buffer_length,
-			   libspectrum_snap *snap )
+libspectrum_sna_read_data( const libspectrum_byte *buffer,
+			   size_t buffer_length, libspectrum_snap *snap )
 {
   int error;
   int offset; int page;
@@ -158,7 +159,8 @@ libspectrum_sna_read_data( const uchar *buffer, size_t buffer_length,
   case LIBSPECTRUM_MACHINE_128:
     
     for( i=0; i<8; i++ ) {
-      snap->pages[i] = (uchar*)malloc( 0x4000 * sizeof(uchar) );
+      snap->pages[i] =
+	(libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
       if( snap->pages[i] == NULL ) {
 	for( j=0; j<i; j++ ) { free( snap->pages[i] ); snap->pages[i] = NULL; }
 	libspectrum_print_error("libspectrum_sna_read_data: out of memory\n");
@@ -201,9 +203,9 @@ libspectrum_sna_read_data( const uchar *buffer, size_t buffer_length,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-static int libspectrum_sna_read_128_header( const uchar *buffer,
-					    size_t buffer_length,
-					    libspectrum_snap *snap )
+static int
+libspectrum_sna_read_128_header( const libspectrum_byte *buffer,
+				 size_t buffer_length, libspectrum_snap *snap )
 {
   if( buffer_length < 4 ) {
     libspectrum_print_error(
@@ -219,8 +221,8 @@ static int libspectrum_sna_read_128_header( const uchar *buffer,
 }
 
 static int
-libspectrum_sna_read_128_data( const uchar *buffer, size_t buffer_length,
-			       libspectrum_snap *snap )
+libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
+			       size_t buffer_length, libspectrum_snap *snap )
 {
   int i, page;
 
