@@ -1,9 +1,3 @@
-if( /LIBSPECTRUM_GLIB_REPLACEMENT/ ) {
-
-  $_ = "#include <glib.h>";
-
-}
-
 if( /LIBSPECTRUM_SNAP_ACCESSORS/ ) {
 
   open( DATAFILE, "< snap_accessors.txt" ) or die "Couldn't open `snap_accessors.txt': $!";
