@@ -499,6 +499,7 @@ read_slt( libspectrum_snap *snap, const libspectrum_byte **next_block,
 	return LIBSPECTRUM_ERROR_CORRUPT;
       }
 
+      length = 0;	/* Tell uncompress_block to allocate memory for us */
       error =
 	uncompress_block( &buffer, &length,
 			  *next_block + offsets[i], slt_length[i] );
