@@ -933,6 +933,9 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   case LIBSPECTRUM_MACHINE_16:
   case LIBSPECTRUM_MACHINE_48:
     *(*ptr)++ = 0; break;
+  case LIBSPECTRUM_MACHINE_SE:
+    *flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+    /* fall through */
   case LIBSPECTRUM_MACHINE_128:
     *(*ptr)++ = 4; break;
   case LIBSPECTRUM_MACHINE_PLUS3E:
@@ -952,10 +955,11 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = 14; break;
   case LIBSPECTRUM_MACHINE_TC2068:
     *(*ptr)++ = 15; break;
-  default:
+
+  case LIBSPECTRUM_MACHINE_UNKNOWN:
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
-			     "write_extended_header: unknown machine type %d",
-			     libspectrum_snap_machine( snap ) );
+			     "%s:write_extended_header: machine type unknown",
+			     __FILE__ );
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
