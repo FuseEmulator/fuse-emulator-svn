@@ -73,3 +73,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20030901 libspectrum.c: define MIN_GCRYPT_VERSION iff it's going to be
 	 used
 20030908 ChangeLog: add release date of 0.1.1.
+20030908 ChangeLog: bring up to date.
