@@ -258,3 +258,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040715 szx.c: bump .szx minor version number to 1.3.
 20040716 configure.in: bump version number to 0.2.2.
 20040718 autogen.sh: add libtoolize.
+20040721 accessor.pl,snap_accessors.txt,z80.c: Add issue 2 keyboard support.

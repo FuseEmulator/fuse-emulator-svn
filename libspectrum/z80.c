@@ -205,6 +205,7 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
   libspectrum_snap_set_iff1( snap, header[27] ? 1 : 0 );
   libspectrum_snap_set_iff2( snap, header[28] ? 1 : 0 );
   libspectrum_snap_set_im( snap, header[29] & 0x03 );
+  libspectrum_snap_set_issue2( snap, header[29] & 0x04 );
 
   libspectrum_snap_set_out_ula( snap, (header[12]&0x0e) >> 1 );
 
@@ -997,7 +998,8 @@ write_base_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   *(*ptr)++ = libspectrum_snap_iff1( snap ) ? 0xff : 0x00;
   *(*ptr)++ = libspectrum_snap_iff2( snap ) ? 0xff : 0x00;
-  *(*ptr)++ = libspectrum_snap_im( snap );
+  *(*ptr)++ = ( libspectrum_snap_im( snap ) & 0x03 ) +
+              ( libspectrum_snap_issue2( snap ) ? 0x04 : 0x00 );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
