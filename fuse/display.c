@@ -711,7 +711,7 @@ set_border( int x, int y, BYTE colour )
     }
   } else {
     x <<= 3;
-    for( i = 0; i < 16; i++ ) display_image[y][x+i] = colour;
+    for( i = 0; i < 8; i++ ) display_image[y][x+i] = colour;
   }
 
 }
