@@ -831,6 +831,10 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
   if( libspectrum_snap_halted( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
 
+  /* .z80 format doesn't store the ZXCF info */
+  if( libspectrum_snap_zxcf_active( snap ) )
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+
   error = write_header( buffer, &ptr, length, out_flags, snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 

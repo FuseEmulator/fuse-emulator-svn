@@ -208,3 +208,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 patch #929112) (Fred).
 20040514 szx.c: use symbolic constants for the .szx machine numbers.
 20040514 szx.c: allow loading of +3e snaps to work.
+20040519 accessor.pl,sna.c,snap_accessors.txt,snapshot.c,szx.c,z80.c:
+	 add support for saving ZXCF information in .szx snapshots.
