@@ -327,8 +327,8 @@ read_sign_end_block( unsigned char **ptr, unsigned char *end )
 {
   size_t length;
 #ifdef HAVE_LIBGCRYPT
-  GcryMPI a; int error; size_t length2;
-  char *buffer;
+  gcry_mpi_t a; int error; size_t length2;
+  unsigned char *buffer;
 #endif				/* #ifdef HAVE_LIBGCRYPT */
 
   if( end - *ptr < 4 ) {
@@ -350,30 +350,27 @@ read_sign_end_block( unsigned char **ptr, unsigned char *end )
 
 #ifdef HAVE_LIBGCRYPT
 
-  length2 = length;
-  error = gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, *ptr, &length2 );
+  error = gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, *ptr, length, &length2 );
   if( error ) {
     fprintf( stderr, "%s: error reading r: %s\n", progname,
 	     gcry_strerror( error ) );
     return 1;
   }
-  
-  *ptr += length2; length2 = length = length - length2;
+  *ptr += length2; length -= length2;
 
-  error = gcry_mpi_aprint( GCRYMPI_FMT_HEX, (void**)&buffer, &length2, a );
+  error = gcry_mpi_aprint( GCRYMPI_FMT_HEX, &buffer, NULL, a );
   printf( "  r: %s\n", buffer );
   free( buffer ); gcry_mpi_release( a );
 
-  error = gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, *ptr, &length2 );
+  error = gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, *ptr, length, &length2 );
   if( error ) {
     fprintf( stderr, "%s: error reading s: %s\n", progname,
 	     gcry_strerror( error ) );
     return 1;
   }
-  
-  *ptr += length2; length = length - length2;
+  *ptr += length2; length -= length2;
 
-  error = gcry_mpi_aprint( GCRYMPI_FMT_HEX, (void**)&buffer, &length2, a );
+  error = gcry_mpi_aprint( GCRYMPI_FMT_HEX, &buffer, NULL, a );
   printf( "  s: %s\n", buffer );
   free( buffer ); gcry_mpi_release( a );
 
