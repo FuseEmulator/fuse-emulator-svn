@@ -29,5 +29,22 @@ CVS tags for libspectrum
 | libspectrum_0_2_0pre1
 | libspectrum_0_2_0pre1-merge-1	merge from
 |				libspectrum_0_1_0pre1-crypto-branch-2
+| libspectrum_0_2_0
+|
++-\
+| | libspectrum_0_2_0_1
+| |
+| | libspectrum_0_2_0-bugfix-branch
+|
+| libspectrum_0_2_1-trunk
+|
++-\
+| | libspectrum_0_2_1pre1
+| | libspectrum_0_2_1pre2
+| | libspectrum_0_2_1		Merged to HEAD at libspectrum_0_2_1-merge-1
+| |
+| | libspectrum_0_2_1-branch
+|
+| libspectrum_0_2_1-merge-1
 |
 HEAD

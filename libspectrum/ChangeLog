@@ -1,3 +1,34 @@
+2004-02-11  Philip Kendall  <pak21-spectrum@srcf.ucam.org>
+
+	* libspectrum 0.2.1 released.
+
+	* Transparent reading of bzipped and gzipped files (Philip
+	  Kendall).
+
+	* Add support for writing emulator custom data to .rzx and .szx
+	  files (Philip Kendall).
+
+	* Update to the more recent version of gcrypt; version 1.1.42 or
+	  later is now required (Philip Kendall).
+
+	* Link libspectrum against gcrypt, glib and zlib; this means that
+	  client applications no longer need to do this (Darren Salt).
+
+	* Support for 'the last instruction was an EI' in the snapshot
+	  code (Philip Kendall).
+
+	* Routines to check the versions of libspectrum and gcrypt in use
+	  (Philip Kendall).
+
+	* Write .rzx files with a version number of 0.12 if we're not
+	  signing the data; improves backward compatability (Philip
+	  Kendall).
+
+	* Fix a segfault when dealing with .slt files (Philip Kendall,
+	  with thanks to Alberto Garcia for reporting the bug).
+
+	* QNX6 compilation fixes (Mike Gorchak).
+
 2003-09-30  Philip Kendall  <pak21-spectrum@srcf.ucam.org>
 
 	* libspectrum 0.2.0.1 released.
