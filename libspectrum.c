@@ -33,8 +33,9 @@
 
 #include "internals.h"
 
-/* Set non-zero to give messages on errors from libspectrum routines */
-int libspectrum_show_errors = 0;
+/* The function to call on errors */
+libspectrum_error_function_t libspectrum_error_function =
+  libspectrum_default_error_function;
 
 /* Initialise a libspectrum_snap structure (constructor!) */
 int libspectrum_snap_initalise( libspectrum_snap *snap )
@@ -69,15 +70,24 @@ libspectrum_error libspectrum_print_error( const char *format, ... )
 {
   va_list ap;
 
-  if( ! libspectrum_show_errors ) return LIBSPECTRUM_ERROR_NONE;
+  /* If we don't have an error function, do nothing */
+  if( !libspectrum_error_function ) return LIBSPECTRUM_ERROR_NONE;
 
-  /* Initialise the varargs list */
+  /* Otherwise, call that error function */
   va_start( ap, format );
+  libspectrum_error_function( format, ap );
+  va_end( ap );
 
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+/* Default error action is just to print a message to stderr */
+libspectrum_error
+libspectrum_default_error_function( const char *format, va_list ap )
+{
    fprintf( stderr, "libspectrum error: " );
   vfprintf( stderr, format, ap );
-
-  va_end( ap );
+   fprintf( stderr, "\n" );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -101,7 +111,7 @@ const char* libspectrum_error_message( libspectrum_error error )
     return "internal logic error";
 
   default:
-    libspectrum_print_error( "libspectrum_error_message: unknown error %d\n",
+    libspectrum_print_error( "libspectrum_error_message: unknown error %d",
 			     error );
     return "unknown error";
   }
@@ -204,7 +214,7 @@ libspectrum_split_to_48k_pages( libspectrum_snap *snap,
   /* If any of the three pages are already occupied, barf */
   if( snap->pages[5] || snap->pages[2] || snap->pages[0] ) {
     libspectrum_print_error(
-      "libspectrum_split_to_48k_pages: RAM page already in use\n"
+      "libspectrum_split_to_48k_pages: RAM page already in use"
     );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
@@ -213,7 +223,7 @@ libspectrum_split_to_48k_pages( libspectrum_snap *snap,
   snap->pages[5] =
     (libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
   if( snap->pages[5] == NULL ) {
-    libspectrum_print_error("libspectrum_split_to_48k_pages: out of memory\n");
+    libspectrum_print_error( "libspectrum_split_to_48k_pages: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
@@ -221,7 +231,7 @@ libspectrum_split_to_48k_pages( libspectrum_snap *snap,
     (libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
   if( snap->pages[2] == NULL ) {
     free( snap->pages[5] ); snap->pages[5] = NULL;
-    libspectrum_print_error("libspectrum_split_to_48k_pages: out of memory\n");
+    libspectrum_print_error( "libspectrum_split_to_48k_pages: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
     
@@ -230,7 +240,7 @@ libspectrum_split_to_48k_pages( libspectrum_snap *snap,
   if( snap->pages[0] == NULL ) {
     free( snap->pages[5] ); snap->pages[5] = NULL;
     free( snap->pages[2] ); snap->pages[2] = NULL;
-    libspectrum_print_error("libspectrum_split_to_48k_pages: out of memory\n");
+    libspectrum_print_error( "libspectrum_split_to_48k_pages: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 

@@ -80,7 +80,7 @@ static int libspectrum_sna_identify( size_t buffer_length,
     *type = LIBSPECTRUM_MACHINE_128;
     break;
   default:
-    libspectrum_print_error( "libspectrum_sna_identify: unknown length\n" );
+    libspectrum_print_error( "libspectrum_sna_identify: unknown length" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
@@ -93,7 +93,7 @@ libspectrum_sna_read_header( const libspectrum_byte *buffer,
 {
   if( buffer_length < LIBSPECTRUM_SNA_HEADER_LENGTH ) {
     libspectrum_print_error(
-      "libspectrum_sna_read_header: not enough data in buffer\n"
+      "libspectrum_sna_read_header: not enough data in buffer"
     );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
@@ -135,7 +135,7 @@ libspectrum_sna_read_data( const libspectrum_byte *buffer,
 
   if( buffer_length < 0xc000 ) {
     libspectrum_print_error(
-      "libspectrum_sna_read_data: not enough data in buffer\n"
+      "libspectrum_sna_read_data: not enough data in buffer"
     );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
@@ -163,7 +163,7 @@ libspectrum_sna_read_data( const libspectrum_byte *buffer,
 	(libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
       if( snap->pages[i] == NULL ) {
 	for( j=0; j<i; j++ ) { free( snap->pages[i] ); snap->pages[i] = NULL; }
-	libspectrum_print_error("libspectrum_sna_read_data: out of memory\n");
+	libspectrum_print_error("libspectrum_sna_read_data: out of memory");
 	return LIBSPECTRUM_ERROR_MEMORY;
       }
     }
@@ -180,7 +180,7 @@ libspectrum_sna_read_data( const libspectrum_byte *buffer,
     if( page == 5 || page == 2 ) {
       if( memcmp( snap->pages[page], &buffer[0x8000], 0x4000 ) ) {
 	libspectrum_print_error(
-	  "libspectrum_sna_read_data: duplicated page not identical\n"
+	  "libspectrum_sna_read_data: duplicated page not identical"
 	);
 	return LIBSPECTRUM_ERROR_CORRUPT;
       }
@@ -196,7 +196,7 @@ libspectrum_sna_read_data( const libspectrum_byte *buffer,
     break;
 
   default:
-    libspectrum_print_error( "libspectrum_sna_read_data: unknown machine\n" );
+    libspectrum_print_error( "libspectrum_sna_read_data: unknown machine" );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
   
@@ -209,7 +209,7 @@ libspectrum_sna_read_128_header( const libspectrum_byte *buffer,
 {
   if( buffer_length < 4 ) {
     libspectrum_print_error(
-      "libspectrum_sna_read_128_header: not enough data in buffer\n"
+      "libspectrum_sna_read_128_header: not enough data in buffer"
     );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
@@ -235,7 +235,7 @@ libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
     /* Check we've still got some data to read */
     if( buffer_length < 0x4000 ) {
       libspectrum_print_error(
-        "libspectrum_sna_read_128_data: not enough data in buffer\n"
+        "libspectrum_sna_read_128_data: not enough data in buffer"
       );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }

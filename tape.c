@@ -235,7 +235,7 @@ libspectrum_tape_init_block( libspectrum_tape_block *block )
 
   default:
     libspectrum_print_error(
-      "libspectrum_tape_init_block: unknown block type 0x%02x\n",
+      "libspectrum_tape_init_block: unknown block type 0x%02x",
       block->type
     );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -399,7 +399,7 @@ libspectrum_tape_get_next_edge( libspectrum_tape *tape,
   default:
     *tstates = 0;
     libspectrum_print_error(
-      "libspectrum_tape_get_next_edge: unknown block type 0x%02x\n",
+      "libspectrum_tape_get_next_edge: unknown block type 0x%02x",
       block->type
     );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -485,7 +485,7 @@ rom_edge( libspectrum_tape_rom_block *block, libspectrum_dword *tstates,
     break;
 
   default:
-    libspectrum_print_error( "rom_edge: unknown state %d\n", block->state );
+    libspectrum_print_error( "rom_edge: unknown state %d", block->state );
     return LIBSPECTRUM_ERROR_LOGIC;
 
   }
@@ -578,7 +578,7 @@ turbo_edge( libspectrum_tape_turbo_block *block, libspectrum_dword *tstates,
     break;
 
   default:
-    libspectrum_print_error( "turbo_edge: unknown state %d\n", block->state );
+    libspectrum_print_error( "turbo_edge: unknown state %d", block->state );
     return LIBSPECTRUM_ERROR_LOGIC;
 
   }
@@ -679,7 +679,7 @@ pure_data_edge( libspectrum_tape_pure_data_block *block,
     break;
 
   default:
-    libspectrum_print_error( "pure_data_edge: unknown state %d\n",
+    libspectrum_print_error( "pure_data_edge: unknown state %d",
 			     block->state );
     return LIBSPECTRUM_ERROR_LOGIC;
 
@@ -747,7 +747,7 @@ raw_data_edge( libspectrum_tape_raw_data_block *block,
     break;
 
   default:
-    libspectrum_print_error( "raw_edge: unknown state %d\n", block->state );
+    libspectrum_print_error( "raw_edge: unknown state %d", block->state );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -873,7 +873,7 @@ libspectrum_tape_block_description( libspectrum_tape_block *block,
 
   default:
     libspectrum_print_error(
-      "libspectrum_tape_block_description: unknown block type 0x%02x\n",
+      "libspectrum_tape_block_description: unknown block type 0x%02x",
       block->type
     );
     return LIBSPECTRUM_ERROR_LOGIC;
