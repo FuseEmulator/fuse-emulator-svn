@@ -206,9 +206,9 @@ sdldisplay_load_gfx_mode( void )
 
   /* Distinguish 555 and 565 mode */
   if (gc->format->Rmask == 0x7C00)
-    Init_2xSaI(555);
+    scaler_select_bitformat( 555 );
   else
-    Init_2xSaI(565);
+    scaler_select_bitformat( 565 );
 
   /* Create the surface used for the graphics in 16 bit before scaling */
 

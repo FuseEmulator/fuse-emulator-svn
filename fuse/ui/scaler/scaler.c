@@ -189,35 +189,52 @@ typedef DWORD scaler_data_type;
 #endif				/* #if SCALER_DATA_SIZE == 2 or 4 */
 
 /********** 2XSAI Filter *****************/
-static DWORD colorMask = 0xF7DEF7DE;
-static DWORD lowPixelMask = 0x08210821;
-static DWORD qcolorMask = 0xE79CE79C;
-static DWORD qlowpixelMask = 0x18631863;
-static DWORD redblueMask = 0xF81F;
-static DWORD greenMask = 0x7E0;
+static DWORD colorMask;
+static DWORD lowPixelMask;
+static DWORD qcolorMask;
+static DWORD qlowpixelMask;
+static DWORD redblueMask;
+static DWORD greenMask;
 
 int 
-Init_2xSaI(DWORD BitFormat)
+scaler_select_bitformat( DWORD BitFormat )
 {
-  if (BitFormat == 565) {
-    colorMask = 0xF7DEF7DE;
-    lowPixelMask = 0x08210821;
-    qcolorMask = 0xE79CE79C;
-    qlowpixelMask = 0x18631863;
+  switch( BitFormat ) {
+
+  case 565:
+    colorMask = 0x0000F7DE;
+    lowPixelMask = 0x00000821;
+    qcolorMask = 0x0000E79C;
+    qlowpixelMask = 0x00001863;
     redblueMask = 0xF81F;
     greenMask = 0x7E0;
-  } else if (BitFormat == 555) {
-    colorMask = 0x7BDE7BDE;
-    lowPixelMask = 0x04210421;
-    qcolorMask = 0x739C739C;
-    qlowpixelMask = 0x0C630C63;
+    break;
+
+  case 555:
+    colorMask = 0x00007BDE;
+    lowPixelMask = 0x00000421;
+    qcolorMask = 0x0000739C;
+    qlowpixelMask = 0x00000C63;
     redblueMask = 0x7C1F;
     greenMask = 0x3E0;
-  } else {
-    return 0;
+    break;
+
+  case 888:
+    colorMask = 0xFEFEFE00;
+    lowPixelMask = 0x01010100;
+    qcolorMask = 0xFCFCFC00;
+    qlowpixelMask = 0x03030300;
+    redblueMask = 0xFF00FF00;
+    greenMask = 0x00FF0000;
+    break;
+
+  default:
+    ui_error( UI_ERROR_ERROR, "unknown bitformat %d", BitFormat );
+    return 1;
+
   }
 
-  return 1;
+  return 0;
 }
 
 static inline int 
@@ -1018,17 +1035,17 @@ TV2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
             int width, int height)
 {
   int i, j;
-  unsigned int nextlineSrc = srcPitch / sizeof(short);
-  short *p = (short *)srcPtr;
+  unsigned int nextlineSrc = srcPitch / sizeof( scaler_data_type );
+  scaler_data_type *p = (scaler_data_type*)srcPtr;
 
-  unsigned int nextlineDst = dstPitch / sizeof(short);
-  short *q = (short *)dstPtr;
+  unsigned int nextlineDst = dstPitch / sizeof( scaler_data_type );
+  scaler_data_type *q = (scaler_data_type*)dstPtr;
 
   while(height--) {
     for (i = 0, j = 0; i < width; ++i, j += 2) {
-      unsigned short p1 = *(p + i);
-      unsigned short p2 = *(p + i + nextlineSrc);
-      unsigned short pi = (unsigned short)((INTERPOLATE(p1, p2) & colorMask) >> 1);
+      scaler_data_type p1 = *(p + i);
+      scaler_data_type p2 = *(p + i + nextlineSrc);
+      scaler_data_type pi = ((INTERPOLATE(p1, p2) & colorMask) >> 1);
 
       *(q + j) = p1;
       *(q + j + 1) = p1;

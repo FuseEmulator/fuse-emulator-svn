@@ -126,7 +126,9 @@ gtkdisplay_init( void )
 static int
 init_colours( void )
 {
-  size_t i;
+  size_t i; int error;
+
+  error = scaler_select_bitformat( 888 ); if( error ) return error;
 
   for( i = 0; i < 16; i++ ) {
 
@@ -207,6 +209,7 @@ register_scalers( void )
     switch( image_scale ) {
     case 1:
       scaler_register( GFX_DOUBLESIZE );
+      scaler_register( GFX_TV2X );
       scaler_select_scaler( GFX_DOUBLESIZE );
       return 0;
     case 2:
@@ -232,7 +235,29 @@ void
 uidisplay_area( int x, int y, int w, int h )
 {
   float scale = (float)gtkdisplay_current_size / image_scale;
-  int scaled_x = scale * x, scaled_y = scale * y, xx, yy;
+  int scaled_x, scaled_y, xx, yy;
+
+  /* Extend the dirty region by 1 pixel for scalers
+     that "smear" the screen, e.g. 2xSAI */
+  if( scaler_flags & SCALER_EXPAND_1_PIXEL ) {
+    x--;
+    y--;
+    w += 2;   
+    h += 2;
+  } else if ( scaler_flags & SCALER_EXPAND_2_Y_PIXELS ) {
+    y -= 2;
+    h += 4;
+  }
+
+  /* clip */
+  if ( x < 0 ) { w += x; x=0; }
+  if ( y < 0 ) { h += y; y=0; }
+  if ( w > image_scale * DISPLAY_ASPECT_WIDTH - x )
+    w = image_scale * DISPLAY_ASPECT_WIDTH - x;
+  if ( h > image_scale * DISPLAY_SCREEN_HEIGHT - y )
+    h = image_scale * DISPLAY_SCREEN_HEIGHT - y;
+
+  scaled_x = scale * x; scaled_y = scale * y;
 
   /* Create the RGB image */
   for( xx = x; xx < x + w; xx++ )
