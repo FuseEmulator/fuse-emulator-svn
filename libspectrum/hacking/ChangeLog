@@ -241,3 +241,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040621 z80.c: remove literal machine constants.
 20040621 z80.c: allow the extensions to the .z80 machine type be valid
 	 for both v2 and v3 files.
+20040626 libspectrum.h.in: put libspectrum_tape_block_description in the
+	 correct place.
