@@ -24,7 +24,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-man_MANS = fuse-utils.1 \
+man_MANS = createhdf.1 \
+	   fuse-utils.1 \
 	   listbasic.1 \
 	   rzxcheck.1 \
 	   rzxdump.1 \

@@ -97,3 +97,5 @@
 20040616 .cvsignore,createhdf.c,Makefile.am: add createhdf utility for
 	 creating empty .hdf files.
 20040620 README,autogen.sh: add script to do the autotools invocation.
+20040626 man/{Makefile.am,createhdf.1,fuse-utils.1}: add createhdf
+	 manpage.
