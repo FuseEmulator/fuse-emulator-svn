@@ -85,3 +85,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 tape_set.pl and tape_block.h.
 20030918 rzx.c: if count is zero in libspectrum_rzx_store_frame, don't
 	 try to allocate zero bytes.
+20030919 configure.in: link against glib, gcrypt and zlib if available
+	 (Darren).
