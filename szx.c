@@ -203,7 +203,19 @@ read_z80r_chunk( libspectrum_snap *snap, libspectrum_word version,
 
   libspectrum_snap_set_tstates( snap, libspectrum_read_dword( buffer ) );
 
-  *buffer += 4;			/* Skip some bits */
+  if( version >= 0x0101 ) {
+    (*buffer)++;		/* Skip dwHoldIntReqCycles */
+    
+    /* Flags; ignore the 'last instruction EI' flag for now */
+    libspectrum_snap_set_halted( snap, **buffer & 0x02 ? 1 : 0 );
+    (*buffer)++;
+
+    (*buffer)++;		/* Skip the hidden register */
+    (*buffer)++;		/* Skip the reserved byte */
+
+  } else {
+    *buffer += 4;		/* Skip the reserved dword */
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 }
