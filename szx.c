@@ -58,6 +58,25 @@
 
 */
 
+/* The machine numbers used in the .szx format */
+
+typedef enum szx_machine_type {
+
+  SZX_MACHINE_16 = 0,
+  SZX_MACHINE_48,
+  SZX_MACHINE_128,
+  SZX_MACHINE_PLUS2,
+  SZX_MACHINE_PLUS2A,
+  SZX_MACHINE_PLUS3,
+  SZX_MACHINE_PLUS3E,
+  SZX_MACHINE_PENTAGON,
+  SZX_MACHINE_TC2048,
+  SZX_MACHINE_TC2068,
+  SZX_MACHINE_SCORPION,
+  SZX_MACHINE_SE,
+
+} szx_machine_type;
+
 static const char *signature = "ZXST";
 static const size_t signature_length = 4;
 
@@ -470,49 +489,49 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 
   switch( *buffer ) {
 
-  case 0:
+  case SZX_MACHINE_16:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_16 );
     break;
 
-  case 1:
+  case SZX_MACHINE_48:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 );
     break;
 
-  case 2:
+  case SZX_MACHINE_128:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 );
     break;
 
-  case 3:
+  case SZX_MACHINE_PLUS2:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS2 );
     break;
 
-  case 4:
+  case SZX_MACHINE_PLUS2A:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS2A );
     break;
 
-  case 5:
+  case SZX_MACHINE_PLUS3:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS3 );
     break;
 
   /* case 6: +3e: not supported yet */
 
-  case 7:
+  case SZX_MACHINE_PENTAGON:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PENT );
     break;
 
-  case 8:
+  case SZX_MACHINE_TC2048:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2048 );
     break;
 
-  case 9:
+  case SZX_MACHINE_TC2068:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2068 );
     break;
 
-  case 10:
+  case SZX_MACHINE_SCORPION:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SCORP );
     break;
 
-  case 11:
+  case SZX_MACHINE_SE:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SE );
     break;
 
@@ -620,24 +639,24 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   switch( libspectrum_snap_machine( snap ) ) {
 
-  case LIBSPECTRUM_MACHINE_16:     **ptr = 0; break;
-  case LIBSPECTRUM_MACHINE_48:     **ptr = 1; break;
-  case LIBSPECTRUM_MACHINE_128:    **ptr = 2; break;
-  case LIBSPECTRUM_MACHINE_PLUS2:  **ptr = 3; break;
-  case LIBSPECTRUM_MACHINE_PLUS2A: **ptr = 4; break;
-  case LIBSPECTRUM_MACHINE_PLUS3:  **ptr = 5; break;
-  case LIBSPECTRUM_MACHINE_PLUS3E: **ptr = 6; break;
-  case LIBSPECTRUM_MACHINE_PENT:   **ptr = 7; break;
-  case LIBSPECTRUM_MACHINE_TC2048: **ptr = 8; break;
+  case LIBSPECTRUM_MACHINE_16:     **ptr = SZX_MACHINE_16; break;
+  case LIBSPECTRUM_MACHINE_48:     **ptr = SZX_MACHINE_48; break;
+  case LIBSPECTRUM_MACHINE_128:    **ptr = SZX_MACHINE_128; break;
+  case LIBSPECTRUM_MACHINE_PLUS2:  **ptr = SZX_MACHINE_PLUS2; break;
+  case LIBSPECTRUM_MACHINE_PLUS2A: **ptr = SZX_MACHINE_PLUS2A; break;
+  case LIBSPECTRUM_MACHINE_PLUS3:  **ptr = SZX_MACHINE_PLUS3; break;
+  case LIBSPECTRUM_MACHINE_PLUS3E: **ptr = SZX_MACHINE_PLUS3E; break;
+  case LIBSPECTRUM_MACHINE_PENT:   **ptr = SZX_MACHINE_PENTAGON; break;
+  case LIBSPECTRUM_MACHINE_TC2048: **ptr = SZX_MACHINE_TC2048; break;
   case LIBSPECTRUM_MACHINE_TC2068:
     /* As we don't currently save dock contents... */
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
-    **ptr = 9; break;
-  case LIBSPECTRUM_MACHINE_SCORP:  **ptr = 10; break;
+    **ptr = SZX_MACHINE_TC2068; break;
+  case LIBSPECTRUM_MACHINE_SCORP:  **ptr = SZX_MACHINE_SCORPION; break;
   case LIBSPECTRUM_MACHINE_SE:
     /* As we don't currently save dock contents... */
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
-    **ptr = 11; break;
+    **ptr = SZX_MACHINE_SE; break;
 
   case LIBSPECTRUM_MACHINE_UNKNOWN:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
