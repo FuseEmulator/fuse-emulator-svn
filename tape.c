@@ -878,6 +878,23 @@ libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
 }
 
 libspectrum_error
+libspectrum_tape_append_block( libspectrum_tape *tape,
+			       libspectrum_tape_block *block )
+{
+  tape->blocks = g_slist_append( tape->blocks, (gpointer)block );
+
+  /* If we previously didn't have a tape loaded ( implied by
+     tape->current_block == NULL ), set up so that we point to the
+     start of the tape */
+  if( !tape->current_block ) {
+    tape->current_block = tape->blocks;
+    libspectrum_tape_init_block((libspectrum_tape_block*)tape->blocks->data);
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
 libspectrum_tape_block_description( char *buffer, size_t length,
 	                            libspectrum_tape_block *block )
 {
