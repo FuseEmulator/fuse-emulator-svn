@@ -32,7 +32,6 @@ libspectrum_la_SOURCES = bzip2.c \
 			 dck.c \
 			 ide.c \
 			 libspectrum.c \
-			 myglib.c \
 			 plusd.c \
 			 rzx.c \
 			 sna.c \
@@ -55,6 +54,8 @@ libspectrum_la_SOURCES = bzip2.c \
 			 zxs.c
 
 libspectrum_la_LDFLAGS = -version-info 3:0:1
+
+libspectrum_la_LIBADD = myglib/libmyglib.a
 
 BUILT_SOURCES = libspectrum.h snap_accessors.c tape_accessors.c tape_set.c
 
@@ -90,4 +91,5 @@ EXTRA_DIST = accessor.pl \
 	     tape_set.pl \
 	     tape_block.h
 
-SUBDIRS = doc
+SUBDIRS = doc \
+	  myglib
