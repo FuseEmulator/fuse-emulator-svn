@@ -57,6 +57,7 @@ void scaler_register( scaler_type scaler );
 int scaler_is_supported( scaler_type scaler );
 const char *scaler_name( scaler_type scaler );
 ScalerProc *scaler_get_proc( scaler_type scaler );
+scaler_flags_t scaler_get_flags( scaler_type scaler );
 
 extern int Init_2xSaI(DWORD BitFormat);
 
