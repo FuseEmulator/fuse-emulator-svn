@@ -195,6 +195,77 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   return capabilities;
 }
 
+/* Given a buffer and optionally a filename, make a best guess as to
+   what sort of file this is */
+int
+libspectrum_identify_file( int *type, const char *filename,
+			   const unsigned char *buffer, size_t length )
+{
+  struct type {
+
+    int type;
+
+    char *extension;
+
+    char *signature; size_t offset, length; int sig_score;
+  };
+
+  struct type *ptr,
+    types[] = {
+      
+      { LIBSPECTRUM_ID_RECORDING_RZX, "rzx", "RZX!",     0, 4, 3 },
+
+      { LIBSPECTRUM_ID_SNAPSHOT_SNA,  "sna", NULL,       0, 0, 0 },
+      { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "z80", "\0\0",     6, 2, 1 },
+
+      { LIBSPECTRUM_ID_TAPE_TAP,      "tap", "\x13\0\0", 0, 3, 1 },
+      { LIBSPECTRUM_ID_TAPE_TZX,      "tzx", "ZXTape!",  0, 7, 3 },
+
+      { -1, NULL, NULL, 0, 0, 0 }, /* End marker */
+
+    };
+
+  const char *extension = NULL;
+  int score, best_score, best_guess, duplicate_best;
+
+  /* Get the filename extension, if it exists */
+  if( filename ) {
+    extension = strrchr( filename, '.' ); if( extension ) extension++;
+  }
+
+  best_guess = LIBSPECTRUM_ID_UNKNOWN; best_score = 0; duplicate_best = 0;
+
+  /* Compare against known extensions and signatures */
+  for( ptr = types; ptr->type != -1; ptr++ ) {
+
+    score = 0;
+
+    if( extension && ptr->extension &&
+	!strcasecmp( extension, ptr->extension ) )
+      score += 2;
+
+    if( ptr->signature && length >= ptr->offset + ptr->length &&
+	!memcmp( &buffer[ ptr->offset ], ptr->signature, ptr->length ) )
+      score += ptr->sig_score;
+
+    if( score > best_score ) {
+      best_guess = ptr->type; best_score = score; duplicate_best = 0;
+    } else if( score == best_score ) {
+      duplicate_best = 1;
+    }
+  }
+
+  /* If two things were equally good, we can't identify this. Otherwise,
+     return our best guess */
+  if( duplicate_best ) {
+    *type = LIBSPECTRUM_ID_UNKNOWN;
+  } else {
+    *type = best_guess;
+  }
+
+  return 0;
+}
+
 /* Given a 48K memory dump `data', place it into the
    appropriate bits of `snap' for a 48K machine */
 int

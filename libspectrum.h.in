@@ -47,6 +47,8 @@ LIBSPECTRUM_GLIB_REPLACEMENT
  * General libspectrum routines
  */
 
+/* Error handling */
+
 /* The various errors which can occur */
 typedef enum libspectrum_error {
 
@@ -64,8 +66,6 @@ typedef enum libspectrum_error {
 
 } libspectrum_error;
 
-/* Error handling */
-
 typedef libspectrum_error
 (*libspectrum_error_function_t)( libspectrum_error error,
 				 const char *format, va_list ap );
@@ -76,9 +76,32 @@ libspectrum_error
 libspectrum_default_error_function( libspectrum_error error,
 				    const char *format, va_list ap );
 
-/*
- * Snap handling routines
- */
+/* Attempt to identify a given file */
+
+/* Various types of file we might manage to identify */
+typedef enum libspectrum_id_t {
+
+  /* Unidentified file */
+  LIBSPECTRUM_ID_UNKNOWN = 0,
+  
+  /* Input recording files */
+  LIBSPECTRUM_ID_RECORDING_RZX,
+
+  /* Snapshot files */
+  LIBSPECTRUM_ID_SNAPSHOT_SNA,
+  LIBSPECTRUM_ID_SNAPSHOT_Z80,
+
+  /* Tape files */
+  LIBSPECTRUM_ID_TAPE_TAP,
+  LIBSPECTRUM_ID_TAPE_TZX,
+
+} libspectrum_id_t;
+
+int
+libspectrum_identify_file( int *type, const char *filename,
+                           const unsigned char *buffer, size_t length );
+
+/* Different Spectrum variants and their capabilities */
 
 /* The machine types we can handle */
 typedef enum libspectrum_machine {
@@ -114,6 +137,10 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO;
 
 /* Get the capabilities of a machine */
 int libspectrum_machine_capabilities( libspectrum_machine type );
+
+/*
+ * Snap handling routines
+ */
 
 typedef enum libspectrum_slt_type {
 
