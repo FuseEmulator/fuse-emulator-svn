@@ -65,6 +65,7 @@ main( int argc, char **argv )
 {
   unsigned char *buffer; size_t length;
   unsigned char *snap_buffer; size_t snap_length;
+  int error;
 
   libspectrum_rzx *rzx;
   libspectrum_snap *snap = NULL;
@@ -74,7 +75,7 @@ main( int argc, char **argv )
 
   progname = argv[0];
 
-  if( libspectrum_init() ) return 1;
+  error = init_libspectrum(); if( error ) return error;
 
   init_options( &options );
   if( parse_options( argc, argv, &options ) ) return 1;

@@ -29,6 +29,7 @@
 
 #include <libspectrum.h>
 
+int init_libspectrum( void );
 int get_creator( libspectrum_creator **creator, const char *program );
 int mmap_file( const char *filename, unsigned char **buffer, size_t *length );
 

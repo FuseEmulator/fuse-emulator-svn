@@ -282,6 +282,7 @@ main( int argc, char **argv )
 {
   int ret = 0;
   int arg = 0;
+  int error;
 
   progname = argv[0];
 
@@ -289,6 +290,8 @@ main( int argc, char **argv )
     fprintf( stderr, "%s: usage: %s <tzx files>...\n", progname, progname );
     return 1;
   }
+
+  error = init_libspectrum(); if( error ) return error;
 
   while( ++arg < argc )
     ret |= process_tzx( argv[arg] );

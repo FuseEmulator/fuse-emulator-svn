@@ -49,3 +49,6 @@
 20031007 tapeconv.c: remove double-free bug if tape reading fails.
 20031009 utils.c: add information from uname() into creator custom data.
 20031010 utils.c: on Solaris, uname() returns 1 to indicate success.
+20031013 Put libspectrum version into creator information, and ensure that
+	 libspectrum_init is called by all programs which use libspectrum
+	 functions.
