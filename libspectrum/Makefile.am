@@ -41,7 +41,8 @@ libspectrum_la_SOURCES = dck.c \
 			 tzx_write.c \
 			 warajevo_read.c \
 			 z80.c \
-			 zlib.c
+			 zlib.c \
+			 zxs.c
 
 libspectrum_la_LDFLAGS = -version-info 1:0:1
 

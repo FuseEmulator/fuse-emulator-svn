@@ -94,6 +94,7 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_CARTRIDGE_DCK,		/* .dck Timex cartridge image */
   LIBSPECTRUM_ID_TAPE_WARAJEVO,		/* Warajevo-style .tap tape image */ 
   LIBSPECTRUM_ID_SNAPSHOT_PLUSD,	/* +D snapshot */
+  LIBSPECTRUM_ID_SNAPSHOT_ZXS,		/* .zxs snapshot (zx32) */
 
 } libspectrum_id_t;
 
@@ -239,6 +240,12 @@ libspectrum_z80_read( libspectrum_snap *snap,
 libspectrum_error
 libspectrum_z80_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_snap *snap );
+
+/* .zxs snapshot routines */
+
+libspectrum_error
+libspectrum_zxs_read( libspectrum_snap *snap,
+	              const libspectrum_byte *buffer, size_t buffer_length );
 
 /*
  * Tape handling routines

@@ -194,6 +194,7 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "z80", 3, "\0\0",		    6, 2, 1 },
       /* .slt files also dealt with by the .z80 loading code */
       { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "slt", 3, "\0\0",		    6, 2, 1 },
+      { LIBSPECTRUM_ID_SNAPSHOT_ZXS,  "zxs", 3, "SNAP",		    8, 4, 4 },
 
       { LIBSPECTRUM_ID_CARTRIDGE_DCK, "dck", 3, NULL,		    0, 0, 0 },
 
@@ -275,6 +276,7 @@ libspectrum_identify_class( libspectrum_class_t *class, libspectrum_id_t type )
   case LIBSPECTRUM_ID_SNAPSHOT_PLUSD:
   case LIBSPECTRUM_ID_SNAPSHOT_SNA:
   case LIBSPECTRUM_ID_SNAPSHOT_Z80:
+  case LIBSPECTRUM_ID_SNAPSHOT_ZXS:
     *class = LIBSPECTRUM_CLASS_SNAPSHOT; return 0;
 
   case LIBSPECTRUM_ID_TAPE_TAP:
@@ -330,6 +332,19 @@ libspectrum_make_room( libspectrum_byte **dest, size_t requested,
 
   return 0;
 
+}
+
+/* Read an LSB word from 'buffer' */
+libspectrum_word
+libspectrum_read_word( const libspectrum_byte **buffer )
+{
+  libspectrum_word value;
+
+  value = (*buffer)[0] + (*buffer)[1] * 0x100;
+
+  (*buffer) += 2;
+
+  return value;
 }
 
 /* Read an LSB dword from buffer */

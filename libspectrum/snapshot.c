@@ -88,6 +88,9 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
   case LIBSPECTRUM_ID_SNAPSHOT_Z80:
     return libspectrum_z80_read( snap, buffer, length );
 
+  case LIBSPECTRUM_ID_SNAPSHOT_ZXS:
+    return libspectrum_zxs_read( snap, buffer, length );
+
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "libspectrum_snap_read: not a snapshot file" );
