@@ -163,13 +163,13 @@ read_snap_memory( libspectrum_word address, void *data )
     exit( 1 );
 
   case 1:
-    return snap->pages[5][ address & 0x3fff ];
+    return libspectrum_snap_pages( snap, 5 )[ address & 0x3fff ];
 
   case 2:
-    return snap->pages[2][ address & 0x3fff ];
+    return libspectrum_snap_pages( snap, 2 )[ address & 0x3fff ];
 
   case 3:
-    return snap->pages[0][ address & 0x3fff ];
+    return libspectrum_snap_pages( snap, 0 )[ address & 0x3fff ];
 
   default: /* Should never happen */
     fprintf( stderr, "%s: attempt to read from address %x\n", progname,
