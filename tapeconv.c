@@ -36,23 +36,20 @@
 
 #include "utils.h"
 
-static int read_tape( char *filename, libspectrum_tape **tape );
+static int read_tape( char *filename, libspectrum_id_t type,
+		      libspectrum_tape **tape );
 
 char *progname;
 
 int
 main( int argc, char **argv )
 {
+  int c;
+  char *input_type_string = NULL; libspectrum_id_t input_type;
   libspectrum_byte *buffer; size_t length;
-
   libspectrum_tape *tzx;
 
   progname = argv[0];
-
-  if( argc < 2 ) {
-    fprintf( stderr, "%s: no .tzx file given\n", progname );
-    return 1;
-  }
 
   /* Don't screw up people's terminals */
   if( isatty( STDOUT_FILENO ) ) {
@@ -61,7 +58,34 @@ main( int argc, char **argv )
     return 1;
   }
 
-  if( read_tape( argv[1], &tzx ) ) return 1;
+  while( ( c = getopt( argc, argv, "i:" ) ) != -1 ) {
+
+    switch( c ) {
+
+    case 'i': input_type_string = optarg; break;
+
+    }
+  }
+
+  input_type = LIBSPECTRUM_ID_UNKNOWN;
+  if( input_type_string ) {
+    if( !strcmp( input_type_string, "tap" ) ) {
+      input_type = LIBSPECTRUM_ID_TAPE_TAP;
+    } else if( !strcmp( input_type_string, "tzx" ) ) {
+      input_type = LIBSPECTRUM_ID_TAPE_TZX;
+    } else {
+      fprintf( stderr, "%s: unknown format `%s'\n", progname,
+	       input_type_string );
+      return 1;
+    }
+  }
+
+  if( argv[optind] == NULL ) {
+    fprintf( stderr, "%s: no tape file given\n", progname );
+    return 1;
+  }
+
+  if( read_tape( argv[optind], input_type, &tzx ) ) return 1;
 
   length = 0;
   if( libspectrum_tap_write( &buffer, &length, tzx ) ) {
@@ -80,16 +104,19 @@ main( int argc, char **argv )
 }
 
 static int
-read_tape( char *filename, libspectrum_tape **tape )
+read_tape( char *filename, libspectrum_id_t type, libspectrum_tape **tape )
 {
   libspectrum_byte *buffer; size_t length;
-  libspectrum_id_t type;
 
   if( mmap_file( filename, &buffer, &length ) ) return 1;
 
-  if( libspectrum_identify_file( &type, filename, buffer, length ) ) {
-    munmap( buffer, length );
-    return 1;
+  if( type == LIBSPECTRUM_ID_UNKNOWN ) {
+
+    if( libspectrum_identify_file( &type, filename, buffer, length ) ) {
+      munmap( buffer, length );
+      return 1;
+    }
+
   }
 
   if( libspectrum_tape_alloc( tape ) ) {
