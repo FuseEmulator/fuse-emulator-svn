@@ -107,6 +107,21 @@ const char* libspectrum_error_message( libspectrum_error error )
   }
 }
 
+/* Get the name of a specific machine type */
+const char *
+libspectrum_machine_name( libspectrum_machine type )
+{
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_48:     return "Spectrum 48K";
+  case LIBSPECTRUM_MACHINE_128:    return "Spectrum 128K";
+  case LIBSPECTRUM_MACHINE_PLUS2:  return "Spectrum +2";
+  case LIBSPECTRUM_MACHINE_PENT:   return "Pentagon";
+  case LIBSPECTRUM_MACHINE_PLUS2A: return "Spectrum +2A";
+  case LIBSPECTRUM_MACHINE_PLUS3:  return "Spectrum +3";
+  default:			   return "unknown";
+  }
+}
+
 /* Given a 48K memory dump `data', place it into the
    appropriate bits of `snap' for a 48K machine */
 int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
