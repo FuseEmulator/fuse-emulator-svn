@@ -76,3 +76,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20030908 ChangeLog: bring up to date.
 20030912 doc/libspectrum.txt: bring general and snapshot routine
          documentation up to date.
+20030912 doc/libspectrum.txt: document the RZX digital signature routines.
