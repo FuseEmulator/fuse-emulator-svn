@@ -315,6 +315,12 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
+  if( error != LIBSPECTRUM_ERROR_NONE ) {
+    if( compressed ) free( gzsnap );
+    free( *snap ); (*snap) = 0;
+    return error;
+  }
+
   /* Free the decompressed data (if we created it) */
   if( compressed ) free( gzsnap );
 
