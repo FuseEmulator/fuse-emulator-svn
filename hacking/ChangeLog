@@ -43,3 +43,4 @@
 20030912 ChangeLog: bring up to date for 0.6.1.
 20030912 man/rzxtool.1, man/scl2trd.1: small updates.
 20030912 README: update for 0.6.1.
+20030913 configure.in: bump version number to 0.6.1.
