@@ -57,6 +57,12 @@ extern "C" {
 
 #endif				/* #ifdef _WIN32 */
 
+#ifdef __GNUC__
+#define DEPRECATED __attribute__((deprecated))
+#else                           /* #ifdef __GNUC__ */
+#define DEPRECATED 
+#endif                          /* #ifdef __GNUC__ */
+
 LIBSPECTRUM_INCLUDE_GCRYPT
 
 /* Standard typedefs */
@@ -392,16 +398,19 @@ extern const int LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2;
 LIBSPECTRUM_SNAP_ACCESSORS
 
 /* DEPRECATED: use libspectrum_snap_read() instead */
+DEPRECATED
 libspectrum_error WIN32_DLL
 libspectrum_sna_read( libspectrum_snap *snap,
 	              const libspectrum_byte *buffer, size_t buffer_length );
 
 /* DEPRECATED: use libspectrum_snap_read() instead */
+DEPRECATED
 libspectrum_error WIN32_DLL
 libspectrum_z80_read( libspectrum_snap *snap,
 	              const libspectrum_byte *buffer, size_t buffer_length );
 
 /* DEPRECATED: use libspectrum_snap_write() instead */
+DEPRECATED
 libspectrum_error WIN32_DLL
 libspectrum_z80_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_snap *snap );
