@@ -276,3 +276,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040909 libspectrum.h.in,rzx.c: update libspectrum_rzx_write API for
 	 multiple IRB files.
 20040910 libspectrum.h.in,rzx.c: implement RZX rollback.
+20040918 libspectrum.h.in,rzx.c: allow RZX rollback to arbitrary points.

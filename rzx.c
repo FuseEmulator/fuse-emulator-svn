@@ -52,20 +52,6 @@ static snapshot_string_t snapshot_strings[] = {
   { 0 },	/* End marker */
 };
 
-/* The block types which can appear in RZX files */
-typedef enum rzx_block_id {
-
-  LIBSPECTRUM_RZX_CREATOR_BLOCK = 0x10,
-
-  LIBSPECTRUM_RZX_SIGN_START_BLOCK = 0x20,
-  LIBSPECTRUM_RZX_SIGN_END_BLOCK = 0x21,
-
-  LIBSPECTRUM_RZX_SNAPSHOT_BLOCK = 0x30,
-
-  LIBSPECTRUM_RZX_INPUT_BLOCK = 0x80,
-
-} rzx_block_id;
-
 typedef struct libspectrum_rzx_frame_t {
 
   size_t instructions;
@@ -103,7 +89,7 @@ typedef struct signature_block_t {
 
 typedef struct rzx_block_t {
 
-  rzx_block_id type;
+  libspectrum_rzx_block_id type;
 
   union {
 
@@ -188,7 +174,7 @@ const libspectrum_word libspectrum_rzx_repeat_frame = 0xffff;
  */
 
 static libspectrum_error
-block_alloc( rzx_block_t **block, rzx_block_id type )
+block_alloc( rzx_block_t **block, libspectrum_rzx_block_id type )
 {
   *block = malloc( sizeof( **block ) );
   if( !*block ) {
@@ -208,8 +194,6 @@ block_free( rzx_block_t *block )
   size_t i;
   input_block_t *input;
   signature_block_t *signature;
-
-  printf( "Deleting block type %d at %p\n", block->type, block );
 
   switch( block->type ) {
 
@@ -364,6 +348,45 @@ libspectrum_rzx_rollback( libspectrum_rzx *rzx, libspectrum_snap **snap )
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "no snapshot block found in recording" );
     return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  /* Delete all blocks after the snapshot */
+  g_slist_foreach( previous->next, block_free_wrapper, NULL );
+  previous->next = NULL;
+
+  block = previous->data;
+  *snap = block->types.snap;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_rzx_rollback_to( libspectrum_rzx *rzx, libspectrum_snap **snap,
+			     size_t which )
+{
+  GSList *previous = NULL, *list;
+  rzx_block_t *block;
+  size_t i;
+
+  if( rzx->current_input ) {
+    libspectrum_error error;
+    error = libspectrum_rzx_stop_input( rzx ); if( error ) return error;
+  }
+
+  /* Find the nth snapshot block in the file */
+  for( i = 0, list = rzx->blocks; i <= which; i++, list = list->next ) {
+    list =
+      g_slist_find_custom( list,
+			   GINT_TO_POINTER( LIBSPECTRUM_RZX_SNAPSHOT_BLOCK ),
+			   find_block );
+    if( !list ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			       "snapshot block %d not found in recording",
+			       which );
+      return LIBSPECTRUM_ERROR_CORRUPT;
+    }
+
+    previous = list;
   }
 
   /* Delete all blocks after the snapshot */
@@ -1650,4 +1673,38 @@ rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
   return LIBSPECTRUM_ERROR_NONE;
+}
+
+/*
+ * Iterator functions
+ */
+
+libspectrum_rzx_iterator
+libspectrum_rzx_iterator_begin( libspectrum_rzx *rzx )
+{
+  return rzx->blocks;
+}
+
+libspectrum_rzx_iterator
+libspectrum_rzx_iterator_next( libspectrum_rzx_iterator it )
+{
+  return it->next;
+}
+
+libspectrum_rzx_block_id
+libspectrum_rzx_iterator_get_type( libspectrum_rzx_iterator it )
+{
+  rzx_block_t *block = it->data;
+
+  return block->type;
+}
+
+size_t
+libspectrum_rzx_iterator_get_frames( libspectrum_rzx_iterator it )
+{
+  rzx_block_t *block = it->data;
+
+  if( block->type != LIBSPECTRUM_RZX_INPUT_BLOCK ) return -1;
+
+  return block->types.input.count;
 }
