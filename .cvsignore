@@ -1,4 +1,5 @@
 .deps
+.libs
 Makefile
 Makefile.in
 aclocal.m4
@@ -11,6 +12,7 @@ config.status
 configure
 createhdf
 fuse-utils.qpg
+libtool
 listbasic
 rzxcheck
 rzxdump
