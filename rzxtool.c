@@ -63,7 +63,7 @@ int
 main( int argc, char **argv )
 {
   unsigned char *buffer; size_t length;
-  unsigned char *snap_buffer = NULL; size_t snap_length;
+  unsigned char *snap_buffer; size_t snap_length;
 
   libspectrum_rzx *rzx;
   libspectrum_snap *snap = NULL;
@@ -164,27 +164,16 @@ main( int argc, char **argv )
 
     }      
     
-    /* Reserialise the snapshot */
-    if( snap ) {
-      snap_length = 0;
-      if( libspectrum_z80_write( &snap_buffer, &snap_length, snap ) ) {
-	libspectrum_snap_free( snap );
-	libspectrum_rzx_free( rzx );
-	return 1;
-      }
-    }
-
     /* Serialise the RZX file */
     length = 0;
-    if( libspectrum_rzx_write( &buffer, &length, rzx, snap_buffer,
-			       snap_length, "rzxtool", 0, 1,
-			       !options.uncompress ) ) {
-      free( snap_buffer );
+    if( libspectrum_rzx_write( &buffer, &length, rzx, snap,
+			       "rzxtool", 0, 1, !options.uncompress ) ) {
+      if( snap ) libspectrum_snap_free( snap );
       libspectrum_rzx_free( rzx );
       return 1;
     }
 
-    free( snap_buffer );
+    if( snap ) libspectrum_snap_free( snap );
 
     /* And (finally!) write it */
     if( fwrite( buffer, 1, length, stdout ) != length ) {
@@ -197,9 +186,7 @@ main( int argc, char **argv )
 
   }
 
-  /* Tidy up */
   libspectrum_rzx_free( rzx );
-  if( snap ) libspectrum_snap_free( snap );
 
   return 0;
 }
