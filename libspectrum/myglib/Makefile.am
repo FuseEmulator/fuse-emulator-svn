@@ -24,7 +24,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-noinst_LIBRARIES = libmyglib.a
+noinst_LTLIBRARIES = libmyglib.la
 
-libmyglib_a_SOURCES = ghash.c \
-		      gslist.c
+libmyglib_la_SOURCES = ghash.c \
+		       gslist.c
