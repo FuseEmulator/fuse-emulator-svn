@@ -72,7 +72,8 @@ libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
 
   error = gcry_pk_sign( &s_signature, hash, s_key );
   if( error ) {
-    libspectrum_print_error( "libspectrum_sign_data: error signing data: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "libspectrum_sign_data: error signing data: %s",
 			     gcry_strerror( error ) );
     gcry_sexp_release( s_key ); gcry_sexp_release( hash );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -108,7 +109,8 @@ get_hash( GcrySexp *hash, const libspectrum_byte *data, size_t data_length )
   digest_length = gcry_md_get_algo_dlen( HASH_ALGORITHM );
   digest = malloc( digest_length );
   if( !digest ) {
-    libspectrum_print_error( "get_hash: out of memory" );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			     "get_hash: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
@@ -116,7 +118,8 @@ get_hash( GcrySexp *hash, const libspectrum_byte *data, size_t data_length )
 
   error = gcry_mpi_scan( &hash_mpi, GCRYMPI_FMT_USG, digest, &digest_length );
   if( error ) {
-    libspectrum_print_error( "get_hash: error creating hash MPI: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "get_hash: error creating hash MPI: %s",
 			     gcry_strerror( error )
     );
     free( digest );
@@ -127,7 +130,8 @@ get_hash( GcrySexp *hash, const libspectrum_byte *data, size_t data_length )
 
   error = gcry_sexp_build( hash, NULL, "(%m)", hash_mpi );
   if( error ) {
-    libspectrum_print_error( "get_hash: error creating hash sexp: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "get_hash: error creating hash sexp: %s",
 			     gcry_strerror( error )
     );
     gcry_mpi_release( hash_mpi );
@@ -155,7 +159,8 @@ create_key( GcrySexp *s_key, libspectrum_rzx_dsa_key *key, const char *format )
   if( !error ) error = gcry_mpi_scan( &mpis[4], GCRYMPI_FMT_HEX, key->x, NULL);
 
   if( error ) {
-    libspectrum_print_error( "create_key: error creating MPIs: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "create_key: error creating MPIs: %s",
 			     gcry_strerror( error ) );
     free_mpis( mpis, MPI_COUNT );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -164,7 +169,8 @@ create_key( GcrySexp *s_key, libspectrum_rzx_dsa_key *key, const char *format )
   error = gcry_sexp_build( s_key, NULL, format,
 			   mpis[0], mpis[1], mpis[2], mpis[3], mpis[4] );
   if( error ) {
-    libspectrum_print_error( "create_key: error creating key: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "create_key: error creating key: %s",
 			     gcry_strerror( error ) );
     free_mpis( mpis, MPI_COUNT );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -192,13 +198,15 @@ get_mpi( GcryMPI *mpi, GcrySexp sexp, const char *token )
 
   pair = gcry_sexp_find_token( sexp, token, strlen( token ) );
   if( !pair ) {
-    libspectrum_print_error( "get_mpis: couldn't find '%s'", token );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "get_mpis: couldn't find '%s'", token );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
   *mpi = gcry_sexp_nth_mpi( pair, 1, GCRYMPI_FMT_STD );
   if( !(*mpi) ) {
-    libspectrum_print_error( "get_mpis: couldn't create MPI '%s'", token );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "get_mpis: couldn't create MPI '%s'", token );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -215,14 +223,16 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 
   error = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &length, r );
   if( error ) {
-    libspectrum_print_error( "serialise_mpis: length of r: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "serialise_mpis: length of r: %s",
 			     gcry_strerror( error ) );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
   error = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &length_s, s );
   if( error ) {
-    libspectrum_print_error( "serialise_mpis: length of s: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "serialise_mpis: length of s: %s",
 			     gcry_strerror( error ) );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
@@ -231,13 +241,15 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 
   *signature = malloc( length );
   if( signature == NULL ) {
-    libspectrum_print_error( "serialise_mpis: out of memory" );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			     "serialise_mpis: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
   error = gcry_mpi_print( GCRYMPI_FMT_PGP, *signature, &length, r );
   if( error ) {
-    libspectrum_print_error( "serialise_mpis: printing r: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "serialise_mpis: printing r: %s",
 			     gcry_strerror( error ) );
     free( *signature );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -246,7 +258,8 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
   ptr = *signature + length; length = *signature_length - length;
   error = gcry_mpi_print( GCRYMPI_FMT_PGP, ptr, &length, s );
   if( error ) {
-    libspectrum_print_error( "serialise_mpis: printing s: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "serialise_mpis: printing s: %s",
 			     gcry_strerror( error ) );
     free( *signature );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -285,7 +298,8 @@ libspectrum_verify_signature( const libspectrum_byte *signature,
       return LIBSPECTRUM_ERROR_SIGNATURE;
     } else {
       libspectrum_print_error(
-        "libspectrum_verify_signature: error verifying: %s",
+        LIBSPECTRUM_ERROR_LOGIC,
+	"libspectrum_verify_signature: error verifying: %s",
 	gcry_strerror( error )
       );
       return LIBSPECTRUM_ERROR_LOGIC;
@@ -305,7 +319,8 @@ create_signature( GcrySexp *s_signature, const libspectrum_byte *signature,
   length = signature_length;
   error = gcry_mpi_scan( &r, GCRYMPI_FMT_PGP, signature, &length );
   if( error ) {
-    libspectrum_print_error( "create_signature: reading r: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "create_signature: reading r: %s",
 			     gcry_strerror( error ) );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
@@ -313,7 +328,8 @@ create_signature( GcrySexp *s_signature, const libspectrum_byte *signature,
   signature += length; length = signature_length - length;
   error = gcry_mpi_scan( &s, GCRYMPI_FMT_PGP, signature, &length );
   if( error ) {
-    libspectrum_print_error( "create_signature: reading s: %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "create_signature: reading s: %s",
 			     gcry_strerror( error ) );
     gcry_mpi_release( r );
     return LIBSPECTRUM_ERROR_CORRUPT;
@@ -322,6 +338,7 @@ create_signature( GcrySexp *s_signature, const libspectrum_byte *signature,
   error = gcry_sexp_build( s_signature, NULL, signature_format, r, s );
   if( error ) {
     libspectrum_print_error(
+      LIBSPECTRUM_ERROR_LOGIC,
       "create_signature: error building signature sexp: %s",
       gcry_strerror( error )
     );

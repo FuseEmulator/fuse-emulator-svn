@@ -10,10 +10,13 @@ config.h.in
 config.log
 config.status
 configure
-generate.sed
+generate.pl
 libspectrum.h
 libspectrum.la
 libtool
-make-sed
+make-perl
+snap_accessors.c
 stamp-h
 stamp-h.in
+tape_accessors.c
+tape_set.c

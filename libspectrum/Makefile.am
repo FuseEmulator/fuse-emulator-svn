@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-## Copyright (c) 2001-2002 Philip Kendall
+## Copyright (c) 2001-2003 Philip Kendall
 
 ## $Id$
 
@@ -26,22 +26,61 @@ AUTOMAKE_OPTIONS = foreign
 
 lib_LTLIBRARIES = libspectrum.la
 
-libspectrum_la_SOURCES = crypto.c libspectrum.c rzx.c sna.c tap.c tape.c\
-tzx_read.c tzx_write.c z80.c zlib.c myglib.c
+libspectrum_la_SOURCES = creator.c \
+			 crypto.c \
+			 dck.c \
+			 libspectrum.c \
+			 myglib.c \
+			 plusd.c \
+			 rzx.c \
+			 sna.c \
+			 snp.c \
+			 snapshot.c \
+			 snap_accessors.c \
+			 sp.c \
+			 szx.c \
+			 tap.c \
+			 tape.c \
+			 tape_accessors.c \
+			 tape_block.c \
+			 tape_set.c \
+		 	 timings.c \
+			 tzx_read.c \
+			 tzx_write.c \
+			 warajevo_read.c \
+			 z80.c \
+			 zlib.c \
+			 zxs.c
 
-BUILT_SOURCES = libspectrum.h
+libspectrum_la_LDFLAGS = -version-info 1:0:1
+
+BUILT_SOURCES = libspectrum.h snap_accessors.c tape_accessors.c tape_set.c
 
 include_HEADERS = libspectrum.h
 noinst_HEADERS = internals.h
 
-noinst_PROGRAMS = make-sed
+noinst_PROGRAMS = make-perl
 
-libspectrum.h: libspectrum.h.in generate.sed
-	@SED@ -f generate.sed libspectrum.h.in > libspectrum.h
+libspectrum.h: libspectrum.h.in generate.pl snap_accessors.txt tape_accessors.txt
+	@PERL@ -p generate.pl libspectrum.h.in > libspectrum.h
 
-generate.sed: make-sed
-	./make-sed > generate.sed
+generate.pl: make-perl generate.pl.in
+	./make-perl > generate.pl
+	cat generate.pl.in >> generate.pl
+
+snap_accessors.c: accessor.pl snap_accessors.txt
+	@PERL@ accessor.pl snap_accessors.txt > snap_accessors.c
+
+tape_accessors.c: tape_accessors.pl tape_accessors.txt
+	@PERL@ tape_accessors.pl tape_accessors.txt > tape_accessors.c
+
+tape_set.c: tape_set.pl tape_accessors.txt
+	@PERL@ tape_set.pl tape_accessors.txt > tape_set.c
 
 INCLUDES = @GLIB_CFLAGS@
 
-EXTRA_DIST = libspectrum.h.in
+EXTRA_DIST = accessor.pl \
+	     doc/libspectrum.txt \
+             libspectrum.h.in \
+             snap_accessors.txt \
+	     tape_accessors.txt

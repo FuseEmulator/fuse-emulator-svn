@@ -59,7 +59,11 @@ libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
   if( !known_length ) *outlength = 16384;
 
   *outptr = malloc( *outlength );
-  if (!*outptr) return LIBSPECTRUM_ERROR_MEMORY;
+  if (!*outptr) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			     "libspectrum_zlib_inflate: out of memory" );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
 
   if( known_length ) {
 
@@ -73,8 +77,14 @@ libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
       *outlength = dl;
       return LIBSPECTRUM_ERROR_NONE;
     case Z_MEM_ERROR:		/* out of memory */
+      libspectrum_print_error(
+        LIBSPECTRUM_ERROR_MEMORY,
+	"libspectrum_zlib_inflate: out of memory in zlib"
+      );
       return LIBSPECTRUM_ERROR_MEMORY;
     default:			/* corrupt data or short length */
+      libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			       "libspectrum_zlib_inflate: corrupt data" );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
 
@@ -99,12 +109,17 @@ libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
       break;
     case Z_MEM_ERROR:		/* out of memory */
       inflateEnd( &stream );
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			       "libspectrum_zlib_inflate: out of memory" );
       return LIBSPECTRUM_ERROR_MEMORY;
     case Z_VERSION_ERROR:	/* unrecognised version */
       inflateEnd( &stream );
-      return LIBSPECTRUM_ERROR_SIGNATURE;
+      libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			       "libspectrum_zlib_inflate: unknown version" );
+      return LIBSPECTRUM_ERROR_UNKNOWN;
     default:			/* some other error */
-      libspectrum_print_error( "libspectrum_zlib_inflate: %s", stream.msg );
+      libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			       "libspectrum_zlib_inflate: %s", stream.msg );
       inflateEnd( &stream );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
@@ -126,6 +141,10 @@ libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
 	    realloc( *outptr, (*outlength += 16384) );
 	  if( !new_out ) {
 	    inflateEnd( &stream );
+	    libspectrum_print_error(
+              LIBSPECTRUM_ERROR_MEMORY,
+	      "libspectrum_zlib_inflate: out of memory"
+            );
 	    return LIBSPECTRUM_ERROR_MEMORY;
 	  }
 
@@ -137,9 +156,12 @@ libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
 	break;
       case Z_MEM_ERROR:		/* out of memory */
 	inflateEnd( &stream );
+	libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+				 "libspectrum_zlib_inflate: out of memory" );
 	return LIBSPECTRUM_ERROR_MEMORY;
       default:			/* corrupt data or needs dictionary */
-	libspectrum_print_error( "libspectrum_zlib_inflate: %s", stream.msg);
+	libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+				 "libspectrum_zlib_inflate: %s", stream.msg);
 	inflateEnd( &stream );
 	return LIBSPECTRUM_ERROR_CORRUPT;
       }
@@ -164,7 +186,11 @@ libspectrum_zlib_compress( const libspectrum_byte *data, size_t length,
   int gzret;
 
   *gzptr = malloc( gzl );
-  if( !*gzptr ) return LIBSPECTRUM_ERROR_MEMORY;
+  if( !*gzptr ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			     "libspectrum_zlib_compress: out of memory" );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
 
   gzret = compress2( *gzptr, &gzl, data, length, Z_BEST_COMPRESSION );
 
@@ -176,19 +202,27 @@ libspectrum_zlib_compress( const libspectrum_byte *data, size_t length,
 
   case Z_MEM_ERROR:		/* out of memory */
     free( *gzptr ); *gzptr = 0;
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			     "libspectrum_zlib_compress: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
 
   case Z_VERSION_ERROR:		/* unrecognised version */
     free( *gzptr ); *gzptr = 0;
-    return LIBSPECTRUM_ERROR_SIGNATURE;
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "libspectrum_zlib_compress: unknown version" );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
 
   case Z_BUF_ERROR:		/* Not enough space in output buffer.
 				   Shouldn't happen */
     free( *gzptr ); *gzptr = 0;
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "libspectrum_zlib_compress: out of space?" ); 
     return LIBSPECTRUM_ERROR_LOGIC;
 
   default:			/* some other error */
     free( *gzptr ); *gzptr = 0;
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "libspectrum_zlib_compress: unexpected error?" ); 
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 }
