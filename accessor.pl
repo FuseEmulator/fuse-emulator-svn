@@ -118,6 +118,10 @@ struct libspectrum_snap {
   size_t zxcf_pages;
   libspectrum_byte *zxcf_ram[ 64 ];
 
+  /* Interface II cartridge */
+  int interface2_active;
+  libspectrum_byte *interface2_rom[1];
+
 };
 
 /* Initialise a libspectrum_snap structure */
@@ -183,6 +187,9 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
   libspectrum_snap_set_zxcf_memctl( *snap, 0x00 );
   libspectrum_snap_set_zxcf_pages( *snap, 0 );
   for( i = 0; i < 64; i++ ) libspectrum_snap_set_zxcf_ram( *snap, i, NULL );
+
+  libspectrum_snap_set_interface2_active( *snap, 0 );
+  libspectrum_snap_set_interface2_rom( *snap, 0, NULL );
 
   return LIBSPECTRUM_ERROR_NONE;
 }

@@ -58,6 +58,8 @@ libspectrum_snap_free( libspectrum_snap *snap )
 
   for( i = 0; i < 64; i++ ) free( libspectrum_snap_zxcf_ram( snap, i ) );
 
+  free( libspectrum_snap_interface2_rom( snap, 0 ) );
+
   free( snap );
 
   return LIBSPECTRUM_ERROR_NONE;
