@@ -83,3 +83,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20030912 ChangeLog, README: small doc updates for the 0.2.0 release.
 20030913 Makefile.am: distribute generate.pl.in, tape_accessors.pl,
 	 tape_set.pl and tape_block.h.
+20030918 rzx.c: if count is zero in libspectrum_rzx_store_frame, don't
+	 try to allocate zero bytes.

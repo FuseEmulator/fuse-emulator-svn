@@ -180,11 +180,18 @@ libspectrum_rzx_store_frame( libspectrum_rzx *rzx, size_t instructions,
     frame->repeat_last = 0;
     frame->count = count;
 
-    frame->in_bytes = (libspectrum_byte*)
-      malloc( count * sizeof( libspectrum_byte ) );
-    if( frame->in_bytes == NULL ) return LIBSPECTRUM_ERROR_MEMORY;
+    if( count ) {
 
-    memcpy( frame->in_bytes, in_bytes, count * sizeof( libspectrum_byte ) );
+      frame->in_bytes = malloc( count * sizeof( libspectrum_byte ) );
+      if( frame->in_bytes == NULL ) return LIBSPECTRUM_ERROR_MEMORY;
+
+      memcpy( frame->in_bytes, in_bytes, count * sizeof( libspectrum_byte ) );
+
+    } else {
+
+      frame->in_bytes = NULL;
+
+    }
   }
 
   /* Move along to the next frame */
