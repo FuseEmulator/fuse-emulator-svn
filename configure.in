@@ -31,19 +31,14 @@ AM_INIT_AUTOMAKE(libspectrum, 0.1.0)
 dnl Checks for programs.
 AC_PROG_CC
 AM_PROG_LIBTOOL
+AC_PATH_PROG(SED, sed)
+AC_SUBST(SED)
 
 dnl Checks for header files.
 AC_HEADER_STDC
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-
-dnl Check sizes of various types; second parameter is a `default' for
-dnl cross-compiling. Will obviously break everything if this is wrong...
-AC_CHECK_SIZEOF(char, 1)
-AC_CHECK_SIZEOF(short, 2)
-AC_CHECK_SIZEOF(int, 4)
-AC_CHECK_SIZEOF(long, 4)
 
 # Test for glib
 AC_MSG_CHECKING(whether to use glib)

@@ -12,5 +12,7 @@ config.status
 configure
 libspectrum.la
 libtool
+make-sed
 stamp-h
 stamp-h.in
+types.sed

@@ -32,6 +32,12 @@
 #include "libspectrum.h"
 #endif				/* #ifndef LIBSPECTRUM_LIBSPECTRUM_H */
 
+#ifdef __GNUC__
+#define GCC_UNUSED __attribute__ ((unused))
+#else				/* #ifdef __GNUC__ */
+#define GCC_UNUSED
+#endif				/* #ifdef __GNUC__ */
+
 /* Print an error to stdout */
 libspectrum_error libspectrum_print_error( const char *format, ... );
 
