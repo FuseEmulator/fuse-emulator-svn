@@ -27,6 +27,7 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = man
 
 bin_PROGRAMS = listbasic \
+	       rzxcheck \
 	       rzxdump \
 	       rzxtool \
 	       scl2trd \
@@ -38,6 +39,9 @@ INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 
 listbasic_SOURCES = listbasic.c utils.c
 listbasic_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+
+rzxcheck_SOURCES = rzxcheck.c keys.c utils.c
+rzxcheck_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
 rzxdump_SOURCES = rzxdump.c utils.c
 rzxdump_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@

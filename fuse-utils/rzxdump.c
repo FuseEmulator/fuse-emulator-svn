@@ -1,5 +1,5 @@
 /* rzxdump.c: get info on an RZX file
-   Copyright (C) 2002 Philip Kendall
+   Copyright (c) 2002-2003 Philip Kendall
 
    $Id$
 
@@ -36,6 +36,10 @@
 #include <unistd.h>
 #include <errno.h>
 
+#ifdef HAVE_LIBGCRYPT
+#include <gcrypt.h>
+#endif				/* #ifdef HAVE_LIBGCRYPT */
+
 #include <libspectrum.h>
 
 #include "utils.h"
@@ -56,6 +60,8 @@ static int
 read_snapshot_block( unsigned char **ptr, unsigned char *end );
 static int
 read_input_block( unsigned char **ptr, unsigned char *end );
+static int read_sign_start_block( unsigned char **ptr, unsigned char *end );
+static int read_sign_end_block( unsigned char **ptr, unsigned char *end );
 
 libspectrum_word
 read_word( unsigned char **ptr )
@@ -140,20 +146,11 @@ do_file( const char *filename )
 
     switch( id ) {
 
-    case 0x10:
-      error = read_creator_block( &ptr, end );
-      if( error ) { munmap( buffer, length ); return 1; }
-      break;
-
-    case 0x30:
-      error = read_snapshot_block( &ptr, end );
-      if( error ) { munmap( buffer, length ); return 1; }
-      break;
-
-    case 0x80:
-      error = read_input_block( &ptr, end );
-      if( error ) { munmap( buffer, length ); return 1; }
-      break;
+    case 0x10: error = read_creator_block( &ptr, end ); break; 
+    case 0x20: error = read_sign_start_block( &ptr, end ); break;
+    case 0x21: error = read_sign_end_block( &ptr, end ); break;
+    case 0x30: error = read_snapshot_block( &ptr, end ); break;
+    case 0x80: error = read_input_block( &ptr, end ); break;
 
     default:
       fprintf( stderr, "%s: Unknown block type 0x%02x\n", progname, id );
@@ -162,6 +159,7 @@ do_file( const char *filename )
 
     }
 
+    if( error ) { munmap( buffer, length ); return 1; }
   }
 
   if( munmap( buffer, length ) == -1 ) {
@@ -201,6 +199,7 @@ static int
 read_snapshot_block( unsigned char **ptr, unsigned char *end )
 {
   size_t block_length;
+  libspectrum_dword flags;
 
   if( end - *ptr < 16 ) {
     fprintf( stderr,
@@ -211,11 +210,15 @@ read_snapshot_block( unsigned char **ptr, unsigned char *end )
   printf( "Found a snapshot block\n" );
 
   block_length = read_dword( ptr );
-  printf( "  Length: %ld bytes\n", (unsigned long)block_length );
+  printf( "  Length: %lu bytes\n", (unsigned long)block_length );
 
-  printf( "  Flags: %d\n", read_dword( ptr ) );
+  flags = read_dword( ptr );
+  printf( "  Flags: %lu\n", (unsigned long)flags );
   printf( "  Snapshot extension: `%s'\n", *ptr ); (*ptr) += 4;
   printf( "  Snap length: %d bytes\n", read_dword( ptr ) );
+
+  if( ( flags & 0x01 ) && !( flags & 0x02 ) )
+    printf( "  Snap path: %s\n", *ptr + 4 );
 
   (*ptr) += block_length - 17;
 
@@ -292,6 +295,89 @@ read_input_block( unsigned char **ptr, unsigned char *end )
     }
 
   }
+
+  return 0;
+}
+
+static int
+read_sign_start_block( unsigned char **ptr, unsigned char *end )
+{
+  size_t length;
+
+  if( end - *ptr < 8 ) {
+    fprintf( stderr, "%s: not enough bytes for sign start block\n", progname );
+    return 1;
+  }
+
+  printf( "Found a signed data start block\n" );
+
+  length = read_dword( ptr );
+
+  printf( "  Length: %ld bytes\n", (unsigned long)length );
+  printf( "  Key ID: 0x%08x\n", (unsigned int)read_dword( ptr ) );
+  printf( "  Week code: 0x%08x\n", (unsigned int)read_dword( ptr ) );
+
+  (*ptr) += length - 13;
+
+  return 0;
+}
+
+static int
+read_sign_end_block( unsigned char **ptr, unsigned char *end )
+{
+  size_t length;
+#ifdef HAVE_LIBGCRYPT
+  GcryMPI a; int error; size_t length2;
+  char *buffer;
+#endif				/* #ifdef HAVE_LIBGCRYPT */
+
+  if( end - *ptr < 4 ) {
+    fprintf( stderr, "%s: not enough bytes for sign end block\n", progname );
+    return 1;
+  }
+
+  printf( "Found a signed data end block\n" );
+
+  length = read_dword( ptr );
+  printf( "  Length: %ld bytes\n", (unsigned long)length );
+
+  length -= 5;
+
+  if( end - *ptr < length ) {
+    fprintf( stderr, "%s: not enough bytes for sign end block\n", progname );
+    return 1;
+  }
+
+#ifdef HAVE_LIBGCRYPT
+
+  length2 = length;
+  error = gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, *ptr, &length2 );
+  if( error ) {
+    fprintf( stderr, "%s: error reading r: %s\n", progname,
+	     gcry_strerror( error ) );
+    return 1;
+  }
+  
+  *ptr += length2; length2 = length = length - length2;
+
+  error = gcry_mpi_aprint( GCRYMPI_FMT_HEX, (void**)&buffer, &length2, a );
+  printf( "  r: %s\n", buffer );
+
+  error = gcry_mpi_scan( &a, GCRYMPI_FMT_PGP, *ptr, &length2 );
+  if( error ) {
+    fprintf( stderr, "%s: error reading s: %s\n", progname,
+	     gcry_strerror( error ) );
+    return 1;
+  }
+  
+  *ptr += length2; length = length - length2;
+
+  error = gcry_mpi_aprint( GCRYMPI_FMT_HEX, (void**)&buffer, &length2, a );
+  printf( "  s: %s\n", buffer );
+
+#endif
+
+  (*ptr) += length;
 
   return 0;
 }
