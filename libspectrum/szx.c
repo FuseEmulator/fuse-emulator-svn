@@ -58,10 +58,11 @@ write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		 size_t *length, libspectrum_snap *snap );
+		 size_t *length, libspectrum_snap *snap, int compress );
 static libspectrum_error
 write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		  size_t *length, libspectrum_snap *snap, int page );
+		  size_t *length, libspectrum_snap *snap, int page,
+		  int compress );
 static libspectrum_error
 write_ay_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, libspectrum_snap *snap );
@@ -473,7 +474,10 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
   error = write_spcr_chunk( buffer, &ptr, length, snap );
   if( error ) return error;
 
-  error = write_ram_pages( buffer, &ptr, length, snap );
+  error = write_ram_pages(
+    buffer, &ptr, length, snap,
+    !( in_flags & LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION )
+  );
   if( error ) return error;
 
   if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_AY ) {
@@ -643,7 +647,7 @@ write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 static libspectrum_error
 write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		 size_t *length, libspectrum_snap *snap )
+		 size_t *length, libspectrum_snap *snap, int compress )
 {
   libspectrum_machine machine;
   int capabilities; 
@@ -652,26 +656,26 @@ write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
   machine = libspectrum_snap_machine( snap );
   capabilities = libspectrum_machine_capabilities( machine );
 
-  error = write_ramp_chunk( buffer, ptr, length, snap, 5 );
+  error = write_ramp_chunk( buffer, ptr, length, snap, 5, compress );
   if( error ) return error;
 
   if( machine != LIBSPECTRUM_MACHINE_16 ) {
-    error = write_ramp_chunk( buffer, ptr, length, snap, 2 );
+    error = write_ramp_chunk( buffer, ptr, length, snap, 2, compress );
     if( error ) return error;
-    error = write_ramp_chunk( buffer, ptr, length, snap, 0 );
+    error = write_ramp_chunk( buffer, ptr, length, snap, 0, compress );
     if( error ) return error;
   }
 
   if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) {
-    error = write_ramp_chunk( buffer, ptr, length, snap, 1 );
+    error = write_ramp_chunk( buffer, ptr, length, snap, 1, compress );
     if( error ) return error;
-    error = write_ramp_chunk( buffer, ptr, length, snap, 3 );
+    error = write_ramp_chunk( buffer, ptr, length, snap, 3, compress );
     if( error ) return error;
-    error = write_ramp_chunk( buffer, ptr, length, snap, 4 );
+    error = write_ramp_chunk( buffer, ptr, length, snap, 4, compress );
     if( error ) return error;
-    error = write_ramp_chunk( buffer, ptr, length, snap, 6 );
+    error = write_ramp_chunk( buffer, ptr, length, snap, 6, compress );
     if( error ) return error;
-    error = write_ramp_chunk( buffer, ptr, length, snap, 7 );
+    error = write_ramp_chunk( buffer, ptr, length, snap, 7, compress );
     if( error ) return error;
   }
 
@@ -680,7 +684,8 @@ write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 static libspectrum_error
 write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		  size_t *length, libspectrum_snap *snap, int page )
+		  size_t *length, libspectrum_snap *snap, int page,
+		  int compress )
 {
   libspectrum_error error;
   libspectrum_byte *block_length, *flags, *data, *compressed_data;
@@ -707,14 +712,17 @@ write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 #ifdef HAVE_ZLIB_H
 
-  error = libspectrum_zlib_compress( data, 0x4000,
-				     &compressed_data, &compressed_length );
-  if( error ) return error;
+  if( compress ) {
 
-  if( compressed_length < 0x4000 ) {
-    use_compression = 1;
-    data = compressed_data;
-    data_length = compressed_length;
+    error = libspectrum_zlib_compress( data, 0x4000,
+				       &compressed_data, &compressed_length );
+    if( error ) return error;
+
+    if( compressed_length < 0x4000 ) {
+      use_compression = 1;
+      data = compressed_data;
+      data_length = compressed_length;
+    }
   }
 
 #endif				/* #ifdef HAVE_ZLIB_H */
