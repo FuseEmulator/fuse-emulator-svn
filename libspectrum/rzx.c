@@ -30,6 +30,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef HAVE_GCRYPT_H
+#include <gcrypt.h>
+#endif				/* #ifdef HAVE_GCRYPT_H */
+
 #include "internals.h"
 
 /* The block types which can appear in RZX files */
@@ -89,11 +93,10 @@ rzx_read_frames( libspectrum_rzx *rzx,
 		 const libspectrum_byte **ptr, const libspectrum_byte *end );
 static libspectrum_error
 rzx_read_sign_start( const libspectrum_byte **ptr, const libspectrum_byte *end,
-		     const libspectrum_byte **sign_start );
+		     libspectrum_rzx_signature *signature );
 static libspectrum_error
 rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
-		   const libspectrum_byte *sign_start,
-		   libspectrum_rzx_dsa_key *key );
+		   libspectrum_rzx_signature *signature );
 
 static libspectrum_error
 rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -109,7 +112,8 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 		 libspectrum_byte **ptr, size_t *length, int compress );
 static libspectrum_error
 rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
-			size_t *length, ptrdiff_t *sign_offset );
+			size_t *length, ptrdiff_t *sign_offset,
+			libspectrum_rzx_dsa_key *key );
 static libspectrum_error
 rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		      size_t *length, ptrdiff_t sign_offset,
@@ -280,15 +284,18 @@ libspectrum_rzx_instructions( libspectrum_rzx *rzx )
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
 	              const libspectrum_byte *buffer, const size_t length,
-		      libspectrum_rzx_dsa_key *key )
+		      libspectrum_rzx_signature *signature )
 {
   libspectrum_error error;
-  const libspectrum_byte *ptr, *end, *sign_start = NULL;
+  const libspectrum_byte *ptr, *end;
 
   ptr = buffer; end = buffer + length;
 
   /* Indicate 'no snap stored in this file' */
   *snap = NULL;
+
+  /* Indicate 'no signature found' */
+  if( signature ) signature->start = NULL;
 
   error = rzx_read_header( &ptr, end );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
@@ -317,12 +324,12 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
       break;
 
     case LIBSPECTRUM_RZX_SIGN_START_BLOCK:
-      error = rzx_read_sign_start( &ptr, end, &sign_start );
+      error = rzx_read_sign_start( &ptr, end, signature );
       if( error != LIBSPECTRUM_ERROR_NONE ) return error;
       break;
 
     case LIBSPECTRUM_RZX_SIGN_END_BLOCK:
-      error = rzx_read_sign_end( &ptr, end, sign_start, key );
+      error = rzx_read_sign_end( &ptr, end, signature );
       if( error != LIBSPECTRUM_ERROR_NONE ) return error;
       break;
 
@@ -661,12 +668,13 @@ rzx_read_frames( libspectrum_rzx *rzx,
 
 static libspectrum_error
 rzx_read_sign_start( const libspectrum_byte **ptr, const libspectrum_byte *end,
-		     const libspectrum_byte **sign_start )
+		     libspectrum_rzx_signature *signature )
 {
   size_t length;
 
   /* Check we've got enough data for the length */
-  if( end - (*ptr) < 4 ) {
+
+  if( end - (*ptr) < 8 ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
       "rzx_read_sign_start: not enough data in buffer"
@@ -686,28 +694,26 @@ rzx_read_sign_start( const libspectrum_byte **ptr, const libspectrum_byte *end,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  (*ptr) += length - 5;
+  /* If we're not storing the signature, just skip the block */
+  if( !signature ) { (*ptr) += length - 5; return LIBSPECTRUM_ERROR_NONE; }
 
-  *sign_start = *ptr;
+  signature->key_id = libspectrum_read_dword( ptr );
+
+  /* Skip the rest of this block */
+  (*ptr) += length - 9;
+
+  /* This is where the signed data starts */
+  signature->start = *ptr;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
 rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
-		   const libspectrum_byte *sign_start,
-		   libspectrum_rzx_dsa_key *key )
+		   libspectrum_rzx_signature *signature )
 {
-  size_t length; libspectrum_error error;
+  size_t length;
 
-  if( !sign_start ) {
-    libspectrum_print_error(
-      LIBSPECTRUM_ERROR_CORRUPT,
-      "rzx_read_sign_end: no start of signed data block seen"
-    );
-    return LIBSPECTRUM_ERROR_CORRUPT;
-  }
-  
   /* Check we've got enough data for the length */
   if( end - (*ptr) < 4 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
@@ -726,29 +732,44 @@ rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-#ifdef HAVE_GCRYPT_H
-  if( key ) {
-    error = libspectrum_verify_signature( *ptr, length, sign_start,
-					  (*ptr) - sign_start - 5, key );
-    if( error ) {
-      if( error == LIBSPECTRUM_ERROR_SIGNATURE ) {
-	libspectrum_print_error(
-          LIBSPECTRUM_ERROR_SIGNATURE,
-          "libspectrum warning: signature does NOT verify"
-	);
-      } else {
-	return error;
-      }
-    }
-  } else {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_SIGNATURE,
-			     "couldn't verify signature: key not available" );
+  /* If we're not storing the signature, just skip the block */
+  if( !signature ) { (*ptr) += length; return LIBSPECTRUM_ERROR_NONE; }
+
+  if( !signature->start ) {
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_CORRUPT,
+      "rzx_read_sign_end: no start of signed data block seen"
+    );
+    return LIBSPECTRUM_ERROR_CORRUPT;
   }
-#else				/* #ifdef HAVE_GCRYPT_H */
-  libspectrum_print_error(
-    LIBSPECTRUM_ERROR_SIGNATURE,
-    "couldn't verify signature: libgcrypt not available"
-  );
+  
+  /* Store the end of the signed data */
+  signature->length = (*ptr) - signature->start - 5;
+
+#ifdef HAVE_GCRYPT_H
+  { 
+    int error; size_t mpi_length;
+
+    mpi_length = length;
+    error = gcry_mpi_scan( &signature->r, GCRYMPI_FMT_PGP, *ptr, &mpi_length );
+    if( error ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			       "error reading 'r': %s",
+			       gcry_strerror( error ) );
+      return LIBSPECTRUM_ERROR_CORRUPT;
+    }
+    (*ptr) += mpi_length; length -= mpi_length; mpi_length = length;
+
+    error = gcry_mpi_scan( &signature->s, GCRYMPI_FMT_PGP, *ptr, &mpi_length );
+    if( error ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			       "error reading 's': %s",
+			       gcry_strerror( error ) );
+      return LIBSPECTRUM_ERROR_CORRUPT;
+    }
+    (*ptr) += mpi_length; length -= mpi_length;
+
+  }
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
   (*ptr) += length;
@@ -771,7 +792,7 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   if( key ) {
-    error = rzx_write_signed_start( buffer, &ptr, length, &sign_offset );
+    error = rzx_write_signed_start( buffer, &ptr, length, &sign_offset, key );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
 
@@ -1015,12 +1036,13 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 
 static libspectrum_error
 rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
-			size_t *length, ptrdiff_t *sign_offset )
+			size_t *length, ptrdiff_t *sign_offset,
+			libspectrum_rzx_dsa_key *key )
 {
 #ifdef HAVE_GCRYPT_H
   libspectrum_error error;
   
-  error = libspectrum_make_room( buffer, 5, ptr, length );
+  error = libspectrum_make_room( buffer, 9, ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 			     "rzx_write_signed_start: out of memory" );
@@ -1031,7 +1053,18 @@ rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
   *(*ptr)++ = LIBSPECTRUM_RZX_SIGN_START_BLOCK;
 
   /* Block length */
-  libspectrum_write_dword( ptr, 5 );
+  libspectrum_write_dword( ptr, 9 );
+
+  /* Key ID */
+  if( !key || !key->y || strlen( key->y ) < 8 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_INVALID,
+			     "rzx_write_signed_start: invalid key" );
+    return LIBSPECTRUM_ERROR_INVALID;
+  }
+
+  libspectrum_write_dword(
+    ptr, strtoul( &key->y[ strlen( key->y ) - 8 ], NULL, 16 )
+  );
 
   /* And flag where to start signing data */
   *sign_offset = *ptr - *buffer;

@@ -35,7 +35,10 @@ extern "C" {
 #endif				/* #ifdef __cplusplus */
 
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdlib.h>
+
+LIBSPECTRUM_INCLUDE_GCRYPT
 
 /* Standard typedefs */
 LIBSPECTRUM_DEFINE_TYPES
@@ -483,10 +486,22 @@ typedef struct libspectrum_rzx_dsa_key {
 
 } libspectrum_rzx_dsa_key;
 
+typedef struct libspectrum_rzx_signature {
+
+  /* The key ID (low 32 bits of 'y') */
+  libspectrum_dword key_id;
+
+  /* Where in the buffer is the signed data? */
+  const libspectrum_byte *start; ptrdiff_t length;
+
+  LIBSPECTRUM_SIGNATURE_PARAMETERS
+
+} libspectrum_rzx_signature;
+
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
 	              const libspectrum_byte *buffer, const size_t length,
-		      libspectrum_rzx_dsa_key *key );
+		      libspectrum_rzx_signature *signature );
 
 libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
@@ -535,6 +550,14 @@ libspectrum_error libspectrum_dck_free( libspectrum_dck *dck, int keep_pages );
 libspectrum_error
 libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
                       size_t length );
+
+/*
+ * Crypto functions
+ */
+
+libspectrum_error
+libspectrum_verify_signature( libspectrum_rzx_signature *signature,
+			      libspectrum_rzx_dsa_key *key );
 
 #ifdef __cplusplus
 };

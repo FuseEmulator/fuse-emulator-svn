@@ -165,5 +165,38 @@ int main(void)
 
   printf( "}\n\n" );
 
+  /*
+   * If we have libgcrypt, include the header file and store the signature
+   * parameters
+   */
+
+  printf( "if( /LIBSPECTRUM_INCLUDE_GCRYPT/ ) {\n\n" );
+
+#ifdef HAVE_GCRYPT_H
+
+  printf( "  $_ = \"#include <gcrypt.h>\\n\";\n\n" );
+
+#else
+
+  printf( "  $_ = '';\n\n" );
+
+#endif
+
+  printf( "}\n\n" );
+
+  printf( "if( /LIBSPECTRUM_SIGNATURE_PARAMETERS/ ) {\n\n" );
+
+#ifdef HAVE_GCRYPT_H
+
+  printf( "  $_ = \"  /* The DSA signature parameters 'r' and 's' */\\n  GcryMPI r, s;\\n\";\n\n" );
+
+#else
+
+  printf( "  $_ = \"/* Signature parameters not stored as libgcrypt is not present */\n\";\n\n" );
+
+#endif
+
+  printf( "}\n\n" );
+
   return 0;
 }
