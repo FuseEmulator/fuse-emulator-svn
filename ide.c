@@ -299,6 +299,14 @@ clear_cache( gpointer key, gpointer value, gpointer user_data GCC_UNUSED )
   return TRUE;
 }
 
+/* Is there any dirty data for this disk? */
+int
+libspectrum_ide_dirty( libspectrum_ide_channel *chn,
+		       libspectrum_ide_unit unit )
+{
+  return g_hash_table_size( chn->cache[ unit ] ) != 0;
+}
+
 /* Eject a hard disk from a drive */
 libspectrum_error
 libspectrum_ide_eject( libspectrum_ide_channel *chn,

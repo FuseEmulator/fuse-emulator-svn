@@ -308,5 +308,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 tarballs with 'make dist-gzip' (Fred).
 20050213 szx.c: make uncompressed snaps with DOCK data work (and don't waste
 	 memory when loading compressed snaps with DOCK data).
-20050213 szx.c: don't error if we try and write out a page which doesn't
+20050213 szx.c: don't bom if we try and write out a page which doesn't
 	 exist in the snapshot.
+20050218 ide.c: add libspectrum_ide_dirty function.
