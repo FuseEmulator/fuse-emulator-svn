@@ -1,0 +1,74 @@
+hacking/ChangeLog: the small scale changelog for libspectrum
+
+20030503 completely encapsulate the libspectrum_snap structure
+20030505 sna.c: set libspectrum_snap_out_ula
+20030506 Support for reading Warajevo .tap files (Fred)
+20030506 tape.c: fix typo in 'not a tape file message' (Fred)
+20030512 libspectrum.c: add signature for .scl files (Fred)
+20030513 libspectrum.c, libspectrum.h.in: add libspectrum_identify_class()
+20030518 Add support for reading +D snapshots
+20030518 Add support for reading .zxs snapshots
+20030518 snapshot.c: must allocate 3 separate chunks in
+         _split_to_48k_pages as we free them separately
+20030520 Support for reading .snp snapshots
+20030521 Support for reading .sp snapshots
+20030525 dck.c: separate the dock page size out into a constant
+20030525 timings.c: timing fix for TC2048 and TC2068 (Fred)
+20030525 Bump version number to 0.2.0pre1
+20030525 Create tag libspectrum_0_2_0pre1
+20030607 Add very basic read support for .szx snapshots
+20030610 Bring .szx support up to the current v1.1 draft
+20030610 Add 'halted' member to the libspectrum_snap structure
+20030610 szx.c: set the Z80 halted state
+20030610 Deprecate the old snapshot read and write functions. Add new
+	 generic snapshot write function.
+20030611 Add ability to write .szx files
+20030611 szx.c: add compression for RAM pages
+20030612 Add libspectrum_creator structure
+20030613 Make libspectrum_snap_write take a creator argument
+20030615 Add support for writing .sna snapshots. Fix reading of 128K
+	 .sna snapshots.
+20030616 Add capabilities for the Timex dock and built-in Sinclair joysticks
+20030625 Add option not to compress snapshots when written
+20030703 If <stdint.h> is available, use it to define our integral types.
+	 Defined the full set of (un)signed 8, 16, 32 and 64-bit types
+20030711 Add libspectrum_tape_block accessor functions
+20030715 Add 'set' functions for libspectrum_tape_block
+20030717 Fully encapsulate libspectrum_tape_block
+20030719 Encapsulate the libspectrum_tape structure
+20030722 Sync digital signatures branch (libspectrum_0_1_0pre1-crypto-branch)
+	 with the current HEAD at libspectrum_0_1_0pre1-crypto-branch-1
+20030723 rzx.c: Use block IDs 0x20 and 0x21 for the signature blocks
+	 (libspectrum_0_1_0pre1-crypto-branch)
+20030725 z80.c: ensure that out_plus3memoryport is always initialised
+	 (libspectrum_0_1_0pre1-crypto-branch)
+20030731 z80.c: ensure that snap.halted is always reset when loading
+	 (libspectrum_0_1_0pre1-crypto-branch)
+20030804 Allow 'off-line' signature verification
+	 (libspectrum_0_1_0pre1-crypto-branch)
+20030804 rzx.c: use the newly agreed signature format
+	 (libspectrum_0_1_0pre1-crypto-branch)
+20030806 crypto.c: use the new hash data format
+	 (libspectrum_0_1_0pre1-crypto-branch)
+20030806 crypto.c: separate out 'get signature parameters' and
+	 'serialise signature parameters' into two functions
+	 (libspectrum_0_1_0pre1-crypto-branch)
+20030811 rzx.c: skip links to external snapshots
+	 (libspectrum_0_1_0pre1-crypto-branch)
+20030812 add support for RZX competition codes
+	 (libspectrum_0_1_0pre1-crypto-branch)
+20030813 Merge the digitial signatures branch (at
+	 libspectrum_0_1_0pre1-crypto-branch-2) onto HEAD (at
+	 libspectrum_0_2_0pre1-merge-1)
+20030813 libspectrum.c: improve gcrypt initialisation code
+20030814 Set sensible defaults for all fields of libspectrum_snap on
+	 allocation, rather than forcing every snapshot load routine
+	 to set these.
+20030817 Add capability for Kempston joystick ports
+20030817 szx.c: add SCLD block to contain Timex SCLD registers (Fred)
+20030821 rzx.c: allocate memory for the competition code
+20030821 rzx.c: fix memory links (thanks, valgrind)
+20030822 crypto.c, libspectrum.h.in: add libspectrum_signature_free()
+20030824 rzx.c: small valgrind-related tidyups
+20030901 libspectrum.c: define MIN_GCRYPT_VERSION iff it's going to be
+	 used
