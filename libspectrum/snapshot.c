@@ -31,7 +31,7 @@
 #include "internals.h"
 
 /* Some flags which may be returned from libspectrum_snap_write() */
-const int LIBSPECTRUM_FLAG_MINOR_INFO_LOSS = 1 << 0;
+const int LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS = 1 << 0;
 
 /* Free all memory used by a libspectrum_snap structure (destructor...) */
 libspectrum_error
