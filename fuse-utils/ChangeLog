@@ -1,3 +1,24 @@
+2003-09-13  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+
+	* Version 0.6.1 released
+
+	* Add `snapconv' utility to convert between snapshot formats
+	  (Philip Kendall).
+
+	* Add `rzxcheck' utility to verify the digitial signature in an
+	  RZX file (Philip Kendall).
+
+	* listbasic: a line number of >= 16384 implies the end of BASIC,
+	  not just > 16384 (Darren Salt).
+
+	* listbasic: formatting improvements and support for 128K and
+	  TC2068 keywords (Darren Salt).
+
+	* listbasic: add man page (Philip Kendall).
+
+	* Various improvements due to libspectrum changes: notably support
+	  for Warajevo .tap files and many more snapshot formats.
+
 2003-04-27  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 
 	* Version 0.6.0 released.
