@@ -1,4 +1,4 @@
-The Fuse utilities version 0.6.2
+The Fuse utilities version 0.7.0
 ================================
 
 The Fuse utilities are a few tools which may be of occasional use when
@@ -8,6 +8,7 @@ independent of Fuse and can be used on their own.
 
 The available utilities are:
 
+* createhdf: create an empty .hdf IDE hard disk image.
 * listbasic: list the BASIC in a snapshot or tape file.
 * rzxcheck: verify the digital signature in an RZX file.
 * rzxdump: list the contents of an RZX input recording file.
@@ -55,6 +56,6 @@ released tarballs, you'll need to run `autogen.sh' before running
 'configure' for the first time.
 
 Philip Kendall <pak21-fuse@srcf.ucam.org>
-11 February 2004
+16 July 2004
 
 $Id$
