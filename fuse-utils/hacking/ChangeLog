@@ -105,3 +105,4 @@
 	 rzxdump.1,rzxtool.1,scl2trd.1,snap2tzx.1,snapconv.1,tapeconv.1,
 	 tzxlist.1}; doc updates for 0.7.0 release.
 20040715 configure.in: Use libtool to link fuse-utils
+20040715 autogen.sh: copy auxiliary files rather than linking them.
