@@ -27,7 +27,10 @@
 #include <config.h>
 
 #include "fuse.h"
+#include "rzx.h"
+#include "settings.h"
 #include "timer.h"
+#include "ui/ui.h"
 
 volatile float timer_count;
 
@@ -99,8 +102,22 @@ static void timer_setup_handler(void)
 void
 timer_signal( int signo GCC_UNUSED )
 {
+  int error;
+
   /* If the emulator is running, note that time has passed */
-  if( !fuse_emulation_paused ) timer_count += 1.0;
+  if( !fuse_emulation_paused ) {
+    timer_count += 1.0;
+
+    /* End competition mode if time has slipped too much */
+    if( timer_count > 25 &&
+	settings_current.competition_mode && rzx_recording ) {
+      ui_error(
+        UI_ERROR_INFO,
+	"Emulator speed dropped; stopping competition mode RZX recording"
+      );
+      error = rzx_stop_recording(); if( error ) return;
+    }
+  }
 }
 
 void timer_sleep(void)
