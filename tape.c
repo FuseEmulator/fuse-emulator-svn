@@ -838,6 +838,22 @@ jump_blocks( libspectrum_tape *tape, int offset )
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+/* Get the position on the tape of the current block */
+libspectrum_error
+libspectrum_tape_position( int *n, libspectrum_tape *tape )
+{
+  *n = g_slist_position( tape->blocks, tape->current_block );
+
+  if( *n == -1 ) {
+    libspectrum_print_error(
+      "libspectrum_tape_position: current block is not in tape!"
+    );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
 /* Select the nth block on the tape */
 libspectrum_error
 libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
