@@ -175,11 +175,10 @@ fuse_section (NULL, "Development", <<<END_SECTION
 
   <p>Similarly, get the <a href="fuse-utils-cvs.tar.gz">utilities CVS snapshot</a>.</p>
 
-  <p>A couple of patches which aren't in the SourceForge tracking system:</p>
+  <p>One thing which isn't in the SourceForge tracking system:</p>
 
   <ul>
-   <li>David Gardner has produce a patch to give <a href="fuse-xvideo.patch.bz2">XVideo support</a> for the Xlib UI, allowing arbitrary sized windows.</li>
-   <li>Catalin Mihaila has sent some code to give Fuse <a href="fuse-allegro.tar.gz">Allegro</a> and <a href="fuse-opengl.tar.gz">OpenGL</a> user interfaces.</li>
+   <li>David Gardner has produced a patch to give <a href="fuse-xvideo.patch.bz2">XVideo support</a> for the Xlib UI, allowing arbitrary sized windows.</li>
   </ul>
 
 END_SECTION
