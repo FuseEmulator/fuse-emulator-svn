@@ -486,3 +486,5 @@
 	 void (Release-0_6_2-branch) (Witold).
 20040115 screenshot.c: make .png screenshots save in black and white if
 	 colour TV mode disabled (Release-0_6_2-branch).
+20040115 pokefinder/Makefile.am: add @LIBSPEC_FLAGS@ to INCLUDES (more of
+	 patch #871182) (Release-0_6_2-branch) (Fred).
