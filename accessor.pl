@@ -78,12 +78,12 @@ struct libspectrum_snap {
 
   /* RAM */
 
-  libspectrum_byte *pages[16];
+  libspectrum_byte *pages[ SNAPSHOT_RAM_PAGES ];
 
   /* Data from .slt files */
 
-  libspectrum_byte *slt[256];	/* Level data */
-  size_t slt_length[256];	/* Length of each level */
+  libspectrum_byte *slt[ SNAPSHOT_SLT_PAGES ];	/* Level data */
+  size_t slt_length[ SNAPSHOT_SLT_PAGES ];	/* Length of each level */
 
   libspectrum_byte *slt_screen;	/* Loading screen */
   int slt_screen_level;		/* The id of the loading screen. Not used
@@ -116,7 +116,7 @@ struct libspectrum_snap {
   int zxcf_active;
   libspectrum_byte zxcf_memctl;
   size_t zxcf_pages;
-  libspectrum_byte *zxcf_ram[ 64 ];
+  libspectrum_byte *zxcf_ram[ SNAPSHOT_ZXCF_PAGES ];
 
   /* Interface II cartridge */
   int interface2_active;
@@ -124,86 +124,22 @@ struct libspectrum_snap {
 
   /* Timex Dock cartridge */
   int dock_active;
-  libspectrum_byte exrom_ram[8];
-  libspectrum_byte *exrom_cart[8];
-  libspectrum_byte dock_ram[8];
-  libspectrum_byte *dock_cart[8];
+  libspectrum_byte exrom_ram[ SNAPSHOT_DOCK_EXROM_PAGES ];
+  libspectrum_byte *exrom_cart[ SNAPSHOT_DOCK_EXROM_PAGES ];
+  libspectrum_byte dock_ram[ SNAPSHOT_DOCK_EXROM_PAGES ];
+  libspectrum_byte *dock_cart[ SNAPSHOT_DOCK_EXROM_PAGES ];
 
 };
 
 /* Initialise a libspectrum_snap structure */
 libspectrum_error
-libspectrum_snap_alloc( libspectrum_snap **snap )
+libspectrum_snap_alloc_internal( libspectrum_snap **snap )
 {
-  int i;
-
   (*snap) = malloc( sizeof( libspectrum_snap ) );
   if( !(*snap) ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 			     "libspectrum_snap_alloc: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
-  libspectrum_snap_set_a   ( *snap, 0x00 );
-  libspectrum_snap_set_f   ( *snap, 0x00 );
-  libspectrum_snap_set_bc  ( *snap, 0x0000 );
-  libspectrum_snap_set_de  ( *snap, 0x0000 );
-  libspectrum_snap_set_hl  ( *snap, 0x0000 );
-
-  libspectrum_snap_set_a_  ( *snap, 0x00 );
-  libspectrum_snap_set_f_  ( *snap, 0x00 );
-  libspectrum_snap_set_bc_ ( *snap, 0x0000 );
-  libspectrum_snap_set_de_ ( *snap, 0x0000 );
-  libspectrum_snap_set_hl_ ( *snap, 0x0000 );
-
-  libspectrum_snap_set_ix  ( *snap, 0x0000 );
-  libspectrum_snap_set_iy  ( *snap, 0x0000 );
-  libspectrum_snap_set_i   ( *snap, 0x00 );
-  libspectrum_snap_set_r   ( *snap, 0x00 );
-  libspectrum_snap_set_sp  ( *snap, 0x0000 );
-  libspectrum_snap_set_pc  ( *snap, 0x0000 );
-
-  libspectrum_snap_set_iff1( *snap, 1 );
-  libspectrum_snap_set_iff2( *snap, 1 );
-  libspectrum_snap_set_im  ( *snap, 1 );
-
-  libspectrum_snap_set_halted( *snap, 0 );
-  libspectrum_snap_set_last_instruction_ei( *snap, 0 );
-
-  for( i = 0; i < 16; i++ ) libspectrum_snap_set_pages( *snap, i, NULL );
-  for( i = 0; i < 256; i++ ) {
-    libspectrum_snap_set_slt( *snap, i, NULL );
-    libspectrum_snap_set_slt_length( *snap, i, 0 );
-  }
-  libspectrum_snap_set_slt_screen( *snap, NULL );
-  libspectrum_snap_set_slt_screen_level( *snap, 0 );
-
-  libspectrum_snap_set_out_ula( *snap, 0x00 );
-  libspectrum_snap_set_tstates( *snap, 69664 );
-  libspectrum_snap_set_out_128_memoryport( *snap, 0x07 );
-
-  libspectrum_snap_set_out_ay_registerport( *snap, 0x0e );
-  for( i = 0; i < 16; i++ ) libspectrum_snap_set_ay_registers( *snap, i, 0 );
-
-  libspectrum_snap_set_out_plus3_memoryport( *snap, 0x08 );
-
-  libspectrum_snap_set_out_scld_hsr( *snap, 0x00 );
-  libspectrum_snap_set_out_scld_dec( *snap, 0x00 );
-
-  libspectrum_snap_set_zxcf_active( *snap, 0 );
-  libspectrum_snap_set_zxcf_memctl( *snap, 0x00 );
-  libspectrum_snap_set_zxcf_pages( *snap, 0 );
-  for( i = 0; i < 64; i++ ) libspectrum_snap_set_zxcf_ram( *snap, i, NULL );
-
-  libspectrum_snap_set_interface2_active( *snap, 0 );
-  libspectrum_snap_set_interface2_rom( *snap, 0, NULL );
-
-  libspectrum_snap_set_dock_active( *snap, 0 );
-  for( i = 0; i < 8; i++ ) {
-    libspectrum_snap_set_exrom_ram( *snap, i, 0 );
-    libspectrum_snap_set_exrom_cart( *snap, i, NULL );
-    libspectrum_snap_set_dock_ram( *snap, i, 0 );
-    libspectrum_snap_set_dock_cart( *snap, i, NULL );
   }
 
   return LIBSPECTRUM_ERROR_NONE;

@@ -219,3 +219,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040525 accessor.pl,sna.c,snap_accessors.txt,szx.c,z80.c: add support for
          saving Timex Dock/Exrom information in .szx snapshots.
 20040525 szx.c: Timex Dock/Exrom pages aren't 0x4000 bytes long.
+20040526 accessor.pl,internals.h,snapshot.c,szx.c: tidy up snapshot
+	 alloc/free routines.
