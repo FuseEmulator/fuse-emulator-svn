@@ -32,6 +32,7 @@ libspectrum_la_SOURCES = dck.c \
 			 plusd.c \
 			 rzx.c \
 			 sna.c \
+			 snp.c \
 			 snapshot.c \
 			 snap_accessors.c \
 			 tap.c \
