@@ -151,12 +151,14 @@ CODE
 		      GTK_SIGNAL_FUNC( gtkui_destroy_widget_and_quit ),
 		      (gpointer) NULL );
 
-  /* Allow Esc to cancel */
+  /* Return = 'OK', Esc = 'Cancel' */
   accel_group = gtk_accel_group_new();
   gtk_window_add_accel_group( GTK_WINDOW( dialog.dialog ), accel_group );
 
-  gtk_widget_add_accelerator( cancel_button, "clicked",
-			      accel_group, GDK_Escape, 0, 0);
+  gtk_widget_add_accelerator( ok_button, "clicked", accel_group,
+			      GDK_Return, 0, 0 );
+  gtk_widget_add_accelerator( cancel_button, "clicked", accel_group,
+			      GDK_Escape, 0, 0 );
 
   /* Set the window to be modal and display it */
   gtk_window_set_modal( GTK_WINDOW( dialog.dialog ), TRUE );
