@@ -82,6 +82,7 @@ create_dialog( void )
   GtkWidget *step_button, *close_button;
 
   dialog = gtk_dialog_new();
+  gtk_window_set_title( GTK_WINDOW( dialog ), "Fuse - Debugger" );
 
   step_button = gtk_button_new_with_label( "Single Step" );
   gtk_container_add( GTK_CONTAINER( GTK_DIALOG( dialog )->action_area ),
