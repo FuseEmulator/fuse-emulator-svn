@@ -82,20 +82,30 @@ libspectrum_default_error_function( libspectrum_error error,
 /* Various types of file we might manage to identify */
 typedef enum libspectrum_id_t {
 
+  /* These types present in all versions of libspectrum */
+
   LIBSPECTRUM_ID_UNKNOWN = 0,		/* Unidentified file */
   LIBSPECTRUM_ID_RECORDING_RZX,		/* RZX input recording */
   LIBSPECTRUM_ID_SNAPSHOT_SNA,		/* .sna snapshot */
   LIBSPECTRUM_ID_SNAPSHOT_Z80,		/* .z80 snapshot */
   LIBSPECTRUM_ID_TAPE_TAP,		/* Z80-style .tap tape image */
   LIBSPECTRUM_ID_TAPE_TZX,		/* TZX tape image */
+
+  /* Below here, present only in 0.1.1 and later */
+
   LIBSPECTRUM_ID_DISK_DSK,		/* .dsk +3 disk image */
   LIBSPECTRUM_ID_DISK_SCL,		/* .scl TR-DOS disk image */
   LIBSPECTRUM_ID_DISK_TRD,		/* .trd TR-DOS disk image */
   LIBSPECTRUM_ID_CARTRIDGE_DCK,		/* .dck Timex cartridge image */
+
+  /* Below here, present only in 0.2.0 and later */
+
   LIBSPECTRUM_ID_TAPE_WARAJEVO,		/* Warajevo-style .tap tape image */ 
+
   LIBSPECTRUM_ID_SNAPSHOT_PLUSD,	/* +D snapshot */
-  LIBSPECTRUM_ID_SNAPSHOT_ZXS,		/* .zxs snapshot (zx32) */
+  LIBSPECTRUM_ID_SNAPSHOT_SP,		/* .sp snapshot */
   LIBSPECTRUM_ID_SNAPSHOT_SNP,		/* .snp snapshot */
+  LIBSPECTRUM_ID_SNAPSHOT_ZXS,		/* .zxs snapshot (zx32) */
 
 } libspectrum_id_t;
 

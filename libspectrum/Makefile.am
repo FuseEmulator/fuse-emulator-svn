@@ -35,6 +35,7 @@ libspectrum_la_SOURCES = dck.c \
 			 snp.c \
 			 snapshot.c \
 			 snap_accessors.c \
+			 sp.c \
 			 tap.c \
 			 tape.c \
 		 	 timings.c \
