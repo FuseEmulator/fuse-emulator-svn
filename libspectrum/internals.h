@@ -42,6 +42,11 @@
 #define GCC_UNUSED
 #endif				/* #ifdef __GNUC__ */
 
+/* Win32 systems have _strcmpi, but not strcasecmp */
+#if !defined(HAVE_STRCASECMP) && defined(HAVE__STRCMPI)
+#define strcasecmp _strcmpi
+#endif		/* #if !defined(HAVE_STRCASECMP) && defined(HAVE__STRCMPI) */
+
 /* Print an error to stdout */
 libspectrum_error libspectrum_print_error( const char *format, ... );
 
