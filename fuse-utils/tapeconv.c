@@ -1,5 +1,5 @@
 /* tapeconf.c: Convert .tzx files to .tap files
-   Copyright (c) 2002 Philip Kendall
+   Copyright (c) 2002-2003 Philip Kendall
 
    $Id$
 
@@ -27,22 +27,20 @@
 #include <config.h>
 
 #include <errno.h>
-#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 #include <libspectrum.h>
+
+#include "utils.h"
 
 char *progname;
 
 int
 main( int argc, char **argv )
 {
-  int fd; struct stat file_info;
   libspectrum_byte *buffer; size_t length;
 
   libspectrum_tape *tzx;
@@ -61,35 +59,7 @@ main( int argc, char **argv )
     return 1;
   }
 
-  if( ( fd = open( argv[1], O_RDONLY ) ) == -1 ) {
-    fprintf( stderr, "%s: couldn't open `%s': %s\n", progname, argv[1],
-	     strerror( errno ) );
-    return 1;
-  }
-
-  if( fstat( fd, &file_info) ) {
-    fprintf( stderr, "%s: couldn't stat `%s': %s\n", progname, argv[1],
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  length = file_info.st_size;
-
-  buffer = mmap( 0, length, PROT_READ, MAP_SHARED, fd, 0 );
-  if( buffer == (void*)-1 ) {
-    fprintf( stderr, "%s: couldn't mmap `%s': %s\n", progname, argv[1],
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  if( close(fd) ) {
-    fprintf( stderr, "%s: couldn't close `%s': %s\n", progname, argv[1],
-	     strerror( errno ) );
-    munmap( buffer, length );
-    return 1;
-  }
+  if( mmap_file( argv[1], &buffer, &length ) ) return 1;
 
   if( libspectrum_tape_alloc( &tzx ) ) {
     munmap( buffer, length );
