@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\"
 .\" tapeconv.1: tapeconv man page
-.\" Copyright (c) 2002-2003 Philip Kendall
+.\" Copyright (c) 2002-2004 Philip Kendall
 .\"
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 .\" Postal address: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
 .\"
 .\"
-.TH tapeconv 1 "13th September, 2003" "Version 0.6.1" "Emulators"
+.TH tapeconv 1 "11th February, 2003" "Version 0.6.2" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -43,7 +43,7 @@ tapeconv \- Sinclair ZX Spectrum tape file convertor
 .\"------------------------------------------------------------------
 .\"
 .SH DESCRIPTION
-Tapeconv converts between .tzx and .tap tape files. It reads in one
+Tapeconv converts between ZX Spectrum tape images. It reads in one
 tape file and writes the converted file to standard output.
 .\"
 .\"------------------------------------------------------------------
@@ -52,7 +52,7 @@ tape file and writes the converted file to standard output.
 .TP
 .I -i format
 specifies the format of the input tape file. Generally, this will be
-autodetcted, but you can use
+autodetcted but you can use
 .RI ` tzx '
 or
 .RI ` tap '
@@ -66,7 +66,9 @@ that .tap format is a subset of .tzx format, and hence the conversion
 may not succeed. Warning messages will be given in this case.
 .TP
 .I tapefile
-specifies a tape file to be converted.
+specifies a tape file (in a format supported by
+.IR libspectrum "(3))"
+to be converted.
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -77,19 +79,14 @@ None known.
 .\"
 .SH SEE ALSO
 .IR fuse "(1),"
+.IR fuse-utils "(1),"
+.IR libspectrum "(3),"
 .IR listbasic "(1),"
-.IR rzxcheck "(1),"
-.IR rzxdump "(1),"
-.IR rzxtool "(1),"
-.IR scl2trd "(1),"
-.IR snapconv "(1),"
-.IR tzxlist "(1),"
-.IR xspect "(1),"
-.IR xzx "(1)"
+.IR tzxlist "(1)"
 .PP
 The comp.sys.sinclair Spectrum FAQ, at
 .br
-.IR "http://www.sinclairfaq.com/cssfaq/index.html" .
+.IR "http://www.worldofspectrum.org/faq/index.html" .
 .\"
 .\"------------------------------------------------------------------
 .\"
