@@ -45,6 +45,10 @@ rzx_read_input( libspectrum_rzx *rzx,
 static libspectrum_error
 rzx_read_frames( libspectrum_rzx *rzx,
 		 const libspectrum_byte **ptr, const libspectrum_byte *end );
+static libspectrum_error
+rzx_read_sign_start( const libspectrum_byte **ptr,
+		     const libspectrum_byte *end,
+		     const libspectrum_byte **sign_start );
 
 static libspectrum_error
 rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -157,7 +161,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
 		      const size_t length, libspectrum_snap **snap )
 {
   libspectrum_error error;
-  const libspectrum_byte *ptr, *end;
+  const libspectrum_byte *ptr, *end, *sign_start = NULL;
 
   ptr = buffer; end = buffer + length;
 
@@ -184,6 +188,11 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
 
     case LIBSPECTRUM_RZX_INPUT_BLOCK:
       error = rzx_read_input( rzx, &ptr, end );
+      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+      break;
+
+    case LIBSPECTRUM_RZX_SIGN_START_BLOCK:
+      error = rzx_read_sign_start( &ptr, end, &sign_start );
       if( error != LIBSPECTRUM_ERROR_NONE ) return error;
       break;
 
@@ -501,6 +510,40 @@ rzx_read_frames( libspectrum_rzx *rzx,
 
   return LIBSPECTRUM_ERROR_NONE;
 }
+
+static libspectrum_error
+rzx_read_sign_start( const libspectrum_byte **ptr,
+		     const libspectrum_byte *end,
+		     const libspectrum_byte **sign_start )
+{
+  size_t length;
+
+  /* Check we've got enough data for the block */
+  if( end - (*ptr) < 4 ) {
+    libspectrum_print_error(
+      "rzx_read_sign_start: not enough data in buffer"
+    );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  /* Get the length */
+  length = libspectrum_read_dword( ptr );
+
+  /* Check there's still enough data (the -1 is because we've already read
+     the block ID) */
+  if( end - (*ptr) < (ptrdiff_t)length - 5 ) {
+    libspectrum_print_error(
+      "rzx_read_sign_start: not enough data in buffer"
+    );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  (*ptr) += length - 5;
+
+  *sign_start = *ptr;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}  
 
 libspectrum_error
 libspectrum_rzx_write( libspectrum_rzx *rzx,
