@@ -185,13 +185,15 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
       switch( extra_header[2] ) {
       case 0: case 1: case 2: case 3:
-	snap->machine = LIBSPECTRUM_MACHINE_48;    break;
+	snap->machine = LIBSPECTRUM_MACHINE_48;     break;
       case 4: case 5: case 6:
-	snap->machine = LIBSPECTRUM_MACHINE_128;   break;
+	snap->machine = LIBSPECTRUM_MACHINE_128;    break;
       case 7: case 8: /* 8 mistakenly written by some versions of xzx */
-	snap->machine = LIBSPECTRUM_MACHINE_PLUS3; break;
+	snap->machine = LIBSPECTRUM_MACHINE_PLUS3;  break;
       case 9:
-	snap->machine = LIBSPECTRUM_MACHINE_PENT;  break;
+	snap->machine = LIBSPECTRUM_MACHINE_PENT;   break;
+      case 13:
+	snap->machine = LIBSPECTRUM_MACHINE_PLUS2A; break;
       default:
         libspectrum_print_error(
           "libspectrum_read_z80_header: unknown machine type %d\n",
@@ -750,6 +752,8 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = 7; break;
   case LIBSPECTRUM_MACHINE_PENT:
     *(*ptr)++ = 9; break;
+  case LIBSPECTRUM_MACHINE_PLUS2A:
+    *(*ptr)++ = 13; break;
   }
 
   *(*ptr)++ = snap->out_128_memoryport;
@@ -772,10 +776,10 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   /* Is 0x0000 to 0x3fff RAM? Currently iff we're in a +3 special
      configuration */
-  *(*ptr)++ = ( ( snap->machine == LIBSPECTRUM_MACHINE_PLUS3 ) && 
+  *(*ptr)++ = ( ( snap->machine >= LIBSPECTRUM_MACHINE_PLUS2A ) && 
 	      ( snap->out_plus3_memoryport & 0x01 ) ? 0xff : 0x00 );
   /* Ditto for 0x3fff to 0x7fff */
-  *(*ptr)++ = ( ( snap->machine == LIBSPECTRUM_MACHINE_PLUS3 ) && 
+  *(*ptr)++ = ( ( snap->machine >= LIBSPECTRUM_MACHINE_PLUS2A ) && 
 	      ( snap->out_plus3_memoryport & 0x01 ) ? 0xff : 0x00 );
 
   /* Joystick settings, etc */
