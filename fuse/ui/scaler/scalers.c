@@ -50,6 +50,10 @@ static void TV2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
                BYTE *dstPtr, DWORD dstPitch, int width, int height);
 static void TimexTV(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
                DWORD dstPitch, int width, int height);
+static void Normal24( BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
+		      DWORD dstPitch, int width, int height );
+static void Double24( BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
+		      DWORD dstPitch, int width, int height );
 
 static int scaler_supported[GFX_NUM] = {0};
 
@@ -78,6 +82,9 @@ static struct scaler_info available_scalers[] = {
   { "AdvMAME 2x",      "advmame2x",  SCALER_EXPAND_1_PIXEL,    AdvMame2x  },
   { "TV 2x",	       "tv2x",	     SCALER_EXPAND_1_PIXEL,    TV2x       },
   { "Timex TV",	       "timextv",    SCALER_EXPAND_2_Y_PIXELS, TimexTV    },
+
+  { "24-bit normal",   "normal24",   SCALER_FLAGS_NONE,	       Normal24   },
+  { "24-bit double",   "double24",   SCALER_FLAGS_NONE,	       Double24   },
 
 };
 
@@ -1037,3 +1044,36 @@ TimexTV(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
     p += nextlineSrc;
   }
 }
+
+static void 
+Normal24( BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
+	  DWORD dstPitch, int width, int height )
+{
+  while( height-- ) {
+    memcpy( dstPtr, srcPtr, 3 * width );
+    srcPtr += srcPitch;
+    dstPtr += dstPitch;
+  }
+}
+
+static void 
+Double24( BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
+	  DWORD dstPitch, int width, int height )
+{
+  DWORD i; BYTE *s, *d, *d2;
+
+  while( height-- ) {
+
+    for( i = 0, s = srcPtr, d = dstPtr, d2 = dstPtr + dstPitch;
+	 i < width;
+	 i++, d += 3, d2 += 3 ) {
+      *d = *(d+3) = *s; *d2 = *(d2+3) = *s++; d++; d2++;
+      *d = *(d+3) = *s; *d2 = *(d2+3) = *s++; d++; d2++;
+      *d = *(d+3) = *s; *d2 = *(d2+3) = *s++; d++; d2++;
+    }
+
+    srcPtr += srcPitch;
+    dstPtr += dstPitch << 1;
+  }
+}
+
