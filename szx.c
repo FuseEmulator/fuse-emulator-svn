@@ -40,7 +40,8 @@
       Minor version number of the file format. Currently 1."
 
      despite the current version of the format being 1.2. libspectrum
-     writes .szx files with a minor version number of 2.
+     writes .szx files with a minor version number of 3 as they contain
+     blocks not in the v1.2 specification.
 
    * The ZXSTSPECREGS block says that the ch1ffd member should be set
      to zero for machines other than the +2A/+3. libspectrum makes
@@ -79,6 +80,9 @@ typedef enum szx_machine_type {
 
 static const char *signature = "ZXST";
 static const size_t signature_length = 4;
+
+static const libspectrum_byte SZX_VERSION_MAJOR = 1;
+static const libspectrum_byte SZX_VERSION_MINOR = 3;
 
 /* Constants etc for each chunk type */
 
@@ -957,8 +961,8 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   memcpy( *ptr, signature, 4 ); *ptr += 4;
   
-  /* [Assumption] We currently write version 1.2 files (major, minor) */
-  *(*ptr)++ = 0x01; *(*ptr)++ = 0x02;
+  /* [Assumption] We currently write version 1.3 files (major, minor) */
+  *(*ptr)++ = SZX_VERSION_MAJOR; *(*ptr)++ = SZX_VERSION_MINOR;
 
   switch( libspectrum_snap_machine( snap ) ) {
 
