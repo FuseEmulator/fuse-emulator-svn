@@ -30,7 +30,12 @@
 #include <string.h>
 
 #ifdef HAVE_GCRYPT_H
+
 #include <gcrypt.h>
+
+/* The version of libgcrypt that we need */
+static const char *MIN_GCRYPT_VERSION = "1.1.0";
+
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
 #include "internals.h"
@@ -38,9 +43,6 @@
 /* The function to call on errors */
 libspectrum_error_function_t libspectrum_error_function =
   libspectrum_default_error_function;
-
-/* The version of libgcrypt that we need */
-static const char *MIN_GCRYPT_VERSION = "1.1.0";
 
 /* Initialise the library */
 libspectrum_error
