@@ -1,5 +1,5 @@
 /* libspectrum.h: the library for dealing with ZX Spectrum emulator files
-   Copyright (c) 2001-2004 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2005 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -670,8 +670,16 @@ libspectrum_rzx_iterator_get_frames( libspectrum_rzx_iterator it );
  */
 
 typedef struct libspectrum_microdrive libspectrum_microdrive;
+typedef struct libspectrum_microdrive_block libspectrum_microdrive_block;
 
-#define LIBSPECTRUM_MICRODRIVE_DATA_LENGTH 137922
+#define LIBSPECTRUM_MICRODRIVE_BLOCK_MAX 254
+#define LIBSPECTRUM_MICRODRIVE_HEAD_LEN 15
+#define LIBSPECTRUM_MICRODRIVE_DATA_LEN 512
+#define LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ( LIBSPECTRUM_MICRODRIVE_HEAD_LEN + \
+				    LIBSPECTRUM_MICRODRIVE_HEAD_LEN +  \
+				    LIBSPECTRUM_MICRODRIVE_DATA_LEN + 1 )
+#define LIBSPECTRUM_MICRODRIVE_CARTRIDGE_LENGTH \
+	( LIBSPECTRUM_MICRODRIVE_BLOCK_MAX * LIBSPECTRUM_MICRODRIVE_BLOCK_LEN )
 
 /* Constructor/destructor */
 
@@ -695,8 +703,26 @@ void WIN32_DLL
 libspectrum_microdrive_set_write_protect( libspectrum_microdrive *microdrive,
 					  int write_protect );
 
+libspectrum_byte WIN32_DLL
+libspectrum_microdrive_cartridge_len( const libspectrum_microdrive *microdrive );
+void WIN32_DLL
+libspectrum_microdrive_set_cartridge_len( libspectrum_microdrive *microdrive,
+					  libspectrum_byte len );
+
+void WIN32_DLL
+libspectrum_microdrive_get_block( const libspectrum_microdrive *microdrive,
+				  libspectrum_byte which,
+				  libspectrum_microdrive_block *block );
+void WIN32_DLL
+libspectrum_microdrive_set_block( libspectrum_microdrive *microdrive,
+				  libspectrum_byte which,
+				  libspectrum_microdrive_block *block );
+
 /* .mdr format routines */
 
+int WIN32_DLL
+libspectrum_microdrive_checksum( libspectrum_microdrive *microdrive,
+				 libspectrum_byte what );
 libspectrum_error WIN32_DLL
 libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
 				 libspectrum_byte *buffer, size_t length );
