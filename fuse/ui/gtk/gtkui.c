@@ -41,6 +41,7 @@
 #include "display.h"
 #include "event.h"
 #include "fuse.h"
+#include "gtkdisplay.h"
 #include "gtkkeyboard.h"
 #include "gtkui.h"
 #include "machine.h"
@@ -181,7 +182,8 @@ static GtkItemFactoryEntry gtkui_menu_data[] = {
 static guint gtkui_menu_data_size =
   sizeof( gtkui_menu_data ) / sizeof( GtkItemFactoryEntry );
   
-int ui_init(int *argc, char ***argv, int width, int height)
+int
+ui_init( int *argc, char ***argv )
 {
   GtkWidget *box,*menu_bar;
   GtkAccelGroup *accel_group;
@@ -193,7 +195,10 @@ int ui_init(int *argc, char ***argv, int width, int height)
 
   gtk_window_set_title( GTK_WINDOW(gtkui_window), "Fuse" );
   gtk_window_set_wmclass( GTK_WINDOW(gtkui_window), fuse_progname, "Fuse" );
-  gtk_window_set_default_size( GTK_WINDOW(gtkui_window), width, height);
+
+  gtk_window_set_default_size( GTK_WINDOW(gtkui_window),
+			       DISPLAY_ASPECT_WIDTH, DISPLAY_SCREEN_HEIGHT );
+
   gtk_signal_connect(GTK_OBJECT(gtkui_window), "delete_event",
 		     GTK_SIGNAL_FUNC(gtkui_delete), NULL);
   gtk_signal_connect(GTK_OBJECT(gtkui_window), "key-press-event",
@@ -224,18 +229,20 @@ int ui_init(int *argc, char ***argv, int width, int height)
     return 1;
   }
   gtk_drawing_area_size( GTK_DRAWING_AREA(gtkui_drawing_area),
-			 width, height );
+			 DISPLAY_ASPECT_WIDTH, DISPLAY_SCREEN_HEIGHT );
+
   gtk_box_pack_start( GTK_BOX(box), gtkui_drawing_area, FALSE, FALSE, 0 );
 
-  geometry.min_width = width;
-  geometry.min_height = height;
-  geometry.max_width = 2 * width;
-  geometry.max_height = 2 * height;
+  geometry.min_width = DISPLAY_ASPECT_WIDTH;
+  geometry.min_height = DISPLAY_SCREEN_HEIGHT;
+  geometry.max_width = 3 * DISPLAY_ASPECT_WIDTH;
+  geometry.max_height = 3 * DISPLAY_SCREEN_HEIGHT;
   geometry.base_width = 0;
   geometry.base_height = 0;
-  geometry.width_inc = width;
-  geometry.height_inc = height;
-  geometry.min_aspect = geometry.max_aspect = ((float)width)/height;
+  geometry.width_inc = DISPLAY_ASPECT_WIDTH;
+  geometry.height_inc = DISPLAY_SCREEN_HEIGHT;
+  geometry.min_aspect = geometry.max_aspect =
+    ((float)DISPLAY_ASPECT_WIDTH)/DISPLAY_SCREEN_HEIGHT;
 
   gtk_window_set_geometry_hints( GTK_WINDOW(gtkui_window), gtkui_drawing_area,
 				 &geometry,
@@ -244,11 +251,9 @@ int ui_init(int *argc, char ***argv, int width, int height)
 				 GDK_HINT_ASPECT );
 
 
-  gtk_widget_show(gtkui_drawing_area);
+  if( gtkdisplay_init() ) return 1;
 
-  if(uidisplay_init(width,height)) return 1;
-
-  gtk_widget_show(gtkui_window);
+  gtk_widget_show_all( gtkui_window );
 
   return 0;
 }
@@ -304,7 +309,7 @@ int ui_end(void)
   gtk_widget_hide(gtkui_window);
 
   /* Tidy up the low-level stuff */
-  error = uidisplay_end(); if(error) return error;
+  error = gtkdisplay_end(); if( error ) return error;
 
   /* Now free up the window itself */
 /*    XDestroyWindow(display,mainWindow); */

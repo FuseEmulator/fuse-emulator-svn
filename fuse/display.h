@@ -27,6 +27,8 @@
 #ifndef FUSE_DISPLAY_H
 #define FUSE_DISPLAY_H
 
+#include <stddef.h>
+
 #ifndef FUSE_TYPES_H
 #include "types.h"
 #endif			/* #ifndef FUSE_TYPES_H */
@@ -64,6 +66,9 @@
 #define DISPLAY_ASPECT_WIDTH  ( DISPLAY_SCREEN_WIDTH / 2 )
 
 extern int display_ui_initialised;
+
+extern WORD display_image[DISPLAY_SCREEN_HEIGHT][DISPLAY_SCREEN_WIDTH];
+extern ptrdiff_t display_pitch;
 
 extern BYTE display_lores_border;
 extern BYTE display_hires_border;

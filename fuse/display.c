@@ -27,6 +27,7 @@
 
 #include <config.h>
 
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -42,6 +43,10 @@
 
 /* Set once we have initialised the UI */
 int display_ui_initialised = 0;
+
+/* A copy of every pixel on the screen */
+WORD display_image[DISPLAY_SCREEN_HEIGHT][DISPLAY_SCREEN_WIDTH];
+ptrdiff_t display_pitch = DISPLAY_SCREEN_WIDTH * sizeof( WORD );
 
 /* The current border colour */
 BYTE display_lores_border;
@@ -89,6 +94,9 @@ static QWORD display_is_dirty[DISPLAY_SCREEN_HEIGHT];
 /* This value signifies that the entire line must be redisplayed */
 static QWORD display_all_dirty;
 
+/* Used to signify that we're redrawing the entire screen */
+static int display_redraw_all;
+
 /* The next line to be replotted */
 static int display_next_line;
 
@@ -119,6 +127,8 @@ static void display_set_border(void);
 static int display_border_line(void);
 static int add_rectangle( int y, int x, int w );
 static int end_line( int y );
+
+static void set_border( int x, int y, BYTE colour );
 
 static void display_dirty_flashing(void);
 static int display_border_column(int time_since_line);
@@ -180,6 +190,8 @@ int display_init(int *argc, char ***argv)
     display_is_dirty[y] = display_all_dirty;
   }
 
+  display_redraw_all = 0;
+
   return 0;
 }
 
@@ -208,10 +220,16 @@ void display_line(void)
     if( settings_current.frame_rate <= ++frame_count ) {
       frame_count = 0;
 
-      for( i = 0, ptr = inactive_rectangle;
-	   i < inactive_rectangle_count;
-	   i++, ptr++ ) {
-	uidisplay_area( 8 * ptr->x, ptr->y, 8 * ptr->w, ptr->h );
+      if( display_redraw_all ) {
+	uidisplay_area( 0, 0,
+			DISPLAY_ASPECT_WIDTH, DISPLAY_SCREEN_HEIGHT );
+	display_redraw_all = 0;
+      } else {
+	for( i = 0, ptr = inactive_rectangle;
+	     i < inactive_rectangle_count;
+	     i++, ptr++ ) {
+	  uidisplay_area( 8 * ptr->x, ptr->y, 8 * ptr->w, ptr->h );
+	}
       }
 
       inactive_rectangle_count = 0;
@@ -228,7 +246,7 @@ void display_line(void)
 static void
 display_draw_line( int y )
 {
-  int i, start, x, border_colour, error;
+  int start, x, border_colour, error;
   BYTE data, data2, ink, paper;
   WORD hires_data;
 
@@ -281,42 +299,32 @@ display_draw_line( int y )
 	    hires_data = (data << 8) + data2;
 	    display_plot16( screen_x<<1, screen_y, hires_data, ink, paper );
 	  } else {
-	    display_plot8( screen_x<<1, screen_y, data, ink, paper );
+	    display_plot8( screen_x, screen_y, data, ink, paper );
 	  }    
 
 	} else if( x < DISPLAY_BORDER_WIDTH_COLS ) {
 
 	  border_colour = left_border[ y - DISPLAY_BORDER_HEIGHT ][x];
-
-	  for( i = 0; i < 16; i++ )
-	    uidisplay_putpixel( ( x << 4 ) + i, y, border_colour );
+	  set_border( x, y, border_colour );
 
 	} else {
 
 	  border_colour =
 	    right_border[ y - DISPLAY_BORDER_HEIGHT ]
                         [ x - DISPLAY_BORDER_WIDTH_COLS - DISPLAY_WIDTH_COLS ];
-
-	  for( i = 0; i < 16; i++ )
-	    uidisplay_putpixel( ( x << 4 ) + i, y, border_colour );
-
+	  set_border( x, y, border_colour );
 	}
 
       } else if( y < DISPLAY_BORDER_HEIGHT ) {
 
 	border_colour = top_border[y][x];
-
-	for( i = 0; i < 16; i++ )
-	  uidisplay_putpixel( ( x << 4 ) + i, y, border_colour );
+	set_border( x, y, border_colour );
 
       } else {
 
 	border_colour =
 	  bottom_border[y - DISPLAY_BORDER_HEIGHT - DISPLAY_HEIGHT ][x];
-
-	for( i = 0; i < 16; i++ )
-	  uidisplay_putpixel( ( x << 4 ) + i, y, border_colour );
-
+	set_border( x, y, border_colour );
       }
 
       display_is_dirty[y] >>= 1;
@@ -571,52 +579,82 @@ static void display_dirty64(WORD address)
 
 /* Print the 8 pixels in `data' using ink colour `ink' and paper
    colour `paper' to the screen at ( (8*x) , y ) */
-
-void display_plot8(int x, int y, BYTE data, BYTE ink, BYTE paper)
+void
+display_plot8( int x, int y, BYTE data, BYTE ink, BYTE paper )
 {
-  x = (x << 3) + DISPLAY_BORDER_WIDTH;
+  x = (x << 3) + DISPLAY_BORDER_WIDTH / 2;
   y += DISPLAY_BORDER_HEIGHT;
-  uidisplay_putpixel(x+0,y, ( data & 0x80 ) ? ink : paper );
-  uidisplay_putpixel(x+1,y, ( data & 0x80 ) ? ink : paper );
-  uidisplay_putpixel(x+2,y, ( data & 0x40 ) ? ink : paper );
-  uidisplay_putpixel(x+3,y, ( data & 0x40 ) ? ink : paper );
-  uidisplay_putpixel(x+4,y, ( data & 0x20 ) ? ink : paper );
-  uidisplay_putpixel(x+5,y, ( data & 0x20 ) ? ink : paper );
-  uidisplay_putpixel(x+6,y, ( data & 0x10 ) ? ink : paper );
-  uidisplay_putpixel(x+7,y, ( data & 0x10 ) ? ink : paper );
-  uidisplay_putpixel(x+8,y, ( data & 0x08 ) ? ink : paper );
-  uidisplay_putpixel(x+9,y, ( data & 0x08 ) ? ink : paper );
-  uidisplay_putpixel(x+10,y, ( data & 0x04 ) ? ink : paper );
-  uidisplay_putpixel(x+11,y, ( data & 0x04 ) ? ink : paper );
-  uidisplay_putpixel(x+12,y, ( data & 0x02 ) ? ink : paper );
-  uidisplay_putpixel(x+13,y, ( data & 0x02 ) ? ink : paper );
-  uidisplay_putpixel(x+14,y, ( data & 0x01 ) ? ink : paper );
-  uidisplay_putpixel(x+15,y, ( data & 0x01 ) ? ink : paper );
+
+  if( machine_current->timex ) {
+
+    x <<= 1;
+    display_image[y][x+ 0] = ( data & 0x80 ) ? ink : paper;
+    display_image[y][x+ 1] = ( data & 0x80 ) ? ink : paper;
+    display_image[y][x+ 2] = ( data & 0x40 ) ? ink : paper;
+    display_image[y][x+ 3] = ( data & 0x40 ) ? ink : paper;
+    display_image[y][x+ 4] = ( data & 0x20 ) ? ink : paper;
+    display_image[y][x+ 5] = ( data & 0x20 ) ? ink : paper;
+    display_image[y][x+ 6] = ( data & 0x10 ) ? ink : paper;
+    display_image[y][x+ 7] = ( data & 0x10 ) ? ink : paper;
+    display_image[y][x+ 8] = ( data & 0x08 ) ? ink : paper;
+    display_image[y][x+ 9] = ( data & 0x08 ) ? ink : paper;
+    display_image[y][x+10] = ( data & 0x04 ) ? ink : paper;
+    display_image[y][x+11] = ( data & 0x04 ) ? ink : paper;
+    display_image[y][x+12] = ( data & 0x02 ) ? ink : paper;
+    display_image[y][x+13] = ( data & 0x02 ) ? ink : paper;
+    display_image[y][x+14] = ( data & 0x01 ) ? ink : paper;
+    display_image[y][x+15] = ( data & 0x01 ) ? ink : paper;
+
+  } else {
+    display_image[y][x+ 0] = ( data & 0x80 ) ? ink : paper;
+    display_image[y][x+ 1] = ( data & 0x40 ) ? ink : paper;
+    display_image[y][x+ 2] = ( data & 0x20 ) ? ink : paper;
+    display_image[y][x+ 3] = ( data & 0x10 ) ? ink : paper;
+    display_image[y][x+ 4] = ( data & 0x08 ) ? ink : paper;
+    display_image[y][x+ 5] = ( data & 0x04 ) ? ink : paper;
+    display_image[y][x+ 6] = ( data & 0x02 ) ? ink : paper;
+    display_image[y][x+ 7] = ( data & 0x01 ) ? ink : paper;
+  }
 }
 
 /* Print the 16 pixels in `data' using ink colour `ink' and paper
    colour `paper' to the screen at ( (16*x) , y ) */
-
-void display_plot16(int x, int y, WORD data, BYTE ink, BYTE paper)
+void
+display_plot16( int x, int y, WORD data, BYTE ink, BYTE paper )
 {
-  x = (x << 3) + DISPLAY_BORDER_WIDTH;
+  x = (x << 4) + DISPLAY_BORDER_WIDTH;
   y += DISPLAY_BORDER_HEIGHT;
-  uidisplay_putpixel(x+0, y, ( data & 0x8000 ) ? ink : paper );
-  uidisplay_putpixel(x+1, y, ( data & 0x4000 ) ? ink : paper );
-  uidisplay_putpixel(x+2, y, ( data & 0x2000 ) ? ink : paper );
-  uidisplay_putpixel(x+3, y, ( data & 0x1000 ) ? ink : paper );
-  uidisplay_putpixel(x+4, y, ( data & 0x0800 ) ? ink : paper );
-  uidisplay_putpixel(x+5, y, ( data & 0x0400 ) ? ink : paper );
-  uidisplay_putpixel(x+6, y, ( data & 0x0200 ) ? ink : paper );
-  uidisplay_putpixel(x+7 ,y, ( data & 0x0100 ) ? ink : paper );
-  uidisplay_putpixel(x+8 ,y, ( data & 0x0080 ) ? ink : paper );
-  uidisplay_putpixel(x+9 ,y, ( data & 0x0040 ) ? ink : paper );
-  uidisplay_putpixel(x+10,y, ( data & 0x0020 ) ? ink : paper );
-  uidisplay_putpixel(x+11,y, ( data & 0x0010 ) ? ink : paper );
-  uidisplay_putpixel(x+12,y, ( data & 0x0008 ) ? ink : paper );
-  uidisplay_putpixel(x+13,y, ( data & 0x0004 ) ? ink : paper );
-  uidisplay_putpixel(x+14,y, ( data & 0x0002 ) ? ink : paper );
-  uidisplay_putpixel(x+15,y, ( data & 0x0001 ) ? ink : paper );
+
+  display_image[y][x+ 0] = ( data & 0x8000 ) ? ink : paper;
+  display_image[y][x+ 1] = ( data & 0x4000 ) ? ink : paper;
+  display_image[y][x+ 2] = ( data & 0x2000 ) ? ink : paper;
+  display_image[y][x+ 3] = ( data & 0x1000 ) ? ink : paper;
+  display_image[y][x+ 4] = ( data & 0x0800 ) ? ink : paper;
+  display_image[y][x+ 5] = ( data & 0x0400 ) ? ink : paper;
+  display_image[y][x+ 6] = ( data & 0x0200 ) ? ink : paper;
+  display_image[y][x+ 7] = ( data & 0x0100 ) ? ink : paper;
+  display_image[y][x+ 8] = ( data & 0x0080 ) ? ink : paper;
+  display_image[y][x+ 9] = ( data & 0x0040 ) ? ink : paper;
+  display_image[y][x+10] = ( data & 0x0020 ) ? ink : paper;
+  display_image[y][x+11] = ( data & 0x0010 ) ? ink : paper;
+  display_image[y][x+12] = ( data & 0x0008 ) ? ink : paper;
+  display_image[y][x+13] = ( data & 0x0004 ) ? ink : paper;
+  display_image[y][x+14] = ( data & 0x0002 ) ? ink : paper;
+  display_image[y][x+15] = ( data & 0x0001 ) ? ink : paper;
+}
+
+static void
+set_border( int x, int y, BYTE colour )
+{
+  int i, count;
+
+  if( machine_current->timex ) {
+    x <<= 4; count = 16;
+  } else {
+    x <<= 3; count =  8;
+  }
+
+  for( i = 0; i < count; i++ ) display_image[y][x+i] = colour;
 }
 
 /* Get the attributes for the eight pixels starting at
@@ -816,10 +854,5 @@ static void display_dirty_flashing(void)
 
 void display_refresh_all(void)
 {
-  size_t y;
-
-  for( y = 0; y < DISPLAY_SCREEN_HEIGHT ; y++ ) {
-    display_is_dirty[y] = display_all_dirty;
-    display_draw_line( y );
-  }
+  display_redraw_all = 1;
 }

@@ -28,6 +28,7 @@
 
 #ifdef UI_GTK		/* Use this file iff we're using GTK+ */
 
+#include <stddef.h>
 #include <stdio.h>
 
 #include <gtk/gtk.h>
@@ -35,17 +36,29 @@
 #include "display.h"
 #include "fuse.h"
 #include "gtkui.h"
+#include "machine.h"
 #include "screenshot.h"
 #include "ui/uidisplay.h"
+#include "ui/scaler/scaler.h"
 #include "scld.h"
 
-GdkGC *gtkdisplay_gc;
+GdkGC *gtkdisplay_gc = NULL;
 static GdkImage *image;
 
 unsigned long gtkdisplay_colours[16];
 
+/* The size of a 1x1 image */
+int image_width, image_height;
+
+/* The scaled image */
+static WORD scaled_image[3*DISPLAY_SCREEN_HEIGHT][3*DISPLAY_SCREEN_WIDTH];
+static const ptrdiff_t scaled_pitch =
+                                     3 * DISPLAY_SCREEN_WIDTH * sizeof( WORD );
+
 /* The current size of the window (in units of DISPLAY_SCREEN_*) */
 static int gtkdisplay_current_size=1;
+
+static ScalerProc *scaler_proc;
 
 static int gtkdisplay_allocate_colours( unsigned long *pixel_values );
 static void gtkdisplay_area(int x, int y, int width, int height);
@@ -58,13 +71,14 @@ static gint gtkdisplay_expose(GtkWidget *widget, GdkEvent *event,
 static gint gtkdisplay_configure(GtkWidget *widget, GdkEvent *event,
 				 gpointer data);
 
-int uidisplay_init(int width, int height)
+int
+gtkdisplay_init( void )
 {
   int x,y,get_width,get_height, depth;
   GdkGCValues gc_values;
 
   image = gdk_image_new(GDK_IMAGE_FASTEST, gdk_visual_get_system(),
-			3*width, 3*height );
+			3 * DISPLAY_SCREEN_WIDTH, 3 * DISPLAY_SCREEN_HEIGHT );
 
   gtk_signal_connect( GTK_OBJECT(gtkui_drawing_area), "expose_event", 
 		      GTK_SIGNAL_FUNC(gtkdisplay_expose), NULL);
@@ -78,6 +92,40 @@ int uidisplay_init(int width, int height)
 		&gc_values, (GdkGCValuesMask) 0 );
 
   if( gtkdisplay_allocate_colours( gtkdisplay_colours ) ) return 1;
+
+  return 0;
+}
+
+void
+uidisplay_init_scalers( void )
+{
+  scaler_register_clear();
+
+  scaler_register( GFX_NORMAL );
+  scaler_register( GFX_DOUBLESIZE );
+  scaler_register( GFX_TRIPLESIZE );
+  scaler_register( GFX_2XSAI );
+  scaler_register( GFX_SUPER2XSAI );
+  scaler_register( GFX_SUPEREAGLE );
+  scaler_register( GFX_ADVMAME2X );
+  if( machine_current->timex ) {
+    scaler_register( GFX_HALF );
+    scaler_register( GFX_TIMEXTV );
+  } else {
+    scaler_register( GFX_TV2X );
+  }
+}
+
+int
+uidisplay_init( int width, int height )
+{
+  image_width = width;
+  image_height = height;
+
+  gtkdisplay_current_size = 1;
+  scaler_proc = Normal1x;
+
+  display_refresh_all();
 
   return 0;
 }
@@ -148,10 +196,8 @@ static int gtkdisplay_allocate_colours( unsigned long *pixel_values )
   
 static int gtkdisplay_configure_notify( int width )
 {
-  int size, colour;
+  int size;
 
-  colour = scld_last_dec.name.hires ? display_hires_border :
-                                      display_lores_border;
   size = width / DISPLAY_ASPECT_WIDTH;
 
   /* If we're the same size as before, nothing special needed */
@@ -162,6 +208,14 @@ static int gtkdisplay_configure_notify( int width )
   gtk_drawing_area_size( GTK_DRAWING_AREA(gtkui_drawing_area),
 			 size * DISPLAY_ASPECT_WIDTH,
 			 size * DISPLAY_SCREEN_HEIGHT );
+
+  switch( gtkdisplay_current_size ) {
+
+  case 1: scaler_proc = Normal1x; break;
+  case 2: scaler_proc = Normal2x; break;
+  case 3: scaler_proc = Normal3x; break;
+
+  }
 
   /* Redraw the entire screen... */
   display_refresh_all();
@@ -196,10 +250,27 @@ uidisplay_frame_end( void )
 void
 uidisplay_area( int x, int y, int w, int h )
 {
-  gtkdisplay_area( gtkdisplay_current_size * x,
-		   gtkdisplay_current_size * y,
-		   gtkdisplay_current_size * w,
-		   gtkdisplay_current_size * h );
+  int
+    scaled_x = gtkdisplay_current_size * x,
+    scaled_y = gtkdisplay_current_size * y,
+    xx, yy;
+
+  /* Create scaled image */
+  scaler_proc( (BYTE*)&display_image[y][x], display_pitch, NULL, 
+	       (BYTE*)&scaled_image[scaled_y][scaled_x], scaled_pitch, w, h );
+
+  w *= gtkdisplay_current_size;
+  h *= gtkdisplay_current_size;
+
+  /* Call putpixel multiple times */
+  for( yy = scaled_y; yy < scaled_y + h; yy++ )
+    for( xx = scaled_x; xx < scaled_x + w; xx++ ) {
+      int colour = scaled_image[yy][xx];
+      gdk_image_put_pixel( image, xx, yy, gtkdisplay_colours[ colour ] );
+    }
+
+  /* Blit to the real screen */
+  gtkdisplay_area( scaled_x, scaled_y, w, h );
 }
 
 static void gtkdisplay_area(int x, int y, int width, int height)
@@ -208,11 +279,28 @@ static void gtkdisplay_area(int x, int y, int width, int height)
 		  width, height );
 }
 
-int uidisplay_end(void)
+void
+uidisplay_hotswap_gfx_mode( void )
 {
-  /* Free the XImage used to store screen data; also frees the malloc'd
-     data */
-/*    XDestroyImage(image); */
+  fuse_emulation_pause();
+
+  /* Redraw the entire screen... */
+  display_refresh_all();
+
+  fuse_emulation_unpause();
+}
+
+int
+uidisplay_end( void )
+{
+  return 0;
+}
+
+int
+gtkdisplay_end( void )
+{
+  /* Free the image */
+  gdk_image_destroy( image );
 
   /* Free the allocated GC */
   gtk_gc_release( gtkdisplay_gc );
