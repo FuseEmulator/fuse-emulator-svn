@@ -55,10 +55,25 @@ Tape functions
 libspectrum_error libspectrum_tape_alloc( libspectrum_tape **tape )
 libspectrum_error libspectrum_tape_free( libspectrum_tape *tape )
 
+libspectrum_error libspectrum_tape_clear( libspectrum_tape *tape )
+/* Remove all blocks from the current tape */
+
+int libspectrum_tape_present( libspectrum_tape *tape )
+/* Does this tape structure actually contain a tape? */
+
+libspectrum_error libspectrum_tape_init_block( libspectrum_tape_block *block )
+/* Initialise a block so it can be used for playback */
+
 libspectrum_error libspectrum_tape_get_next_edge( libspectrum_dword *tstates,
 						  int *flags,
 						  libspectrum_tape *tape )
 /* How long will it be until the next edge from this tape? */
+
+libspectrum_error libspectrum_tape_position( int *n, libspectrum_tape *tape )
+/* Get the position on the tape of the current block */
+
+libspectrum_error libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
+/* Select the nth block on the tape */
 
 libspectrum_error
 libspectrum_tape_block_description( char *buffer, size_t length,
@@ -85,11 +100,29 @@ RZX functions
 libspectrum_error libspectrum_rzx_alloc( libspectrum_rzx **rzx )
 libspectrum_error libspectrum_rzx_free( libspectrum_rzx *rzx )
 
-libspectrum_error libspectrum_rzx_frame( libspectrum_rzx *rzx,
-					 size_t instructions, 
-					 size_t count,
-					 libspectrum_byte *in_bytes )
+libspectrum_error libspectrum_rzx_store_frame( libspectrum_rzx *rzx,
+					       size_t instructions, 
+					       size_t count,
+					       libspectrum_byte *in_bytes )
 /* Add a frame to the current RZX recording */
+
+libspectrum_error libspectrum_rzx_start_playback( libspectrum_rzx *rzx )
+/* Prepare to start playback from an RZX file */
+
+libspectrum_error libspectrum_rzx_playback_frame( libspectrum_rzx *rzx,
+                                                  int *finished )
+/* Move onto the next frame of RZX playback */
+
+libspectrum_error libspectrum_rzx_playback( libspectrum_rzx *rzx,
+                                            libspectrum_byte *byte )
+/* Get the next byte of the current RZX frame */
+
+size_t libspectrum_rzx_tstates( libspectrum_rzx *rzx );
+size_t libspectrum_rzx_set_tstates( libspectrum_rzx *rzx, size_t tstates )
+/* Get and set the tstate counter */
+
+size_t libspectrum_rzx_instructions( libspectrum_rzx *rzx )
+/* Get the current frame's instruction count */
 
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
@@ -100,5 +133,3 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_byte *snap, size_t snap_length,
 		       const char *program, libspectrum_word major,
 		       libspectrum_word minor, int compress )
-
-/* (Probably: a `read an IN byte from this RZX file' function) */
