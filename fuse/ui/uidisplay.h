@@ -38,7 +38,6 @@ int uidisplay_init( int width, int height );
 void uidisplay_area( int x, int y, int w, int h );
 void uidisplay_frame_end( void );
 void uidisplay_hotswap_gfx_mode( void );
-void uidisplay_init_scalers( void );
 
 int uidisplay_end(void);
 

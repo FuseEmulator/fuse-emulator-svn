@@ -62,7 +62,7 @@ static int gtkdisplay_current_size=1;
 static int gtkdisplay_allocate_colours( unsigned long *pixel_values );
 static void gtkdisplay_area(int x, int y, int width, int height);
 static int gtkdisplay_configure_notify( int width );
-static int select_sensible_scaler( void );
+static int register_scalers( void );
 
 /* Callbacks */
 
@@ -98,30 +98,6 @@ gtkdisplay_init( void )
   return 0;
 }
 
-void
-uidisplay_init_scalers( void )
-{
-  scaler_register_clear();
-
-  switch( image_scale ) {
-
-  case 1:	/* `Normal' machines */
-    scaler_register( GFX_NORMAL );
-    scaler_register( GFX_DOUBLESIZE );
-    break;
-
-  case 2:	/* Timex machines */
-    scaler_register( GFX_HALF );
-    scaler_register( GFX_NORMAL );
-    break;
-
-  default:
-    ui_error( UI_ERROR_ERROR, "Unknown image scale %d", image_scale );
-    break;
-
-  }
-}
-
 int
 uidisplay_init( int width, int height )
 {
@@ -129,8 +105,7 @@ uidisplay_init( int width, int height )
 
   image_scale = width / DISPLAY_ASPECT_WIDTH;
 
-  uidisplay_init_scalers();
-  error = select_sensible_scaler(); if( error ) return error;
+  error = register_scalers(); if( error ) return error;
 
   display_refresh_all();
 
@@ -216,7 +191,7 @@ static int gtkdisplay_configure_notify( int width )
 			 size * DISPLAY_ASPECT_WIDTH,
 			 size * DISPLAY_SCREEN_HEIGHT );
 
-  error = select_sensible_scaler(); if( error ) return error;
+  error = register_scalers(); if( error ) return error;
 
   /* Redraw the entire screen... */
   display_refresh_all();
@@ -225,31 +200,43 @@ static int gtkdisplay_configure_notify( int width )
 }
 
 static int
-select_sensible_scaler( void )
+register_scalers( void )
 {
+  scaler_register_clear();
+
   switch( gtkdisplay_current_size ) {
 
   case 1:
-    if( image_scale == 2 ) {
+
+    switch( image_scale ) {
+    case 1:
+      scaler_register( GFX_NORMAL );
+      scaler_select_scaler( GFX_NORMAL );
+      return 0;
+    case 2:
+      scaler_register( GFX_HALF );
       scaler_select_scaler( GFX_HALF );
-    } else {
-      scaler_select_scaler( GFX_NORMAL );
+      return 0;
     }
-    break;
+
   case 2:
-    if( image_scale == 2 ) {
-      scaler_select_scaler( GFX_NORMAL );
-    } else {
+
+    switch( image_scale ) {
+    case 1:
+      scaler_register( GFX_DOUBLESIZE );
       scaler_select_scaler( GFX_DOUBLESIZE );
+      return 0;
+    case 2:
+      scaler_register( GFX_NORMAL );
+      scaler_select_scaler( GFX_NORMAL );
+      return 0;
     }
-    break;
-  default:
-    ui_error( UI_ERROR_ERROR, "Unknown GTK+ display size %d",
-	      gtkdisplay_current_size );
-    return 1;
+
   }
 
-  return 0;
+  ui_error( UI_ERROR_ERROR, "Unknown display size/image size %d/%d",
+	    gtkdisplay_current_size, image_scale );
+  return 1;
 }
 
 void
