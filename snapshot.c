@@ -30,6 +30,9 @@
 
 #include "internals.h"
 
+/* Some flags which may be returned from libspectrum_snap_write() */
+const int LIBSPECTRUM_FLAG_MINOR_INFO_LOSS = 1 << 0;
+
 /* Free all memory used by a libspectrum_snap structure (destructor...) */
 libspectrum_error
 libspectrum_snap_free( libspectrum_snap *snap )
@@ -128,8 +131,6 @@ libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
   libspectrum_class_t class;
   libspectrum_error error;
 
-  *out_flags = 0;
-
   error = libspectrum_identify_class( &class, type );
   if( error ) return error;
 
@@ -142,7 +143,7 @@ libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
   switch( type ) {
 
   case LIBSPECTRUM_ID_SNAPSHOT_Z80:
-    return libspectrum_z80_write( buffer, length, snap );
+    return libspectrum_z80_write2( buffer, length, out_flags, snap, in_flags );
 
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
