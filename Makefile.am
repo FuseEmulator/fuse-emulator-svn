@@ -38,6 +38,7 @@ libspectrum_la_SOURCES = dck.c \
 		 	 timings.c \
 			 tzx_read.c \
 			 tzx_write.c \
+			 warajevo_read.c \
 			 z80.c \
 			 zlib.c
 

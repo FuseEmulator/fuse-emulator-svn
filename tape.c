@@ -257,6 +257,9 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   case LIBSPECTRUM_ID_TAPE_TZX:
     return libspectrum_tzx_read( tape, buffer, length );
 
+  case LIBSPECTRUM_ID_TAPE_WARAJEVO:
+    return libspectrum_warajevo_read( tape, buffer, length );
+
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "libspectrum_tape_read: not a snapshot file" );
