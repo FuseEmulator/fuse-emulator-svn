@@ -113,7 +113,7 @@ libspectrum_machine_name( libspectrum_machine type )
 {
   switch( type ) {
   case LIBSPECTRUM_MACHINE_48:     return "Spectrum 48K";
-  case LIBSPECTRUM_MACHINE_TC2048: return "TC2048";
+  case LIBSPECTRUM_MACHINE_TC2048: return "Timex TC2048";
   case LIBSPECTRUM_MACHINE_128:    return "Spectrum 128K";
   case LIBSPECTRUM_MACHINE_PLUS2:  return "Spectrum +2";
   case LIBSPECTRUM_MACHINE_PENT:   return "Pentagon";
