@@ -33,8 +33,7 @@
 #define LIBSPECTRUM_SNA_HEADER_LENGTH 27
 #define LIBSPECTRUM_SNA_128_HEADER_LENGTH 4
 
-static int libspectrum_sna_identify( size_t buffer_length, 
-				     libspectrum_machine *type );
+static int identify_machine( size_t buffer_length, libspectrum_snap *snap );
 static int libspectrum_sna_read_header( const libspectrum_byte *buffer,
 					size_t buffer_length,
 					libspectrum_snap *snap );
@@ -54,7 +53,7 @@ libspectrum_sna_read( libspectrum_snap *snap,
 {
   int error;
 
-  error = libspectrum_sna_identify( buffer_length, &snap->machine );
+  error = identify_machine( buffer_length, snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   error = libspectrum_sna_read_header( buffer, buffer_length, snap );
@@ -68,16 +67,16 @@ libspectrum_sna_read( libspectrum_snap *snap,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-static int libspectrum_sna_identify( size_t buffer_length, 
-				     libspectrum_machine *type )
+static int
+identify_machine( size_t buffer_length, libspectrum_snap *snap )
 {
   switch( buffer_length ) {
   case 49179:
-    *type = LIBSPECTRUM_MACHINE_48;
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 );
     break;
   case 131103:
   case 147487:
-    *type = LIBSPECTRUM_MACHINE_128;
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 );
     break;
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
@@ -92,6 +91,8 @@ static int
 libspectrum_sna_read_header( const libspectrum_byte *buffer,
 			     size_t buffer_length, libspectrum_snap *snap )
 {
+  int iff;
+
   if( buffer_length < LIBSPECTRUM_SNA_HEADER_LENGTH ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
@@ -100,29 +101,33 @@ libspectrum_sna_read_header( const libspectrum_byte *buffer,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  snap->a   = buffer[22]; snap->f  = buffer[21];
-  snap->bc  = buffer[13] + buffer[14]*0x100;
-  snap->de  = buffer[11] + buffer[12]*0x100;
-  snap->hl  = buffer[ 9] + buffer[10]*0x100;
-  snap->a_  = buffer[ 8]; snap->f_ = buffer[ 7];
-  snap->bc_ = buffer[ 5] + buffer[ 6]*0x100;
-  snap->de_ = buffer[ 3] + buffer[ 4]*0x100;
-  snap->hl_ = buffer[ 1] + buffer[ 2]*0x100;
-  snap->ix  = buffer[17] + buffer[18]*0x100;
-  snap->iy  = buffer[15] + buffer[16]*0x100;
-  snap->i   = buffer[ 0];
-  snap->r   = buffer[20];
-  snap->pc  = buffer[ 6] + buffer[ 7]*0x100;
-  snap->sp  = buffer[23] + buffer[24]*0x100;
+  libspectrum_snap_set_a  ( snap, buffer[22] );
+  libspectrum_snap_set_f  ( snap, buffer[21] );
+  libspectrum_snap_set_bc ( snap, buffer[13] + buffer[14]*0x100 );
+  libspectrum_snap_set_de ( snap, buffer[11] + buffer[12]*0x100 );
+  libspectrum_snap_set_hl ( snap, buffer[ 9] + buffer[10]*0x100 );
+  libspectrum_snap_set_a_ ( snap, buffer[ 8] );
+  libspectrum_snap_set_f_ ( snap, buffer[ 7] );
+  libspectrum_snap_set_bc_( snap, buffer[ 5] + buffer[ 6]*0x100 );
+  libspectrum_snap_set_de_( snap, buffer[ 3] + buffer[ 4]*0x100 );
+  libspectrum_snap_set_hl_( snap, buffer[ 1] + buffer[ 2]*0x100 );
+  libspectrum_snap_set_ix ( snap, buffer[17] + buffer[18]*0x100 );
+  libspectrum_snap_set_iy ( snap, buffer[15] + buffer[16]*0x100 );
+  libspectrum_snap_set_i  ( snap, buffer[ 0] );
+  libspectrum_snap_set_r  ( snap, buffer[20] );
+  libspectrum_snap_set_pc ( snap, buffer[ 6] + buffer[ 7]*0x100 );
+  libspectrum_snap_set_sp ( snap, buffer[23] + buffer[24]*0x100 );
 
-  snap->iff1 = snap->iff2 = ( buffer[19] & 0x04 ) ? 1 : 0;
-  snap->im   = buffer[25] & 0x03;
+  iff = ( buffer[19] & 0x04 ) ? 1 : 0;
+  libspectrum_snap_set_iff1( snap, iff );
+  libspectrum_snap_set_iff2( snap, iff );
+  libspectrum_snap_set_im( snap, buffer[25] & 0x03 );
 
-  snap->out_ula = buffer[26] & 0x07;
+  libspectrum_snap_set_out_ula( snap, buffer[26] & 0x07 );
 
   /* A bit before an interrupt. Why this value? Because it's what
      z80's `convert' uses :-) */
-  snap->tstates = 69664;
+  libspectrum_snap_set_tstates( snap, 69664 );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -143,15 +148,16 @@ libspectrum_sna_read_data( const libspectrum_byte *buffer,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  switch( snap->machine ) {
+  switch( libspectrum_snap_machine( snap ) ) {
+
   case LIBSPECTRUM_MACHINE_48:
 
     /* Rescue PC from the stack */
-    offset = snap->sp - 0x4000;
-    snap->pc = buffer[offset] + 0x100 * buffer[offset+1];
+    offset = libspectrum_snap_sp( snap ) - 0x4000;
+    libspectrum_snap_set_pc( snap, buffer[offset] + 0x100 * buffer[offset+1] );
 
     /* Increase SP as PC has been unstacked */
-    snap->sp += 2;
+    libspectrum_snap_set_sp( snap, libspectrum_snap_sp( snap ) + 2 );
 
     /* And split the pages up */
     error = libspectrum_split_to_48k_pages( snap, buffer );
@@ -162,27 +168,34 @@ libspectrum_sna_read_data( const libspectrum_byte *buffer,
   case LIBSPECTRUM_MACHINE_128:
     
     for( i=0; i<8; i++ ) {
-      snap->pages[i] =
-	(libspectrum_byte*)malloc( 0x4000 * sizeof( libspectrum_byte ) );
-      if( snap->pages[i] == NULL ) {
-	for( j=0; j<i; j++ ) { free( snap->pages[i] ); snap->pages[i] = NULL; }
+
+      libspectrum_byte *ram;
+
+      ram = malloc( 0x4000 * sizeof( libspectrum_byte ) );
+      if( ram == NULL ) {
+	for( j = 0; j < i; j++ ) {
+	  free( libspectrum_snap_pages( snap, i ) );
+	  libspectrum_snap_set_pages( snap, i, NULL );
+	}
 	libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 				 "libspectrum_sna_read_data: out of memory" );
 	return LIBSPECTRUM_ERROR_MEMORY;
       }
+      libspectrum_snap_set_pages( snap, i, ram );
     }
 
-    memcpy( snap->pages[5], &buffer[0x0000], 0x4000 );
-    memcpy( snap->pages[2], &buffer[0x4000], 0x4000 );
+    memcpy( libspectrum_snap_pages( snap, 5 ), &buffer[0x0000], 0x4000 );
+    memcpy( libspectrum_snap_pages( snap, 2 ), &buffer[0x4000], 0x4000 );
 
     buffer += 0xc000; buffer_length -= 0xc000;
     error = libspectrum_sna_read_128_header( buffer + 0xc000,
 					     buffer_length - 0xc000, snap );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-    page = snap->out_ula & 0x07;
+    page = libspectrum_snap_out_ula( snap ) & 0x07;
     if( page == 5 || page == 2 ) {
-      if( memcmp( snap->pages[page], &buffer[0x8000], 0x4000 ) ) {
+      if( memcmp( libspectrum_snap_pages( snap, page ),
+		  &buffer[0x8000], 0x4000 ) ) {
 	libspectrum_print_error(
           LIBSPECTRUM_ERROR_CORRUPT,
 	  "libspectrum_sna_read_data: duplicated page not identical"
@@ -190,7 +203,7 @@ libspectrum_sna_read_data( const libspectrum_byte *buffer,
 	return LIBSPECTRUM_ERROR_CORRUPT;
       }
     } else {
-      memcpy( snap->pages[page], &buffer[0x8000], 0x4000 );
+      memcpy( libspectrum_snap_pages( snap, page ), &buffer[0x8000], 0x4000 );
     }
 
     buffer += 0xc000 + LIBSPECTRUM_SNA_128_HEADER_LENGTH;
@@ -221,8 +234,8 @@ libspectrum_sna_read_128_header( const libspectrum_byte *buffer,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  snap->pc = buffer[0] + 0x100 * buffer[1];
-  snap->out_ula = buffer[2];
+  libspectrum_snap_set_pc( snap, buffer[0] + 0x100 * buffer[1] );
+  libspectrum_snap_set_out_ula( snap, buffer[2] );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -233,8 +246,6 @@ libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
 {
   int i, page;
 
-  page = snap->out_ula & 0x07;
-  
   for( i=0; i<=7; i++ ) {
 
     if( i==2 || i==5 || i==page ) continue; /* Already got this page */
@@ -249,7 +260,7 @@ libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
     }
     
     /* Copy the data across */
-    memcpy( snap->pages[i], buffer, 0x4000 );
+    memcpy( libspectrum_snap_pages( snap, i ), buffer, 0x4000 );
     
     /* And update what we're looking at here */
     buffer += 0x4000; buffer_length -= 0x4000;

@@ -37,6 +37,7 @@ extern "C" {
 #include <stdarg.h>
 #include <stdlib.h>
 
+/* Standard typedefs */
 LIBSPECTRUM_DEFINE_BYTE
 LIBSPECTRUM_DEFINE_WORD
 LIBSPECTRUM_DEFINE_DWORD
@@ -194,55 +195,7 @@ typedef enum libspectrum_slt_type {
 
 } libspectrum_slt_type;
 
-typedef struct libspectrum_snap {
-
-  /* Which machine are we using here? */
-
-  libspectrum_machine machine;
-
-  /* Registers and the like */
-
-  libspectrum_byte a , f ; libspectrum_word bc , de , hl ;
-  libspectrum_byte a_, f_; libspectrum_word bc_, de_, hl_;
-
-  libspectrum_word ix, iy; libspectrum_byte i, r;
-  libspectrum_word sp, pc;
-
-  libspectrum_byte iff1, iff2, im;
-
-  /* RAM */
-
-  libspectrum_byte *pages[8];
-
-  /* Data from .slt files */
-
-  libspectrum_byte *slt[256];	/* Level data */
-  size_t slt_length[256];	/* Length of each level */
-
-  libspectrum_byte *slt_screen;	/* Loading screen */
-  int slt_screen_level;		/* The id of the loading screen. Not used
-				   for anything AFAIK, but I'll copy it
-				   around just in case */
-
-  /* Peripheral status */
-
-  libspectrum_byte out_ula; libspectrum_dword tstates;
-
-  libspectrum_byte out_128_memoryport;
-
-  libspectrum_byte out_ay_registerport, ay_registers[16];
-
-  libspectrum_byte out_plus3_memoryport;
-
-  /* Timex-specific bits */
-  libspectrum_byte out_scld_hsr, out_scld_dec;
-
-  /* Internal use only */
-
-  int version;
-  int compressed;
-
-} libspectrum_snap;
+typedef struct libspectrum_snap libspectrum_snap;
 
 libspectrum_error libspectrum_snap_alloc( libspectrum_snap **snap );
 libspectrum_error libspectrum_snap_free( libspectrum_snap *snap );
@@ -252,6 +205,9 @@ libspectrum_error
 libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 		       size_t length, libspectrum_id_t type,
 		       const char *filename );
+
+/* Accessor functions */
+/* LIBSPECTRUM_SNAP_ACCESSORS */
 
 /* .sna specific routines */
 

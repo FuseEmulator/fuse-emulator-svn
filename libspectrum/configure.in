@@ -32,8 +32,8 @@ dnl Checks for programs.
 AC_PROG_CC
 AC_LIBTOOL_WIN32_DLL
 AM_PROG_LIBTOOL
-AC_PATH_PROG(SED, sed)
-AC_SUBST(SED)
+AC_PATH_PROG(PERL, perl)
+AC_SUBST(PERL)
 
 dnl Checks for header files.
 AC_HEADER_STDC

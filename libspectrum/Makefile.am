@@ -32,6 +32,7 @@ libspectrum_la_SOURCES = dck.c \
 			 rzx.c \
 			 sna.c \
 			 snapshot.c \
+			 snap_accessors.c \
 			 tap.c \
 			 tape.c \
 		 	 timings.c \
@@ -42,18 +43,21 @@ libspectrum_la_SOURCES = dck.c \
 
 libspectrum_la_LDFLAGS = -version-info 1:0:1
 
-BUILT_SOURCES = libspectrum.h
+BUILT_SOURCES = libspectrum.h snap_accessors.c
 
 include_HEADERS = libspectrum.h
 noinst_HEADERS = internals.h
 
-noinst_PROGRAMS = make-sed
+noinst_PROGRAMS = make-perl
 
-libspectrum.h: libspectrum.h.in generate.sed
-	@SED@ -f generate.sed libspectrum.h.in > libspectrum.h
+libspectrum.h: libspectrum.h.in generate.pl
+	@PERL@ -p generate.pl libspectrum.h.in > libspectrum.h
 
-generate.sed: make-sed
-	./make-sed > generate.sed
+generate.pl: make-perl
+	./make-perl > generate.pl
+
+snap_accessors.c: accessor.pl snap_accessors.txt
+	@PERL@ accessor.pl snap_accessors.txt > snap_accessors.c
 
 INCLUDES = @GLIB_CFLAGS@
 
