@@ -32,6 +32,9 @@ AC_PROG_CC
 dnl Check that zlib is available
 AC_CHECK_LIB(z,zlibVersion)
 
+dnl Check that libgcrypt is available
+AC_CHECK_LIB(gcrypt,gcry_check_version)
+
 dnl Allow the user to say that various libraries are in one place
 AC_ARG_WITH(local-prefix,
 [  --with-local-prefix=PFX local libraries installed in PFX (optional)],
