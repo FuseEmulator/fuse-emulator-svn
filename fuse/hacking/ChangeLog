@@ -504,3 +504,6 @@
 	 (Release-0_6_2-branch).
 20040122 settings.dat, ui/gtk: make the 'view statusbar' option be
 	 effective under GTK+ (Release-0_6_2-branch).
+20040126 tc2068.c: return the correct value when both joystick ports are
+	 read from simultaneously (patch #883637) (Release-0_6_2-branch)
+         (Fred).
