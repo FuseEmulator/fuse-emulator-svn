@@ -30,6 +30,7 @@ libspectrum_la_SOURCES = bzip2.c \
 			 creator.c \
 			 crypto.c \
 			 dck.c \
+			 ide.c \
 			 libspectrum.c \
 			 myglib.c \
 			 plusd.c \

@@ -37,6 +37,7 @@ extern "C" {
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 LIBSPECTRUM_INCLUDE_GCRYPT
 
@@ -599,6 +600,163 @@ libspectrum_verify_signature( libspectrum_rzx_signature *signature,
 			      libspectrum_rzx_dsa_key *key );
 libspectrum_error
 libspectrum_signature_free( libspectrum_rzx_signature *signature );
+
+/*
+ * IDE hard disk handling routines
+ */
+
+typedef enum libspectrum_ide_databus {
+  
+  LIBSPECTRUM_IDE_DATA8,
+  LIBSPECTRUM_IDE_DATA16,
+  LIBSPECTRUM_IDE_DATA16_BYTESWAP,
+  LIBSPECTRUM_IDE_DATA16_DATA2,
+
+} libspectrum_ide_databus;
+
+typedef enum libspectrum_ide_unit {
+  
+  LIBSPECTRUM_IDE_MASTER = 0,
+  LIBSPECTRUM_IDE_SLAVE = 1,
+
+} libspectrum_ide_unit;
+
+typedef enum libspectrum_ide_command {
+  
+  LIBSPECTRUM_IDE_COMMAND_READ_SECTOR = 0x20,
+  LIBSPECTRUM_IDE_COMMAND_WRITE_SECTOR = 0x30,
+  LIBSPECTRUM_IDE_COMMAND_IDENTIFY_DRIVE = 0xec,
+
+} libspectrum_ide_command;
+
+typedef enum libspectrum_ide_phase {
+  
+  LIBSPECTRUM_IDE_PHASE_READY,
+  LIBSPECTRUM_IDE_PHASE_PIO_OUT,
+  LIBSPECTRUM_IDE_PHASE_PIO_IN,
+
+} libspectrum_ide_phase;
+
+typedef enum libspectrum_ide_register {
+
+  LIBSPECTRUM_IDE_REGISTER_DATA = 0,
+  LIBSPECTRUM_IDE_REGISTER_ERROR_FEATURE = 1,
+  LIBSPECTRUM_IDE_REGISTER_SECTOR_COUNT = 2,
+  LIBSPECTRUM_IDE_REGISTER_SECTOR = 3,
+  LIBSPECTRUM_IDE_REGISTER_CYLINDER_LOW = 4,
+  LIBSPECTRUM_IDE_REGISTER_CYLINDER_HIGH = 5,
+  LIBSPECTRUM_IDE_REGISTER_HEAD_DRIVE = 6,
+  LIBSPECTRUM_IDE_REGISTER_COMMAND_STATUS = 7,
+  LIBSPECTRUM_IDE_REGISTER_DATA2 = 8,
+
+} libspectrum_ide_register;
+
+typedef enum libspectrum_ide_statusreg {
+
+  LIBSPECTRUM_IDE_STATUS_ERR = 0x01,
+  LIBSPECTRUM_IDE_STATUS_DRQ = 0x08,
+  LIBSPECTRUM_IDE_STATUS_DRDY = 0x40,
+  LIBSPECTRUM_IDE_STATUS_BSY = 0x80,
+
+} libspectrum_ide_statusreg;
+
+typedef enum libspectrum_ide_headreg {
+
+  LIBSPECTRUM_IDE_HEAD_HEAD = 0x0f,
+  LIBSPECTRUM_IDE_HEAD_DEV = 0x10,
+  LIBSPECTRUM_IDE_HEAD_LBA = 0x40,
+  
+} libspectrum_ide_headreg;
+
+typedef enum libspectrum_ide_errorreg {
+  
+  LIBSPECTRUM_IDE_ERROR_OK = 0x00,
+  LIBSPECTRUM_IDE_ERROR_ABRT = 0x04,
+  LIBSPECTRUM_IDE_ERROR_IDNF = 0x10,
+  LIBSPECTRUM_IDE_ERROR_UNC = 0x40, 
+
+} libspectrum_ide_errorcode;
+
+typedef struct libspectrum_hdf_header {
+
+  libspectrum_byte signature[0x06];
+  libspectrum_byte id;
+  libspectrum_byte revision;
+  libspectrum_byte flags;
+  libspectrum_byte datastart_low;
+  libspectrum_byte datastart_hi;
+  libspectrum_byte reserved[0x0b];
+  libspectrum_byte drive_identity[0x6a];
+
+} libspectrum_hdf_header;
+  
+typedef struct libspectrum_ide_drive {
+
+  /* HDF filepointer and information */
+  FILE *disk;
+  libspectrum_word data_offset;
+  libspectrum_word sector_size;
+  libspectrum_hdf_header hdf;
+  
+  /* Drive geometry */
+  int cylinders;
+  int heads;
+  int sectors;
+  
+} libspectrum_ide_drive;
+
+typedef struct libspectrum_ide_channel {
+
+  /* Interface bus width */
+  libspectrum_ide_databus databus;
+  
+  /* 2 drives per channel */
+  libspectrum_ide_drive drive[2];
+  
+  /* Last selection written to head register */
+  libspectrum_ide_unit selected;
+  
+  /* Register values */
+  libspectrum_byte error;
+  libspectrum_byte feature;
+  libspectrum_byte sector_count;
+  libspectrum_byte sector;
+  libspectrum_byte cylinder_low;
+  libspectrum_byte cylinder_high;
+  libspectrum_byte head;
+  libspectrum_byte status;
+  libspectrum_byte data2;
+  
+  /* Channel status */
+  libspectrum_ide_phase phase;
+  int datacounter;
+  
+  /* Sector buffer */
+  libspectrum_byte buffer[512];
+  long sector_position;
+
+} libspectrum_ide_channel;
+
+libspectrum_error libspectrum_ide_alloc( libspectrum_ide_channel **chn,
+                                          libspectrum_ide_databus databus );
+libspectrum_error libspectrum_ide_free( libspectrum_ide_channel *chn );
+
+libspectrum_error
+libspectrum_ide_insert( libspectrum_ide_channel *chn,
+                        libspectrum_ide_unit unit,
+                        const char *filename );
+libspectrum_error
+libspectrum_ide_eject( libspectrum_ide_channel *chn,
+                        libspectrum_ide_unit unit );
+
+libspectrum_error libspectrum_ide_reset( libspectrum_ide_channel *chn );
+
+libspectrum_byte libspectrum_ide_read( libspectrum_ide_channel *chn,
+                                        libspectrum_ide_register reg );
+
+void libspectrum_ide_write( libspectrum_ide_channel *chn,
+                            libspectrum_ide_register reg,
+                            libspectrum_byte data );
 
 #ifdef __cplusplus
 };
