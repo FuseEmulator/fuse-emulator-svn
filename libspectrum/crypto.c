@@ -363,8 +363,6 @@ libspectrum_verify_signature( const libspectrum_byte *signature,
     }
   }
 
-  libspectrum_print_error( "Verified OK!" );
-
   return LIBSPECTRUM_ERROR_NONE;
 }
 

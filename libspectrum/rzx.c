@@ -580,7 +580,7 @@ rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
   }
 
   error = libspectrum_verify_signature( *ptr, length, sign_start,
-					(*ptr) - sign_start );
+					(*ptr) - sign_start - 5 );
   if( error ) {
     if( error == LIBSPECTRUM_ERROR_SIGNATURE ) {
       libspectrum_print_error(
