@@ -102,3 +102,7 @@ libspectrum_byte dock_ram 1
 libspectrum_byte* dock_cart 1
 
 int issue2
+
+size_t joystick_active_count
+libspectrum_joystick joystick_list 1
+int joystick_inputs 1

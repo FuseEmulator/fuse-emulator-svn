@@ -107,6 +107,22 @@ static const libspectrum_word ZXSTRF_COMPRESSED = 1;
 static const libspectrum_dword ZXSTKF_ISSUE2 = 1;
 
 #define ZXSTBID_JOYSTICK "JOY\0"
+static const libspectrum_dword ZXSTJOYF_ALWAYSPORT31 = 1;
+
+typedef enum szx_joystick_type {
+
+  ZXJT_KEMPSTON = 0,
+  ZXJT_FULLER,
+  ZXJT_CURSOR,
+  ZXJT_SINCLAIR1,
+  ZXJT_SINCLAIR2,
+  ZXJT_SPECTRUMPLUS,
+  ZXJT_TIMEX1,
+  ZXJT_TIMEX2,
+  ZXJT_NONE,
+
+} szx_joystick_type;
+
 #define ZXSTBID_IF2ROM "IF2R"
 #define ZXSTBID_MOUSE "AMXM"
 #define ZXSTBID_ROM "ROM\0"
@@ -166,8 +182,11 @@ static libspectrum_error
 write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap );
 static libspectrum_error
+write_joy_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, int *out_flags, libspectrum_snap *snap );
+static libspectrum_error
 write_keyb_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		  size_t *length, libspectrum_snap *snap );
+		  size_t *length, int *out_flags, libspectrum_snap *snap );
 static libspectrum_error
 write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		 size_t *length, libspectrum_snap *snap, int compress );
@@ -378,6 +397,116 @@ read_cfrp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+static void
+add_joystick( libspectrum_snap *snap, libspectrum_joystick type, int inputs )
+{
+  size_t i;
+  size_t num_joysticks = libspectrum_snap_joystick_active_count( snap );
+
+  for( i = 0; i < num_joysticks; i++ ) {
+    if( libspectrum_snap_joystick_list( snap, i ) == type ) {
+      libspectrum_snap_set_joystick_inputs( snap, i, inputs |
+                                  libspectrum_snap_joystick_inputs( snap, i ) );
+      return;
+    }
+  }
+
+  libspectrum_snap_set_joystick_list( snap, num_joysticks, type );
+  libspectrum_snap_set_joystick_inputs( snap, num_joysticks, inputs );
+  libspectrum_snap_set_joystick_active_count( snap, num_joysticks + 1 );
+}
+
+static libspectrum_error
+read_joy_chunk( libspectrum_snap *snap, libspectrum_word version,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
+{
+  libspectrum_dword flags;
+
+  if( data_length != 6 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "%s:read_joy_chunk: unknown length %lu",
+			     __FILE__, (unsigned long)data_length );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  flags = libspectrum_read_dword( buffer );
+  if( flags & ZXSTJOYF_ALWAYSPORT31 ) {
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_KEMPSTON,
+                  LIBSPECTRUM_JOYSTICK_INPUT_NONE );
+  }
+
+  switch( **buffer ) {
+  case ZXJT_KEMPSTON:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_KEMPSTON,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1 );
+    break;
+  case ZXJT_FULLER:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_FULLER,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1 );
+    break;
+  case ZXJT_CURSOR:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_CURSOR,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1 );
+    break;
+  case ZXJT_SINCLAIR1:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_SINCLAIR_1,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1 );
+    break;
+  case ZXJT_SINCLAIR2:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_SINCLAIR_2,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1 );
+    break;
+  case ZXJT_TIMEX1:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_TIMEX_1,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1 );
+    break;
+  case ZXJT_TIMEX2:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_TIMEX_2,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1 );
+    break;
+  case ZXJT_NONE:
+    break;
+  }
+  (*buffer)++;
+
+  switch( **buffer ) {
+  case ZXJT_KEMPSTON:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_KEMPSTON,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2 );
+    break;
+  case ZXJT_FULLER:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_FULLER,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2 );
+    break;
+  case ZXJT_CURSOR:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_CURSOR,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2 );
+    break;
+  case ZXJT_SINCLAIR1:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_SINCLAIR_1,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2 );
+    break;
+  case ZXJT_SINCLAIR2:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_SINCLAIR_2,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2 );
+    break;
+  case ZXJT_TIMEX1:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_TIMEX_1,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2 );
+    break;
+  case ZXJT_TIMEX2:
+    add_joystick( snap, LIBSPECTRUM_JOYSTICK_TIMEX_2,
+                  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2 );
+    break;
+  case ZXJT_NONE:
+    break;
+  }
+  (*buffer)++;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
 static libspectrum_error
 read_keyb_chunk( libspectrum_snap *snap, libspectrum_word version,
 		 const libspectrum_byte **buffer,
@@ -390,7 +519,7 @@ read_keyb_chunk( libspectrum_snap *snap, libspectrum_word version,
 
   if( data_length != expected_length ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
-			     "%s:read_scld_chunk: unknown length %lu",
+			     "%s:read_keyb_chunk: unknown length %lu",
 			     __FILE__, (unsigned long)data_length );
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
@@ -398,7 +527,41 @@ read_keyb_chunk( libspectrum_snap *snap, libspectrum_word version,
   flags = libspectrum_read_dword( buffer );
   libspectrum_snap_set_issue2( snap, flags & ZXSTKF_ISSUE2 );
 
-  if( expected_length >= 5 ) (*buffer)++; /* Skip the keyboard joystick flag */
+  if( expected_length >= 5 ) {
+    switch( **buffer ) {
+    case ZXJT_KEMPSTON:
+      add_joystick( snap, LIBSPECTRUM_JOYSTICK_KEMPSTON,
+                    LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD );
+      break;
+    case ZXJT_FULLER:
+      add_joystick( snap, LIBSPECTRUM_JOYSTICK_FULLER,
+                    LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD );
+      break;
+    case ZXJT_CURSOR:
+      add_joystick( snap, LIBSPECTRUM_JOYSTICK_CURSOR,
+                    LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD );
+      break;
+    case ZXJT_SINCLAIR1:
+      add_joystick( snap, LIBSPECTRUM_JOYSTICK_SINCLAIR_1,
+                    LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD );
+      break;
+    case ZXJT_SINCLAIR2:
+      add_joystick( snap, LIBSPECTRUM_JOYSTICK_SINCLAIR_2,
+                    LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD );
+      break;
+    case ZXJT_TIMEX1:
+      add_joystick( snap, LIBSPECTRUM_JOYSTICK_TIMEX_1,
+                    LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD );
+      break;
+    case ZXJT_TIMEX2:
+      add_joystick( snap, LIBSPECTRUM_JOYSTICK_TIMEX_2,
+                    LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD );
+      break;
+    case ZXJT_SPECTRUMPLUS: /* Actually, no joystick at all */
+      break;
+    }
+    (*buffer)++;
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -693,7 +856,7 @@ static struct read_chunk_t read_chunks[] = {
   { ZXSTBID_GSRAMPAGE,	    skip_chunk      },
   { ZXSTBID_IF1,	    skip_chunk      },
   { ZXSTBID_IF2ROM,	    read_if2r_chunk },
-  { ZXSTBID_JOYSTICK,	    skip_chunk      },
+  { ZXSTBID_JOYSTICK,	    read_joy_chunk  },
   { ZXSTBID_KEYBOARD,	    read_keyb_chunk },
   { ZXSTBID_MICRODRIVE,	    skip_chunk      },
   { ZXSTBID_MOUSE,	    skip_chunk      },
@@ -907,7 +1070,10 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
   error = write_spcr_chunk( buffer, &ptr, length, snap );
   if( error ) return error;
 
-  error = write_keyb_chunk( buffer, &ptr, length, snap );
+  error = write_joy_chunk( buffer, &ptr, length, out_flags, snap );
+  if( error ) return error;
+
+  error = write_keyb_chunk( buffer, &ptr, length, out_flags, snap );
   if( error ) return error;
 
   error = write_ram_pages( buffer, &ptr, length, snap, compress );
@@ -1148,9 +1314,85 @@ write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+static void
+write_joystick( libspectrum_byte **ptr, int *out_flags, libspectrum_snap *snap,
+                const int connection )
+{
+  size_t num_joysticks = libspectrum_snap_joystick_active_count( snap );
+  int found = 0;
+  int i;
+
+  for( i = 0; i < num_joysticks; i++ ) {
+    if( libspectrum_snap_joystick_inputs( snap, i ) & connection ) {
+      switch( libspectrum_snap_joystick_list( snap, i ) ) {
+      case LIBSPECTRUM_JOYSTICK_CURSOR:
+        if( !found ) { *(*ptr)++ = ZXJT_CURSOR; found = 1; }
+        else *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+        break;
+      case LIBSPECTRUM_JOYSTICK_KEMPSTON:
+        if( !found ) { *(*ptr)++ = ZXJT_KEMPSTON; found = 1; }
+        else *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+        break;
+      case LIBSPECTRUM_JOYSTICK_SINCLAIR_1:
+        if( !found ) { *(*ptr)++ = ZXJT_SINCLAIR1; found = 1; }
+        else *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+        break;
+      case LIBSPECTRUM_JOYSTICK_SINCLAIR_2:
+        if( !found ) { *(*ptr)++ = ZXJT_SINCLAIR2; found = 1; }
+        else *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+        break;
+      case LIBSPECTRUM_JOYSTICK_TIMEX_1:
+        if( !found ) { *(*ptr)++ = ZXJT_TIMEX1; found = 1; }
+        else *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+        break;
+      case LIBSPECTRUM_JOYSTICK_TIMEX_2:
+        if( !found ) { *(*ptr)++ = ZXJT_TIMEX2; found = 1; }
+        else *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+        break;
+      case LIBSPECTRUM_JOYSTICK_FULLER:
+        if( !found ) { *(*ptr)++ = ZXJT_FULLER; found = 1; }
+        else *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+        break;
+      case LIBSPECTRUM_JOYSTICK_NONE: /* Shouldn't happen */
+      default:
+        *(*ptr)++ = ZXJT_NONE;
+        break;
+      }
+    }
+  }
+
+  if( !found ) *(*ptr)++ = ZXJT_NONE;
+}
+
+static libspectrum_error
+write_joy_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, int *out_flags, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+  libspectrum_dword flags;
+  size_t num_joysticks = libspectrum_snap_joystick_active_count( snap );
+  int i;
+
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_JOYSTICK, 6 );
+  if( error ) return error;
+
+  flags = 0;
+  for( i = 0; i < num_joysticks; i++ ) {
+    if( libspectrum_snap_joystick_list( snap, i ) ==
+        LIBSPECTRUM_JOYSTICK_KEMPSTON )
+      flags |= ZXSTJOYF_ALWAYSPORT31;
+  }
+  libspectrum_write_dword( ptr, flags );
+
+  write_joystick( ptr, out_flags, snap, LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1 );
+  write_joystick( ptr, out_flags, snap, LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2 );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
 static libspectrum_error
 write_keyb_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		  size_t *length, libspectrum_snap *snap )
+		  size_t *length, int *out_flags, libspectrum_snap *snap )
 {
   libspectrum_error error;
   libspectrum_dword flags;
@@ -1162,7 +1404,8 @@ write_keyb_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   if( libspectrum_snap_issue2( snap ) ) flags |= ZXSTKF_ISSUE2;
 
   libspectrum_write_dword( ptr, flags );
-  *(*ptr)++ = '\0';	/* Keyboard joystick flag; ignored for now */
+
+  write_joystick( ptr, out_flags, snap, LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD );
 
   return LIBSPECTRUM_ERROR_NONE;
 }

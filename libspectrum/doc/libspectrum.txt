@@ -514,11 +514,15 @@ The available properties (along with their types) are:
 * int interface2_active
 * libspectrum_byte* interface2_rom[1]
 
-* int dock_active
+* size_t dock_active
 * libspectrum_byte exrom_ram[8]
 * libspectrum_byte* exrom_cart[8]
 * libspectrum_byte dock_ram[8]
 * libspectrum_byte* dock_cart[8]
+
+* size_t joystick_active_count;
+* libspectrum_joystick joystick_list[ SNAPSHOT_JOYSTICKS ];
+* int joystick_inputs[ SNAPSHOT_JOYSTICKS ];
 
 Most of those should be fairly self-explanatory; those which may not
 be are:
@@ -552,6 +556,11 @@ be are:
 
 * `exrom_ram' and `dock_ram' are non-zero if the corresponding 8K page
   of the Timex EXROM or DOCK are writable.
+
+* `joystick_active_count' is the number of joysticks connected to the emulated
+  Spectrum. `joystick_list' gives the type of the joysticks and 
+  `joystick_inputs' gives the corresponding connections to the real machines
+  keyboard and joysticks.
 
 With all those housekeeping routines out of the way, there are two
 main workhorses of the snapshot routines:

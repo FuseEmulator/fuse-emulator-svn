@@ -47,6 +47,12 @@ static const int LIBSPECTRUM_Z80_HEADER_LENGTH = 30;
 /* The constants used for each machine type */
 enum {
 
+  /* v1 constants */
+  Z80_JOYSTICK_CURSOR_V1 = 0,
+  Z80_JOYSTICK_KEMPSTON_V1 = 1,
+  Z80_JOYSTICK_SINCLAIR_LEFT_V1 = 2,
+  Z80_JOYSTICK_SINCLAIR_RIGHT_V1 = 3,
+
   /* v2 constants */
   Z80_MACHINE_48_V2 = 0,
   Z80_MACHINE_48_IF1_V2 = 1,
@@ -62,6 +68,11 @@ enum {
   Z80_MACHINE_128 = 4,
   Z80_MACHINE_128_IF1 = 5,
   Z80_MACHINE_128_MGT = 6,
+
+  Z80_JOYSTICK_CURSOR_V3 = 0,
+  Z80_JOYSTICK_KEMPSTON_V3 = 1,
+  Z80_JOYSTICK_USER_DEFINED_V3 = 2,
+  Z80_JOYSTICK_SINCLAIR_RIGHT_V3 = 3,
 
   /* Extensions */
   Z80_MACHINE_PLUS3 = 7,
@@ -79,6 +90,19 @@ enum {
   Z80_MACHINE_FIRST_EXTENSION = Z80_MACHINE_PLUS3,
 };
 
+/* Constants representing a Sinclair Interface II port 1 joystick as a .z80
+   user defined joystick */
+static const libspectrum_word if2_left_map_l = 0x0f03;
+static const libspectrum_word if2_left_map_r = 0x0803;
+static const libspectrum_word if2_left_map_d = 0x0403;
+static const libspectrum_word if2_left_map_u = 0x0203;
+static const libspectrum_word if2_left_map_f = 0x0103;
+static const libspectrum_word if2_left_l     = '1';
+static const libspectrum_word if2_left_r     = '2';
+static const libspectrum_word if2_left_d     = '3';
+static const libspectrum_word if2_left_u     = '4';
+static const libspectrum_word if2_left_f     = '5';
+
 /* The signature used to designate the .slt extensions */
 static libspectrum_byte slt_signature[] = "\0\0\0SLT";
 static size_t slt_signature_length = 6;
@@ -94,6 +118,16 @@ static libspectrum_error
 get_machine_type_v3( libspectrum_snap *snap, libspectrum_byte type );
 static libspectrum_error
 get_machine_type_extension( libspectrum_snap *snap, libspectrum_byte type );
+static libspectrum_error
+get_joystick_type( libspectrum_snap *snap, 
+                   const libspectrum_byte *custom_joystick_base,
+                   libspectrum_byte type, int version );
+static libspectrum_error
+get_joystick_type_v1( libspectrum_snap *snap, libspectrum_byte type );
+static libspectrum_error
+get_joystick_type_v3( libspectrum_snap *snap,
+                      const libspectrum_byte *custom_joystick_base,
+                      libspectrum_byte type );
 static libspectrum_error
 read_blocks( const libspectrum_byte *buffer, size_t buffer_length,
 	     libspectrum_snap *snap, int version, int compressed );
@@ -119,7 +153,7 @@ write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 	      size_t *length, int *flags, libspectrum_snap *snap );
 static libspectrum_error
 write_base_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		   size_t *length, libspectrum_snap *snap );
+		   size_t *length, int *flags, libspectrum_snap *snap );
 static libspectrum_error
 write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		       size_t *length, int *flags, libspectrum_snap *snap );
@@ -238,6 +272,13 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     extra_header = buffer + LIBSPECTRUM_Z80_HEADER_LENGTH + 2;
 
+    error = get_joystick_type( snap,
+                               extra_header + 32,
+                               ( header[29] & 0xc0 ) >> 6,
+                               *version
+                             );
+    if( error ) return error;
+
     libspectrum_snap_set_pc( snap, extra_header[0] + extra_header[1] * 0x100 );
 
     error = get_machine_type( snap, extra_header[2], *version );
@@ -331,6 +372,10 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 );
     *version = 1;
+
+    libspectrum_snap_set_joystick_active_count( snap, 1 );
+    error = get_joystick_type_v1( snap, ( header[29] & 0xc0 ) >> 6 );
+    if( error ) return error;
 
     /* Need to flag this for later */
     *compressed = ( header[12] & 0x20 ) ? 1 : 0;
@@ -446,6 +491,113 @@ get_machine_type_extension( libspectrum_snap *snap, libspectrum_byte type )
       LIBSPECTRUM_ERROR_UNKNOWN,
       "%s:get_machine_type: unknown extension machine type %d", __FILE__, type
     );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+get_joystick_type( libspectrum_snap *snap, 
+                   const libspectrum_byte *custom_joystick_base,
+                   libspectrum_byte type, int version )
+{
+  libspectrum_error error;
+
+  libspectrum_snap_set_joystick_active_count( snap, 1 );
+  libspectrum_snap_set_joystick_inputs( snap, 0,
+                                        LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD |
+                                        LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1 );
+
+  switch( version ) {
+
+  case 1:
+  case 2:
+    error = get_joystick_type_v1( snap, type ); if( error ) return error;
+    break;
+  case 3:
+    error = get_joystick_type_v3( snap, custom_joystick_base, type );
+    if( error ) return error;
+    break;
+
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+                             "%s:get_joystick_type: unknown version %d",
+                             __FILE__, version );
+    return LIBSPECTRUM_ERROR_LOGIC;
+
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+get_joystick_type_v1( libspectrum_snap *snap, libspectrum_byte type )
+{
+  switch( type ) {
+
+  case Z80_JOYSTICK_CURSOR_V1:
+    libspectrum_snap_set_joystick_list( snap, 0, LIBSPECTRUM_JOYSTICK_CURSOR );
+    break;
+  case Z80_JOYSTICK_KEMPSTON_V1:
+    libspectrum_snap_set_joystick_list( snap, 0, LIBSPECTRUM_JOYSTICK_KEMPSTON );
+    break;
+  case Z80_JOYSTICK_SINCLAIR_LEFT_V1:
+    libspectrum_snap_set_joystick_list( snap, 0, LIBSPECTRUM_JOYSTICK_SINCLAIR_2 );
+    break;
+  case Z80_JOYSTICK_SINCLAIR_RIGHT_V1:
+    libspectrum_snap_set_joystick_list( snap, 0, LIBSPECTRUM_JOYSTICK_SINCLAIR_1 );
+    break;
+
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "%s:get_machine_type: unknown v1 joystick type %d",
+			     __FILE__, type );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+get_joystick_type_v3( libspectrum_snap *snap,
+                      const libspectrum_byte *custom_keys_base,
+                      libspectrum_byte type )
+{
+  switch( type ) {
+
+  case Z80_JOYSTICK_CURSOR_V3:
+    libspectrum_snap_set_joystick_list( snap, 0, LIBSPECTRUM_JOYSTICK_CURSOR );
+    break;
+  case Z80_JOYSTICK_KEMPSTON_V3:
+    libspectrum_snap_set_joystick_list( snap, 0, LIBSPECTRUM_JOYSTICK_KEMPSTON );
+    break;
+  case Z80_JOYSTICK_USER_DEFINED_V3:
+    /* User defined mapping, check to see if keys match Sinclair Interface 2
+       left port and return that if possible */
+    /* First 10 bytes are spectrum keyboard mappings for user defined keys
+       in this order: left, right, down, up, fire */
+    if( custom_keys_base[0] + custom_keys_base[1] * 0x100 == if2_left_map_l &&
+        custom_keys_base[2] + custom_keys_base[3] * 0x100 == if2_left_map_r &&
+        custom_keys_base[4] + custom_keys_base[5] * 0x100 == if2_left_map_d &&
+        custom_keys_base[6] + custom_keys_base[7] * 0x100 == if2_left_map_u &&
+        custom_keys_base[8] + custom_keys_base[9] * 0x100 == if2_left_map_f ) {
+      libspectrum_snap_set_joystick_list( snap, 0,
+                                          LIBSPECTRUM_JOYSTICK_SINCLAIR_2 );
+    } else {
+      libspectrum_snap_set_joystick_active_count( snap, 0 );
+      libspectrum_snap_set_joystick_inputs( snap, 0, 0 );
+    }
+    break;
+  case Z80_JOYSTICK_SINCLAIR_RIGHT_V3:
+    libspectrum_snap_set_joystick_list( snap, 0,
+                                        LIBSPECTRUM_JOYSTICK_SINCLAIR_1 );
+    break;
+
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "%s:get_machine_type: unknown v3 joystick type %d",
+			     __FILE__, type );
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
@@ -954,7 +1106,7 @@ write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 {
   libspectrum_error error;
 
-  error = write_base_header( buffer, ptr, length, snap );
+  error = write_base_header( buffer, ptr, length, flags, snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   error = write_extended_header( buffer, ptr, length, flags, snap );
@@ -965,9 +1117,10 @@ write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 static libspectrum_error
 write_base_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		   size_t *length, libspectrum_snap *snap )
+		   size_t *length, int *flags, libspectrum_snap *snap )
 {
   libspectrum_error error;
+  libspectrum_byte joystick_flags = 0;
 
   error = libspectrum_make_room( buffer, LIBSPECTRUM_Z80_HEADER_LENGTH, ptr,
 				 length );
@@ -998,8 +1151,39 @@ write_base_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   *(*ptr)++ = libspectrum_snap_iff1( snap ) ? 0xff : 0x00;
   *(*ptr)++ = libspectrum_snap_iff2( snap ) ? 0xff : 0x00;
+
+  /* Exactly one active joystick can be represented in a .z80 file */
+  if( libspectrum_snap_joystick_active_count( snap ) != 1 )
+    *flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+
+  switch( libspectrum_snap_joystick_list( snap, 1 ) ) {
+  case LIBSPECTRUM_JOYSTICK_CURSOR:
+    joystick_flags = Z80_JOYSTICK_CURSOR_V3;
+    break;
+  case LIBSPECTRUM_JOYSTICK_KEMPSTON:
+    joystick_flags = Z80_JOYSTICK_KEMPSTON_V3;
+    break;
+  case LIBSPECTRUM_JOYSTICK_SINCLAIR_1:
+    joystick_flags = Z80_JOYSTICK_SINCLAIR_RIGHT_V3;
+    break;
+  case LIBSPECTRUM_JOYSTICK_SINCLAIR_2:
+    /* Write Z80_JOYSTICK_USER_DEFINED_V3 and custom key mapping corresponding
+       to Sinclair Interface II right port */
+    joystick_flags = Z80_JOYSTICK_USER_DEFINED_V3;
+    break;
+
+  default:
+    /* LIBSPECTRUM_JOYSTICK_NONE,
+       LIBSPECTRUM_JOYSTICK_TIMEX_1,
+       LIBSPECTRUM_JOYSTICK_TIMEX_2,
+       LIBSPECTRUM_JOYSTICK_FULLER, */
+    *flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+  }
+  joystick_flags <<= 6;
+
   *(*ptr)++ = ( libspectrum_snap_im( snap ) & 0x03 ) +
-              ( libspectrum_snap_issue2( snap ) ? 0x04 : 0x00 );
+              ( libspectrum_snap_issue2( snap ) ? 0x04 : 0x00 ) +
+              joystick_flags;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -1121,8 +1305,28 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = 0x00; *(*ptr)++ = 0x00;
   }
 
-  /* Joystick settings, etc */
-  for( i=32; i<=LIBSPECTRUM_Z80_V3_LENGTH; i++ ) *(*ptr)++ = '\0';
+  /* Joystick settings */
+  if( libspectrum_snap_joystick_list( snap, 1 ) ==
+        LIBSPECTRUM_JOYSTICK_SINCLAIR_2 ) {
+    /* First 10 bytes are spectrum keyboard mappings for user defined keys
+       in this order: left, right, down, up, fire */
+    libspectrum_write_word( ptr, if2_left_map_l );
+    libspectrum_write_word( ptr, if2_left_map_r );
+    libspectrum_write_word( ptr, if2_left_map_d );
+    libspectrum_write_word( ptr, if2_left_map_u );
+    libspectrum_write_word( ptr, if2_left_map_f );
+    /* Second 10 bytes are ascii words corresponding to keys */
+    libspectrum_write_word( ptr, if2_left_l );
+    libspectrum_write_word( ptr, if2_left_r );
+    libspectrum_write_word( ptr, if2_left_d );
+    libspectrum_write_word( ptr, if2_left_u );
+    libspectrum_write_word( ptr, if2_left_f );
+  } else {
+    for( i=32; i<52; i++ ) *(*ptr)++ = '\0';
+  }
+
+  /* etc */
+  for( i=52; i<=LIBSPECTRUM_Z80_V3_LENGTH; i++ ) *(*ptr)++ = '\0';
 
   return LIBSPECTRUM_ERROR_NONE;
 }

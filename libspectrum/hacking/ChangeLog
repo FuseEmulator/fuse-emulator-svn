@@ -277,3 +277,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 multiple IRB files.
 20040910 libspectrum.h.in,rzx.c: implement RZX rollback.
 20040918 libspectrum.h.in,rzx.c: allow RZX rollback to arbitrary points.
+20041025 accessor.pl,internals.h,libspectrum.c,libspectrum.h.in,
+         snap_accessors.txt,snapshot.c,szx.c,z80.c,doc/libspectrum.txt: Add
+         support for connected joystick information in snapshots.
