@@ -1,4 +1,4 @@
-The Fuse utilities version 0.5.1
+The Fuse utilities version 0.6.0
 ================================
 
 The Fuse utilities are a few tools which may be of occasional use when
@@ -11,7 +11,8 @@ The available utilities are:
 * rzxdump: list the contents of an RZX input recording file.
 * rzxtool: add, extract or remove the embedded snapshot from an RZX file,
 	   or compress or uncompress the file.
-* tzxconv: do a best-guess conversion of a TZX file to a .tap file.
+* scl2trd: convert .scl disk images to .trd disk images.
+* tapeconv: convert between .tzx and .tap files.
 * tzxlist: list the contents of a TZX file.
 
 In order to use the utilities, you'll need `libspectrum' installed;
@@ -43,7 +44,6 @@ http://www.srcf.ucam.org/~pak21/spectrum/fuse.html
 Please send any bug reports, comments, etc to me.
 
 Philip Kendall <pak21-fuse@srcf.ucam.org>
-5 December 2002
+16 April 2003
 
 $Id$
-
