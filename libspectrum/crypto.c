@@ -50,6 +50,9 @@ static libspectrum_error create_key( GcrySexp *key );
 static void free_mpis( GcryMPI *mpis, size_t n );
 static libspectrum_error get_mpis( GcryMPI *r, GcryMPI *s,
 				   GcrySexp signature );
+static libspectrum_error
+serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
+		GcryMPI r, GcryMPI s );
 
 libspectrum_error
 libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
@@ -58,7 +61,6 @@ libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
   int error;
   GcrySexp hash, key, s_signature;
   GcryMPI r, s;
-  size_t length, length_s;
 
   error = get_hash( &hash, data, data_length ); if( error ) return error;
 
@@ -80,49 +82,8 @@ libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
 
   gcry_sexp_release( s_signature );
 
-  error = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &length, r );
-  if( error ) {
-    libspectrum_print_error( "libspectrum_sign_data: length of r: %s",
-			     gcry_strerror( error ) );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
-    return LIBSPECTRUM_ERROR_LOGIC;
-  }
-
-  error = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &length_s, s );
-  if( error ) {
-    libspectrum_print_error( "libspectrum_sign_data: length of s: %s",
-			     gcry_strerror( error ) );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
-    return LIBSPECTRUM_ERROR_LOGIC;
-  }
-
-  length += length_s; *signature_length = length;
-
-  *signature = malloc( length );
-  if( signature == NULL ) {
-    libspectrum_print_error( "libspectrum_sign_data: out of memory" );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
-  error = gcry_mpi_print( GCRYMPI_FMT_PGP, *signature, &length, r );
-  if( error ) {
-    libspectrum_print_error( "libspectrum_sign_data: printing r: %s",
-			     gcry_strerror( error ) );
-    free( *signature );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
-    return LIBSPECTRUM_ERROR_LOGIC;
-  }
-
-  length = *signature_length - length;
-  error = gcry_mpi_print( GCRYMPI_FMT_PGP, *signature + length, &length, s );
-  if( error ) {
-    libspectrum_print_error( "libspectrum_sign_data: printing s: %s",
-			     gcry_strerror( error ) );
-    free( *signature );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
-    return LIBSPECTRUM_ERROR_LOGIC;
-  }
+  error = serialise_mpis( signature, signature_length, r, s );
+  if( error ) { gcry_mpi_release( r ); gcry_mpi_release( s ); return error; }
 
   gcry_mpi_release( r ); gcry_mpi_release( s );
 
@@ -284,6 +245,60 @@ get_mpis( GcryMPI *r, GcryMPI *s, GcrySexp signature )
   if( !(*r) || !(*s) ) {
     libspectrum_print_error( "get_mpis: signature not complete" );
     if( *r ) gcry_mpi_release( *r ); if( *s ) gcry_mpi_release( *s );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
+		GcryMPI r, GcryMPI s )
+{
+  int error;
+  size_t length, length_s;
+
+  error = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &length, r );
+  if( error ) {
+    libspectrum_print_error( "serialise_mpis: length of r: %s",
+			     gcry_strerror( error ) );
+    gcry_mpi_release( r ); gcry_mpi_release( s );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  error = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, &length_s, s );
+  if( error ) {
+    libspectrum_print_error( "serialise_mpis: length of s: %s",
+			     gcry_strerror( error ) );
+    gcry_mpi_release( r ); gcry_mpi_release( s );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  length += length_s; *signature_length = length;
+
+  *signature = malloc( length );
+  if( signature == NULL ) {
+    libspectrum_print_error( "serialise_mpis: out of memory" );
+    gcry_mpi_release( r ); gcry_mpi_release( s );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  error = gcry_mpi_print( GCRYMPI_FMT_PGP, *signature, &length, r );
+  if( error ) {
+    libspectrum_print_error( "serialise_mpis: printing r: %s",
+			     gcry_strerror( error ) );
+    free( *signature );
+    gcry_mpi_release( r ); gcry_mpi_release( s );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  length = *signature_length - length;
+  error = gcry_mpi_print( GCRYMPI_FMT_PGP, *signature + length, &length, s );
+  if( error ) {
+    libspectrum_print_error( "serialise_mpis: printing s: %s",
+			     gcry_strerror( error ) );
+    free( *signature );
+    gcry_mpi_release( r ); gcry_mpi_release( s );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
