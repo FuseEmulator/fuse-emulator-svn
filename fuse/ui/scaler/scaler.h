@@ -33,7 +33,11 @@ typedef enum scaler_type {
   GFX_ADVMAME2X,
   GFX_TV2X,
   GFX_TIMEXTV,
-  GFX_NUM
+
+  GFX_NORMAL24,
+  GFX_DOUBLE24,
+
+  GFX_NUM		/* End marker; do not remove */
 } scaler_type;
 
 typedef enum scaler_flags_t {

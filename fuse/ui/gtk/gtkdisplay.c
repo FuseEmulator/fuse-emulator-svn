@@ -30,6 +30,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <gtk/gtk.h>
 
@@ -43,7 +44,6 @@
 #include "scld.h"
 
 GdkGC *gtkdisplay_gc = NULL;
-static GdkImage *image;
 
 unsigned long gtkdisplay_colours[16];
 
@@ -51,15 +51,40 @@ unsigned long gtkdisplay_colours[16];
    DISPLAY_ASPECT WIDTH x DISPLAY_SCREEN_HEIGHT */
 int image_scale;
 
+/* An RGB image of the Spectrum screen */
+static guchar rgb_image[DISPLAY_SCREEN_HEIGHT * DISPLAY_SCREEN_WIDTH * 3];
+static const gint rgb_pitch = DISPLAY_SCREEN_WIDTH * 3;
+
 /* The scaled image */
-static WORD scaled_image[2*DISPLAY_SCREEN_HEIGHT][2*DISPLAY_SCREEN_WIDTH];
-static const ptrdiff_t scaled_pitch =
-                                     2 * DISPLAY_SCREEN_WIDTH * sizeof( WORD );
+static guchar scaled_image[3 * 2 * DISPLAY_SCREEN_HEIGHT *
+			       2 * DISPLAY_SCREEN_WIDTH    ];
+static const ptrdiff_t scaled_pitch = DISPLAY_SCREEN_WIDTH * 6;
+
+/* The colour palette */
+static guchar colours[16][3] = {
+
+  {   0,   0,   0 },
+  {   0,   0, 192 },
+  { 192,   0,   0 },
+  { 192,   0, 192 },
+  {   0, 192,   0 },
+  {   0, 192, 192 },
+  { 192, 192,   0 },
+  { 192, 192, 192 },
+  {   0,   0,   0 },
+  {   0,   0, 255 },
+  { 255,   0,   0 },
+  { 255,   0, 255 },
+  {   0, 255,   0 },
+  {   0, 255, 255 },
+  { 255, 255,   0 },
+  { 255, 255, 255 },
+
+};
 
 /* The current size of the window (in units of DISPLAY_SCREEN_*) */
 static int gtkdisplay_current_size=1;
 
-static int gtkdisplay_allocate_colours( unsigned long *pixel_values );
 static void gtkdisplay_area(int x, int y, int width, int height);
 static int gtkdisplay_configure_notify( int width );
 static int register_scalers( void );
@@ -77,9 +102,6 @@ gtkdisplay_init( void )
   int x,y,get_width,get_height, depth;
   GdkGCValues gc_values;
 
-  image = gdk_image_new(GDK_IMAGE_FASTEST, gdk_visual_get_system(),
-			2 * DISPLAY_SCREEN_WIDTH, 2 * DISPLAY_SCREEN_HEIGHT );
-
   gtk_signal_connect( GTK_OBJECT(gtkui_drawing_area), "expose_event", 
 		      GTK_SIGNAL_FUNC(gtkdisplay_expose), NULL);
   gtk_signal_connect( GTK_OBJECT(gtkui_drawing_area), "configure_event", 
@@ -88,10 +110,7 @@ gtkdisplay_init( void )
   gdk_window_get_geometry( gtkui_drawing_area->window, &x, &y,
 			   &get_width, &get_height, &depth );
   gtkdisplay_gc =
-    gtk_gc_get( depth, gtk_widget_get_colormap( gtkui_drawing_area ),
-		&gc_values, (GdkGCValuesMask) 0 );
-
-  if( gtkdisplay_allocate_colours( gtkdisplay_colours ) ) return 1;
+    gtk_gc_get( depth, gdk_rgb_get_cmap(), &gc_values, (GdkGCValuesMask) 0 );
 
   display_ui_initialised = 1;
 
@@ -112,70 +131,6 @@ uidisplay_init( int width, int height )
   return 0;
 }
 
-static int gtkdisplay_allocate_colours( unsigned long *pixel_values )
-{
-  GdkColor gdk_colours[16];
-  GdkColormap *current_map;
-  gboolean success[16];
-
-  const char *colour_names[] = {
-    "black",
-    "blue3",
-    "red3",
-    "magenta3",
-    "green3",
-    "cyan3",
-    "yellow3",
-    "gray80",
-    "black",
-    "blue",
-    "red",
-    "magenta",
-    "green",
-    "cyan",
-    "yellow",
-    "white",
-  };
-
-  int i,ok;
-
-  current_map = gtk_widget_get_colormap( gtkui_drawing_area );
-
-  for(i=0;i<16;i++) {
-    if( ! gdk_color_parse(colour_names[i],&gdk_colours[i]) ) {
-      fprintf(stderr,"%s: couldn't parse colour `%s'\n",
-	      fuse_progname, colour_names[i]);
-      return 1;
-    }
-  }
-
-  gdk_colormap_alloc_colors( current_map, gdk_colours, 16, FALSE, FALSE,
-			     success );
-  for(i=0,ok=1;i<16;i++) if(!success[i]) ok=0;
-
-  if(!ok) {
-    fprintf(stderr,"%s: couldn't allocate all colours in default colourmap\n"
-	    "%s: switching to private colourmap\n",
-	    fuse_progname,fuse_progname);
-    /* FIXME: should free colours in default map here */
-    current_map = gdk_colormap_new( gdk_visual_get_system(), FALSE );
-    gdk_colormap_alloc_colors( current_map, gdk_colours, 16, FALSE, FALSE,
-			       success );
-    for(i=0,ok=1;i<16;i++) if(!success[i]) ok=0;
-    if( !ok ) {
-      fprintf(stderr,"%s: still couldn't allocate all colours\n",
-	      fuse_progname);
-      return 1;
-    }
-    gtk_widget_set_colormap( gtkui_window, current_map );
-  }
-
-  for(i=0;i<16;i++) pixel_values[i] = gdk_colours[i].pixel;
-
-  return 0;
-
-}
-  
 static int gtkdisplay_configure_notify( int width )
 {
   int size, error;
@@ -210,8 +165,8 @@ register_scalers( void )
 
     switch( image_scale ) {
     case 1:
-      scaler_register( GFX_NORMAL );
-      scaler_select_scaler( GFX_NORMAL );
+      scaler_register( GFX_NORMAL24 );
+      scaler_select_scaler( GFX_NORMAL24 );
       return 0;
     case 2:
       scaler_register( GFX_HALF );
@@ -223,9 +178,8 @@ register_scalers( void )
 
     switch( image_scale ) {
     case 1:
-      scaler_register( GFX_DOUBLESIZE );
-      scaler_register( GFX_TV2X );
-      scaler_select_scaler( GFX_DOUBLESIZE );
+      scaler_register( GFX_DOUBLE24 );
+      scaler_select_scaler( GFX_DOUBLE24 );
       return 0;
     case 2:
       scaler_register( GFX_NORMAL );
@@ -252,18 +206,18 @@ uidisplay_area( int x, int y, int w, int h )
   float scale = (float)gtkdisplay_current_size / image_scale;
   int scaled_x = scale * x, scaled_y = scale * y, xx, yy;
 
+  /* Create the RGB image */
+  for( xx = x; xx < x + w; xx++ )
+    for( yy = y; yy < y + h; yy++ )
+      memcpy( &rgb_image[ yy * rgb_pitch + 3 * xx ],
+	      colours[ display_image[yy][xx] ], 3 );
+
   /* Create scaled image */
-  scaler_proc( (BYTE*)&display_image[y][x], display_pitch, NULL, 
-	       (BYTE*)&scaled_image[scaled_y][scaled_x], scaled_pitch, w, h );
+  scaler_proc( (BYTE*)&rgb_image[ y * rgb_pitch + 3 * x ], rgb_pitch, NULL, 
+	       (BYTE*)&scaled_image[ scaled_y * scaled_pitch + 3 * scaled_x ],
+	       scaled_pitch, w, h );
 
   w *= scale; h *= scale;
-
-  /* Call putpixel multiple times */
-  for( yy = scaled_y; yy < scaled_y + h; yy++ )
-    for( xx = scaled_x; xx < scaled_x + w; xx++ ) {
-      int colour = scaled_image[yy][xx];
-      gdk_image_put_pixel( image, xx, yy, gtkdisplay_colours[ colour ] );
-    }
 
   /* Blit to the real screen */
   gtkdisplay_area( scaled_x, scaled_y, w, h );
@@ -271,8 +225,11 @@ uidisplay_area( int x, int y, int w, int h )
 
 static void gtkdisplay_area(int x, int y, int width, int height)
 {
-  gdk_draw_image( gtkui_drawing_area->window, gtkdisplay_gc, image, x, y, x, y,
-		  width, height );
+  gdk_draw_rgb_image( gtkui_drawing_area->window,
+		      gtkui_drawing_area->style->fg_gc[GTK_STATE_NORMAL],
+		      x, y, width, height, GDK_RGB_DITHER_NONE,
+		      &scaled_image[ y * scaled_pitch + 3 * x ],
+		      scaled_pitch );
 }
 
 void
@@ -295,9 +252,6 @@ uidisplay_end( void )
 int
 gtkdisplay_end( void )
 {
-  /* Free the image */
-  gdk_image_destroy( image );
-
   /* Free the allocated GC */
   gtk_gc_release( gtkdisplay_gc );
 

@@ -205,6 +205,11 @@ ui_init( int *argc, char ***argv )
 
   gtk_init(argc,argv);
 
+  gdk_rgb_init();
+  gdk_rgb_set_install( TRUE );
+  gtk_widget_set_default_colormap( gdk_rgb_get_cmap() );
+  gtk_widget_set_default_visual( gdk_rgb_get_visual() );
+
   gtkui_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
   gtk_window_set_title( GTK_WINDOW(gtkui_window), "Fuse" );
