@@ -53,7 +53,7 @@ libspectrum_la_SOURCES = bzip2.c \
 			 zlib.c \
 			 zxs.c
 
-libspectrum_la_LDFLAGS = -version-info 3:0:1
+libspectrum_la_LDFLAGS = -version-info 4:0:2
 
 libspectrum_la_LIBADD = myglib/libmyglib.la
 

@@ -243,3 +243,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 for both v2 and v3 files.
 20040626 libspectrum.h.in: put libspectrum_tape_block_description in the
 	 correct place.
+20040626 Makefile.am: bump soname.
