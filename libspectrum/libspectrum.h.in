@@ -220,6 +220,8 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK;
                                             /* Kempston-style joystick ports */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY;
                                              /* Scorpion-style memory paging */
+extern const int LIBSPECTRUM_MACHINE_CAPABILITY_EVEN_M1;
+                             /* M1 cycles always start on even tstate counts */
 
 /* Get the capabilities of a machine */
 int libspectrum_machine_capabilities( libspectrum_machine type );
