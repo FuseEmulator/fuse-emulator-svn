@@ -796,7 +796,7 @@ rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
 
 #ifdef HAVE_GCRYPT_H
   { 
-    int error; size_t mpi_length;
+    gcry_error_t error; size_t mpi_length;
 
     error = gcry_mpi_scan( &signature->r, GCRYMPI_FMT_PGP, *ptr, length,
 			   &mpi_length );
