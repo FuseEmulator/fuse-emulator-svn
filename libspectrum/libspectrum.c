@@ -448,6 +448,8 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_CARTRIDGE_DCK, "dck", 3, NULL,		    0, 0, 0 },
       { LIBSPECTRUM_ID_CARTRIDGE_IF2, "rom", 3, NULL,		    0, 0, 0 },
 
+      { LIBSPECTRUM_ID_MICRODRIVE_MDR, "mdr", 3, NULL,		    0, 0, 0 },
+
       { LIBSPECTRUM_ID_TAPE_TAP,      "tap", 3, "\x13\0\0",	    0, 3, 1 },
       { LIBSPECTRUM_ID_TAPE_TZX,      "tzx", 3, "ZXTape!",	    0, 7, 4 },
       { LIBSPECTRUM_ID_TAPE_WARAJEVO, "tap", 2, "\xff\xff\xff\xff", 8, 4, 2 },
@@ -532,6 +534,9 @@ libspectrum_identify_class( libspectrum_class_t *libspectrum_class,
 
   case LIBSPECTRUM_ID_HARDDISK_HDF:
     *libspectrum_class = LIBSPECTRUM_CLASS_HARDDISK; return 0;
+
+  case LIBSPECTRUM_ID_MICRODRIVE_MDR:
+    *libspectrum_class = LIBSPECTRUM_CLASS_MICRODRIVE; return 0;
 
   case LIBSPECTRUM_ID_RECORDING_RZX:
     *libspectrum_class = LIBSPECTRUM_CLASS_RECORDING; return 0;
