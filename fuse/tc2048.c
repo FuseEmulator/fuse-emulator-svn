@@ -1,5 +1,6 @@
-/* spec48.c: Spectrum 48K specific routines
+/* tc2048.c: Timex TC2048 specific routines
    Copyright (c) 1999-2002 Philip Kendall
+   Copyright (c) 2002 Fredrick Meunier
 
    $Id$
 
@@ -36,26 +37,33 @@
 #include "printer.h"
 #include "snapshot.h"
 #include "sound.h"
-#include "spec48.h"
+#include "tc2048.h"
 #include "spectrum.h"
-#include "ui/ui.h"
+#include "scld.h"
 #include "z80/z80.h"
+#include "ui/ui.h"
 
-static DWORD spec48_contend_delay( void );
+static DWORD tc2048_contend_delay( void );
 
-spectrum_port_info spec48_peripherals[] = {
-  { 0x0001, 0x0000, spectrum_ula_read, spectrum_ula_write },
+spectrum_port_info tc2048_peripherals[] = {
   { 0x0004, 0x0000, printer_zxp_read, printer_zxp_write },
   { 0x00e0, 0x0000, joystick_kempston_read, joystick_kempston_write },
+  { 0x00ff, 0x00f4, scld_hsr_read, scld_hsr_write },
+
+  /* Timex ports are fully decoded (at least in the lower 8 bits) */
+  { 0x00ff, 0x00fe, spectrum_ula_read, spectrum_ula_write },
+
+  { 0x00ff, 0x00ff, scld_dec_read, scld_dec_write },
   { 0, 0, NULL, NULL } /* End marker. DO NOT REMOVE */
 };
 
-static BYTE spec48_unattached_port( void )
+
+static BYTE tc2048_unattached_port( void )
 {
   return spectrum_unattached_port( 1 );
 }
 
-BYTE spec48_readbyte(WORD address)
+BYTE tc2048_readbyte(WORD address)
 {
   WORD bank;
 
@@ -73,12 +81,12 @@ BYTE spec48_readbyte(WORD address)
   return 0; /* Keep gcc happy */
 }
 
-BYTE spec48_read_screen_memory(WORD offset)
+BYTE tc2048_read_screen_memory(WORD offset)
 {
   return RAM[5][offset];
 }
 
-void spec48_writebyte(WORD address, BYTE b)
+void tc2048_writebyte(WORD address, BYTE b)
 {
   if(address>=0x4000) {		/* 0x4000 = 1st byte of RAM */
     WORD bank=address/0x4000,offset=address-(bank*0x4000);
@@ -91,29 +99,29 @@ void spec48_writebyte(WORD address, BYTE b)
 		bank, __FILE__, __LINE__ );
       fuse_abort();
     }
-    if(address<0x5b00) {	/* 0x4000 - 0x5aff = display file */
-      display_dirty( address );	/* Replot necessary pixels */
-    }
+    display_dirty( address );	/* Replot necessary pixels */
   }
 }
 
-DWORD spec48_contend_memory( WORD address )
+DWORD tc2048_contend_memory( WORD address )
 {
   /* Contention occurs only in the lowest 16Kb of RAM */
   if( address < 0x4000 || address > 0x7fff ) return 0;
 
-  return spec48_contend_delay();
+  return tc2048_contend_delay();
 }
 
-DWORD spec48_contend_port( WORD port )
+DWORD tc2048_contend_port( WORD port )
 {
-  /* Contention occurs only for even-numbered ports */
-  if( ( port & 0x01 ) == 0 ) return spec48_contend_delay();
+  /* Contention occurs for even-numbered ports (SCLD and HSR) */
+  /* Contention occurs for port FF (SCLD DCE) */
+  if( ( port & 0x01 ) == 0x00 ||
+      ( port & 0xff ) == 0xff    ) return tc2048_contend_delay();
 
   return 0;
 }
 
-static DWORD spec48_contend_delay( void )
+static DWORD tc2048_contend_delay( void )
 {
   WORD tstates_through_line;
   
@@ -156,31 +164,31 @@ static DWORD spec48_contend_delay( void )
   return 0;	/* Shut gcc up */
 }
 
-int spec48_init( machine_info *machine )
+int tc2048_init( machine_info *machine )
 {
   int error;
 
-  machine->machine = SPECTRUM_MACHINE_48;
-  machine->description = "Spectrum 48K";
-  machine->id = "48";
+  machine->machine = SPECTRUM_MACHINE_2048;
+  machine->description = "Timex TC2048";
+  machine->id = "2048";
 
-  machine->reset = spec48_reset;
+  machine->reset = tc2048_reset;
 
-  machine_set_timings( machine, 3.5e6, 24, 128, 24, 48, 312, 8936 );
+  machine_set_timings( machine, 3.528e6, 24, 128, 24, 50, 312, 9016 );
 
-  machine->ram.read_memory    = spec48_readbyte;
-  machine->ram.read_screen    = spec48_read_screen_memory;
-  machine->ram.write_memory   = spec48_writebyte;
-  machine->ram.contend_memory = spec48_contend_memory;
-  machine->ram.contend_port   = spec48_contend_port;
+  machine->ram.read_memory    = tc2048_readbyte;
+  machine->ram.read_screen    = tc2048_read_screen_memory;
+  machine->ram.write_memory   = tc2048_writebyte;
+  machine->ram.contend_memory = tc2048_contend_memory;
+  machine->ram.contend_port   = tc2048_contend_port;
 
   error = machine_allocate_roms( machine, 1 );
   if( error ) return error;
-  error = machine_read_rom( machine, 0, "48.rom" );
+  error = machine_read_rom( machine, 0, "tc2048.rom" );
   if( error ) return error;
 
-  machine->peripherals = spec48_peripherals;
-  machine->unattached_port = spec48_unattached_port;
+  machine->peripherals = tc2048_peripherals;
+  machine->unattached_port = tc2048_unattached_port;
 
   machine->ay.present = 0;
 
@@ -188,7 +196,7 @@ int spec48_init( machine_info *machine )
 
 }
 
-int spec48_reset(void)
+int tc2048_reset(void)
 {
   z80_reset();
   sound_ay_reset();	/* should happen for *all* resets */

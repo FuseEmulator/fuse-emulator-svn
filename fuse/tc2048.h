@@ -1,5 +1,6 @@
-/* spec48.h: Spectrum 48K specific routines
+/* tc2048.h: Timex TC2048 specific routines
    Copyright (c) 1999-2002 Philip Kendall
+   Copyright (c) 2002 Fredrick Meunier
 
    $Id$
 
@@ -24,21 +25,21 @@
 
 */
 
-#ifndef FUSE_SPEC48_H
-#define FUSE_SPEC48_H
+#ifndef FUSE_TC2048_H
+#define FUSE_TC2048_H
 
 #ifndef FUSE_TYPES_H
 #include "types.h"
 #endif			/* #ifndef FUSE_TYPES_H */
 
-BYTE spec48_readbyte(WORD address);
-BYTE spec48_read_screen_memory(WORD offset);
-void spec48_writebyte(WORD address, BYTE b);
+BYTE tc2048_readbyte(WORD address);
+BYTE tc2048_read_screen_memory(WORD offset);
+void tc2048_writebyte(WORD address, BYTE b);
 
-DWORD spec48_contend_memory( WORD address );
-DWORD spec48_contend_port( WORD port );
+DWORD tc2048_contend_memory( WORD address );
+DWORD tc2048_contend_port( WORD port );
 
-int spec48_init( machine_info *machine );
-int spec48_reset(void);
+int tc2048_init( machine_info *machine );
+int tc2048_reset(void);
 
-#endif			/* #ifndef FUSE_SPEC48_H */
+#endif			/* #ifndef FUSE_TC2048_H */

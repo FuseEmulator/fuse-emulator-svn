@@ -1,5 +1,7 @@
-/* specplus2.h: Spectrum +2 specific routines
-   Copyright (c) 1999-2001 Philip Kendall
+/* error.c: handle errors
+   Copyright (c) 2002 Philip Kendall
+
+   $Id$
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,13 +24,28 @@
 
 */
 
-#ifndef FUSE_SPECPLUS2_H
-#define FUSE_SPECPLUS2_H
+#include <config.h>
 
-#ifndef FUSE_MACHINE_H
-#include "machine.h"
-#endif			/* #ifndef FUSE_MACHINE_H */
+#ifdef UI_FB			/* Use this iff we're using framebuffer */
 
-int specplus2_init( machine_info *machine );
+#include <stdarg.h>
+#include <stdio.h>
 
-#endif			/* #ifndef FUSE_SPECPLUS2_H */
+#include "fuse.h"
+
+int
+ui_error( const char *format, ... )
+{
+  va_list ap;
+  
+  va_start( ap, format );
+
+   fprintf( stderr, "%s: ", fuse_progname );
+  vfprintf( stderr, format, ap );
+
+  va_end( ap );
+
+  return 0;
+}
+
+#endif				/* #ifdef UI_FB */

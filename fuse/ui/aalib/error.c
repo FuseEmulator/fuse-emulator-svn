@@ -1,5 +1,5 @@
-/* spec128.h: Spectrum 128K specific routines
-   Copyright (c) 1999-2001 Philip Kendall
+/* error.c: handle errors
+   Copyright (c) 2002 Philip Kendall
 
    $Id$
 
@@ -24,27 +24,28 @@
 
 */
 
-#ifndef FUSE_SPEC128_H
-#define FUSE_SPEC128_H
+#include <config.h>
 
-#ifndef FUSE_MACHINE_H
-#include "machine.h"
-#endif			/* #ifndef FUSE_MACHINE_H */
+#ifdef UI_AALIB			/* Use this iff we're using aalib */
 
-extern spectrum_port_info spec128_peripherals[];
+#include <stdarg.h>
+#include <stdio.h>
 
-BYTE spec128_unattached_port( void );
+#include "fuse.h"
 
-BYTE spec128_readbyte(WORD address);
-BYTE spec128_read_screen_memory(WORD offset);
-void spec128_writebyte(WORD address, BYTE b);
+int
+ui_error( const char *format, ... )
+{
+  va_list ap;
+  
+  va_start( ap, format );
 
-DWORD spec128_contend_memory( WORD address );
-DWORD spec128_contend_port( WORD port );
+   fprintf( stderr, "%s: ", fuse_progname );
+  vfprintf( stderr, format, ap );
 
-int spec128_init( machine_info *machine );
-int spec128_reset(void);
+  va_end( ap );
 
-void spec128_memoryport_write(WORD port, BYTE b);
+  return 0;
+}
 
-#endif			/* #ifndef FUSE_SPEC128_H */
+#endif				/* #ifdef UI_AALIB */
