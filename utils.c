@@ -35,7 +35,29 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
+#include <libspectrum.h>
+
 extern char *progname;
+
+int
+get_creator( libspectrum_creator **creator, const char *program )
+{
+  libspectrum_error error;
+
+  error = libspectrum_creator_alloc( creator );
+  if( error ) return error;
+
+  error = libspectrum_creator_set_program( *creator, program );
+  if( error ) { libspectrum_creator_free( *creator ); return error; }
+
+  error = libspectrum_creator_set_major( *creator, 0x0006 );
+  if( error ) { libspectrum_creator_free( *creator ); return error; }
+
+  error = libspectrum_creator_set_minor( *creator, 0x0100 );
+  if( error ) { libspectrum_creator_free( *creator ); return error; }
+
+  return 0;
+}
 
 int
 mmap_file( const char *filename, unsigned char **buffer, size_t *length )
