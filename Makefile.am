@@ -29,6 +29,8 @@ lib_LTLIBRARIES = libspectrum.la
 libspectrum_la_SOURCES = libspectrum.c rzx.c sna.c snapshot.c tap.c tape.c\
 tzx_read.c tzx_write.c z80.c zlib.c myglib.c
 
+libspectrum_la_LDFLAGS = -version-info 0:0:0
+
 BUILT_SOURCES = libspectrum.h
 
 include_HEADERS = libspectrum.h
