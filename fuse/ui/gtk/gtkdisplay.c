@@ -93,6 +93,8 @@ gtkdisplay_init( void )
 
   if( gtkdisplay_allocate_colours( gtkdisplay_colours ) ) return 1;
 
+  display_ui_initialised = 1;
+
   return 0;
 }
 
