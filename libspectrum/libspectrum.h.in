@@ -854,6 +854,9 @@ libspectrum_ide_insert( libspectrum_ide_channel *chn,
 libspectrum_error WIN32_DLL
 libspectrum_ide_commit( libspectrum_ide_channel *chn,
 			libspectrum_ide_unit unit );
+int WIN32_DLL
+libspectrum_ide_dirty( libspectrum_ide_channel *chn,
+		       libspectrum_ide_unit unit );
 libspectrum_error WIN32_DLL
 libspectrum_ide_eject( libspectrum_ide_channel *chn,
 		       libspectrum_ide_unit unit );
