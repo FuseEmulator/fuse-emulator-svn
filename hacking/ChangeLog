@@ -89,3 +89,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (Darren).
 20030921 crypto.c, libspectrum.c, rzx.c: use libgcrypt 1.1.42.
 20030922 crypto.c: use gcry_pk_testkey to test secret key sanity.
+20030926 rzx.c: allow more than 1 repeated frame in a row.
