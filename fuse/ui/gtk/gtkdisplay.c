@@ -93,6 +93,9 @@ gtkdisplay_init( void )
 
   if( gtkdisplay_allocate_colours( gtkdisplay_colours ) ) return 1;
 
+  gtkdisplay_current_size = 1;
+  scaler_proc = Normal1x;
+
   return 0;
 }
 
@@ -121,9 +124,6 @@ uidisplay_init( int width, int height )
 {
   image_width = width;
   image_height = height;
-
-  gtkdisplay_current_size = 1;
-  scaler_proc = Normal1x;
 
   display_refresh_all();
 
