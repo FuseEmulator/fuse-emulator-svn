@@ -417,7 +417,7 @@ read_zxcf_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 		 const libspectrum_byte **buffer,
 		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
-  if( data_length != 2 ) {
+  if( data_length != 3 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "read_zxcf_chunk: unknown length %lu",
 			     (unsigned long)data_length );
@@ -425,6 +425,7 @@ read_zxcf_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   }
 
   libspectrum_snap_set_zxcf_active( snap, 1 );
+  libspectrum_snap_set_zxcf_upload( snap, **buffer ); (*buffer)++;
   libspectrum_snap_set_zxcf_memctl( snap, **buffer ); (*buffer)++;
   libspectrum_snap_set_zxcf_pages( snap, **buffer ); (*buffer)++;
 
@@ -1165,8 +1166,9 @@ write_zxcf_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 {
   libspectrum_error error;
 
-  error = write_chunk_header( buffer, ptr, length, "ZXCF", 2 );
+  error = write_chunk_header( buffer, ptr, length, "ZXCF", 3 );
 
+  *(*ptr)++ = libspectrum_snap_zxcf_upload( snap );
   *(*ptr)++ = libspectrum_snap_zxcf_memctl( snap );
   *(*ptr)++ = libspectrum_snap_zxcf_pages( snap );
 

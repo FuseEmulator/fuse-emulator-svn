@@ -114,6 +114,7 @@ struct libspectrum_snap {
 
   /* ZXCF status */
   int zxcf_active;
+  int zxcf_upload;
   libspectrum_byte zxcf_memctl;
   size_t zxcf_pages;
   libspectrum_byte *zxcf_ram[ SNAPSHOT_ZXCF_PAGES ];

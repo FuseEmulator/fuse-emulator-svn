@@ -226,3 +226,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040527 szx.c: Write scld block when machine has SE memory capability.
 20040601 libspectrum.c,libspectrum.h.in: Add LIBSPECTRUM_CLASS_CARTRIDGE_IF2
          and LIBSPECTRUM_ID_CARTRIDGE_IF2.
+20040601 szx.c: save/restore state of ZXCF upload jumper.
