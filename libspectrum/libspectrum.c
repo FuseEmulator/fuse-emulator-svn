@@ -51,6 +51,10 @@ const int LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD         = 1 << 0;
 const int LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1       = 1 << 1;
 const int LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2       = 1 << 2;
 
+libspectrum_error
+libspectrum_default_error_function( libspectrum_error error,
+				    const char *format, va_list ap );
+
 /* The function to call on errors */
 libspectrum_error_function_t libspectrum_error_function =
   libspectrum_default_error_function;
