@@ -19,3 +19,4 @@ snap_accessors.c
 stamp-h
 stamp-h.in
 tape_accessors.c
+tape_set.c

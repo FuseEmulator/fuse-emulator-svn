@@ -1090,6 +1090,7 @@ tzx_read_custom( libspectrum_tape *tape, const libspectrum_byte **ptr,
   custom_block = &(block->types.custom);
 
   /* Get the description */
+  custom_block->description = calloc( 17, sizeof( libspectrum_byte ) );
   memcpy( custom_block->description, *ptr, 16 ); (*ptr) += 16;
   custom_block->description[16] = '\0';
 
