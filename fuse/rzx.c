@@ -222,6 +222,15 @@ static int recording_frame( void )
 
 static int playback_frame( void )
 {
+  /* Check we read the correct number of INs during this frame */
+  if( rzx_in_count != rzx.frames[ rzx_current_frame ].count ) {
+    ui_error( UI_ERROR_ERROR,
+	      "Not enough INs during frame %d: expected %d, got %d",
+	      rzx_current_frame, rzx.frames[ rzx_current_frame ].count,
+	      rzx_in_count );
+    return rzx_end();
+  }
+
   /* Increment the frame count and see if we've finished with this file */
   if( ++rzx_current_frame >= rzx.count ) {
     ui_error( UI_ERROR_INFO, "Finished RZX playback" );
