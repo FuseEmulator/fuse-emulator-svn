@@ -1,7 +1,13 @@
-libspectrum draft API
-=====================
+libspectrum 0.1.0
+=================
 
-$Id$
+libspectrum is a fairly simple library designed to make the handling
+of various ZX Spectrum emulator-related file formats easy.  So far it
+handles .sna and .z80 snapshots (.sna read only), .tap and .tzx tape
+images and .rzx input recording files.
+
+General conventions
+===================
 
 It would be nice if we could get it such that user code should never use
 the libspectrum_* objects directly, but only pointers to them so binary
@@ -472,3 +478,5 @@ contains the length of the .rzx file.
 .rzx header fields. If `compress' is non-zero (and `zlib' was
 available when libspectrum was compiled), the resulting .rzx file will
 have its snapshot and input recording data compressed.
+
+$Id$
