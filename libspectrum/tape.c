@@ -110,7 +110,8 @@ libspectrum_tape_alloc( libspectrum_tape **tape )
 {
   (*tape) = (libspectrum_tape*)malloc( sizeof( libspectrum_tape ) );
   if( !(*tape) ) {
-    libspectrum_print_error( "libspectrum_tape_alloc: out of memory" );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			     "libspectrum_tape_alloc: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
@@ -270,6 +271,7 @@ libspectrum_tape_init_block( libspectrum_tape_block *block )
 
   default:
     libspectrum_print_error(
+      LIBSPECTRUM_ERROR_LOGIC,
       "libspectrum_tape_init_block: unknown block type 0x%02x",
       block->type
     );
@@ -434,6 +436,7 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
   default:
     *tstates = 0;
     libspectrum_print_error(
+      LIBSPECTRUM_ERROR_LOGIC,
       "libspectrum_tape_get_next_edge: unknown block type 0x%02x",
       block->type
     );
@@ -520,7 +523,8 @@ rom_edge( libspectrum_tape_rom_block *block, libspectrum_dword *tstates,
     break;
 
   default:
-    libspectrum_print_error( "rom_edge: unknown state %d", block->state );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "rom_edge: unknown state %d", block->state );
     return LIBSPECTRUM_ERROR_LOGIC;
 
   }
@@ -613,7 +617,8 @@ turbo_edge( libspectrum_tape_turbo_block *block, libspectrum_dword *tstates,
     break;
 
   default:
-    libspectrum_print_error( "turbo_edge: unknown state %d", block->state );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "turbo_edge: unknown state %d", block->state );
     return LIBSPECTRUM_ERROR_LOGIC;
 
   }
@@ -714,7 +719,8 @@ pure_data_edge( libspectrum_tape_pure_data_block *block,
     break;
 
   default:
-    libspectrum_print_error( "pure_data_edge: unknown state %d",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "pure_data_edge: unknown state %d",
 			     block->state );
     return LIBSPECTRUM_ERROR_LOGIC;
 
@@ -782,7 +788,8 @@ raw_data_edge( libspectrum_tape_raw_data_block *block,
     break;
 
   default:
-    libspectrum_print_error( "raw_edge: unknown state %d", block->state );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "raw_edge: unknown state %d", block->state );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -846,6 +853,7 @@ libspectrum_tape_position( int *n, libspectrum_tape *tape )
 
   if( *n == -1 ) {
     libspectrum_print_error(
+      LIBSPECTRUM_ERROR_LOGIC,
       "libspectrum_tape_position: current block is not in tape!"
     );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -863,6 +871,7 @@ libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
   new_block = g_slist_nth( tape->blocks, n );
   if( !new_block ) {
     libspectrum_print_error(
+      LIBSPECTRUM_ERROR_CORRUPT,
       "libspectrum_tape_nth_block: tape does not have block %d", n
     );
     return LIBSPECTRUM_ERROR_CORRUPT;
@@ -964,6 +973,7 @@ libspectrum_tape_block_description( char *buffer, size_t length,
 
   default:
     libspectrum_print_error(
+      LIBSPECTRUM_ERROR_LOGIC,
       "libspectrum_tape_block_description: unknown block type 0x%02x",
       block->type
     );

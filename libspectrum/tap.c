@@ -69,7 +69,8 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
     if( ( end - ptr ) < 2 ) {
       libspectrum_tape_free( tape );
       libspectrum_print_error(
-        "libspectrum_tap_create: not enough data in buffer"
+        LIBSPECTRUM_ERROR_CORRUPT,
+        "libspectrum_tap_read: not enough data in buffer"
       );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
@@ -77,7 +78,8 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
     /* Get memory for a new block */
     block = (libspectrum_tape_block*)malloc( sizeof( libspectrum_tape_block ));
     if( block == NULL ) {
-      libspectrum_print_error( "libspectrum_tap_create: out of memory" );
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			       "libspectrum_tap_read: out of memory" );
       return LIBSPECTRUM_ERROR_MEMORY;
     }
 
@@ -93,6 +95,7 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
       libspectrum_tape_free( tape );
       free( block );
       libspectrum_print_error(
+        LIBSPECTRUM_ERROR_CORRUPT,
         "libspectrum_tap_create: not enough data in buffer"
       );
       return LIBSPECTRUM_ERROR_CORRUPT;
@@ -104,7 +107,8 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
     if( rom_block->data == NULL ) {
       libspectrum_tape_free( tape );
       free( block );
-      libspectrum_print_error( "libspectrum_tap_create: out of memory" );
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			       "libspectrum_tap_create: out of memory" );
       return LIBSPECTRUM_ERROR_MEMORY;
     }
 
@@ -188,6 +192,7 @@ libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
     default:
       if( *length ) free( *buffer );
       libspectrum_print_error(
+        LIBSPECTRUM_ERROR_LOGIC,
         "libspectrum_tap_write: unknown block type 0x%02x", block->type
       );
       return LIBSPECTRUM_ERROR_LOGIC;
@@ -220,6 +225,7 @@ write_turbo( libspectrum_tape_turbo_block *block, libspectrum_byte **buffer,
 
   /* Print out a warning about converting a turbo block */
   libspectrum_print_error(
+    LIBSPECTRUM_ERROR_WARNING,
     "write_turbo: converting Turbo Speed Data Block (ID 0x11); conversion may well not work"
   );
 
@@ -238,6 +244,7 @@ write_pure_data( libspectrum_tape_pure_data_block *block,
 
   /* Print out a warning about converting a turbo block */
   libspectrum_print_error(
+    LIBSPECTRUM_ERROR_WARNING,
     "write_pure_data: converting Pure Data Block (ID 0x14); conversion almost certainly won't work"
   );
 
@@ -275,10 +282,12 @@ skip_block( libspectrum_tape_block *block, const char *message )
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   if( message ) {
-    libspectrum_print_error( "skip_block: skipping %s (ID 0x%02x); %s",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_WARNING,
+			     "skip_block: skipping %s (ID 0x%02x); %s",
 			     description, block->type, message );
   } else {
-    libspectrum_print_error( "skip_block: skipping %s (ID 0x%02x)",
+    libspectrum_print_error( LIBSPECTRUM_ERROR_WARNING,
+			     "skip_block: skipping %s (ID 0x%02x)",
 			     description, block->type );
   }
 

@@ -51,7 +51,8 @@
 
 /* Print using the user-provided error function */
 libspectrum_error
-libspectrum_print_error( const char *format, ... ) GCC_PRINTF( 1, 2 );
+libspectrum_print_error( libspectrum_error error, const char *format, ... )
+     GCC_PRINTF( 2, 3 );
 
 /* Acquire more memory for a buffer */
 int libspectrum_make_room( libspectrum_byte **dest, size_t requested,
