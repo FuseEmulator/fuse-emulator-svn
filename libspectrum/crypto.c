@@ -51,8 +51,8 @@ static libspectrum_error
 get_hash( GcrySexp *hash, const libspectrum_byte *data, size_t data_length );
 static libspectrum_error create_private_key( GcrySexp *key );
 static void free_mpis( GcryMPI *mpis, size_t n );
-static libspectrum_error get_mpis( GcryMPI *r, GcryMPI *s,
-				   GcrySexp signature );
+static libspectrum_error get_mpi( GcryMPI *mpi, GcrySexp signature,
+				  const char *token );
 static libspectrum_error
 serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 		GcryMPI r, GcryMPI s );
@@ -85,8 +85,13 @@ libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
 
   gcry_sexp_release( key ); gcry_sexp_release( hash );
 
-  error = get_mpis( &r, &s, s_signature );
+  error = get_mpi( &r, s_signature, "r" );
   if( error ) { gcry_sexp_release( s_signature ); return error; }
+  error = get_mpi( &s, s_signature, "s" );
+  if( error ) {
+    gcry_sexp_release( s_signature ); gcry_mpi_release( r );
+    return error;
+  }
 
   gcry_sexp_release( s_signature );
 
@@ -191,68 +196,19 @@ free_mpis( GcryMPI *mpis, size_t n )
 }
 
 static libspectrum_error
-get_mpis( GcryMPI *r, GcryMPI *s, GcrySexp signature )
+get_mpi( GcryMPI *mpi, GcrySexp sexp, const char *token )
 {
-  const char *buffer; size_t length;
-  size_t i; GcrySexp pair; GcryMPI mpi;
+  GcrySexp pair;
 
-  *r = *s = NULL;
-
-  buffer = gcry_sexp_nth_data( signature, 0, &length );
-  if( length != 7 || memcmp( buffer, "sig-val", 7 ) ) {
-    libspectrum_print_error( "get_mpis: signature is not a signature" );
+  pair = gcry_sexp_find_token( sexp, token, strlen( token ) );
+  if( !pair ) {
+    libspectrum_print_error( "get_mpis: couldn't find '%s'", token );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
-  signature = gcry_sexp_nth( signature, 1 );
-  if( !signature ) {
-    libspectrum_print_error( "get_mpis: signature has no data" );
-    return LIBSPECTRUM_ERROR_LOGIC;
-  }
-
-  buffer = gcry_sexp_nth_data( signature, 0, &length );
-  if( length != 3 || memcmp( buffer, "dsa", 3 ) ) {
-    libspectrum_print_error( "get_mpis: signature is not a DSA signature" );
-    return LIBSPECTRUM_ERROR_LOGIC;
-  }
-
-  for( i=1;; i++ ) {
-
-    pair = gcry_sexp_nth( signature, i );
-    if( !pair ) break;
-
-    buffer = gcry_sexp_nth_data( pair, 0, &length );
-    mpi = gcry_sexp_nth_mpi( pair, 1, GCRYMPI_FMT_STD );
-    if( length != 1 || !mpi ) {
-      if( *r ) gcry_mpi_release( *r ); if( *s ) gcry_mpi_release( *s );
-      libspectrum_print_error( "get_mpis: corrupt signature" );
-      return LIBSPECTRUM_ERROR_NONE;
-    }
-
-    if( *buffer == 'r' ) {
-      if( *r != NULL ) {
-	libspectrum_print_error( "get_mpis: duplicate 'r'" );
-	gcry_mpi_release( *r ); if( *s ) gcry_mpi_release( *s );
-	return LIBSPECTRUM_ERROR_LOGIC;
-      }
-      *r = mpi;
-    } else if( *buffer == 's' ) {
-      if( *s != NULL ) {
-	libspectrum_print_error( "get_mpis: duplicate 's'" );
-	if( *r ) gcry_mpi_release( *r ); gcry_mpi_release( *s );
-	return LIBSPECTRUM_ERROR_LOGIC;
-      }
-      *s = mpi;
-    } else {
-      libspectrum_print_error( "get_mpis: corrupt signature (2)" );
-      if( *r ) gcry_mpi_release( *r ); if( *s ) gcry_mpi_release( *s );
-      return LIBSPECTRUM_ERROR_LOGIC;
-    }
-  }
-
-  if( !(*r) || !(*s) ) {
-    libspectrum_print_error( "get_mpis: signature not complete" );
-    if( *r ) gcry_mpi_release( *r ); if( *s ) gcry_mpi_release( *s );
+  *mpi = gcry_sexp_nth_mpi( pair, 1, GCRYMPI_FMT_STD );
+  if( !(*mpi) ) {
+    libspectrum_print_error( "get_mpis: couldn't create MPI '%s'", token );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
