@@ -44,10 +44,11 @@ static int deactivate_debugger( void );
 static void gtkui_debugger_done_step( GtkWidget *widget, gpointer user_data );
 static void gtkui_debugger_done_continue( GtkWidget *widget,
 					  gpointer user_data );
+static void gtkui_debugger_break( GtkWidget *widget, gpointer user_data );
 static void gtkui_debugger_done_close( GtkWidget *widget, gpointer user_data );
 
 /* The debugger dialog box and the PC printout */
-static GtkWidget *dialog, *continue_button, *label;
+static GtkWidget *dialog, *continue_button, *break_button, *label;
 
 /* Have we created the above yet? */
 static int dialog_created = 0;
@@ -71,7 +72,8 @@ ui_debugger_activate( void )
   gtk_widget_show_all( dialog );
 
   gtk_widget_set_sensitive( continue_button, 1 );
-  activate_debugger();
+  gtk_widget_set_sensitive( break_button, 0 );
+  if( !debugger_active ) activate_debugger();
 
   return 0;
 }
@@ -92,6 +94,10 @@ create_dialog( void )
   gtk_container_add( GTK_CONTAINER( GTK_DIALOG( dialog )->action_area ),
 		     continue_button );
 
+  break_button = gtk_button_new_with_label( "Break" );
+  gtk_container_add( GTK_CONTAINER( GTK_DIALOG( dialog )->action_area ),
+		     break_button );
+
   close_button = gtk_button_new_with_label( "Close" );
   gtk_container_add( GTK_CONTAINER( GTK_DIALOG( dialog )->action_area ),
 		     close_button );
@@ -104,6 +110,8 @@ create_dialog( void )
 		      GTK_SIGNAL_FUNC( gtkui_debugger_done_step ), NULL );
   gtk_signal_connect( GTK_OBJECT( continue_button ), "clicked",
 		      GTK_SIGNAL_FUNC( gtkui_debugger_done_continue ), NULL );
+  gtk_signal_connect( GTK_OBJECT( break_button ), "clicked",
+		      GTK_SIGNAL_FUNC( gtkui_debugger_break ), NULL );
   gtk_signal_connect_object( GTK_OBJECT( close_button ), "clicked",
 			     GTK_SIGNAL_FUNC( gtkui_debugger_done_close ),
 			     GTK_OBJECT( dialog ) );
@@ -156,7 +164,18 @@ gtkui_debugger_done_continue( GtkWidget *widget GCC_UNUSED,
     DEBUGGER_MODE_INACTIVE			     :
     DEBUGGER_MODE_ACTIVE;
   gtk_widget_set_sensitive( continue_button, 0 );
+  gtk_widget_set_sensitive( break_button, 1 );
   if( debugger_active ) deactivate_debugger();
+}
+
+static void
+gtkui_debugger_break( GtkWidget *widget GCC_UNUSED,
+		      gpointer user_data GCC_UNUSED )
+{
+  debugger_mode = DEBUGGER_MODE_HALTED;
+  gtk_widget_set_sensitive( continue_button, 1 );
+  gtk_widget_set_sensitive( break_button, 0 );
+  if( !debugger_active ) activate_debugger();
 }
 
 static void
