@@ -156,7 +156,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
 /* Given a buffer and optionally a filename, make a best guess as to
    what sort of file this is */
 int
-libspectrum_identify_file( int *type, const char *filename,
+libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 			   const unsigned char *buffer, size_t length )
 {
   struct type {
