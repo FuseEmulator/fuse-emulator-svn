@@ -199,6 +199,8 @@ int main(void)
 "guint	WIN32_DLL g_hash_table_foreach_remove	(GHashTable	*hash_table,\n"
 "						 GHRFunc	 func,\n"
 "						 gpointer	 user_data);\n"
+"\n"
+"guint	WIN32_DLL g_hash_table_size (GHashTable	*hash_table);\n"
 "CODE\n" );
 #endif				/* #ifdef HAVE_LIB_GLIB */
 

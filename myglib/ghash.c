@@ -53,6 +53,7 @@ struct _GHashNode
 
 struct _GHashTable
 {
+  gint          nnodes;
   GHashNode   **nodes;
   GHashFunc	hash_func;
   GCompareFunc	key_equal_func;
@@ -71,6 +72,7 @@ g_hash_table_new (GHashFunc	hash_func,
   if (!hash_table)
     return NULL;
 
+  hash_table->nnodes = 0;
   hash_table->hash_func = hash_func;
   hash_table->key_equal_func = key_equal_func;
   hash_table->nodes = malloc (HASH_TABLE_SIZE * sizeof (GHashNode*));
@@ -184,6 +186,7 @@ g_hash_table_insert (GHashTable *hash_table,
   else
     {
       *node = g_hash_node_new (key, value);
+      hash_table->nnodes++;
     }
 }
 
@@ -214,6 +217,8 @@ g_hash_table_foreach_remove (GHashTable *hash_table,
           if ((* func) (node->key, node->value, user_data))
             {
               deleted += 1;
+
+              hash_table->nnodes -= 1;
               
               if (prev)
                 {
@@ -232,6 +237,12 @@ g_hash_table_foreach_remove (GHashTable *hash_table,
     }
   
   return deleted;
+}
+
+guint
+g_hash_table_size (GHashTable *hash_table)
+{
+  return hash_table->nnodes;
 }
 
 guint
