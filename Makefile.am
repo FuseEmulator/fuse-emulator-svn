@@ -66,4 +66,7 @@ snap_accessors.c: accessor.pl snap_accessors.txt
 
 INCLUDES = @GLIB_CFLAGS@
 
-EXTRA_DIST = libspectrum.h.in doc/libspectrum.txt
+EXTRA_DIST = accessor.pl \
+	     doc/libspectrum.txt \
+             libspectrum.h.in \
+             snap_accessors.txt
