@@ -70,6 +70,47 @@ libspectrum_snap_free( libspectrum_snap *snap )
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+/* Read in a snapshot, optionally guessing what type it is */
+libspectrum_error
+libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
+		       size_t length, libspectrum_id_t type,
+		       const char *filename )
+{
+  libspectrum_error error;
+
+  /* If we don't know what sort of file this is, make a best guess */
+  if( type == LIBSPECTRUM_ID_UNKNOWN ) {
+    error = libspectrum_identify_file( &type, filename, buffer, length );
+    if( error ) return error;
+
+    /* If we still can't identify it, give up */
+    if( type == LIBSPECTRUM_ID_UNKNOWN ) {
+      libspectrum_print_error(
+        LIBSPECTRUM_ERROR_UNKNOWN,
+	"libspectrum_snap_read: couldn't identify file"
+      );
+      return LIBSPECTRUM_ERROR_UNKNOWN;
+    }
+  }
+
+  switch( type ) {
+
+  case LIBSPECTRUM_ID_SNAPSHOT_SNA:
+    return libspectrum_sna_read( snap, buffer, length );
+
+  case LIBSPECTRUM_ID_SNAPSHOT_Z80:
+    return libspectrum_z80_read( snap, buffer, length );
+
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "libspectrum_snap_read: not a snapshot file" );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  /* Should never happen */
+  abort();
+}
+
 /* Given a 48K memory dump `data', place it into the
    appropriate bits of `snap' for a 48K machine */
 int

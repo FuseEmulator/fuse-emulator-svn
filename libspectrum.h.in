@@ -98,7 +98,7 @@ typedef enum libspectrum_id_t {
 } libspectrum_id_t;
 
 int
-libspectrum_identify_file( int *type, const char *filename,
+libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
                            const unsigned char *buffer, size_t length );
 
 /* Different Spectrum variants and their capabilities */
@@ -205,6 +205,12 @@ typedef struct libspectrum_snap {
 
 libspectrum_error libspectrum_snap_alloc( libspectrum_snap **snap );
 libspectrum_error libspectrum_snap_free( libspectrum_snap *snap );
+
+/* Read in a snapshot, optionally guessing what type it is */
+libspectrum_error
+libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
+		       size_t length, libspectrum_id_t type,
+		       const char *filename );
 
 /* .sna specific routines */
 
