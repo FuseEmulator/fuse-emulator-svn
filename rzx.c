@@ -224,16 +224,16 @@ rzx_read_creator( const libspectrum_byte **ptr, const libspectrum_byte *end )
   }
 
   /* Get the length */
-  length = (*ptr)[0] + 0x100 * (*ptr)[1];
+  length = libspectrum_read_dword( ptr );
 
-  /* Check there's still enough data (the -1 is because we've already read
-     the block ID) */
-  if( end - (*ptr) < (ptrdiff_t)length - 1 ) {
+  /* Check there's still enough data (the -5 is because we've already read
+     the block ID and the length) */
+  if( end - (*ptr) < (ptrdiff_t)length - 5 ) {
     libspectrum_print_error( "rzx_read_creator: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  (*ptr) += length - 1;
+  (*ptr) += length - 5;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -562,7 +562,7 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
     return error;
   }
 
-  *(*ptr)++ = 0x10;			/* Block identifier */
+  *(*ptr)++ = LIBSPECTRUM_RZX_CREATOR_BLOCK;
   libspectrum_write_dword( ptr, 29 );	/* Block length */
 
   strncpy( *ptr, program, 19 ); (*ptr) += 19;
@@ -601,7 +601,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
     return error;
   }
 
-  *(*ptr)++ = 0x30;			/* Block identififer */
+  *(*ptr)++ = LIBSPECTRUM_RZX_SNAPSHOT_BLOCK;
   if( compress ) {			/* Block length and flags */
     libspectrum_write_dword( ptr, 17 + gzlength );
     libspectrum_write_dword( ptr, 2 );
@@ -637,8 +637,7 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
     return error;
   }
 
-  /* Block ID */
-  *(*ptr)++ = 0x80;
+  *(*ptr)++ = LIBSPECTRUM_RZX_INPUT_BLOCK;
 
   /* The length bytes: for uncompressed data, 18 for the block introduction
      and 4 per frame; the number of bytes in every frame is added in below.
