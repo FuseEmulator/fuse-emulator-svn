@@ -196,6 +196,8 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	snap->machine = LIBSPECTRUM_MACHINE_PLUS2;  break;
       case 13:
 	snap->machine = LIBSPECTRUM_MACHINE_PLUS2A; break;
+      case 14:
+	snap->machine = LIBSPECTRUM_MACHINE_TC2048; break;
       default:
         libspectrum_print_error(
           "libspectrum_read_z80_header: unknown machine type %d\n",
@@ -772,6 +774,8 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = 12; break;
   case LIBSPECTRUM_MACHINE_PLUS2A:
     *(*ptr)++ = 13; break;
+  case LIBSPECTRUM_MACHINE_TC2048:
+    *(*ptr)++ = 14; break;
   }
 
   if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) {
