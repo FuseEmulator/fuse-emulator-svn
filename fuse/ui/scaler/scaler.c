@@ -170,15 +170,11 @@ scaler_get_flags( scaler_type scaler )
 /* FIXME: do this in a more maintainable fashion */
 #ifdef UI_GTK
 #define SCALER_DATA_SIZE 4
-#endif				/* #ifdef UI_GTK */
-
-#ifdef UI_SDL
+#elif defined( UI_SDL ) || defined( UI_X ) /* #ifdef UI_GTK */
 #define SCALER_DATA_SIZE 2
-#endif				/* #ifdef UI_SDL */
-
-#ifndef SCALER_DATA_SIZE
+#else				/* #ifdef UI_GTK */
 #error Unknown scaler data size for this user interface
-#endif				/* #ifndef UI_SCALER_DATA_SIZE */
+#endif				/* #ifdef UI_GTK */
 
 #if SCALER_DATA_SIZE == 2
 typedef WORD scaler_data_type;

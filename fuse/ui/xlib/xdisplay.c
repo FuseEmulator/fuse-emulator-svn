@@ -69,6 +69,13 @@ static XImage *image = 0;	/* The image structure to draw the
 				   Speccy's screen on */
 static GC gc;			/* A graphics context to draw with */
 
+/* The size of a 1x1 image in units of
+   DISPLAY_ASPECT WIDTH x DISPLAY_SCREEN_HEIGHT */
+int image_scale;
+
+/* The height and width of a 1x1 image in pixels */
+int image_width, image_height;
+
 /* A scaled copy of the image displayed on the Spectrum's screen */
 static WORD scaled_image[2*DISPLAY_SCREEN_HEIGHT][2*DISPLAY_SCREEN_WIDTH];
 static const ptrdiff_t scaled_pitch =
@@ -95,7 +102,7 @@ static int xdisplay_allocate_colours( int numColours,
 static int xdisplay_allocate_gc( Window window, GC *new_gc );
 
 static int xdisplay_allocate_image(int width, int height);
-static int select_sensible_scaler( void );
+static int register_scalers( void );
 static void xdisplay_destroy_image( void );
 static void xdisplay_catch_signal( int sig );
 
@@ -310,8 +317,10 @@ uidisplay_init( int width, int height )
 {
   int error;
 
-  uidisplay_init_scalers();
-  error = select_sensible_scaler(); if( error ) return error;
+  image_width = width; image_height = height;
+  image_scale = width / DISPLAY_ASPECT_WIDTH;
+
+  error = register_scalers(); if( error ) return error;
 
   display_ui_initialised = 1;
 
@@ -320,46 +329,45 @@ uidisplay_init( int width, int height )
   return 0;
 }
 
-void
-uidisplay_init_scalers( void )
+static int
+register_scalers( void )
 {
   scaler_register_clear();
 
-  if( machine_current->timex ) {
-    scaler_register( GFX_HALF );
-    scaler_register( GFX_NORMAL );
-  } else {
-    scaler_register( GFX_NORMAL );
-    scaler_register( GFX_DOUBLESIZE );
-  }
-}
-
-static int
-select_sensible_scaler( void )
-{
   switch( xdisplay_current_size ) {
 
   case 1:
-    if( machine_current->timex ) {
+
+    switch( image_scale ) {
+    case 1:
+      scaler_register( GFX_NORMAL );
+      scaler_select_scaler( GFX_NORMAL );
+      return 0;
+    case 2:
+      scaler_register( GFX_HALF );
       scaler_select_scaler( GFX_HALF );
-    } else {
-      scaler_select_scaler( GFX_NORMAL );
+      return 0;
     }
-    break;
+
   case 2:
-    if( machine_current->timex ) {
-      scaler_select_scaler( GFX_NORMAL );
-    } else {
+
+    switch( image_scale ) {
+    case 1:
+      scaler_register( GFX_DOUBLESIZE );
+      scaler_register( GFX_ADVMAME2X );
       scaler_select_scaler( GFX_DOUBLESIZE );
+      return 0;
+    case 2:
+      scaler_register( GFX_NORMAL );
+      scaler_select_scaler( GFX_NORMAL );
+      return 0;
     }
-    break;
-  default:
-    ui_error( UI_ERROR_ERROR, "Unknown GTK+ display size %d",
-	      xdisplay_current_size );
-    return 1;
+
   }
 
-  return 0;
+  ui_error( UI_ERROR_ERROR, "Unknown display size/image size %d/%d",
+	    xdisplay_current_size, image_scale );
+  return 1;
 }
 
 int
@@ -378,7 +386,7 @@ xdisplay_configure_notify( int width, int height GCC_UNUSED )
   xdisplay_current_size=size;
 
   /* Get a new scaler */
-  error = select_sensible_scaler(); if( error ) return error;
+  error = register_scalers(); if( error ) return error;
 
   /* Redraw the entire screen... */
   display_refresh_all();
@@ -398,9 +406,31 @@ uidisplay_frame_end( void )
 void
 uidisplay_area( int x, int y, int w, int h )
 {
-  float scale = machine_current->timex ? xdisplay_current_size / 2.0
-                                       : xdisplay_current_size;
-  int scaled_x = scale * x, scaled_y = scale * y, xx, yy;
+  float scale = (float)xdisplay_current_size / image_scale;
+  int scaled_x, scaled_y, xx, yy;
+
+  if( scaler_flags ) {
+
+    /* Extend the dirty region by 1 pixel for scalers
+       that "smear" the screen, e.g. 2xSAI */
+    if( scaler_flags & SCALER_EXPAND_1_PIXEL ) {
+      x--;
+      y--;
+      w += 2;   
+      h += 2;
+    } else if ( scaler_flags & SCALER_EXPAND_2_Y_PIXELS ) {
+      y -= 2;
+      h += 4;
+    }
+
+    /* clip */
+    if ( x < 0 ) { w += x; x=0; }
+    if ( y < 0 ) { h += y; y=0; }
+    if ( w > image_width - x ) w = image_width - x;
+    if ( h > image_height - y ) h = image_height - y;
+  }
+
+  scaled_x = scale * x; scaled_y = scale * y;
 
   /* Create scaled image */
   scaler_proc( (BYTE*)&display_image[y][x], display_pitch, NULL, 

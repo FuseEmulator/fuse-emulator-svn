@@ -143,9 +143,9 @@ static widget_menu_entry widget_menu_options[] = {
   { "S(e)lect ROMS...",
                     KEYBOARD_e, widget_menu_widget, &options_roms    },
 
-#ifdef UI_SDL
+#if defined( UI_SDL ) || defined( UI_X )
   { "(F)ilter...",  KEYBOARD_f, widget_menu_widget, &options_scaler  },
-#endif				/* #ifdef UI_SDL */
+#endif				/* #if defined( UI_SDL ) || defined( UI_X ) */
 
 #ifdef HAVE_LIB_XML2
   { "S(a)ve",	    KEYBOARD_a, widget_menu_save_options, NULL       },
