@@ -74,3 +74,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 used
 20030908 ChangeLog: add release date of 0.1.1.
 20030908 ChangeLog: bring up to date.
+20030912 doc/libspectrum.txt: bring general and snapshot routine
+         documentation up to date.
