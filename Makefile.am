@@ -29,6 +29,7 @@ lib_LTLIBRARIES = libspectrum.la
 libspectrum_la_SOURCES = dck.c \
 			 libspectrum.c \
 			 myglib.c \
+			 plusd.c \
 			 rzx.c \
 			 sna.c \
 			 snapshot.c \
