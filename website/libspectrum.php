@@ -84,12 +84,12 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <h3>Binaries</h3>
   <p>Packages are available for some Unix distributions; in general, any problems which are specific to the packages should be sent to the package maintainer.</p>
   <ul>
-   <li><a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">Debian stable</a> and <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a> (both 0.2.0.1) by Darren Salt</li>
+   <li><a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">Debian stable</a> (0.2.0.1) and <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a> (0.2.1) by Darren Salt</li>
    <li><a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/libspectrum/">FreeBSD</a> (0.2.0.1)</li>
-   <li><a href="http://www.gentoo.org/dyn/pkgs/app-emulation/libspectrum.xml">Gentoo</a> (0.1.1)</li>
+   <li><a href="http://packages.gentoo.org/packages/?category=app-emulation;name=libspectrum">Gentoo</a> (0.2.0.1)</li>
    <li><a href="http://www.speccy.org/sinclairmania/arch/emu/mandrake/">Mandrake 9.1 and 9.2</a> (0.2.0.1) by Miguel Barrio Orsikowsky</li>
-   <li><a href="http://www.netbsd.org/">NetBSD</a> has 0.2.0.1 as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/libspectrum/">emulators/libspectrum</a></li>
-   <li><a href="http://www.openbsd.org/">OpenBSD</a> users can find a port of v0.1.0 in <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/devel/libspectrum/">ports/devel/libspectrum</a></li>
+   <li><a href="http://www.netbsd.org/">NetBSD</a> has 0.2.1 as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/libspectrum/">emulators/libspectrum</a></li>
+   <li><a href="http://www.openbsd.org/">OpenBSD</a> users can find a port of v0.2.0.1 in <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/devel/libspectrum/">ports/devel/libspectrum</a></li>
    <li><a href="http://www.pld.net.pl/">PLD</a> users have an RPM available</li>
    <li><a href="http://www.unix-city.co.uk/rh9_x86/index.html">RedHat 9</a> (0.2.0.1), with thanks to Ian Chapman.
    <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has made a <a href="libspectrum-0.2.0.1-i386-1spec.tgz">Slackware 9.1</a> (<a href="libspectrum-0.2.0.1-i386-1spec.tgz.md5">md5 sum</a>) package of 0.2.0.1.</li>
