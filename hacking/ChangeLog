@@ -248,3 +248,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 updates in preparation for a 0.2.2 release.
 20040703 libspectrum.h.in,rzx.c,doc/libspectrum.txt: add ability to
 	 select the format of the embedded snap in .rzx files.
+20040706 acinclude.m4: distribute the Glib 1.2 and Glib 2.x autoconf
+	 macros.
