@@ -223,7 +223,6 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
   if( error ) {
     libspectrum_print_error( "serialise_mpis: length of r: %s",
 			     gcry_strerror( error ) );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -231,7 +230,6 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
   if( error ) {
     libspectrum_print_error( "serialise_mpis: length of s: %s",
 			     gcry_strerror( error ) );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -240,7 +238,6 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
   *signature = malloc( length );
   if( signature == NULL ) {
     libspectrum_print_error( "serialise_mpis: out of memory" );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
@@ -249,7 +246,6 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
     libspectrum_print_error( "serialise_mpis: printing r: %s",
 			     gcry_strerror( error ) );
     free( *signature );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -259,7 +255,6 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
     libspectrum_print_error( "serialise_mpis: printing s: %s",
 			     gcry_strerror( error ) );
     free( *signature );
-    gcry_mpi_release( r ); gcry_mpi_release( s );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
