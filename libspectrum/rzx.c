@@ -575,7 +575,7 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
     return error;
   }
 
-  *(*ptr)++ = 0x10;			/* Block identifier */
+  *(*ptr)++ = LIBSPECTRUM_RZX_CREATOR_BLOCK;
   libspectrum_write_dword( ptr, 29 );	/* Block length */
 
   strncpy( *ptr, program, 19 ); (*ptr) += 19;
@@ -614,7 +614,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
     return error;
   }
 
-  *(*ptr)++ = 0x30;			/* Block identififer */
+  *(*ptr)++ = LIBSPECTRUM_RZX_SNAPSHOT_BLOCK;
   if( compress ) {			/* Block length and flags */
     libspectrum_write_dword( ptr, 17 + gzlength );
     libspectrum_write_dword( ptr, 2 );
@@ -650,8 +650,7 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
     return error;
   }
 
-  /* Block ID */
-  *(*ptr)++ = 0x80;
+  *(*ptr)++ = LIBSPECTRUM_RZX_INPUT_BLOCK;
 
   /* The length bytes: for uncompressed data, 18 for the block introduction
      and 4 per frame; the number of bytes in every frame is added in below.
@@ -764,7 +763,7 @@ rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
   }
 
   /* Block ID */
-  *(*ptr)++ = 0xfe;
+  *(*ptr)++ = LIBSPECTRUM_RZX_SIGN_START_BLOCK;
 
   /* Block length */
   libspectrum_write_dword( ptr, 5 );
@@ -797,7 +796,7 @@ rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
   }
 
   /* Block ID */
-  *(*ptr)++ = 0xff;
+  *(*ptr)++ = LIBSPECTRUM_RZX_SIGN_END_BLOCK;
 
   /* Block length */
   libspectrum_write_dword( ptr, sig_length + 5 );
