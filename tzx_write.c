@@ -224,6 +224,7 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
     default:
       free( *buffer );
       libspectrum_print_error(
+        LIBSPECTRUM_ERROR_LOGIC,
         "libspectrum_tzx_write: unknown block type 0x%02x", block->type
       );
       return LIBSPECTRUM_ERROR_LOGIC;

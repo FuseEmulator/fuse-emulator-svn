@@ -51,6 +51,9 @@ LIBSPECTRUM_GLIB_REPLACEMENT
 typedef enum libspectrum_error {
 
   LIBSPECTRUM_ERROR_NONE = 0,
+
+  LIBSPECTRUM_ERROR_WARNING,
+
   LIBSPECTRUM_ERROR_MEMORY,
   LIBSPECTRUM_ERROR_UNKNOWN,
   LIBSPECTRUM_ERROR_CORRUPT,
@@ -63,14 +66,15 @@ typedef enum libspectrum_error {
 
 /* Error handling */
 
-typedef libspectrum_error (*libspectrum_error_function_t)( const char *format,
-							   va_list ap        );
+typedef libspectrum_error
+(*libspectrum_error_function_t)( libspectrum_error error,
+				 const char *format, va_list ap );
 
 extern libspectrum_error_function_t libspectrum_error_function;
-libspectrum_error libspectrum_default_error_function( const char *format,
-						      va_list ap          );
 
-const char* libspectrum_error_message( libspectrum_error error );
+libspectrum_error
+libspectrum_default_error_function( libspectrum_error error,
+				    const char *format, va_list ap );
 
 /*
  * Snap handling routines
