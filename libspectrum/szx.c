@@ -30,6 +30,34 @@
 
 #include "internals.h"
 
+/* I've had to make some assumptions about the 'right' way to do some
+   things in the .szx format due to the documentation
+   <http://www.spectaculator.com/docs/zx-state/intro.shtml> not being
+   up to scratch:
+
+   * http://www.spectaculator.com/docs/zx-state/header.shtml says
+     "chMinorVersion
+      Minor version number of the file format. Currently 1."
+
+     despite the current version of the format being 1.2. libspectrum
+     writes .szx files with a minor version number of 2.
+
+   * The ZXSTSPECREGS block says that the ch1ffd member should be set
+     to zero for machines other than the +2A/+3. libspectrum makes
+     this field non-zero for Scorpion emulation.
+
+   * In a ZXSTRAMPAGE block, the Timex machines should save the same
+     pages as the 48K machine, and RAM pages 8-15 are valid for
+     Scorpion emulation.
+
+   Places where these points are used in the code are marked with
+   [Assumption].
+
+   I've mentioned these points to Jonathan Needle ('maintainer' of the
+   .szx format), but he hasn't replied :-(
+
+*/
+
 static const char *signature = "ZXST";
 static const size_t signature_length = 4;
 
@@ -543,8 +571,8 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   memcpy( *ptr, signature, 4 ); *ptr += 4;
   
-  /* We currently write version 1.1 files (major, minor) */
-  *(*ptr)++ = 0x01; *(*ptr)++ = 0x01;
+  /* [Assumption] We currently write version 1.2 files (major, minor) */
+  *(*ptr)++ = 0x01; *(*ptr)++ = 0x02;
 
   switch( libspectrum_snap_machine( snap ) ) {
 
@@ -682,7 +710,9 @@ write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = '\0';
   }
   
-  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) {
+  /* [Assumption] The Scorpion port 0x1ffd should be written here */
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY || 
+      capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY    ) {
     *(*ptr)++ = libspectrum_snap_out_plus3_memoryport( snap );
   } else {
     *(*ptr)++ = '\0';
@@ -710,6 +740,7 @@ write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
   error = write_ramp_chunk( buffer, ptr, length, snap, 5, compress );
   if( error ) return error;
 
+  /* [Assumption] This is the right way to write Timex machine RAM */
   if( machine != LIBSPECTRUM_MACHINE_16 ) {
     error = write_ramp_chunk( buffer, ptr, length, snap, 2, compress );
     if( error ) return error;
@@ -728,6 +759,8 @@ write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
     if( error ) return error;
     error = write_ramp_chunk( buffer, ptr, length, snap, 7, compress );
     if( error ) return error;
+
+    /* [Assumption] RAM pages 8-15 are valid here */
     if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY ) {
       int i;
       for( i = 8; i < 16; i++ ) {
@@ -735,6 +768,7 @@ write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
         if( error ) return error;
       }
     }
+
   }
 
   return LIBSPECTRUM_ERROR_NONE;

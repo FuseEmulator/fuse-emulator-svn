@@ -180,3 +180,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040319 ide.c: ftell and fseek are not the same thing...
 20040319 ide.c,libspectrum.h.in: implement a write cache for the IDE
 	 drives.
+20040320 szx.c: bump version number to 1.2, save Scorpion port 0x1ffd
+	 and add some comments about the failures in the .szx
+	 specification.
