@@ -79,6 +79,38 @@ libspectrum_init( void )
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+int
+libspectrum_check_version( const char *version )
+{
+  size_t i;
+
+  int libspectrum_version[4] = { 0, 0, 0, 0 },
+      required_version[4]    = { 0, 0, 0, 0 };
+
+  sscanf( VERSION, "%d.%d.%d.%d",
+	  &libspectrum_version[0], &libspectrum_version[1],
+	  &libspectrum_version[2], &libspectrum_version[3] );
+  sscanf( version, "%d.%d.%d.%d",
+	  &required_version[0], &required_version[1],
+	  &required_version[2], &required_version[3] );
+
+  for( i = 0; i < 4; i++ ) {
+    
+    if( libspectrum_version[i] < required_version[i] ) return 0;
+    if( libspectrum_version[i] > required_version[i] ) return 1;
+
+  }
+
+  /* All version numbers exactly equal, so return OK */
+  return 1;
+}
+
+const char *
+libspectrum_version( void )
+{
+  return VERSION;
+}
+
 libspectrum_error
 libspectrum_print_error( libspectrum_error error, const char *format, ... )
 {

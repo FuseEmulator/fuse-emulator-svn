@@ -74,6 +74,11 @@ typedef enum libspectrum_error {
 
 libspectrum_error libspectrum_init( void );
 
+/* Version checking */
+
+int libspectrum_check_version( const char *version );
+const char *libspectrum_version( void );
+
 /* Error handling */
 typedef libspectrum_error
 (*libspectrum_error_function_t)( libspectrum_error error,

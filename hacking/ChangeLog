@@ -107,3 +107,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 Alberto Garcia for reporting this.
 20031009 creator.c, libspectrum.h.in, rzx.c, szx.c: add support for
 	 writing custom data in the creator blocks.
+20031013 libspectrum.c, libspectrum.h.in: add routines to check
+	 libspectrum's version.
