@@ -46,12 +46,12 @@
 libspectrum_error libspectrum_print_error( const char *format, ... );
 
 /* Acquire more memory for a buffer */
-int libspectrum_make_room( uchar **dest, size_t requested, uchar **ptr,
-			   size_t *allocated );
+int libspectrum_make_room( libspectrum_byte **dest, size_t requested,
+			   libspectrum_byte **ptr, size_t *allocated );
 
 /* Read and write (d)words */
 libspectrum_dword libspectrum_read_dword( const libspectrum_byte **buffer );
-int libspectrum_write_word( uchar **buffer, libspectrum_word w );
+int libspectrum_write_word( libspectrum_byte **buffer, libspectrum_word w );
 int libspectrum_write_dword( libspectrum_byte **buffer, libspectrum_dword d );
 
 /* zlib (de)compression routines */
@@ -66,6 +66,6 @@ libspectrum_zlib_compress( const libspectrum_byte *data, size_t length,
 /* Convert a 48K memory dump into separate RAM pages */
 
 int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
-				    const uchar* data );
+				    const libspectrum_byte* data );
 
 #endif				/* #ifndef LIBSPECTRUM_INTERNALS_H */

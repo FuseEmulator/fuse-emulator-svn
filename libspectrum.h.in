@@ -38,8 +38,6 @@ LIBSPECTRUM_DEFINE_DWORD
 
 LIBSPECTRUM_GLIB_REPLACEMENT
 
-typedef unsigned char uchar;
-
 /*
  * General libspectrum routines
  */
@@ -144,7 +142,7 @@ int libspectrum_snap_destroy( libspectrum_snap *snap );
 
 /* .sna specific routines */
 
-int libspectrum_sna_read( const uchar *buffer, size_t buffer_length,
+int libspectrum_sna_read( const libspectrum_byte *buffer, size_t buffer_length,
 			  libspectrum_snap *snap );
 
 /* .z80 specific routines */
