@@ -145,6 +145,9 @@ typedef struct libspectrum_timings {
 
   libspectrum_machine machine;
 
+  /* Processor speed */
+  libspectrum_dword hz;
+
   /* Line timings in tstates */
   libspectrum_word left_border, horizontal_screen, right_border,
 	           horizontal_retrace;
