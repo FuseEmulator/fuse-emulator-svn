@@ -440,38 +440,30 @@ read_rom_block( libspectrum_tape *tape, const libspectrum_byte *ptr,
 		const libspectrum_byte *end, size_t offset )
 {
   libspectrum_tape_block* block;
-  libspectrum_tape_rom_block *rom_block;
   libspectrum_error error;
   libspectrum_word size;
   libspectrum_word block_size;
-  const libspectrum_byte *data;
-  size_t i;
+  const libspectrum_byte *data; libspectrum_byte *block_data;
+  size_t i, length;
 
   /* Get memory for a new block */
-  block = malloc( sizeof( libspectrum_tape_block ) );
-  if( block == NULL ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "warajevo_read_rom_block: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
-  /* This is a standard ROM loader */
-  block->type = LIBSPECTRUM_TAPE_BLOCK_ROM;
-  rom_block = &(block->types.rom);
+  error = libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
+  if( error ) return error;
 
   size = lsb2word( ptr + offset + 8 );
 
   if( size == COMPRESSED_BLOCK ) {
     /* Decompressed length + flag byte and checksum */
-    rom_block->length = lsb2word( ptr + offset + 11 ) + 2;
+    length = lsb2word( ptr + offset + 11 ) + 2;
     block_size = lsb2word( ptr + offset + 13 );
     data = ptr + offset + 17 ;
   } else {
     /* Get the length + flag byte and checksum */
-    rom_block->length = size + 2;
+    length = size + 2;
     block_size = size;
     data = ptr + offset + 11;
   }
+  libspectrum_tape_block_set_data_length( block, length );
 
   /* Have we got enough bytes left in buffer? */
   if( end - data < (ptrdiff_t)block_size ) {
@@ -484,39 +476,35 @@ read_rom_block( libspectrum_tape *tape, const libspectrum_byte *ptr,
   }
 
   /* Allocate memory for the data */
-  rom_block->data = malloc( rom_block->length * sizeof( libspectrum_byte ) );
-  if( rom_block->data == NULL ) {
+  block_data = malloc( length * sizeof( libspectrum_byte ) );
+  if( !block_data ) {
     free( block );
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
                              "warajevo_read_rom_block: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
+  libspectrum_tape_block_set_data( block, block_data );
 
   /* Add flag */
-  rom_block->data[0] = *( ptr + offset + 10 );
+  block_data[0] = *( ptr + offset + 10 );
 
   if( size == COMPRESSED_BLOCK ) {
 
-    error = decompress_block( rom_block->data + 1, data, end,
-			      lsb2word( ptr + offset + 15 ),
-			      rom_block->length - 2 );
-    if( error ) {
-      free( rom_block->data ); free( block );
-      return error;
-    }
+    error = decompress_block( block_data + 1, data, end,
+			      lsb2word( ptr + offset + 15 ), length - 2 );
+    if( error ) { free( block_data ); free( block ); return error; }
   } else {
-    /* Copy the block data across */
-    memcpy( rom_block->data + 1, data, rom_block->length - 2 );
+    /* Uncompressed block: just copy the data across */
+    memcpy( block_data + 1, data, length - 2 );
   }
 
   /* Calculate checksum */
-  rom_block->data[rom_block->length-1] = 0;
-  for(i = 0; i < rom_block->length - 1; i++) {
-    rom_block->data[rom_block->length-1] ^= rom_block->data[i];
-  }
+  block_data[ length - 1 ] = 0;
+  for( i = 0; i < length - 1; i++ )
+    block_data[ length - 1 ] ^= block_data[i];
 
   /* Give a 1s pause after each block */
-  rom_block->pause = 1000;
+  libspectrum_tape_block_set_pause( block, 1000 );
 
   /* Put the block into the block list */
   tape->blocks = g_slist_append( tape->blocks, (gpointer)block );
@@ -530,28 +518,22 @@ read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
 	       const libspectrum_byte *end, size_t offset )
 {
   libspectrum_tape_block* block;
-  libspectrum_tape_raw_data_block *data_block;
   libspectrum_error error;
   libspectrum_word compressed_size, decompressed_size;
   const libspectrum_byte *data = ptr + offset + 17;
   status_type status;
+  size_t length, bit_length; libspectrum_byte *block_data;
 
   /* Get memory for a new block */
-  block = malloc( sizeof( libspectrum_tape_block ) );
-  if (block == NULL) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "warajevo_read_raw_data: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
-  /* This is a raw data block */
-  block->type = LIBSPECTRUM_TAPE_BLOCK_RAW_DATA;
-  data_block = &(block->types.raw_data);
+  error = libspectrum_tape_block_alloc( &block,
+					LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
+  if( error ) return error;
 
   decompressed_size = lsb2word( ptr + offset + 11 );
   compressed_size = lsb2word( ptr + offset + 13 );
 
-  data_block->length = decompressed_size;
+  length = decompressed_size;
+  libspectrum_tape_block_set_data_length( block, length );
 
   /* Have we got enough bytes left in buffer? */
   if( end - data < (ptrdiff_t)compressed_size ) {
@@ -564,47 +546,45 @@ read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
   }
 
   /* Allocate memory for the data */
-  data_block->data = malloc( data_block->length * sizeof( libspectrum_byte ) );
-  if( data_block->data == NULL ) {
+  block_data = malloc( length * sizeof( libspectrum_byte ) );
+  if( !block_data ) {
     free( block );
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
                              "warajevo_read_raw_data: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
+  libspectrum_tape_block_set_data( block, block_data );
 
   if( compressed_size != decompressed_size ) {
 
-    error = decompress_block( data_block->data, data, end,
-			      lsb2word( ptr + offset + 15 ),
-			      data_block->length );
-    if( error ) {
-      free( data_block->data ); free( block );
-      return error;
-    }
+    error = decompress_block( block_data, data, end,
+			      lsb2word( ptr + offset + 15 ), length );
+    if( error ) { free( block_data ); free( block ); return error; }
   } else {
-    /* Copy the block data across */
-    memcpy( data_block->data, data, data_block->length );
+    /* Uncompressed block: just copy the data across */
+    memcpy( block_data, data, length );
   }
 
   status.byte = *( ptr + offset + 10 );
 
   /* Get the metadata */
   switch( status.bits.frequency ) {
-  case HZ15000:
-    data_block->bit_length = 233;
-    break;
-  case HZ22050:
-    data_block->bit_length = 158;
-    break;
-  case HZ30303:
-    data_block->bit_length = 115;
-    break;
-  case HZ44100:
-    data_block->bit_length = 79;
-    break;
+  case HZ15000: bit_length = 233; break;
+  case HZ22050: bit_length = 158; break;
+  case HZ30303: bit_length = 115; break;
+  case HZ44100: bit_length =  79; break;
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "read_raw_data: unknown frequency %d",
+			     status.bits.frequency );
+    free( block_data ); free( block );
+    return LIBSPECTRUM_ERROR_LOGIC;
   }
-  data_block->pause = 0;
-  data_block->bits_in_last_byte = status.bits.bits_used + 1;
+  libspectrum_tape_block_set_bit_length( block, bit_length );
+
+  libspectrum_tape_block_set_pause( block, 0 );
+  libspectrum_tape_block_set_bits_in_last_byte( block,
+						status.bits.bits_used + 1 );
 
   /* Put the block into the block list */
   tape->blocks = g_slist_append( tape->blocks, (gpointer)block );

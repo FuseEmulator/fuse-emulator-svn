@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "internals.h"
+#include "tape_block.h"
 
 /*** Constants ***/
 
@@ -149,82 +150,7 @@ libspectrum_tape_free( libspectrum_tape *tape )
 static void
 block_free( gpointer data, gpointer user_data GCC_UNUSED )
 {
-  libspectrum_tape_block *block = (libspectrum_tape_block*)data;
-  size_t i;
-
-  switch( block->type ) {
-
-  case LIBSPECTRUM_TAPE_BLOCK_ROM:
-    free( block->types.rom.data );
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_TURBO:
-    free( block->types.turbo.data );
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_PULSES:
-    free( block->types.pulses.lengths );
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
-    free( block->types.pure_data.data );
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
-    free( block->types.raw_data.data );
-    break;
-
-  case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
-    free( block->types.group_start.name );
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_JUMP:
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
-    break;
-
-  case LIBSPECTRUM_TAPE_BLOCK_SELECT:
-    for( i=0; i<block->types.select.count; i++ ) {
-      free( block->types.select.descriptions[i] );
-    }
-    free( block->types.select.descriptions );
-    free( block->types.select.offsets );
-    break;
-
-  case LIBSPECTRUM_TAPE_BLOCK_STOP48:
-    break;
-
-  case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
-    free( block->types.comment.text );
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
-    free( block->types.message.text );
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
-    for( i=0; i<block->types.archive_info.count; i++ ) {
-      free( block->types.archive_info.strings[i] );
-    }
-    free( block->types.archive_info.ids );
-    free( block->types.archive_info.strings );
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
-    free( block->types.hardware.types  );
-    free( block->types.hardware.ids    );
-    free( block->types.hardware.values );
-    break;
-
-  case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
-    free( block->types.custom.description );
-    free( block->types.custom.data );
-    break;
-
-  /* This should never actually occur */
-  case LIBSPECTRUM_TAPE_BLOCK_CONCAT:
-    break;
-  }
+  libspectrum_tape_block_free( data );
 }
 
 /* Read in a tape file, optionally guessing what sort of file it is */
