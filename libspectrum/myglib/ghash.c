@@ -42,6 +42,15 @@
 
 #define HASH_TABLE_SIZE 241
 
+typedef struct _GHashNode      GHashNode;
+
+struct _GHashNode
+{
+  gpointer   key;
+  gpointer   value;
+  GHashNode *next;
+};
+
 struct _GHashTable
 {
   GHashNode   **nodes;

@@ -200,3 +200,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040414 myglib/gslist.c: fix two free_list related memory leaks.
 20040415 make-perl.c,myglib/ghash.c: fix compilation with GHashTable
 	 replacement (borrowed code from glib 2.4.0 and 1.2.10).
+20040417 make-perl.c,myglib/ghash.c: the world doesn't need to know about
+         GHashNode.
