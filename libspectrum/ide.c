@@ -205,8 +205,8 @@ read_hdf( libspectrum_ide_channel *chn )
   libspectrum_byte packed_buf[512];
 
   /* Seek to the correct file position */
-  chn->sector_position = ftell( drv->disk );
-  if( chn->sector_position == -1 ) return 1; /* seek failure */
+  if( fseek( drv->disk, chn->sector_position, SEEK_SET ) )
+    return 1; /* seek failure */
 
   /* Read the packed data into a temporary buffer */
   if ( fread( &packed_buf[0], 1, drv->sector_size, drv->disk ) !=
