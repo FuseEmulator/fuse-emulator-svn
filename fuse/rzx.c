@@ -191,7 +191,7 @@ int rzx_start_playback( const char *filename, int (*load_snap)(void) )
 {
   utils_file file;
   libspectrum_error libspec_error; int error;
-  libspectrum_snap *snap = 0;
+  libspectrum_snap *snap;
 
   if( rzx_recording) return 1;
 

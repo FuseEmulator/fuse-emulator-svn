@@ -212,11 +212,8 @@ static int fuse_init(int argc, char **argv)
   if( settings_current.tape_file )
     tape_open( settings_current.tape_file, autoload );
 
-  if( settings_current.playback_file ) {
+  if( settings_current.playback_file )
     rzx_start_playback( settings_current.playback_file, NULL );
-  } else if( settings_current.record_file ) {
-    rzx_start_recording( settings_current.record_file, 1 );
-  }
 
 #ifdef HAVE_765_H
   if( settings_current.plus3disk_file ) {
@@ -235,6 +232,12 @@ static int fuse_init(int argc, char **argv)
   }
 
   if( parse_nonoption_args( argc, argv, first_arg, autoload ) ) return 1;
+
+  /* Do this after we've parsed the non-option arguments or otherwise
+     something like `./fuse snapshot.z80 -r recording.rzx' ends up with
+     the startup snapshot stored in the RZX file, not snapshot.z80 */
+  if( settings_current.record_file )
+    rzx_start_recording( settings_current.record_file, 1 );
 
   fuse_emulation_paused = 0;
 
