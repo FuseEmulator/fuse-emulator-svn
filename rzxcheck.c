@@ -107,6 +107,7 @@ main( int argc, char **argv )
   }
 
   libspectrum_rzx_free( rzx );
+  libspectrum_signature_free( &signature );
 
   if( error == LIBSPECTRUM_ERROR_SIGNATURE ) {
     printf( "%s: BAD signature with key %08x (%s) in '%s'\n", progname,
