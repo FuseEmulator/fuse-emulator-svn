@@ -283,3 +283,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20041031 .cvsignore: ignore stamp-h1.
 20041125 Makefile.am,libspectrum.h.in,microdrive.c: very simple .mdr
          handling.
+20041221 rzx.c: fix compilation when gcrypt not present (thanks, Erik Kunze)
+	 (closes bug #1053346).

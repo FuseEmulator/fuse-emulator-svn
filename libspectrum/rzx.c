@@ -83,7 +83,10 @@ typedef struct input_block_t {
 typedef struct signature_block_t {
 
   size_t length;	/* Length of the signed data from rzx->signed_start */
+
+#ifdef HAVE_GCRYPT_H
   gcry_mpi_t r, s;
+#endif			/* #ifdef HAVE_GCRYPT_H */
 
 } signature_block_t;
 
@@ -216,8 +219,12 @@ block_free( rzx_block_t *block )
 
   case LIBSPECTRUM_RZX_SIGN_END_BLOCK:
     signature = &( block->types.signature );
+
+#ifdef HAVE_GCRYPT_H
     gcry_mpi_release( signature->r );
     gcry_mpi_release( signature->s );
+#endif				/* #ifdef HAVE_GCRYPT_H */
+
     free( block );
     return LIBSPECTRUM_ERROR_NONE;
 
@@ -651,8 +658,10 @@ libspectrum_rzx_get_signature( libspectrum_rzx *rzx,
   signature->start = rzx->signed_start;
   signature->length = sigblock->length;
 
+#ifdef HAVE_GCRYPT_H
   signature->r = gcry_mpi_copy( sigblock->r );
   signature->s = gcry_mpi_copy( sigblock->s );
+#endif				/* #ifdef HAVE_GCRYPT_H */
 
   return LIBSPECTRUM_ERROR_NONE;
 }
