@@ -42,6 +42,9 @@
 /* Defined if GTK+ UI in use */
 #undef UI_GTK
 
+/* Defined if qtopia UI in use */
+#undef UI_QTOPIA
+
 /* Defined if svgalib UI in use */
 #undef UI_SVGA
 

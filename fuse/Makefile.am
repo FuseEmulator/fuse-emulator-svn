@@ -41,8 +41,8 @@ keysyms.c: keysyms.pl keysyms.dat
 
 INCLUDES = @GLIB_CFLAGS@ @GTK_CFLAGS@ -DROMSDIR="\"${pkgdatadir}\""
 LDADD = @GLIB_LIBS@ @GTK_LIBS@ libspectrum/libspectrum.a myglib/libmyglib.a\
-ui/aalib/libuiaalib.a ui/fb/libuifb.a ui/gtk/libuigtk.a ui/svga/libuisvga.a\
-ui/xlib/libuixlib.a widget/libwidget.a z80/libz80.a
+ui/aalib/libuiaalib.a ui/fb/libuifb.a ui/gtk/libuigtk.a ui/qtopia/libuiqtopia.a\
+ui/svga/libuisvga.a ui/xlib/libuixlib.a widget/libwidget.a z80/libz80.a
 
 noinst_HEADERS = ay.h display.h event.h\
 	fuse.h keyboard.h keysyms.h\

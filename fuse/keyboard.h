@@ -29,16 +29,16 @@
 
 #ifndef FUSE_TYPES_H
 #include "types.h"
-#endif			/* #ifndef FUSE_TYPES_H */
+#endif			// #ifndef FUSE_TYPES_H
 
 extern BYTE keyboard_default_value;
 extern BYTE keyboard_return_values[8];
 
-/* A numeric identifier for each Spectrum key. Basically chosen to map
-   to ASCII, but no necessity for this to be true */
+// A numeric identifier for each Spectrum key. Basically chosen to map
+// to ASCII, but no necessity for this to be true
 typedef enum keyboard_key_name {
 
-  KEYBOARD_NONE = 0x00,		/* No key */
+  KEYBOARD_NONE = 0x00,		// No key
 
   KEYBOARD_space = 0x20,
 
@@ -84,8 +84,8 @@ typedef enum keyboard_key_name {
   KEYBOARD_Caps,
   KEYBOARD_Symbol,
 
-  /* Below here, keys don't actually correspond to Spectrum keys, but
-     are used by the widget code */
+  // Below here, keys don't actually correspond to Spectrum keys, but
+  // are used by the widget code
 
   KEYBOARD_PageUp = 0x200,
   KEYBOARD_PageDown,
@@ -99,4 +99,4 @@ BYTE keyboard_read(BYTE porth);
 void keyboard_press(keyboard_key_name key);
 void keyboard_release(keyboard_key_name key);
 
-#endif			/* #ifndef FUSE_KEYBOARD_H */
+#endif			// #ifndef FUSE_KEYBOARD_H

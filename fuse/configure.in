@@ -28,6 +28,7 @@ AM_INIT_AUTOMAKE(fuse, 0.4.1pre1)
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_RANLIB
 AC_PATH_PROG(PERL, perl)
 AC_SUBST(PERL)
@@ -71,16 +72,18 @@ if test "$svgalib" = yes; then
 fi
 
 dnl Look for aalib (default=no)
-AC_MSG_CHECKING(whether aalib UI requested)
-AC_ARG_WITH(aalib,
-[  --with-aalib            use aalib for user interface],
-if test "$withval" = no; then aalib=no; else aalib=yes; fi,
-aalib=no)
-AC_MSG_RESULT($aalib)
-if test "$aalib" = yes; then
-  AC_CHECK_HEADER(aalib.h,
+if test -z "$ui"; then
+  AC_MSG_CHECKING(whether aalib UI requested)
+  AC_ARG_WITH(aalib,
+  [  --with-aalib            use aalib for user interface],
+  if test "$withval" = no; then aalib=no; else aalib=yes; fi,
+  aalib=no)
+  AC_MSG_RESULT($aalib)
+  if test "$aalib" = yes; then
+    AC_CHECK_HEADER(aalib.h,
                   LIBS="$LIBS -laa"; AC_DEFINE(UI_AALIB) ui=aalib,
                   AC_MSG_ERROR([aalib not found]))
+  fi
 fi
 
 dnl Look for framebuffer interface for SA1110 (default=no)
@@ -92,6 +95,20 @@ if test -z "$ui"; then
   fb=no)
   AC_MSG_RESULT($fb)
   if test "$fb" = yes; then AC_DEFINE(UI_FB) ui=fb; fi
+fi
+
+dnl Look if qtopia was requested (default=no)
+if test -z "$ui"; then
+  AC_MSG_CHECKING(whether Qtopia UI requested)
+  AC_ARG_WITH(qtopia,
+  [  --with-qtopia           use Qtopia for user interface],
+  if test "$withval" = no; then qtopia=no; else qtopia=yes; fi,
+  qtopia=no)
+  AC_MSG_RESULT($qtopia)
+  if test "$qtopia" = yes; then
+                  CPPFLAGS="$CPPFLAGS -I$QTDIR/include -I$QTDIR/include/qpe"
+                  LIBS="$LIBS -lqpe" AC_DEFINE(UI_QTOPIA) ui=qtopia,
+  fi
 fi
 
 dnl Look for GTK+ (default=yes); fall back to Xlib if not found
@@ -172,4 +189,5 @@ fi
 
 AC_OUTPUT(Makefile libspectrum/Makefile man/Makefile myglib/Makefile \
 roms/Makefile ui/Makefile ui/aalib/Makefile ui/fb/Makefile ui/gtk/Makefile \
-ui/svga/Makefile ui/xlib/Makefile utils/Makefile widget/Makefile z80/Makefile)
+ui/qtopia/Makefile ui/svga/Makefile ui/xlib/Makefile utils/Makefile \
+widget/Makefile z80/Makefile)
