@@ -323,6 +323,7 @@ libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
 
 /* The flags that can be given to libspectrum_snap_write() */
 extern const int LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION;
+extern const int LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS;
 
 /* The flags that may be returned from libspectrum_snap_write() */
 extern const int LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;

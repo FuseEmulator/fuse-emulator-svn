@@ -939,8 +939,8 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
 
   error = write_pages(
     buffer, &ptr, length, snap,
-    !( in_flags & LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION )
-  );
+    !( in_flags & LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION) +
+    ( in_flags & LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS ));
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   (*length) = ptr - *buffer;
@@ -1206,7 +1206,8 @@ write_page( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
 
   }
 
-  if( !compress || compressed_length >= 0x4000 ) {
+  if( !compress || ( !(compress & LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS) &&
+                      compressed_length >= 0x4000 ) ) {
 
     error = libspectrum_make_room( buffer, 3 + 0x4000, ptr, length );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
