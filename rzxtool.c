@@ -86,7 +86,7 @@ main( int argc, char **argv )
 
   if( mmap_file( options.rzxfile, &buffer, &length ) ) return 1;
 
-  if( libspectrum_rzx_read( rzx, buffer, length, &snap ) ) {
+  if( libspectrum_rzx_read( rzx, &snap, buffer, length ) ) {
     munmap( buffer, length );
     return 1;
   }
@@ -139,7 +139,7 @@ main( int argc, char **argv )
 	  || strncasecmp( &options.add[ strlen(options.add) - 4 ], ".sna", 4 )
 	) {
 	
-	if( libspectrum_z80_read( snap_buffer, snap_length, snap ) ) {
+	if( libspectrum_z80_read( snap, snap_buffer, snap_length ) ) {
 	  munmap( snap_buffer, snap_length );
 	  libspectrum_rzx_free( rzx );
 	  return 1;
@@ -147,7 +147,7 @@ main( int argc, char **argv )
 	
       } else {
 
-	if( libspectrum_sna_read( snap_buffer, snap_length, snap ) ) {
+	if( libspectrum_sna_read( snap, snap_buffer, snap_length ) ) {
 	  munmap( snap_buffer, snap_length );
 	  libspectrum_rzx_free( rzx );
 	  return 1;
@@ -176,7 +176,7 @@ main( int argc, char **argv )
 
     /* Serialise the RZX file */
     length = 0;
-    if( libspectrum_rzx_write( rzx, &buffer, &length, snap_buffer,
+    if( libspectrum_rzx_write( &buffer, &length, rzx, snap_buffer,
 			       snap_length, "rzxtool", 0, 1,
 			       !options.uncompress ) ) {
       free( snap_buffer );
