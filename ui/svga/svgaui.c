@@ -1,5 +1,5 @@
-/* xui.c: Routines for dealing with the Xlib user interface
-   Copyright (c) 2000 Philip Kendall
+/* svgaui.c: Routines for dealing with the svgalib user interface
+   Copyright (c) 2000-2001 Philip Kendall, Matan Ziv-Av
 
    $Id$
 
@@ -26,25 +26,39 @@
 
 #include <config.h>
 
-#ifndef HAVE_LIBGTK		/* Use this iff we're not using GTK+ */
+#ifdef UI_SVGA			/* Use this iff we're using svgalib */
 
 #include <stdio.h>
 
 #include "fuse.h"
-#include "x.h"
-#include "sdisplay.h"
-#include "xui.h"
+#include "svgadisplay.h"
+#include "svgakeyboard.h"
+#include "svgaui.h"
 
-int xui_init(int argc, char **argv, int width, int height)
+int svgaui_init(int argc, char **argv, int width, int height)
 {
-  xdisplay_init(width, height);
+  int error;
+
+  error = svgadisplay_init(width, height);
+  if(error) return error;
+
+  error = svgakeyboard_init();
+  if(error) return error;
 
   return 0;
 }
 
-int xui_end(void)
+int svgaui_end(void)
 {
+  int error;
+
+  error = svgakeyboard_end();
+  if(error) return error;
+
+  error = svgadisplay_end();
+  if(error) return error;
+
   return 0;
 }
 
-#endif				/* #ifndef HAVE_LIBGTK */
+#endif				/* #ifdef UI_SVGA */
