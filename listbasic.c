@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
   int error;
   unsigned char *buffer; size_t length;
   libspectrum_id_t type;
-  libspectrum_class_t type;
+  libspectrum_class_t class;
 
   progname = argv[0];
 
