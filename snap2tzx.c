@@ -1,8 +1,8 @@
-/* z802tzx.c: .z80 snapshot to .tzx tape image converter
+/* snap2tzx.c: Snapshot to .tzx tape image converter
    Copyright (c) 1997-2001 ThunderWare Research Center, written by
                            Martijn van der Heide,
-		 2003 Tomaz Kac <tomcat@sgn.net>,
-		 2003 Philip Kendall <pak21-spectrum@srcf.ucam.org>
+		 2003 Tomaz Kac,
+		 2003 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,10 +18,16 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
+   Author contact information:
+
+   E-mail: pak21-fuse@srcf.ucam.org
+   Postal address: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
+
 */
 
 #include <config.h>
 
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,11 +44,11 @@ char *progname;				/* argv[0] */
 libspectrum_snap *snap;
 char filename[512];
 char out_filename[512];
-char loader_name[256] = "\0";
+char loader_name[9] = "";
 
-char game_name[256]="                                ";
-char info1[256]="                                ";
-char info2[256]="                                ";
+char game_name[33]="                                ";
+char info1[33]="                                ";
+char info2[33]="                                ";
 
 int snap_type;				// -1 = Not recognised
 							//  0 = Z80
@@ -281,16 +287,6 @@ void create_out_filename()
 	out_filename[last+4]=0;
 }
 
-void clear_name(char name[])
-{
-	int i;
-
-	for(i=0; i < 32; i++)
-	{
-		name[i]=' ';
-	}
-}
-
 char * get_file_only(char *path)
 {
 	int pos = strlen(path)-1;
@@ -325,33 +321,6 @@ void create_loader_name()
 	loader_name[len]=0;
 }
 
-int is_small(char c)
-{
-	if (c >= 'a' && c <= 'z')
-	{
-		return 1;
-	}
-	return 0;
-}
-
-int is_number(char c)
-{
-	if (c >= '0' && c <= '9')
-	{
-		return 1;
-	}
-	return 0;
-}
-
-int is_capital(char c)
-{
-	if (c >= 'A' && c <= 'Z')
-	{
-		return 1;
-	}
-	return 0;
-}
-
 void center_name(char name[])
 {
         int i;
@@ -372,34 +341,40 @@ void center_name(char name[])
 	}
 }
 
-void create_game_name()
+static void
+create_game_name( void )
 {
-	char * skip = get_file_only(filename);
+  char *skip = get_file_only( filename );
 
-	int fl = strlen(skip);
+  int fl = strlen( skip );
 
-	int pos = 0;
-	int posf = 0;
+  int pos = 0;
+  int posf = 0;
 
-	while (pos < 32 && posf < fl && skip[posf] != '.')
-	{
-		if (skip[posf] == '_')
-		{
-			game_name[pos] = ' ';
-		}
-		else
-		{
-			game_name[pos] = skip[posf];
-			if (is_small(skip[posf]) && (is_number(skip[posf+1]) || is_capital(skip[posf+1]) || skip[posf+1]=='(' || skip[posf+1]=='+'))
-			{
-				pos++;
-				game_name[pos]=' ';
-			}
-		}
+  while( pos < 32 && posf < fl && skip[posf] != '.' ) {
+
+    if( skip[posf] == '_' ) {
+
+      game_name[pos] = ' ';
+
+    } else {
+
+      game_name[pos] = skip[posf];
+      if( islower( skip[posf] ) && 
+	  ( isdigit( skip[posf+1] ) || isupper( skip[posf+1] ) ||
+	    skip[posf+1] == '('     || skip[posf+1] == '+'       
+          )
+        ) {
+	pos++;
+	game_name[pos]=' ';
+      }
+
+    }
 		
-		pos++;
-		posf++;
-	}
+    pos++;
+    posf++;
+
+  }
 }
 
 void print_usage(int title)
@@ -427,14 +402,6 @@ void print_usage(int title)
 	printf("Name will be taken from the Filename if you don't use the -l or -g parameters!\n");
 }
 
-void embed_string(char * dest, const char * src, size_t n)
-{
-	for(; n && *src; src++, n--)
-	{
-		*dest++ = *src++;
-	}
-}
-
 void change_copyright(char * st)
 {
 	int len = strlen(st), jj;
@@ -447,165 +414,103 @@ void change_copyright(char * st)
 	}
 }
 
-int parse_args(int argc, char * argv[])
+static int
+parse_args( int argc, char **argv )
 {
-	int c, got_game_name, got_loader_name, got_out_filename;
+  int c, got_game_name, got_loader_name, got_out_filename;
 
-	got_game_name = got_loader_name = got_out_filename = 0;
+  got_game_name = got_loader_name = got_out_filename = 0;
 
-	while ((c=getopt(argc, argv, "1:2:b:g:l:o:rs:v$:")) != EOF )
-	{
-		switch (c)
-		{
-	
-		case '1':
-			embed_string(info1, optarg, 32);
-			change_copyright(info1);
-			center_name(info1);
-			break;
+  while( ( c = getopt( argc, argv, "1:2:b:g:l:o:rs:v$:" ) ) != EOF ) {
+    switch (c) {
 
-		case '2':
-			embed_string(info2, optarg, 32);		  
-			change_copyright(info2);
-			center_name(info2);
-			break;
+    case '1':
+      snprintf( info1, 33, "%-32s", optarg );
+      change_copyright( info1 );
+      center_name( info1 );
+      break;
 
-			// Border Colour when loading
-		case 'b':
-			load_colour=atoi(optarg);
-			if (load_colour < 0 || load_colour > 7)
-			{
-				print_error("Invalid Border Colour!");
-				return 0;
-			}
-			break;
+    case '2':
+      snprintf( info2, 33, "%-32s", optarg );
+      change_copyright( info2 );
+      center_name( info2 );
+      break;
 
-			// Game Name (When Loader is loaded)
-		case 'g':
-			clear_name(game_name);
-			embed_string(game_name, optarg, 32);
-			change_copyright(game_name);
-			center_name(game_name);
-			got_game_name = 1;
-			break;
-
-			// Loader Name (Loading: Name)
-		case 'l':
-			strncpy(loader_name, optarg, 8);
-			loader_name[8] = 0;
-			got_loader_name = 1;
-			break;
-
-			// Output Filename
-		case 'o':
-			strncpy(out_filename, optarg, 512);
-			out_filename[511] = 0;
-			got_out_filename = 1;
-			break;
-
-		case 'r':
-			bright = 0x40;
-			break;
-
-			// Speed value 
-		case 's':
-			speed_value=atoi(optarg);
-			if (speed_value < 0 || speed_value > 3)
-			{
-				print_error("Invalid Speed Value!");
-				return 0;
-			}
-			break;
-
-			// Verbose output
-		case 'v':
-			verbose = 1;
-			break;
-
-			// External Loading Screen
-		case '$':
-			external = 1;
-			strncpy(external_filename, optarg, 512);
-			external_filename[511] = 0;
-			break;
-
-		case '?':
-			print_error("Unknown Option\n");
-			print_usage(0);
-			return 0;
-		}
-	}
-
-	if (argv[optind] == NULL )
-	{
-		print_usage(1);
-		return 0;
-	}
-
-	// Snapshot filename
-	strcpy(filename, argv[optind]);
-	if (!got_out_filename)
-	{
-		create_out_filename();
-	}
-	if (!got_loader_name)
-	{
-		create_loader_name();
-	}
-	if (!got_game_name)
-	{
-		create_game_name();
-	}
-
+      /* Border Colour when loading */
+    case 'b':
+      load_colour = atoi( optarg );
+      if( load_colour < 0 || load_colour > 7 ) {
+	print_error( "Invalid Border Colour!" );
 	return 1;
-}
+      }
+      break;
 
-int get_type()
-{
-	int len = strlen(filename);
-	char ext[4];
- 	strcpy(ext, filename+len-3);
-	if (!strcasecmp(ext,"z80"))
-	{
-		snap_type = 0;
-		return 1;
-	}
+      /* Game Name (When Loader is loaded) */
+    case 'g':
+      snprintf( game_name, 33, "%-32s", optarg );
+      change_copyright( game_name );
+      center_name( game_name );
+      got_game_name = 1;
+      break;
 
-	snap_type = -1;
-	return 0;
-}
+      /* Loader Name (Loading: Name) */
+    case 'l':
+      strncpy( loader_name, optarg, 8 );
+      loader_name[8] = 0;
+      got_loader_name = 1;
+      break;
+      
+      /* Output Filename */
+    case 'o':
+      strncpy( out_filename, optarg, 511 );
+      out_filename[511] = 0;
+      got_out_filename = 1;
+      break;
 
-libspectrum_word gw(libspectrum_byte * t)
-{
-	libspectrum_word ret = *t + (256* *(t+1));
-	return ret;
-}
+    case 'r': bright = 0x40; break;
 
-void print_verbose_registers()
-{
-  char tempc[256];
+      /* Speed value  */
+    case 's':
+      speed_value=atoi( optarg );
+      if( speed_value < 0 || speed_value > 3 ) {
+	print_error( "Invalid Speed Value!" );
+	return 1;
+      }
+      break;
 
-  print_verbose(" A  F   BC   HL   PC   SP  I  R   DE B'C' D'E' H'L' A'F'   IY   IX Bd EI I2 IM");
+      /* Verbose output */
+    case 'v': verbose = 1; break;
+
+      /* External Loading Screen */
+    case '$':
+      external = 1;
+      strncpy( external_filename, optarg, 511 );
+      external_filename[511] = 0;
+      break;
+
+    case '?':
+      print_error( "Unknown Option\n" );
+      print_usage( 0 );
+      return 1;
+
+    }
+  }
+
+  if( argv[optind] == NULL ) {
+    print_usage( 1 );
+    return 1;
+  }
+
+  // Snapshot filename
+  strcpy( filename, argv[optind] );
+  if( !got_out_filename ) create_out_filename();
+  if( !got_loader_name ) create_loader_name();
+  if( !got_game_name ) create_game_name();
   
-  snprintf( tempc, 256,
-	    "%02x %02x %04x %04x %04x %04x %02x %02x %04x %04x %04x %04x %02x"
-	    "%02x %04x %04x %02x %02x %02x %02x\n",
-	    libspectrum_snap_a( snap ),       libspectrum_snap_f( snap ),
-	    libspectrum_snap_bc( snap ),      libspectrum_snap_hl( snap ),
-	    libspectrum_snap_pc( snap ),      libspectrum_snap_sp( snap ),
-	    libspectrum_snap_i( snap ),       libspectrum_snap_r( snap ),
-	    libspectrum_snap_de( snap ),      libspectrum_snap_bc_( snap ),
-	    libspectrum_snap_de_( snap ),     libspectrum_snap_hl_( snap ),
-	    libspectrum_snap_a_( snap ),      libspectrum_snap_f_( snap ),
-	    libspectrum_snap_iy( snap ),      libspectrum_snap_ix( snap ),
-	    libspectrum_snap_out_ula( snap ), libspectrum_snap_iff1( snap ),
-	    libspectrum_snap_iff2( snap ),    libspectrum_snap_im( snap )
-	  );
-
-  print_verbose(tempc);
+  return 0;
 }
 
-int
+static int
 load_snap( void )
 {
   int error;
@@ -1503,21 +1408,21 @@ void create_main_data()
   snap_bin[main_checksum] = calc_checksum( snap_bin + 5, main_checksum - 5 );  // need to recalc this in the end!!!
 }
 
-void
+static void
 convert_snap( void )
 {
-  print_verbose("\nCreating TZX File :");
+  FILE *file;
 
-  FILE * file= NULL;
-  file = fopen(out_filename,"wb");
+  print_verbose( "\nCreating TZX File :" );
 
-  if (file == NULL) {
-    print_error("Output File could not be Opened!");
+  file = fopen( out_filename, "wb" );
+  if( !file ) {
+    print_error( "Output File could not be Opened!" );
     return;
   }
 
-  data_pos=0;
-  add_data( tzx_start, 10 );	// TZX start - ZXTape!...
+  data_pos = 0;
+  add_data( tzx_start, 10 );	/* TZX start - ZXTape!... */
 
   create_main_header();
   add_data( tzx_header, tzx_header_size );
@@ -1540,9 +1445,7 @@ main( int argc, char **argv )
   progname = argv[0];
 
   error = init_libspectrum(); if( error ) return error;
-
-  if( !parse_args( argc, argv ) ) return 1;
-
+  error = parse_args( argc, argv ); if( error ) return error;
   error = load_snap(); if( error ) return error;
 
   convert_snap();
