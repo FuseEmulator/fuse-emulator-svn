@@ -441,7 +441,8 @@ int fuse_emulation_unpause(void)
   if( --fuse_emulation_paused ) return 0;
 
   /* If we now want sound, enable it */
-  if( settings_current.sound && settings_current.emulation_speed == 100 ) {
+  if( sound_enabled_ever && settings_current.sound &&
+      settings_current.emulation_speed == 100 ) {
 
     /* If sound has just started providing the timing, remove the old
        SIGALRM timer */
