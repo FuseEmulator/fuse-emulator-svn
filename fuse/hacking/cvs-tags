@@ -90,4 +90,7 @@ $Id$
 | Release-0_6_0pre2
 | Release-0_6_0
 |
++-\					Bugfix branch for 0.6.0
+| | Release-0_6_0-bugfix-branch
+|
 HEAD
