@@ -40,26 +40,26 @@ EXTRA_PROGRAMS = rzxcheck
 INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 
 listbasic_SOURCES = listbasic.c utils.c
-listbasic_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+listbasic_LDADD = @LIBSPEC_LIBS@
 
 rzxcheck_SOURCES = rzxcheck.c keys.c utils.c
-rzxcheck_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+rzxcheck_LDADD = @LIBSPEC_LIBS@
 
 rzxdump_SOURCES = rzxdump.c utils.c
-rzxdump_LDADD = @GCRYPT_LIBS@ @GLIB_LIBS@ @LIBSPEC_LIBS@
+rzxdump_LDADD = @LIBSPEC_LIBS@
 
 rzxtool_SOURCES = rzxtool.c utils.c
-rzxtool_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+rzxtool_LDADD = @LIBSPEC_LIBS@
 
 scl2trd_SOURCES = scl2trd.c
 
 snapconv_SOURCES = snapconv.c utils.c
-snapconv_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+snapconv_LDADD = @LIBSPEC_LIBS@
 
 tapeconv_SOURCES = tapeconv.c utils.c
-tapeconv_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+tapeconv_LDADD = @LIBSPEC_LIBS@
 
 tzxlist_SOURCES = tzxlist.c utils.c
-tzxlist_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+tzxlist_LDADD = @LIBSPEC_LIBS@
 
 noinst_HEADERS = utils.h
