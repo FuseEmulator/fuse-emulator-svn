@@ -60,7 +60,7 @@ libspectrum_rzx_dsa_key rzx_key = {
   "C52E9CA1804BD021FFAD30E8FB89A94437C2E4CB",	       /* q */
   "90E56D9493DE80E1A35F922007357888A1A47805FD365AD27BC5F184601EBC74E44F576AA4BF8C5244D202BBAE697C4F9132DFB7AD0A56892A414C96756BD21A", /* g */
   "7810A35AC94EA5750934FB9C922351EE597C71E2B83913C121C6655EA25CE7CBE2C259FA3168F8475B2510AA29C5FEB50ACAB25F34366C2FFC93B3870A522232", /* y */
-  "9A4E53CC249750C3194A38A3BE3EDEED28B171A9"	       /* x */
+  NULL						       /* x */
 };
 
 void init_options( struct options *options );
@@ -190,7 +190,7 @@ main( int argc, char **argv )
 
     length = 0;
     if( libspectrum_rzx_write( &buffer, &length, rzx, snap, creator,
-			       !options.uncompress, &rzx_key ) ) {
+			       !options.uncompress, NULL ) ) {
       libspectrum_creator_free( creator );
       if( snap ) libspectrum_snap_free( snap );
       libspectrum_rzx_free( rzx );
