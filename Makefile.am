@@ -35,7 +35,7 @@ rzxdump_SOURCES = rzxdump.c
 rzxtool_SOURCES = rzxtool.c utils.c
 rzxtool_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
-tapeconv_SOURCES = tapeconv.c
+tapeconv_SOURCES = tapeconv.c utils.c
 tapeconv_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
 tzxlist_SOURCES = tzxlist.c
