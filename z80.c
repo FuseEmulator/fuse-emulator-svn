@@ -86,10 +86,11 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		       size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
-	     size_t *length, libspectrum_snap *snap );
+	     size_t *length, libspectrum_snap *snap, int compress );
 static libspectrum_error
 write_page( libspectrum_byte **buffer, libspectrum_byte **ptr,
-	    size_t *length, int page_num, libspectrum_byte *page );
+	    size_t *length, int page_num, libspectrum_byte *page,
+	    int compress );
 static libspectrum_error
 write_slt( libspectrum_byte **buffer, libspectrum_byte **ptr,
 	   size_t *length, libspectrum_snap *snap );
@@ -815,7 +816,10 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
   error = write_header( buffer, &ptr, length, snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-  error = write_pages( buffer, &ptr, length, snap );
+  error = write_pages(
+    buffer, &ptr, length, snap,
+    !( in_flags & LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION )
+  );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   (*length) = ptr - *buffer;
@@ -982,7 +986,7 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 static libspectrum_error
 write_pages( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
-	     libspectrum_snap *snap )
+	     libspectrum_snap *snap, int compress )
 {
   int i; libspectrum_error error;
   int do_slt;
@@ -993,15 +997,15 @@ write_pages( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
   if( !( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) ) {
 
     error = write_page( buffer, ptr, length, 4,
-			libspectrum_snap_pages( snap, 2 ) );
+			libspectrum_snap_pages( snap, 2 ), compress );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
     error = write_page( buffer, ptr, length, 5,
-			libspectrum_snap_pages( snap, 0 ) );
+			libspectrum_snap_pages( snap, 0 ), compress );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
     error = write_page( buffer, ptr, length, 8,
-			libspectrum_snap_pages( snap, 5 ) );
+			libspectrum_snap_pages( snap, 5 ), compress );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   } else {
@@ -1009,7 +1013,7 @@ write_pages( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
     for( i=0; i<8; i++ ) {
       if( libspectrum_snap_pages( snap, i ) ) {
 	error = write_page( buffer, ptr, length, i+3,
-			    libspectrum_snap_pages( snap, i ) );
+			    libspectrum_snap_pages( snap, i ), compress );
 	if( error != LIBSPECTRUM_ERROR_NONE ) return error;
       }
     }
@@ -1036,17 +1040,20 @@ write_pages( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
 
 static libspectrum_error
 write_page( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
-	    int page_num, libspectrum_byte *page )
+	    int page_num, libspectrum_byte *page, int compress )
 {
-  libspectrum_byte *compressed; size_t compressed_length;
+  libspectrum_byte *compressed = NULL; size_t compressed_length;
   libspectrum_error error;
 
-  compressed_length = 0;
+  if( compress ) {
 
-  error = compress_block( &compressed, &compressed_length, page, 0x4000 );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+    compressed_length = 0;
+    error = compress_block( &compressed, &compressed_length, page, 0x4000 );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-  if( compressed_length >= 0x4000 ) {
+  }
+
+  if( !compress || compressed_length >= 0x4000 ) {
 
     error = libspectrum_make_room( buffer, 3 + 0x4000, ptr, length );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
@@ -1066,7 +1073,7 @@ write_page( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
 
   }
 
-  free( compressed );
+  if( compressed ) free( compressed );
 
   return LIBSPECTRUM_ERROR_NONE;
 

@@ -1,5 +1,5 @@
 /* snapshot.c: Snapshot handling routines
-   Copyright (c) 2001-2002 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2003 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -29,6 +29,9 @@
 #include <string.h>
 
 #include "internals.h"
+
+/* Some flags which may be given to libspectrum_snap_write() */
+const int LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION = 1 << 0;
 
 /* Some flags which may be returned from libspectrum_snap_write() */
 const int LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS = 1 << 0;
