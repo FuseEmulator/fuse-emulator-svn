@@ -146,6 +146,18 @@ libspectrum_rzx_free( libspectrum_rzx *rzx )
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+size_t
+libspectrum_rzx_tstates( libspectrum_rzx *rzx )
+{
+  return rzx->tstates;
+}
+
+size_t
+libspectrum_rzx_set_tstates( libspectrum_rzx *rzx, size_t tstates )
+{
+  return( rzx->tstates = tstates );
+}
+
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
 	              const libspectrum_byte *buffer, const size_t length )
