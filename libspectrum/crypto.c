@@ -36,6 +36,7 @@ static const char *private_key_format =
   "(key-data (private-key (dsa (p %m) (q %m) (g %m) (y %m) (x %m))))";
 static const char *public_key_format =
   "(key-data (public-key (dsa (p %m) (q %m) (g %m) (y %m))))";
+static const char *hash_format = "(data (flags raw) (value %m))";
 static const char *signature_format = "(sig-val (dsa (r %m) (s %m)))";
 
 #define HASH_ALGORITHM GCRY_MD_SHA1
@@ -124,7 +125,7 @@ get_hash( GcrySexp *hash, const libspectrum_byte *data, size_t data_length )
 
   free( digest );
 
-  error = gcry_sexp_build( hash, NULL, "(%m)", hash_mpi );
+  error = gcry_sexp_build( hash, NULL, hash_format, hash_mpi );
   if( error ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "get_hash: error creating hash sexp: %s",
