@@ -53,4 +53,4 @@ int debugger_end( void );
 int debugger_check( void );	/* See if the debugger should become active */
 int debugger_trap( void );	/* Activate the debugger */
 
-#endif FUSE_DEBUGGER_H		/* #ifndef FUSE_DEBUGGER_H */
+#endif				/* #ifndef FUSE_DEBUGGER_H */
