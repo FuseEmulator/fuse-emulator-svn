@@ -1,5 +1,5 @@
 /* tape.c: Routines for handling .tap files
-   Copyright (c) 2001 Philip Kendall
+   Copyright (c) 2001-2003 Philip Kendall
 
    $Id$
 
@@ -127,9 +127,11 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   /* And we're pointing to the first block */
   tape->current_block = tape->blocks;
 
-  /* Which we should then initialise */
-  error = libspectrum_tape_init_block( tape->current_block );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  /* Which we should then initialise if it exists */
+  if( tape->current_block ) {
+    error = libspectrum_tape_init_block( tape->current_block );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 }
