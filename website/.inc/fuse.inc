@@ -298,9 +298,15 @@ END_DOCUMENT;
 END_MENU_HEADER;
       foreach ($menu as $section)
       {
-	$href = preg_replace ('/[^[:alnum:]]+/', '_', $section[0]);
-	$href = preg_replace ('/^_+|_+$/', '', $href);
-	print "    <span class=\"x\">&bull;</span> <a href=\"#$href\">$section[0]</a>\n";
+	if (preg_match ('/^http/', $section[1]))
+	  $href = $section[1];
+	else
+        {
+	  $href = preg_replace ('/[^[:alnum:]]+/', '_', $section[0]);
+	  $href = preg_replace ('/^_+|_+$/', '', $href);
+	  $href = "#$href";
+        }
+	print "    <span class=\"x\">&bull;</span> <a href=\"$href\">$section[0]</a>\n";
       }
       print "   </span>\n  </span>\n";
     }
