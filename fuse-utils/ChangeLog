@@ -1,3 +1,10 @@
+2004-07-16  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+
+	* Version 0.7.0 released.
+
+	* Add createhdf utility for creating empty .hdf IDE hard disk
+	  images (Philip Kendall).
+
 2004-02-11  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 
 	* Version 0.6.2 released.
