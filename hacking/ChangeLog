@@ -99,3 +99,5 @@
 20040620 README,autogen.sh: add script to do the autotools invocation.
 20040626 man/{Makefile.am,createhdf.1,fuse-utils.1}: add createhdf
 	 manpage.
+20040709 configure.in: bump version number to 0.7.0pre1.
+20040709 TAG: fuse-utils_0_7_0pre1.
