@@ -16,7 +16,7 @@ What Fuse does have:
 * Support for loading from .tzx files.
 * Sound (on systems supporting the Open Sound System, SDL, or OpenBSD/
   Solaris's /dev/audio).
-* Kempston joystick emulation.
+* Kempston and Timex TC2068 joystick emulation.
 * Emulation of some of the printers you could attach to a Spectrum.
 * Support for the RZX input recording file format, including
   'competition mode'.
@@ -67,6 +67,7 @@ There are now some options you can give to configure; `configure
 --help' will list them all, but the most important are:
 
 --with-fb		Use the framebuffer interface, rather than GTK+.
+--with-sdl		Use the SDL interface, rather than GTK+.
 --with-svgalib		Use the SVGAlib interface.
 --without-gtk		Use the plain Xlib interface.
 
@@ -100,8 +101,8 @@ Building the OS X version of Fuse
 ---------------------------------
 
 The native Cocoa port by Fredrick Meunier <fredm@spamcop.net> comes as
-a set of ProjectBuilder projects for lib765, libdsk, libspectrum and
-fuse itself.
+a set of Xcode projects for libbz2, lib765, libdsk, libgcrypt,
+libspectrum and Fuse itself.
 
 Closing comments
 ----------------
