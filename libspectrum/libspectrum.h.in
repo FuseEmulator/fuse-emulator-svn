@@ -30,6 +30,10 @@
 #ifndef LIBSPECTRUM_LIBSPECTRUM_H
 #define LIBSPECTRUM_LIBSPECTRUM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif				/* #ifdef __cplusplus */
+
 #include <stdarg.h>
 #include <stdlib.h>
 
@@ -593,4 +597,9 @@ libspectrum_rzx_write( libspectrum_rzx *rzx,
 		       const char *program, libspectrum_word major,
 		       libspectrum_word minor, int compress );
 
+#ifdef __cplusplus
+};
+#endif				/* #ifdef __cplusplus */
+
 #endif				/* #ifndef LIBSPECTRUM_LIBSPECTRUM_H */
+
