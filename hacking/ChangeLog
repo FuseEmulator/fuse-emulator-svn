@@ -77,3 +77,19 @@
 	 error messages.
 20040117 TAG: fuse-utils_0_6_2-trunk
 	 BRANCH: fuse-utils_0_6_2-branch
+20040117 TAG: fuse-utils_0_6_2pre1 (fuse-utils_0_6_2-branch).
+20040204 man/: updates (fuse-utils_0_6_2-branch).
+20040205 configure.in: bump version number to 0.6.2pre2
+	 (fuse-utils_0_6_2-branch).
+20040205 TAG: fuse-utils_0_6_2pre2 (fuse-utils_0_6_2-branch).
+20040206 README, man/: final doc updates for the 0.6.2 release.
+	 (fuse-utils_0_6_2-branch).
+20040207 keys.c: change description of the Fuse key
+	 (fuse-utils_0_6_2-branch).
+20040211 configure.in: bump version number to 0.6.2
+	 (fuse-utils_0_6_2-branch).
+20040211 tzxlist.c: fix double-free bug on failed tape open
+	 (fuse-utils_0_6_2-branch).
+20040212 TAG: fuse-utils_0_6_2 (fuse-utils_0_6_2-branch).
+20040223 Merge changes from fuse-utils_0_6_2 to HEAD.
+20040223 TAG: fuse-utils_0_6_2-merge-1

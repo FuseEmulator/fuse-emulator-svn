@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\"
-.\" snapconv.1: snapconv man page
-.\" Copyright (c) 2003-2004 Philip Kendall
+.\" fuse-utils.1: fuse-utils overall man page
+.\" Copyright (c) 2004 Philip Kendall
 .\"
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -23,54 +23,82 @@
 .\" Postal address: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
 .\"
 .\"
-.TH snapconv 1 "11th February, 2004" "Version 0.6.2" "Emulators"
+.TH fuse-utils 1 "11th February, 2004" "Version 0.6.2" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH NAME
-snapconv \- Sinclair ZX Spectrum snapshot convertor
-.\"
-.\"------------------------------------------------------------------
-.\"
-.SH SYNOPSIS
-.PD 0
-.B snapconv
-.I infile outfile
-.PD 1
+fuse-utils \- various ZX Spectrum related utilities
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH DESCRIPTION
-Snapconv converts between ZX Spectrum snapshot files.
-.\"
-.\"------------------------------------------------------------------
-.\"
-.SH OPTIONS
-.TP
-.I infile
-specifies the snapshot to be converted. This file can be in any of the
-snapshot formats supported by
-.IR libspectrum "(3)."
-.TP
-.I outfile
-specifies the output snapshot. The format will be determined by the
-file extension and can be in any of the formats
-.IR libspectrum "(3)"
-supports for output.
-.\"
-.\"------------------------------------------------------------------
-.\"
-.SH BUGS
-None known.
+The Fuse (Free Unix Spectrum Emulator) utilities are a small suite of
+utilities relating to some of the file formats used by ZX Spectrum
+emulators. The currently available utilities are:
+.PP
+.I listbasic
+.RS
+Extract the BASIC program from a ZX Spectrum file.
+.RE
+.PP
+.I rzxcheck
+.RS
+Verify the `competition mode' signature in an RZX input recording
+file.
+.RE
+.PP
+.I rzxdump
+.RS
+Display the contents of an RZX file.
+.RE
+.PP
+.I rzxtool
+.RS
+Make simple modifications to an RZX file.
+.RE
+.PP
+.I scl2trd
+.RS
+Convert .scl disk images into .trd format.
+.RE
+.PP
+.I snap2tzx
+.RS
+Convert a snapshot into a .tzx tape image.
+.RE
+.PP
+.I snapconv
+.RS
+Convert between various snapshot formats.
+.RE
+.PP
+.I tapeconv
+.RS
+Convert between various tape formats.
+.RE
+.PP
+.I tzxlist
+.RS
+Display the contents of a .tzx tape image.
+.RE
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH SEE ALSO
 .IR fuse "(1),"
-.IR fuse-utils "(1),"
 .IR libspectrum "(3),"
 .IR listbasic "(1),"
-.IR snap2tzx "(1)"
+.IR rzxcheck "(1),"
+.IR rzxdump "(1),"
+.IR rzxtool "(1),"
+.IR scl2trd "(1),"
+.IR snap2tzx "(1),"
+.IR snapconv "(1),"
+.IR tapeconv "(1),"
+.IR tzxlist "(1),"
+.IR xspect "(1),"
+.IR xzx "(1)"
 .PP
 The comp.sys.sinclair Spectrum FAQ, at
 .br
@@ -79,4 +107,5 @@ The comp.sys.sinclair Spectrum FAQ, at
 .\"------------------------------------------------------------------
 .\"
 .SH AUTHOR
-Philip Kendall (pak21-fuse@srcf.ucam.org).
+Philip Kendall (pak21-fuse@srcf.ucam.org) and others; see the
+individual man pages for more details.
