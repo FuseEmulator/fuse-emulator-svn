@@ -28,6 +28,7 @@ AM_INIT_AUTOMAKE(fuse-utils, 0.7.0pre1)
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_LIBTOOL
 
 dnl Check for big endianness
 AC_C_BIGENDIAN
