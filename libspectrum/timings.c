@@ -30,66 +30,135 @@
 
 #include "internals.h"
 
+/* The frame timings of a machine */
+typedef struct timings_t {
+
+  /* Processor speed in Hz */
+  libspectrum_dword processor_speed;
+
+  /* AY clock speed in Hz */
+  libspectrum_dword ay_speed;
+
+  /* Line timings in tstates */
+  libspectrum_word left_border, horizontal_screen, right_border,
+	           horizontal_retrace;
+
+  /* Frame timings in lines */
+  libspectrum_word top_border, vertical_screen, bottom_border,
+	           vertical_retrace;
+
+  /* How long after interrupt is the top-level pixel of the main screen
+     displayed */
+  libspectrum_dword top_left_pixel;
+
+} timings_t;
+
 /* The actual data from which the full timings are constructed */
-libspectrum_timings base_timings[] = {
+static timings_t base_timings[] = {
 
   /* FIXME: These are almost certainly wrong in many places, but I don't know
             what the correct values are. Corrections very welcome */
 
-                             /* /- Horizonal -\  /-- Vertical -\ */
-  { LIBSPECTRUM_MACHINE_16,     3500000, 0,
-				24, 128, 24, 48, 48, 192, 48, 24, 14336 },
-  { LIBSPECTRUM_MACHINE_48,     3500000, 0,
-				24, 128, 24, 48, 48, 192, 48, 24, 14336 },
-  { LIBSPECTRUM_MACHINE_TC2048, 3528000, 0,
-				24, 128, 24, 48, 48, 192, 48, 24, 14336 },
-  { LIBSPECTRUM_MACHINE_TC2068, 3528000, 1764750,
-				24, 128, 24, 48, 48, 192, 48, 24, 14336 },
-  { LIBSPECTRUM_MACHINE_128,    3546900, 1773400,
-				24, 128, 24, 52, 48, 192, 48, 23, 14361 },
-  { LIBSPECTRUM_MACHINE_PLUS2,  3546900, 1773400,
-				24, 128, 24, 52, 48, 192, 48, 23, 14361 },
-  { LIBSPECTRUM_MACHINE_PENT,   3546900, 1773400,
-				36, 128, 28, 32, 64, 192, 48, 16, 17988 },
-  { LIBSPECTRUM_MACHINE_PLUS2A, 3546900, 1773400,
-				24, 128, 24, 52, 48, 192, 48, 23, 14361 },
-  { LIBSPECTRUM_MACHINE_PLUS3,  3546900, 1773400,
-				24, 128, 24, 52, 48, 192, 48, 23, 14361 },
-
-  { -1 } /* End marker */
+                   /* /- Horizonal -\  /-- Vertical -\ */
+  { 3500000,       0, 24, 128, 24, 48, 48, 192, 48, 24, 14336 }, /* 48K */
+  { 3528000,       0, 24, 128, 24, 48, 48, 192, 48, 24, 14336 }, /* TC2048 */
+  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 14361 }, /* 128K */
+  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 14361 }, /* +2 */
+  { 3546900, 1773400, 36, 128, 28, 32, 64, 192, 48, 16, 17988 }, /* Pentagon */
+  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 14361 }, /* +2A */
+  { 3546900, 1773400, 24, 128, 24, 52, 48, 192, 48, 23, 14361 }, /* +3 */
+  { 0 },					          /* Unknown machine */
+  { 3500000,       0, 24, 128, 24, 48, 48, 192, 48, 24, 14336 }, /* 16K */
+  { 3528000, 1764750, 24, 128, 24, 48, 48, 192, 48, 24, 14336 }, /* TC2068 */
 };
 
-libspectrum_error
-libspectrum_machine_timings( libspectrum_timings *timings,
-			     libspectrum_machine machine )
+libspectrum_dword
+libspectrum_timings_processor_speed( libspectrum_machine machine )
 {
-  libspectrum_timings *ptr;
+  return base_timings[ machine ].processor_speed;
+}
 
-  for( ptr = base_timings; ptr->machine != -1; ptr++ ) {
+libspectrum_dword
+libspectrum_timings_ay_speed( libspectrum_machine machine )
+{
+  return base_timings[ machine ].ay_speed;
+}
 
-    if( ptr->machine == machine ) {
+libspectrum_word
+libspectrum_timings_left_border( libspectrum_machine machine )
+{
+  return base_timings[ machine ].left_border;
+}
 
-      memcpy( timings, ptr, sizeof( libspectrum_timings ) );
+libspectrum_word
+libspectrum_timings_horizontal_screen( libspectrum_machine machine )
+{
+  return base_timings[ machine ].horizontal_screen;
+}
 
-      /* Calculate derived fields */
-      timings->tstates_per_line =
-	timings->left_border + timings->horizontal_screen +
-	timings->right_border + timings->horizontal_retrace;
+libspectrum_word
+libspectrum_timings_right_border( libspectrum_machine machine )
+{
+  return base_timings[ machine ].right_border;
+}
 
-      timings->lines_per_frame = 
-	timings->top_border + timings->vertical_screen +
-	timings->bottom_border + timings->vertical_retrace;
+libspectrum_word
+libspectrum_timings_horizontal_retrace( libspectrum_machine machine )
+{
+  return base_timings[ machine ].horizontal_retrace;
+}
 
-      timings->tstates_per_frame =
-	timings->tstates_per_line *
-	(libspectrum_dword)timings->lines_per_frame;
+libspectrum_word
+libspectrum_timings_top_border( libspectrum_machine machine )
+{
+  return base_timings[ machine ].top_border;
+}
 
-      return LIBSPECTRUM_ERROR_NONE;
-    }
-  }
+libspectrum_word
+libspectrum_timings_vertical_screen( libspectrum_machine machine )
+{
+  return base_timings[ machine ].vertical_screen;
+}
 
-  libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
-			   "Unknown machine type `%d'", machine );
-  return LIBSPECTRUM_ERROR_UNKNOWN;
+libspectrum_word
+libspectrum_timings_bottom_border( libspectrum_machine machine )
+{
+  return base_timings[ machine ].bottom_border;
+}
 
+libspectrum_word
+libspectrum_timings_vertical_retrace( libspectrum_machine machine )
+{
+  return base_timings[ machine ].vertical_retrace;
+}
+
+libspectrum_word
+libspectrum_timings_top_left_pixel( libspectrum_machine machine )
+{
+  return base_timings[ machine ].top_left_pixel;
+}
+
+libspectrum_word
+libspectrum_timings_tstates_per_line( libspectrum_machine machine )
+{
+  return base_timings[ machine ].left_border        +
+         base_timings[ machine ].horizontal_screen  +
+         base_timings[ machine ].right_border       +
+	 base_timings[ machine ].horizontal_retrace;
+}
+
+libspectrum_word
+libspectrum_timings_lines_per_frame( libspectrum_machine machine )
+{
+  return base_timings[ machine ].top_border       +
+	 base_timings[ machine ].vertical_screen  +
+	 base_timings[ machine ].bottom_border    +
+	 base_timings[ machine ].vertical_retrace;
+}
+
+libspectrum_dword
+libspectrum_timings_tstates_per_frame( libspectrum_machine machine )
+{
+  return libspectrum_timings_tstates_per_line( machine ) *
+    ( (libspectrum_dword)libspectrum_timings_lines_per_frame( machine ) );
 }
