@@ -70,12 +70,17 @@ struct libspectrum_rzx {
 
   size_t tstates;
 
-  /* Points to the last non-repeated frame we've seen */
-  libspectrum_rzx_frame_t *data_frame;
+  /* Used for recording to note the last non-repeated frame. We can't
+     really use a direct pointer to the frame here as that will move
+     around when we do a realloc on the array, so just dereference it
+     every time */
+  size_t non_repeat;
 
   /* Playback variables */
   size_t current_frame;		/* The number of the current playback frame */
   size_t in_count;		/* How many INs done in current frame */
+  libspectrum_rzx_frame_t *data_frame;
+				/* Which frame we're reading INs from */
 };
 
 static libspectrum_error
@@ -169,8 +174,9 @@ libspectrum_rzx_store_frame( libspectrum_rzx *rzx, size_t instructions,
   frame->instructions = instructions;
 
   /* Check for repeated frames */
-  if( rzx->count != 0 && count != 0 && count == rzx->data_frame->count &&
-      !memcmp( in_bytes, rzx->data_frame->in_bytes, count ) ) {
+  if( rzx->count != 0 && count != 0 &&
+      count == rzx->frames[ rzx->non_repeat ].count &&
+      !memcmp( in_bytes, rzx->frames[ rzx->non_repeat ].in_bytes, count ) ) {
 	
     frame->repeat_last = 1;
 
@@ -180,7 +186,7 @@ libspectrum_rzx_store_frame( libspectrum_rzx *rzx, size_t instructions,
     frame->count = count;
 
     /* Note this as the last non-repeated frame */
-    rzx->data_frame = frame;
+    rzx->non_repeat = rzx->count;
 
     if( count ) {
 
