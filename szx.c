@@ -398,7 +398,7 @@ read_keyb_chunk( libspectrum_snap *snap, libspectrum_word version,
   flags = libspectrum_read_dword( buffer );
   libspectrum_snap_set_issue2( snap, flags & ZXSTKF_ISSUE2 );
 
-  (*buffer)++;		/* Skip the keyboard joystick flag */
+  if( expected_length >= 5 ) (*buffer)++; /* Skip the keyboard joystick flag */
 
   return LIBSPECTRUM_ERROR_NONE;
 }
