@@ -899,8 +899,7 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
   *(*ptr)++ = LIBSPECTRUM_RZX_CREATOR_BLOCK;
   libspectrum_write_dword( ptr, 29 );	/* Block length */
 
-  snprintf( *ptr, 20, "%s", libspectrum_creator_program( creator ) );
-  (*ptr) += 20;
+  memcpy( *ptr, libspectrum_creator_program( creator ), 20 ); (*ptr) += 20;
 
   libspectrum_write_word( ptr, libspectrum_creator_major( creator ) );
   libspectrum_write_word( ptr, libspectrum_creator_minor( creator ) );
@@ -913,7 +912,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		    size_t *length, libspectrum_snap *snap, int compress )
 {
   libspectrum_error error;
-  libspectrum_byte *snap_buffer; size_t snap_length;
+  libspectrum_byte *snap_buffer = NULL; size_t snap_length;
   libspectrum_byte *gzsnap = NULL; size_t gzlength;
 
   snap_length = 0;
