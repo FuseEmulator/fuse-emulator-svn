@@ -53,19 +53,21 @@ in the file.
 .SH OPTIONS
 .I -a snapfile
 .RS
-The .SNA or .Z80 format snapshot specified in
+The snapshot specified in
 .I snapfile
 will be added to the RZX file, replacing any snapshot which is
 currently present in
 .IR rzxfile .
 The new RZX file will be output to standard output.
+.I snapfile
+can be any of the .sna, .snp, .sp, .szx, .z80, .zxs or +D formats.
 .RE
 .PP
 .I -e
 .RS
 The snapshot present in
 .I rzxfile
-will be output to standard output in .Z80 format. This option is
+will be output to standard output in .z80 format. This option is
 incompatible with the
 .IR -a ", " -r " and " -u
 options.
@@ -88,7 +90,7 @@ will be compressed using
 .PP
 .I rzxfile
 .RS
-specifies an input recording file whose contents are to be listed.
+specifies an input recording file whose contents are to be modified.
 .RE
 .\"
 .\"------------------------------------------------------------------
