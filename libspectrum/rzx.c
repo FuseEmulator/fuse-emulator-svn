@@ -432,6 +432,17 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
 
   /* See if we want a compressed snap */
   flags = libspectrum_read_dword( ptr );
+
+  /* We don't handle 'links' to external snapshots. I really think these
+     are just more trouble than they're worth */
+  if( flags & 0x01 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "rzx_read_snapshot: skipping external snapshot" );
+    (*ptr) += blocklength - 9;
+    return LIBSPECTRUM_ERROR_NONE;
+  }
+
+  /* Do we have a compressed snapshot? */
   compressed = flags & 0x02;
 
   /* How long is the (uncompressed) snap? */
