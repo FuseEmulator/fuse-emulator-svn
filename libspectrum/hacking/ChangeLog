@@ -115,3 +115,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 file (thanks, Mike Gorchak).
 20031014 configure.in, libspectrum.c, rzx.c: we need <strings.h> for
 	 strcasecmp() on QNX6 (thanks, Mike Gorchak).
+20031016 libspectrum.h.in, make-perl.c, tape.c: don't include <glib.h>
+	 in libspectrum.h; makes it easy to include from other projects.

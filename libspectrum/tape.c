@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <glib.h>
+
 #include "internals.h"
 #include "tape_block.h"
 
