@@ -140,6 +140,8 @@ struct libspectrum_snap {
   libspectrum_byte dock_ram[ SNAPSHOT_DOCK_EXROM_PAGES ];
   libspectrum_byte *dock_cart[ SNAPSHOT_DOCK_EXROM_PAGES ];
 
+  /* Keyboard emulation */
+  int issue2;
 };
 
 /* Initialise a libspectrum_snap structure */
