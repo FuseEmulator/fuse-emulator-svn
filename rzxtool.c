@@ -68,6 +68,7 @@ main( int argc, char **argv )
 
   libspectrum_rzx *rzx;
   libspectrum_snap *snap = NULL;
+  libspectrum_creator *creator;
 
   struct options options;
 
@@ -171,13 +172,42 @@ main( int argc, char **argv )
     }      
     
     /* Serialise the RZX file */
-    length = 0;
-    if( libspectrum_rzx_write( &buffer, &length, rzx, snap,
-			       "rzxtool", 0, 1, !options.uncompress ) ) {
+    if( libspectrum_creator_alloc( &creator ) ) {
       if( snap ) libspectrum_snap_free( snap );
       libspectrum_rzx_free( rzx );
       return 1;
     }
+
+    if( libspectrum_creator_set_program( creator, "rzxtool" ) ) {
+      if( snap ) libspectrum_snap_free( snap );
+      libspectrum_rzx_free( rzx );
+      libspectrum_creator_free( creator );
+      return 1;
+    }
+
+    if( libspectrum_creator_set_major( creator, 0x0006 ) ) {
+      if( snap ) libspectrum_snap_free( snap );
+      libspectrum_rzx_free( rzx );
+      libspectrum_creator_free( creator );
+      return 1;
+    }
+
+    if( libspectrum_creator_set_minor( creator, 0x0100 ) ) {
+      if( snap ) libspectrum_snap_free( snap );
+      libspectrum_rzx_free( rzx );
+      libspectrum_creator_free( creator );
+      return 1;
+    }
+
+    length = 0;
+    if( libspectrum_rzx_write( &buffer, &length, rzx, snap, creator,
+			       !options.uncompress ) ) {
+      if( snap ) libspectrum_snap_free( snap );
+      libspectrum_rzx_free( rzx );
+      return 1;
+    }
+
+    libspectrum_creator_free( creator );
 
     if( snap ) libspectrum_snap_free( snap );
 
