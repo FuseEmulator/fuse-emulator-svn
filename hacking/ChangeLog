@@ -202,3 +202,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 replacement (borrowed code from glib 2.4.0 and 1.2.10).
 20040417 make-perl.c,myglib/ghash.c: the world doesn't need to know about
          GHashNode.
+20040513 libspectrum.c,libspectrum.h.in,szx.c,timings.c: add support for
+	 the Spectrum SE (part of patch #929112) (Fred).
