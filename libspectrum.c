@@ -182,9 +182,13 @@ libspectrum_machine_name( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_PENT:   return "Pentagon 128K";
   case LIBSPECTRUM_MACHINE_PLUS2A: return "Spectrum +2A";
   case LIBSPECTRUM_MACHINE_PLUS3:  return "Spectrum +3";
+  case LIBSPECTRUM_MACHINE_PLUS3E: return "Spectrum +3e";
   case LIBSPECTRUM_MACHINE_SCORP:  return "Scorpion ZS 256";
-  default:			   return "unknown";
+
+  case LIBSPECTRUM_MACHINE_UNKNOWN: return "(unknown)";
   }
+
+  return "(unknown type)";
 }
 
 /* The various capabilities of the different machines */
