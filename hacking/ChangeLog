@@ -100,3 +100,8 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20031001 ChangeLog, Makefile.am, README, configure.in, rzx.c: port the
 	 0.2.0.1 release changes back to HEAD.
 20031003 make-perl.c: change GcryMPI to gcry_mpi_t.
+20031006 crypto.c, rzx.c: use gcrypt errors properly; most importantly in
+	 crypto.c:libspectrum_verify_signature, we have to ignore the
+	 error source before comparing with an error code.
+
+	

@@ -80,7 +80,8 @@ static libspectrum_error
 get_signature( gcry_mpi_t *r, gcry_mpi_t *s, libspectrum_byte *data,
 	       size_t data_length, libspectrum_rzx_dsa_key *key )
 {
-  int error;
+  libspectrum_error error;
+  gcry_error_t gcrypt_error;
   gcry_sexp_t hash, s_key, s_signature;
 
   error = get_hash( &hash, data, data_length ); if( error ) return error;
@@ -88,11 +89,11 @@ get_signature( gcry_mpi_t *r, gcry_mpi_t *s, libspectrum_byte *data,
   error = create_key( &s_key, key, 1 );
   if( error ) { gcry_sexp_release( hash ); return error; }
 
-  error = gcry_pk_sign( &s_signature, hash, s_key );
-  if( error ) {
+  gcrypt_error = gcry_pk_sign( &s_signature, hash, s_key );
+  if( gcrypt_error ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "get_signature: error signing data: %s",
-			     gcry_strerror( error ) );
+			     gcry_strerror( gcrypt_error ) );
     gcry_sexp_release( s_key ); gcry_sexp_release( hash );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
@@ -115,7 +116,8 @@ get_signature( gcry_mpi_t *r, gcry_mpi_t *s, libspectrum_byte *data,
 static libspectrum_error
 get_hash( gcry_sexp_t *hash, const libspectrum_byte *data, size_t data_length )
 {
-  int error;
+  libspectrum_error error;
+  gcry_error_t gcrypt_error;
   char *digest; size_t digest_length;
   gcry_mpi_t hash_mpi;
   
@@ -129,12 +131,12 @@ get_hash( gcry_sexp_t *hash, const libspectrum_byte *data, size_t data_length )
 
   gcry_md_hash_buffer( HASH_ALGORITHM, digest, data, data_length );
 
-  error = gcry_mpi_scan( &hash_mpi, GCRYMPI_FMT_USG, digest, digest_length,
-			 NULL );
-  if( error ) {
+  gcrypt_error = gcry_mpi_scan( &hash_mpi, GCRYMPI_FMT_USG, digest,
+				digest_length, NULL );
+  if( gcrypt_error ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "get_hash: error creating hash MPI: %s",
-			     gcry_strerror( error )
+			     gcry_strerror( gcrypt_error )
     );
     free( digest );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -142,11 +144,11 @@ get_hash( gcry_sexp_t *hash, const libspectrum_byte *data, size_t data_length )
 
   free( digest );
 
-  error = gcry_sexp_build( hash, NULL, hash_format, hash_mpi );
-  if( error ) {
+  gcrypt_error = gcry_sexp_build( hash, NULL, hash_format, hash_mpi );
+  if( gcrypt_error ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "get_hash: error creating hash sexp: %s",
-			     gcry_strerror( error )
+			     gcry_strerror( gcrypt_error )
     );
     gcry_mpi_release( hash_mpi );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -161,7 +163,7 @@ static libspectrum_error
 create_key( gcry_sexp_t *s_key, libspectrum_rzx_dsa_key *key,
 	    int secret_key )
 {
-  int error;
+  gcry_error_t error;
   size_t i;
   gcry_mpi_t mpis[MPI_COUNT];
   const char *format;
@@ -248,7 +250,7 @@ static libspectrum_error
 serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 		gcry_mpi_t r, gcry_mpi_t s )
 {
-  int error;
+  gcry_error_t error;
   size_t length, length_s;
   char *ptr;
 
@@ -299,11 +301,14 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+#include <stdio.h>
+
 libspectrum_error
 libspectrum_verify_signature( libspectrum_rzx_signature *signature,
 			      libspectrum_rzx_dsa_key *key )
 {
   libspectrum_error error;
+  gcry_error_t gcrypt_error;
   gcry_sexp_t hash, key_sexp, signature_sexp;
 
   error = get_hash( &hash, signature->start, signature->length );
@@ -325,19 +330,19 @@ libspectrum_verify_signature( libspectrum_rzx_signature *signature,
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
-  error = gcry_pk_verify( signature_sexp, hash, key_sexp );
+  gcrypt_error = gcry_pk_verify( signature_sexp, hash, key_sexp );
 
   gcry_sexp_release( signature_sexp );
   gcry_sexp_release( key_sexp ); gcry_sexp_release( hash );
 
-  if( error ) {
-    if( error == GPG_ERR_BAD_SIGNATURE ) {
+  if( gcrypt_error ) {
+    if( gcry_err_code( gcrypt_error ) == GPG_ERR_BAD_SIGNATURE ) {
       return LIBSPECTRUM_ERROR_SIGNATURE;
     } else {
       libspectrum_print_error(
         LIBSPECTRUM_ERROR_LOGIC,
 	"libgcrypt error verifying signature: %s",
-	gcry_strerror( error )
+	gcry_strerror( gcrypt_error )
       );
       return LIBSPECTRUM_ERROR_LOGIC;
     }
