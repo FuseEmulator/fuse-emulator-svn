@@ -365,7 +365,7 @@ static int recording_frame( void )
       if( error ) {
 	ui_error(
           UI_ERROR_INFO,
-	  "couldn't get time: %s: stopping competetion mode RZX recording",
+	  "couldn't get time: %s: stopping competition mode RZX recording",
 	  strerror( errno )
 	);
 	rzx_stop_recording();
@@ -374,11 +374,11 @@ static int recording_frame( void )
 
       elapsed_time =   current_time.tv_sec  - start_time.tv_sec +
 	             ( current_time.tv_usec - start_time.tv_usec ) / 1000000.0;
-      if( fabs( elapsed_time / expected_time - 1 ) > SPEED_TOLERANCE ) {
+      if( fabs( expected_time / elapsed_time - 1 ) > SPEED_TOLERANCE ) {
 	ui_error(
 	  UI_ERROR_INFO,
-	  "emulator speed is %d%%: stopping competetion mode RZX recording",
-	  (int)( 100 * ( elapsed_time / expected_time ) )
+	  "emulator speed is %d%%: stopping competition mode RZX recording",
+	  (int)( 100 * ( expected_time / elapsed_time ) )
 	);
 	rzx_stop_recording();
       }
