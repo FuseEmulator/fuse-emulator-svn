@@ -29,5 +29,6 @@ set -e
 
 aclocal
 autoheader
+libtoolize
 automake --add-missing --copy
 autoconf
