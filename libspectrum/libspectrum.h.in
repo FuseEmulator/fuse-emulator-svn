@@ -227,17 +227,6 @@ typedef struct libspectrum_tape_rom_block {
 
 } libspectrum_tape_rom_block;
 
-/* The timings for the standard ROM loader */
-extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_PILOT; /* Pilot */
-extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC1; /* Sync 1 */
-extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC2; /* Sync 2 */
-extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA0; /* Reset bit */
-extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA1; /* Set bit */
-
-/* The number of pilot pulses for the standard ROM loader */
-extern const size_t LIBSPECTRUM_TAPE_PILOTS_HEADER;
-extern const size_t LIBSPECTRUM_TAPE_PILOTS_DATA;
-
 /* A turbo loading block */
 typedef struct libspectrum_tape_turbo_block {
 

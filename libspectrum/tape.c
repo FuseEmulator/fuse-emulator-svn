@@ -31,6 +31,23 @@
 
 #include "internals.h"
 
+/*** Constants ***/
+
+/* The timings for the standard ROM loader */
+static const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_PILOT = 2168; /*Pilot*/
+static const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC1 =  667; /*Sync 1*/
+static const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC2 =  735; /*Sync 2*/
+static const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA0 =  855; /*Reset*/
+static const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA1 = 1710; /*Set*/
+
+/* The number of pilot pulses for the standard ROM loader
+   NB: These disagree with the .tzx specification (they're one less), but
+       are correct. Entering the loop at #04D8 in the 48K ROM with HL == #0001
+       will produce the first sync pulse, not a pilot pulse.
+*/
+static const size_t LIBSPECTRUM_TAPE_PILOTS_HEADER = 0x1f7f;
+static const size_t LIBSPECTRUM_TAPE_PILOTS_DATA   = 0x0c97;
+
 /*** Local function prototypes ***/
 
 /* Free the memory used by a block */
@@ -415,21 +432,6 @@ libspectrum_tape_get_next_edge( libspectrum_tape *tape,
 
   return LIBSPECTRUM_ERROR_NONE;
 }
-
-/* The timings for the standard ROM loader */
-const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_PILOT = 2168; /* Pilot */
-const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC1 =  667; /* Sync 1 */
-const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC2 =  735; /* Sync 2 */
-const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA0 =  855; /* Reset */
-const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA1 = 1710; /* Set */
-
-/* The number of pilot pulses for the standard ROM loader
-   NB: These disagree with the .tzx specification (they're one less), but
-       are correct. Entering the loop at #04D8 in the 48K ROM with HL == #0001
-       will produce the first sync pulse, not a pilot pulse.
-*/
-const size_t LIBSPECTRUM_TAPE_PILOTS_HEADER = 0x1f7f;
-const size_t LIBSPECTRUM_TAPE_PILOTS_DATA   = 0x0c97;
 
 static libspectrum_error
 rom_edge( libspectrum_tape_rom_block *block, libspectrum_dword *tstates,
