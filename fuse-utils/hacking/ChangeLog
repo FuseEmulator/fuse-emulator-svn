@@ -106,3 +106,4 @@
 	 tzxlist.1}; doc updates for 0.7.0 release.
 20040715 configure.in: Use libtool to link fuse-utils
 20040715 autogen.sh: copy auxiliary files rather than linking them.
+20040715 .cvsignore: ignore libtool generated files.
