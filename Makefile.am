@@ -81,6 +81,11 @@ INCLUDES = @GLIB_CFLAGS@
 
 EXTRA_DIST = accessor.pl \
 	     doc/libspectrum.txt \
+	     generate.pl.in \
              libspectrum.h.in \
              snap_accessors.txt \
-	     tape_accessors.txt
+	     tape_accessors.pl \
+	     tape_accessors.txt \
+	     tape_set.pl \
+	     tape_block.h
+
