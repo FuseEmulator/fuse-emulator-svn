@@ -521,4 +521,6 @@
 20040202 debugger/debuggery.y: Update comment for <stdio.h> include
 	 (patch #883358) (Release-0_6_2-branch) (Fred).
 20040204 man/fuse.1: update (Release-0_6_2-branch).
-
+20040205 configure.in: bump version number to 0.6.2pre2
+	 (Release-0_6_2-branch).
+20040205 TAG: Release-0_6_2pre2 (Release-0_6_2-branch).
