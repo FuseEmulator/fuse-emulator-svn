@@ -79,6 +79,8 @@ typedef enum libspectrum_machine {
 
 } libspectrum_machine;
 
+const char* libspectrum_machine_name( libspectrum_machine type );
+
 typedef enum libspectrum_slt_type {
 
   LIBSPECTRUM_SLT_TYPE_END = 0,
