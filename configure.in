@@ -80,13 +80,13 @@ if test "$glib" = yes; then
   AM_PATH_GLIB_2_0(
     2.0.0,
     glib2=yes
-    AC_DEFINE(HAVE_LIB_GLIB)
+    AC_DEFINE([HAVE_LIB_GLIB], 1, [Defined if we've got glib])
     LIBS="$LIBS `pkg-config --libs glib-2.0`",
   )
   if test "$glib2" = no; then
     AM_PATH_GLIB(
       1.2.0,
-      AC_DEFINE(HAVE_LIB_GLIB)
+      AC_DEFINE([HAVE_LIB_GLIB], 1, [Defined if we've got glib])
       LIBS="$LIBS `glib-config --libs`",
       AC_MSG_WARN(glib not found - using internal replacement)
     )
