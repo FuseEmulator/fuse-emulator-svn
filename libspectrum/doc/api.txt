@@ -389,42 +389,86 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
 Just as `libspectrum_tap_write', but for .tzx files. The conversion to
 .tzx format is not lossy as it is with converting to .tap.
 
-RZX functions
--------------
+Input recording functions
+=========================
+
+All input recording routines are accessed through the opaque
+`libspectrum_rzx' structure.
 
 libspectrum_error libspectrum_rzx_alloc( libspectrum_rzx **rzx )
+
+Allocate a new input recording object.
+
 libspectrum_error libspectrum_rzx_free( libspectrum_rzx *rzx )
+
+Free the memory used by an input recording object as allocated by
+`libspectrum_rzx_alloc'.
 
 libspectrum_error libspectrum_rzx_store_frame( libspectrum_rzx *rzx,
 					       size_t instructions, 
 					       size_t count,
 					       libspectrum_byte *in_bytes )
-/* Add a frame to the current RZX recording */
+
+Add a frame to `rzx' in which `instructions' opcodes where fetched,
+and `count' bytes, specified in `in_bytes', were read from the IO
+ports.
 
 libspectrum_error libspectrum_rzx_start_playback( libspectrum_rzx *rzx )
-/* Prepare to start playback from an RZX file */
+
+Prepare to start playback of the input recording `rzx'.
 
 libspectrum_error libspectrum_rzx_playback_frame( libspectrum_rzx *rzx,
                                                   int *finished )
-/* Move onto the next frame of RZX playback */
+
+Move onto the next frame of playback from the input recording
+`rzx'. If the last frame has now been played, `*finished' will be
+non-zero, otherwise it will be zero.
+
+If the correct number of bytes were not read from `rzx' during the
+frame via `libspectrum_rzx_playback', an error will be given.
 
 libspectrum_error libspectrum_rzx_playback( libspectrum_rzx *rzx,
                                             libspectrum_byte *byte )
-/* Get the next byte of the current RZX frame */
+
+Return in `*byte' the next byte to be read from the IO ports from the
+current frame of `rzx'.
 
 size_t libspectrum_rzx_tstates( libspectrum_rzx *rzx );
+
+Return the 'starting tstates' field of `rzx'.
+
 size_t libspectrum_rzx_set_tstates( libspectrum_rzx *rzx, size_t tstates )
-/* Get and set the tstate counter */
+
+Set (and return the new value of) the 'starting tstates' field of `rzx'.
 
 size_t libspectrum_rzx_instructions( libspectrum_rzx *rzx )
-/* Get the current frame's instruction count */
+
+Return the number of opcode fetches to be performed during the current
+frame of `rzx'.
 
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
 		      const libspectrum_byte *buffer, const size_t length )
+
+Given a .rzx file of `length' bytes starting at `buffer', extract the
+input recording data into `rzx' and the embedded snapshot into
+`*snap'. If there is no embedded snapshot, `*snap' will be NULL after
+the call.
+
 libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_rzx *rzx,
-		       libspectrum_byte *snap, size_t snap_length,
-		       const char *program, libspectrum_word major,
-		       libspectrum_word minor, int compress )
+		       libspectrum_byte *snap, const char *program,
+		       libspectrum_word major, libspectrum_word minor,
+		       int compress )
+
+Given input recording data in `rzx' and a snapshot in `snap', create a
+.rzx file in `*buffer'. If no embedded snapshot is required, set
+`snap' to be NULL. Before the call, `*buffer' should be allocated at
+least `*length' bytes (can be zero). After the call, `*length'
+contains the length of the .rzx file.
+
+`program', `major' and `minor' give the values to be placed in the
+.rzx header fields. If `compress' is non-zero (and `zlib' was
+available when libspectrum was compiled), the resulting .rzx file will
+have its snapshot and input recording data compressed.
