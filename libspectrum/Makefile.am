@@ -52,7 +52,7 @@ libspectrum_la_SOURCES = creator.c \
 			 zlib.c \
 			 zxs.c
 
-libspectrum_la_LDFLAGS = -version-info 1:0:1
+libspectrum_la_LDFLAGS = -version-info 2:1:0
 
 BUILT_SOURCES = libspectrum.h snap_accessors.c tape_accessors.c tape_set.c
 
@@ -81,6 +81,11 @@ INCLUDES = @GLIB_CFLAGS@
 
 EXTRA_DIST = accessor.pl \
 	     doc/libspectrum.txt \
+	     generate.pl.in \
              libspectrum.h.in \
              snap_accessors.txt \
-	     tape_accessors.txt
+	     tape_accessors.pl \
+	     tape_accessors.txt \
+	     tape_set.pl \
+	     tape_block.h
+
