@@ -475,6 +475,5 @@
 	 (Stuart Brady).
 20040111 ui/gtk/{memory,pokefinder}.c: use capital letters in hex
 	 constants (fixes bug #867286) (Release-0_6_2-branch).
-
-
-	
+20040111 configure.in: bump version number to 0.6.2pre1
+	 (Release-0_6_2-branch).
