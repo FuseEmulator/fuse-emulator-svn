@@ -1,4 +1,6 @@
+*.lo
 .deps
+.libs
 Makefile
 Makefile.in
 aclocal.m4
@@ -8,5 +10,7 @@ config.h.in
 config.log
 config.status
 configure
+libspectrum.la
+libtool
 stamp-h
 stamp-h.in

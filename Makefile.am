@@ -24,9 +24,9 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-noinst_LIBRARIES = libspectrum.a
+lib_LTLIBRARIES = libspectrum.la
 
-libspectrum_a_SOURCES = libspectrum.c rzx.c sna.c tap.c tape.c\
+libspectrum_la_SOURCES = libspectrum.c rzx.c sna.c tap.c tape.c\
 tzx_read.c tzx_write.c z80.c zlib.c
 
 noinst_HEADERS = libspectrum.h rzx.h tape.h
