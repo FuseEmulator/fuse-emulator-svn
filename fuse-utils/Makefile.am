@@ -26,17 +26,34 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = man
 
-bin_PROGRAMS = rzxdump rzxtool tzxconv tzxlist
+bin_PROGRAMS = listbasic \
+	       rzxdump \
+	       rzxtool \
+	       scl2trd \
+	       snapconv \
+	       tapeconv \
+	       tzxlist
 
 INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 
-rzxdump_SOURCES = rzxdump.c
+listbasic_SOURCES = listbasic.c utils.c
+listbasic_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
-rzxtool_SOURCES = rzxtool.c
+rzxdump_SOURCES = rzxdump.c utils.c
+rzxdump_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+
+rzxtool_SOURCES = rzxtool.c utils.c
 rzxtool_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
-tzxconv_SOURCES = tzxconv.c
-tzxconv_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+scl2trd_SOURCES = scl2trd.c
 
-tzxlist_SOURCES = tzxlist.c
+snapconv_SOURCES = snapconv.c utils.c
+snapconv_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+
+tapeconv_SOURCES = tapeconv.c utils.c
+tapeconv_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+
+tzxlist_SOURCES = tzxlist.c utils.c
 tzxlist_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
+
+noinst_HEADERS = types.h utils.h

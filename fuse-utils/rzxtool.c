@@ -1,5 +1,5 @@
 /* rzxtool.c: (Un)compress RZX data and add, remove or extract embedded snaps
-   Copyright (c) 2002 Philip Kendall
+   Copyright (c) 2002-2003 Philip Kendall
 
    $Id$
 
@@ -37,6 +37,8 @@
 
 #include <libspectrum.h>
 
+#include "utils.h"
+
 struct options {
 
   char *rzxfile;		/* The RZX file we'll operate on */
@@ -63,7 +65,6 @@ libspectrum_rzx_dsa_key rzx_key = {
 
 void init_options( struct options *options );
 int parse_options( int argc, char **argv, struct options *options );
-int mmap_file( const char *filename, unsigned char **buffer, size_t *length );
 int write_snapshot( libspectrum_snap *snap );
 int make_snapshot( unsigned char **buffer, size_t *length,
 		   libspectrum_snap *snap );
@@ -72,10 +73,11 @@ int
 main( int argc, char **argv )
 {
   unsigned char *buffer; size_t length;
-  unsigned char *snap_buffer = NULL; size_t snap_length;
+  unsigned char *snap_buffer; size_t snap_length;
 
   libspectrum_rzx *rzx;
   libspectrum_snap *snap = NULL;
+  libspectrum_creator *creator;
 
   struct options options;
 
@@ -97,7 +99,7 @@ main( int argc, char **argv )
 
   if( mmap_file( options.rzxfile, &buffer, &length ) ) return 1;
 
-  if( libspectrum_rzx_read( rzx, buffer, length, &snap, &rzx_key ) ) {
+  if( libspectrum_rzx_read( rzx, &snap, buffer, length, &rzx_key ) ) {
     munmap( buffer, length );
     return 1;
   }
@@ -138,6 +140,11 @@ main( int argc, char **argv )
       /* Don't want the old snap anymore */
       if( snap ) { libspectrum_snap_free( snap ); snap = NULL; }
 
+      if( libspectrum_snap_alloc( &snap ) ) {
+	libspectrum_rzx_free( rzx );
+	return 1;
+      }
+
       /* Get the new snap */
       if( mmap_file( options.add, &snap_buffer, &snap_length ) ) {
 	libspectrum_rzx_free( rzx );
@@ -150,7 +157,7 @@ main( int argc, char **argv )
 	  || strncasecmp( &options.add[ strlen(options.add) - 4 ], ".sna", 4 )
 	) {
 	
-	if( libspectrum_z80_read( snap_buffer, snap_length, snap ) ) {
+	if( libspectrum_z80_read( snap, snap_buffer, snap_length ) ) {
 	  munmap( snap_buffer, snap_length );
 	  libspectrum_rzx_free( rzx );
 	  return 1;
@@ -158,7 +165,7 @@ main( int argc, char **argv )
 	
       } else {
 
-	if( libspectrum_sna_read( snap_buffer, snap_length, snap ) ) {
+	if( libspectrum_sna_read( snap, snap_buffer, snap_length ) ) {
 	  munmap( snap_buffer, snap_length );
 	  libspectrum_rzx_free( rzx );
 	  return 1;
@@ -174,28 +181,25 @@ main( int argc, char **argv )
       }
 
     }      
-    
-    /* Reserialise the snapshot */
-    if( snap ) {
-      snap_length = 0;
-      if( libspectrum_z80_write( &snap_buffer, &snap_length, snap ) ) {
-	libspectrum_snap_free( snap );
-	libspectrum_rzx_free( rzx );
-	return 1;
-      }
-    }
 
-    /* Serialise the RZX file */
-    length = 0;
-    if( libspectrum_rzx_write( rzx, &buffer, &length, snap_buffer,
-			       snap_length, "rzxtool", 0, 1,
-			       !options.uncompress, &rzx_key ) ) {
-      free( snap_buffer );
+    if( get_creator( &creator, "rzxtool" ) ) {
+      if( snap ) libspectrum_snap_free( snap );
       libspectrum_rzx_free( rzx );
       return 1;
     }
 
-    free( snap_buffer );
+    length = 0;
+    if( libspectrum_rzx_write( &buffer, &length, rzx, snap, creator,
+			       !options.uncompress, &rzx_key ) ) {
+      libspectrum_creator_free( creator );
+      if( snap ) libspectrum_snap_free( snap );
+      libspectrum_rzx_free( rzx );
+      return 1;
+    }
+
+    libspectrum_creator_free( creator );
+
+    if( snap ) libspectrum_snap_free( snap );
 
     /* And (finally!) write it */
     if( fwrite( buffer, 1, length, stdout ) != length ) {
@@ -208,9 +212,7 @@ main( int argc, char **argv )
 
   }
 
-  /* Tidy up */
   libspectrum_rzx_free( rzx );
-  if( snap ) libspectrum_snap_free( snap );
 
   return 0;
 }
@@ -271,49 +273,14 @@ parse_options( int argc, char **argv, struct options *options )
 }
 
 int
-mmap_file( const char *filename, unsigned char **buffer, size_t *length )
-{
-  int fd; struct stat file_info;
-  
-  if( ( fd = open( filename, O_RDONLY ) ) == -1 ) {
-    fprintf( stderr, "%s: couldn't open `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    return 1;
-  }
-
-  if( fstat( fd, &file_info) ) {
-    fprintf( stderr, "%s: couldn't stat `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  (*length) = file_info.st_size;
-
-  (*buffer) = mmap( 0, *length, PROT_READ, MAP_SHARED, fd, 0 );
-  if( (*buffer) == (void*)-1 ) {
-    fprintf( stderr, "%s: couldn't mmap `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  if( close(fd) ) {
-    fprintf( stderr, "%s: couldn't close `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    munmap( *buffer, *length );
-    return 1;
-  }
-  
-  return 0;
-}
-
-int
 write_snapshot( libspectrum_snap *snap )
 {
   unsigned char *buffer; size_t length = 0;
+  int flags;
 
-  if( libspectrum_z80_write( &buffer, &length, snap ) ) return 1;
+  if( libspectrum_snap_write( &buffer, &length, &flags, snap,
+			      LIBSPECTRUM_ID_SNAPSHOT_Z80, NULL, 0 ) )
+    return 1;
   
   if( fwrite( buffer, 1, length, stdout ) != length ) {
     fprintf( stderr, "%s: error writing output: %s\n", progname,

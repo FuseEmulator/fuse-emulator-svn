@@ -8,9 +8,12 @@ config.h.in
 config.log
 config.status
 configure
+listbasic
 rzxdump
 rzxtool
+scl2trd
+snapconv
 stamp-h
 stamp-h.in
-tzxconv
+tapeconv
 tzxlist

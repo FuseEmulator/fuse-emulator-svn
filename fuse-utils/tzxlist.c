@@ -1,5 +1,5 @@
 /* tzxlist.c: Produce a listing of the blocks in a .tzx file
-   Copyright (c) 2001-2002 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2003 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -36,9 +36,11 @@
 
 #include <libspectrum.h>
 
+#include "utils.h"
+
 #define DESCRIPTION_LENGTH 80
 
-static const char *progname;
+const char *progname;
 
 static const char*
 hardware_desc( int type, int id )
@@ -75,61 +77,33 @@ hardware_desc( int type, int id )
 static int
 process_tzx( char *filename )
 {
-  int fd;
-  struct stat file_info;
-
   int error;
 
-  unsigned char *buffer;
+  unsigned char *buffer; size_t length;
   libspectrum_tape *tape;
+  libspectrum_tape_iterator iterator;
+  libspectrum_tape_block *block;
 
   GSList *ptr;
 
   size_t i;
 
-  fd = open( filename, O_RDONLY );
-  if( fd == -1 ) {
-    fprintf( stderr, "%s: couldn't open `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    return 1;
-  }
-
-  if( fstat( fd, &file_info) ) {
-    fprintf( stderr, "%s: couldn't stat `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  buffer = mmap( 0, file_info.st_size, PROT_READ, MAP_SHARED, fd, 0 );
-  if( buffer == (void*)-1 ) {
-    fprintf( stderr, "%s: couldn't mmap `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  if( close(fd) ) {
-    fprintf( stderr, "%s: couldn't close `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    munmap( buffer, file_info.st_size );
-    return 1;
-  }
+  error = mmap_file( filename, &buffer, &length ); if( error ) return error;
 
   error = libspectrum_tape_alloc( &tape );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    munmap( buffer, file_info.st_size );
+    munmap( buffer, length );
     return 1;
   }
 
-  error = libspectrum_tzx_read( tape, buffer, file_info.st_size );
+  error = libspectrum_tzx_read( tape, buffer, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    munmap( buffer, file_info.st_size );
+    munmap( buffer, length );
     libspectrum_tape_free( tape );
     return error;
   }
 
-  if( munmap( buffer, file_info.st_size ) == -1 ) {
+  if( munmap( buffer, length ) == -1 ) {
     fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, filename,
 	     strerror( errno ) );
     return 1;
@@ -137,133 +111,116 @@ process_tzx( char *filename )
 
   printf("Listing of `%s':\n\n", filename );
 
-  ptr = tape->blocks;
+  block = libspectrum_tape_iterator_init( &iterator, tape );
 
-  while( ptr ) {
-    libspectrum_tape_block *block = (libspectrum_tape_block*)ptr->data;
+  while( block ) {
     char description[ DESCRIPTION_LENGTH ];
 
-    libspectrum_tape_rom_block *rom_block;
-    libspectrum_tape_turbo_block *turbo_block;
-    libspectrum_tape_pure_tone_block *tone_block;
-    libspectrum_tape_pulses_block *pulses_block;
-    libspectrum_tape_pure_data_block *data_block;
-    libspectrum_tape_raw_data_block *raw_block;
-    libspectrum_tape_select_block *select_block;
-    libspectrum_tape_archive_info_block *info_block;
-    libspectrum_tape_hardware_block *hardware_block;
-
-    error = libspectrum_tape_block_description(
-      block, description, DESCRIPTION_LENGTH
-    );
+    error =
+      libspectrum_tape_block_description( description, DESCRIPTION_LENGTH,
+					  block );
     if( error ) return 1;
-    printf( "Block type 0x%02x (%s)\n", block->type, description );
+    printf( "Block type 0x%02x (%s)\n", libspectrum_tape_block_type( block ),
+	    description );
 
-    switch( block->type ) {
+    switch( libspectrum_tape_block_type( block ) ) {
+
     case LIBSPECTRUM_TAPE_BLOCK_ROM:
-      rom_block = &(block->types.rom);
-      printf("  Data length: %ld bytes\n", (unsigned long)rom_block->length );
-      printf("  Pause length: %d ms\n", rom_block->pause );
+      printf("  Data length: %ld bytes\n",
+	     (unsigned long)libspectrum_tape_block_data_length( block ) );
+      printf("  Pause length: %d ms\n",
+	     libspectrum_tape_block_pause( block ) );
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_TURBO:
-      turbo_block = &(block->types.turbo);
       printf("  %ld pilot pulses of %d tstates\n",
-	     (unsigned long)turbo_block->pilot_pulses,
-	     turbo_block->pilot_length );
+	     (unsigned long)libspectrum_tape_block_pilot_pulses( block ),
+	     libspectrum_tape_block_pilot_length( block ) );
       printf("  Sync pulses of %d and %d tstates\n",
-	     turbo_block->sync1_length, turbo_block->sync2_length );
+	     libspectrum_tape_block_sync1_length( block ),
+	     libspectrum_tape_block_sync2_length( block ) );
+      /* Fall through */
+
+    case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
       printf("  Data bits are %d (reset) and %d (set) tstates\n",
-	     turbo_block->bit0_length, turbo_block->bit1_length );
+	     libspectrum_tape_block_bit0_length( block ),
+	     libspectrum_tape_block_bit1_length( block ) );
       printf("  Data length: %ld bytes (%ld bits in last byte used)\n",
-	     (unsigned long)turbo_block->length,
-	     (unsigned long)turbo_block->bits_in_last_byte );
-      printf("  Pause length: %d ms\n", turbo_block->pause );
+	     (unsigned long)libspectrum_tape_block_data_length( block ),
+	     (unsigned long)libspectrum_tape_block_bits_in_last_byte(block) );
+      printf("  Pause length: %d ms\n",
+	     libspectrum_tape_block_pause( block ) );
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
-      tone_block = &(block->types.pure_tone);
       printf("  %ld pulses of %ld tstates\n",
-	     (unsigned long)tone_block->pulses,
-	     (unsigned long)tone_block->length );
+	     (unsigned long)libspectrum_tape_block_count( block ),
+	     (unsigned long)libspectrum_tape_block_pulse_length( block ) );
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_PULSES:
-      pulses_block = &(block->types.pulses);
-      for( i=0; i<pulses_block->count; i++ )
+      for( i=0; i < libspectrum_tape_block_count( block ); i++ )
 	printf("  Pulse %3ld: length %d tstates\n",
-	       (unsigned long)i, pulses_block->lengths[i] );
-      break;
-
-    case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
-      data_block = &(block->types.pure_data);
-      printf("  Data bits are %d (reset) and %d (set) tstates\n",
-	     data_block->bit0_length, data_block->bit1_length );
-      printf("  Data length: %ld bytes (%ld bits in last byte used)\n",
-	     (unsigned long)data_block->length,
-	     (unsigned long)data_block->bits_in_last_byte );
-      printf("  Pause length: %d ms\n", data_block->pause );
+	       (unsigned long)i,
+	       libspectrum_tape_block_pulse_lengths( block, i ) );
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
-      raw_block = &(block->types.raw_data);
-      printf("  Length: %ld bytes\n", (unsigned long)raw_block->length );
+      printf("  Length: %ld bytes\n", (unsigned long)
+	     libspectrum_tape_block_data_length( block ) );
       printf("  Bits in last byte: %ld\n",
-	     (unsigned long)raw_block->bits_in_last_byte );
-      printf("  Each bit is %d tstates\n", raw_block->bit_length );
-      printf("  Pause length: %d ms\n", raw_block->pause );
+	     (unsigned long)libspectrum_tape_block_bits_in_last_byte(block) );
+      printf("  Each bit is %d tstates\n",
+	     libspectrum_tape_block_bit_length( block ) );
+      printf("  Pause length: %d ms\n",
+	     libspectrum_tape_block_pause( block ) );
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
-      printf("  Length: %d ms\n", block->types.pause.length );
+      printf("  Length: %d ms\n", libspectrum_tape_block_pause( block ) );
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
-      printf("  Name: %s\n", block->types.group_start.name );
+      printf("  Name: %s\n", libspectrum_tape_block_text( block ) );
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
-      /* Do nothing */
-      break;
-
-    case LIBSPECTRUM_TAPE_BLOCK_JUMP:
-      printf("  Offset: %d\n", block->types.jump.offset );
-      break;
-
-    case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
-      printf("  Count: %d\n", block->types.loop_start.count );
-      break;
-
     case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
-      /* Do nothing */
-      break;
-
-    case LIBSPECTRUM_TAPE_BLOCK_SELECT:
-      select_block = &(block->types.select);
-      for( i=0; i<select_block->count; i++ ) {
-	printf("  Choice %2ld: Offset %d: %s\n", (unsigned long)i,
-	       select_block->offsets[i], select_block->descriptions[i] );
-      }
-      break;
-
     case LIBSPECTRUM_TAPE_BLOCK_STOP48:
       /* Do nothing */
       break;
 
-    case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
-      printf("  Comment: %s\n", block->types.comment.text );
+    case LIBSPECTRUM_TAPE_BLOCK_JUMP:
+      printf("  Offset: %d\n", libspectrum_tape_block_offset( block ) );
       break;
 
+    case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
+      printf("  Count: %lu\n",
+	     (unsigned long)libspectrum_tape_block_count( block ) );
+      break;
+
+    case LIBSPECTRUM_TAPE_BLOCK_SELECT:
+      for( i = 0; i < libspectrum_tape_block_count( block ); i++ ) {
+	printf("  Choice %2ld: Offset %d: %s\n", (unsigned long)i,
+	       libspectrum_tape_block_offsets( block, i ),
+	       libspectrum_tape_block_texts( block, i )            );
+      }
+      break;
+
+
     case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
-      printf("  Display for %d seconds\n", block->types.message.time );
-      printf("  Comment: %s\n", block->types.message.text );
+      printf("  Display for %d seconds\n",
+	     libspectrum_tape_block_pause( block ) );
+      /* Fall through */
+
+    case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
+      printf("  Comment: %s\n", libspectrum_tape_block_text( block ) );
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
-      info_block = &(block->types.archive_info);
-      for( i=0; i<info_block->count; i++ ) {
+      for( i = 0; i < libspectrum_tape_block_count( block ); i++ ) {
 	printf("  ");
-	switch( info_block->ids[i] ) {
+	switch( libspectrum_tape_block_ids( block, i ) ) {
 	case   0: printf("Full Title:"); break;
 	case   1: printf(" Publisher:"); break;
 	case   2: printf("    Author:"); break;
@@ -276,19 +233,18 @@ process_tzx( char *filename )
 	case 255: printf("   Comment:"); break;
 	 default: printf("(Unknown string): "); break;
 	}
-	printf(" %s\n", info_block->strings[i] );
+	printf(" %s\n", libspectrum_tape_block_texts( block, i ) );
       }
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
-      hardware_block = &(block->types.hardware);
-      for( i=0; i<hardware_block->count; i++ ) {
+      for( i = 0; i < libspectrum_tape_block_count( block ); i++ ) {
 	printf( "  %s: ",
-	        hardware_desc( hardware_block->types[i],
-			       hardware_block->ids[i]
+	        hardware_desc( libspectrum_tape_block_types( block, i ),
+			       libspectrum_tape_block_ids( block, i )
 			     )
 	      );
-	switch( hardware_block->values[i] ) {
+	switch( libspectrum_tape_block_values( block, i ) ) {
 	case 0: printf("runs"); break;
 	case 1: printf("runs, using hardware"); break;
 	case 2: printf("runs, does not use hardware"); break;
@@ -299,9 +255,9 @@ process_tzx( char *filename )
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
-      printf( "  Description: %s\n", block->types.custom.description );
+      printf( "  Description: %s\n", libspectrum_tape_block_text( block ) );
       printf( "       Length: %ld bytes\n",
-	      (unsigned long)block->types.custom.length );
+	      (unsigned long)libspectrum_tape_block_data_length( block ) );
       break;
 
     default:
@@ -315,7 +271,7 @@ process_tzx( char *filename )
 
   error = libspectrum_tape_free( tape );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    munmap( buffer, file_info.st_size );
+    munmap( buffer, length );
     return error;
   }
 
