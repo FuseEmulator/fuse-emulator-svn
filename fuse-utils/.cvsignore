@@ -10,6 +10,7 @@ config.status
 configure
 rzxdump
 rzxtool
+scl2trd
 stamp-h
 stamp-h.in
 tapeconv
