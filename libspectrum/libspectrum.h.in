@@ -78,6 +78,7 @@ libspectrum_error libspectrum_init( void );
 
 int libspectrum_check_version( const char *version );
 const char *libspectrum_version( void );
+const char *libspectrum_gcrypt_version( void );
 
 /* Error handling */
 typedef libspectrum_error

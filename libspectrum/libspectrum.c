@@ -38,6 +38,8 @@ static const char *MIN_GCRYPT_VERSION = "1.1.42";
 
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
+static const char *gcrypt_version;
+
 #include "internals.h"
 
 /* The function to call on errors */
@@ -50,16 +52,14 @@ libspectrum_init( void )
 {
 #ifdef HAVE_GCRYPT_H
 
-  const char *version;
-
   if( !gcry_control( GCRYCTL_ANY_INITIALIZATION_P ) ) {
 
-    version = gcry_check_version( MIN_GCRYPT_VERSION );
-    if( !version ) {
+    gcrypt_version = gcry_check_version( MIN_GCRYPT_VERSION );
+    if( !gcrypt_version ) {
       libspectrum_print_error(
         LIBSPECTRUM_ERROR_LOGIC,
 	"libspectrum_init: found libgcrypt %s, but need %s",
-	version, MIN_GCRYPT_VERSION
+	gcry_check_version( NULL ), MIN_GCRYPT_VERSION
       );
       return LIBSPECTRUM_ERROR_LOGIC;	/* FIXME: better error code */
     }
@@ -73,6 +73,10 @@ libspectrum_init( void )
 
     gcry_control( GCRYCTL_INITIALIZATION_FINISHED );
   }
+
+#else				/* #ifdef HAVE_GCRYPT_H */
+
+  gcrypt_version = NULL;
 
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
@@ -109,6 +113,12 @@ const char *
 libspectrum_version( void )
 {
   return VERSION;
+}
+
+const char *
+libspectrum_gcrypt_version( void )
+{
+  return gcrypt_version;
 }
 
 libspectrum_error
