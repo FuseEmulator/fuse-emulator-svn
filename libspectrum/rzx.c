@@ -954,17 +954,16 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
       libspectrum_write_word( ptr, libspectrum_rzx_repeat_frame );
     } else {
 
-      /* +2 needed here to deal with the count which we haven't written
-	 yet */
-      error = libspectrum_make_room( buffer, 2 + frame->count, ptr, length );
+      size += frame->count;			/* Keep track of the size */
+
+      libspectrum_write_word( ptr, frame->count );
+
+      error = libspectrum_make_room( buffer, frame->count, ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) {
 	libspectrum_print_error( error, "rzx_write_input: out of memory" );
 	return error;
       }
-
-      libspectrum_write_word( ptr, frame->count );
       memcpy( *ptr, frame->in_bytes, frame->count ); (*ptr) += frame->count;
-      size += frame->count;			/* Keep track of the size */
     }
   }
 
