@@ -229,50 +229,6 @@ libspectrum_timings_top_left_pixel( libspectrum_machine machine )
 How many tstates after interrupt is the top-left pixel of the screen
 displayed.
 
-
-
-libspectrum_error
-libspectrum_machine_timings( libspectrum_timings *timings,
-			     libspectrum_machine machine )
-
-`machine' is one of the LIBSPECTRUM_MACHINE_* constants listed above,
-and `timings' is a pointer to a `libspectrum_timings' structure:
-
-typedef struct libspectrum_timings {
-
-  /* The machine type as given in the `machine' parameter to
-     `libspectrum_machine_timings' */
-  libspectrum_machine machine;
-
-  /* Processor speed in Hz */
-  libspectrum_dword hz;
-
-  /* AY clock speed in Hz */
-  libspectrum_dword ay_hz;
-
-  /* Line timings in tstates */
-  libspectrum_word left_border, horizontal_screen, right_border,
-	           horizontal_retrace;
-
-  /* The sum of the last four values */
-  libspectrum_word tstates_per_line;
-
-  /* Frame timings in lines */
-  libspectrum_word top_border, vertical_screen, bottom_border,
-	           vertical_retrace;
- 
-  /* Sum of the last four values */
-  libspectrum_dword lines_per_frame;  
-
-  /* `tstates_per_line' * `lines_per_frame' */
-  libspectrum_dword tstates_per_frame;
-
-  /* How long after interrupt is the top-level pixel of the main screen
-     displayed */
-  libspectrum_dword top_left_pixel;
-
-} libspectrum_timings;
-
 Snapshot functions
 ==================
 
