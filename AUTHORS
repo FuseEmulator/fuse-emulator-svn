@@ -7,6 +7,9 @@ The Fuse utilities have been brought to you by:
 * Dmitry Sanarin: the original scl to trd conversion code, taken from
   Glukalka (http://glukalka.sf.net/)
 
+* Chris Cowley: listbasic is very heavily based on his SnapList utility
+  (http://freestuff.grok.co.uk/whatever/)
+
 * Philip Kendall: everything else.
 
 $Id$

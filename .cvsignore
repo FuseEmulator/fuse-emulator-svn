@@ -8,6 +8,7 @@ config.h.in
 config.log
 config.status
 configure
+listbasic
 rzxdump
 rzxtool
 scl2trd
