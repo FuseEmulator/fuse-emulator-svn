@@ -32,6 +32,9 @@ AC_PROG_CC
 dnl Check for big endianness
 AC_C_BIGENDIAN
 
+dnl Check for header files
+AC_CHECK_HEADERS(strings.h)
+
 dnl Check that zlib is available
 AC_CHECK_LIB(z,zlibVersion)
 

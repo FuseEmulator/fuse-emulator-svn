@@ -30,6 +30,9 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>		/* Needed for strncasecmp() on QNX6 */
+#endif				/* #ifdef HAVE_STRINGS_H */
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
