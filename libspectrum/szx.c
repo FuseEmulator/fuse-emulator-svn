@@ -66,6 +66,9 @@ write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 static libspectrum_error
 write_ay_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, libspectrum_snap *snap );
+static libspectrum_error
+write_scld_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		size_t *length, libspectrum_snap *snap );
 
 static libspectrum_error
 write_chunk_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -161,6 +164,24 @@ read_ramp_chunk( libspectrum_snap *snap, libspectrum_word version,
   }
 
   libspectrum_snap_set_pages( snap, page, buffer2 );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+read_scld_chunk( libspectrum_snap *snap, libspectrum_word version,
+	       const libspectrum_byte **buffer, const libspectrum_byte *end,
+	       size_t data_length )
+{
+  if( data_length != 2 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "szx_read_scld_chunk: unknown length %lu",
+			     (unsigned long)data_length );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  libspectrum_snap_set_out_scld_hsr( snap, **buffer ); (*buffer)++;
+  libspectrum_snap_set_out_scld_dec( snap, **buffer ); (*buffer)++;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -286,6 +307,7 @@ static struct read_chunk_t read_chunks[] = {
   { "Z80R",   read_z80r_chunk },
   { "ZXPR",   skip_chunk      },
   { "+3\0\0", skip_chunk      },
+  { "SCLD",   read_scld_chunk },
 
 };
 
@@ -413,6 +435,14 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PENT );
     break;
 
+  case 8:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2048 );
+    break;
+
+  case 9:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2068 );
+    break;
+
   default:
     libspectrum_print_error(
       LIBSPECTRUM_MACHINE_UNKNOWN,
@@ -485,6 +515,11 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
     if( error ) return error;
   }
 
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY ) {
+    error = write_scld_chunk( buffer, &ptr, length, snap );
+    if( error ) return error;
+  }
+
   /* Set length to be actual length, not allocated length */
   *length = ptr - *buffer;
 
@@ -508,20 +543,18 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   switch( libspectrum_snap_machine( snap ) ) {
 
   case LIBSPECTRUM_MACHINE_16:     **ptr = 0; break;
-
-  /* For now, Timex machines will have to save as just 48K */
-  case LIBSPECTRUM_MACHINE_TC2048:
-  case LIBSPECTRUM_MACHINE_TC2068:
-    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
-    /* Fall through */
   case LIBSPECTRUM_MACHINE_48:     **ptr = 1; break;
-
   case LIBSPECTRUM_MACHINE_128:    **ptr = 2; break;
   case LIBSPECTRUM_MACHINE_PLUS2:  **ptr = 3; break;
   case LIBSPECTRUM_MACHINE_PLUS2A: **ptr = 4; break;
   case LIBSPECTRUM_MACHINE_PLUS3:  **ptr = 5; break;
   /* 6 = +3e */
   case LIBSPECTRUM_MACHINE_PENT:   **ptr = 7; break;
+  case LIBSPECTRUM_MACHINE_TC2048: **ptr = 8; break;
+  case LIBSPECTRUM_MACHINE_TC2068:
+    /* As we don't currently save dock contents... */
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+    **ptr = 9; break;
 
   case LIBSPECTRUM_MACHINE_UNKNOWN:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
@@ -755,6 +788,21 @@ write_ay_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   for( i = 0; i < 16; i++ )
     *(*ptr)++ = libspectrum_snap_ay_registers( snap, i );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_scld_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+
+  error = write_chunk_header( buffer, ptr, length, "SCLD", 2 );
+  if( error ) return error;
+
+  *(*ptr)++ = libspectrum_snap_out_scld_hsr( snap );
+  *(*ptr)++ = libspectrum_snap_out_scld_dec( snap );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
