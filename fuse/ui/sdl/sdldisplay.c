@@ -96,18 +96,18 @@ uidisplay_init_scalers( void )
 {
   scaler_register_clear();
 
-  scaler_register( GFX_NORMAL );
-  scaler_register( GFX_DOUBLESIZE );
-  scaler_register( GFX_TRIPLESIZE );
-  scaler_register( GFX_2XSAI );
-  scaler_register( GFX_SUPER2XSAI );
-  scaler_register( GFX_SUPEREAGLE );
-  scaler_register( GFX_ADVMAME2X );
+  scaler_register( SCALER_NORMAL );
+  scaler_register( SCALER_DOUBLESIZE );
+  scaler_register( SCALER_TRIPLESIZE );
+  scaler_register( SCALER_2XSAI );
+  scaler_register( SCALER_SUPER2XSAI );
+  scaler_register( SCALER_SUPEREAGLE );
+  scaler_register( SCALER_ADVMAME2X );
   if( machine_current->timex ) {
-    scaler_register( GFX_HALF );
-    scaler_register( GFX_TIMEXTV );
+    scaler_register( SCALER_HALF );
+    scaler_register( SCALER_TIMEXTV );
   } else {
-    scaler_register( GFX_TV2X );
+    scaler_register( SCALER_TV2X );
   }
 }
 
@@ -158,34 +158,34 @@ sdldisplay_load_gfx_mode( void )
   tmp_screen_width = (image_width + 3);
 
   switch( current_scaler ) {
-  case GFX_2XSAI:
+  case SCALER_2XSAI:
     sdldisplay_current_size = 2;
     break;
-  case GFX_SUPER2XSAI:
+  case SCALER_SUPER2XSAI:
     sdldisplay_current_size = 2;
     break;
-  case GFX_SUPEREAGLE:
+  case SCALER_SUPEREAGLE:
     sdldisplay_current_size = 2;
     break;
-  case GFX_ADVMAME2X:
+  case SCALER_ADVMAME2X:
     sdldisplay_current_size = 2;
     break;
-  case GFX_TV2X:
+  case SCALER_TV2X:
     sdldisplay_current_size = 2;
     break;
-  case GFX_TIMEXTV:
+  case SCALER_TIMEXTV:
     sdldisplay_current_size = 1;
     break;
-  case GFX_DOUBLESIZE:
+  case SCALER_DOUBLESIZE:
     sdldisplay_current_size = 2;
     break;
-  case GFX_TRIPLESIZE:
+  case SCALER_TRIPLESIZE:
     sdldisplay_current_size = 3;
     break;
-  case GFX_NORMAL:
+  case SCALER_NORMAL:
     sdldisplay_current_size = 1;
     break;
-  case GFX_HALF:
+  case SCALER_HALF:
     sdldisplay_current_size = 0.5;
     break;
   default:

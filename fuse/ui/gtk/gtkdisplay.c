@@ -205,12 +205,12 @@ register_scalers( void )
 
     switch( image_scale ) {
     case 1:
-      scaler_register( GFX_NORMAL );
-      scaler_select_scaler( GFX_NORMAL );
+      scaler_register( SCALER_NORMAL );
+      scaler_select_scaler( SCALER_NORMAL );
       return 0;
     case 2:
-      scaler_register( GFX_HALF );
-      scaler_select_scaler( GFX_HALF );
+      scaler_register( SCALER_HALF );
+      scaler_select_scaler( SCALER_HALF );
       return 0;
     }
 
@@ -218,14 +218,14 @@ register_scalers( void )
 
     switch( image_scale ) {
     case 1:
-      scaler_register( GFX_DOUBLESIZE );
-      scaler_register( GFX_TV2X );
-      scaler_register( GFX_ADVMAME2X );
-      scaler_select_scaler( GFX_DOUBLESIZE );
+      scaler_register( SCALER_DOUBLESIZE );
+      scaler_register( SCALER_TV2X );
+      scaler_register( SCALER_ADVMAME2X );
+      scaler_select_scaler( SCALER_DOUBLESIZE );
       return 0;
     case 2:
-      scaler_register( GFX_NORMAL );
-      scaler_select_scaler( GFX_NORMAL );
+      scaler_register( SCALER_NORMAL );
+      scaler_select_scaler( SCALER_NORMAL );
       return 0;
     }
 

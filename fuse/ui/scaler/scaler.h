@@ -23,21 +23,18 @@
 #define SCALER_H
 
 typedef enum scaler_type {
-  GFX_HALF = 0,
-  GFX_NORMAL,
-  GFX_DOUBLESIZE,
-  GFX_TRIPLESIZE,
-  GFX_2XSAI,
-  GFX_SUPER2XSAI,
-  GFX_SUPEREAGLE,
-  GFX_ADVMAME2X,
-  GFX_TV2X,
-  GFX_TIMEXTV,
+  SCALER_HALF = 0,
+  SCALER_NORMAL,
+  SCALER_DOUBLESIZE,
+  SCALER_TRIPLESIZE,
+  SCALER_2XSAI,
+  SCALER_SUPER2XSAI,
+  SCALER_SUPEREAGLE,
+  SCALER_ADVMAME2X,
+  SCALER_TV2X,
+  SCALER_TIMEXTV,
 
-  GFX_NORMAL24,
-  GFX_DOUBLE24,
-
-  GFX_NUM		/* End marker; do not remove */
+  SCALER_NUM		/* End marker; do not remove */
 } scaler_type;
 
 typedef enum scaler_flags_t {

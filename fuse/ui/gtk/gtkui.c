@@ -561,7 +561,7 @@ select_filter( GtkWidget *widget GCC_UNUSED, gpointer data GCC_UNUSED )
   int i, count;
   
   /* Some space to store the radio buttons in */
-  dialog.buttons = (GtkWidget**)malloc( GFX_NUM * sizeof(GtkWidget* ) );
+  dialog.buttons = (GtkWidget**)malloc( SCALER_NUM * sizeof(GtkWidget* ) );
   if( dialog.buttons == NULL ) {
     ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
     return;
@@ -576,7 +576,7 @@ select_filter( GtkWidget *widget GCC_UNUSED, gpointer data GCC_UNUSED )
   dialog.dialog = gtk_dialog_new();
   gtk_window_set_title( GTK_WINDOW( dialog.dialog ), "Fuse - Select Scaler" );
 
-  for( i = 0; i < GFX_NUM; i++ ) {
+  for( i = 0; i < SCALER_NUM; i++ ) {
 
     if( !scaler_is_supported( i ) ) continue;
 
@@ -642,7 +642,7 @@ select_filter_done( GtkWidget *widget GCC_UNUSED, gpointer user_data )
 
   count = 0;
 
-  for( i = 0; i < GFX_NUM; i++ ) {
+  for( i = 0; i < SCALER_NUM; i++ ) {
 
     if( !scaler_is_supported( i ) ) continue;
 

@@ -51,7 +51,7 @@ static void TV2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
 static void TimexTV(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
                DWORD dstPitch, int width, int height);
 
-static int scaler_supported[GFX_NUM] = {0};
+static int scaler_supported[ SCALER_NUM ] = {0};
 
 int scalers_registered = 0;
 
@@ -115,7 +115,7 @@ scaler_select_id( const char *id )
 {
   scaler_type i;
 
-  for( i=0; i < GFX_NUM; i++ ) {
+  for( i=0; i < SCALER_NUM; i++ ) {
     if( ! strcmp( available_scalers[i].id, id ) ) {
       current_scaler = i;
       return 0;
@@ -130,7 +130,7 @@ void
 scaler_register_clear( void )
 {
   scalers_registered = 0;
-  memset( scaler_supported, 0, sizeof(int) * GFX_NUM );
+  memset( scaler_supported, 0, sizeof(int) * SCALER_NUM );
 }
 
 void

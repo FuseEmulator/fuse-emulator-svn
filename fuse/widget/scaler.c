@@ -43,9 +43,9 @@
 
 /* Data for drawing the cursor */
 static int highlight_line;
-static char descriptions[GFX_NUM][40];
+static char descriptions[SCALER_NUM][40];
 
-static int scaler[GFX_NUM];
+static int scaler[SCALER_NUM];
 
 /* Scaler type we're going to switch to */
 int new_scaler;
@@ -61,7 +61,7 @@ int widget_scaler_draw( void* data GCC_UNUSED )
 
   j = 0;
 
-  for( i=0; i<GFX_NUM; i++ ) {
+  for( i=0; i<SCALER_NUM; i++ ) {
     if(!scaler_is_supported(i)) continue;
 
     scaler[j] = i;
@@ -110,7 +110,7 @@ widget_scaler_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
   }
 
   if( key >= KEYBOARD_a && key <= KEYBOARD_z &&
-      key - KEYBOARD_a < (ptrdiff_t)GFX_NUM ) {
+      key - KEYBOARD_a < (ptrdiff_t)SCALER_NUM ) {
     
     /* Remove the old highlight */
     widget_rectangle( 2*8, (highlight_line+4)*8, 28*8, 1*8,

@@ -60,13 +60,13 @@ ui_init( int *argc, char ***argv )
 
   scaler_register_clear();
 
-  scaler_register( GFX_NORMAL );
-  scaler_register( GFX_DOUBLESIZE );
-  scaler_register( GFX_TRIPLESIZE );
-  scaler_register( GFX_2XSAI );
-  scaler_register( GFX_SUPER2XSAI );
-  scaler_register( GFX_SUPEREAGLE );
-  scaler_register( GFX_ADVMAME2X );
+  scaler_register( SCALER_NORMAL );
+  scaler_register( SCALER_DOUBLESIZE );
+  scaler_register( SCALER_TRIPLESIZE );
+  scaler_register( SCALER_2XSAI );
+  scaler_register( SCALER_SUPER2XSAI );
+  scaler_register( SCALER_SUPEREAGLE );
+  scaler_register( SCALER_ADVMAME2X );
 
   return 0;
 }
