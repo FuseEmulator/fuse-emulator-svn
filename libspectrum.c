@@ -29,11 +29,39 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef HAVE_GCRYPT_H
+#include <gcrypt.h>
+#endif				/* #ifdef HAVE_GCRYPT_H */
+
 #include "internals.h"
 
 /* The function to call on errors */
 libspectrum_error_function_t libspectrum_error_function =
   libspectrum_default_error_function;
+
+/* Initialise the library */
+libspectrum_error
+libspectrum_init( void )
+{
+#ifdef HAVE_GCRYPT_H
+
+  const char *version, *min_version = "1.1.0";
+
+  version = gcry_check_version( min_version );
+  if( !version ) {
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_LOGIC,
+      "libspectrum_init: found libgcrypt %s, but need %s",
+      version, min_version );
+    return LIBSPECTRUM_ERROR_LOGIC;	/* FIXME: better error code */
+  }
+
+  gcry_control( GCRYCTL_INIT_SECMEM, 16384 ); /* Use default pool size */
+
+#endif				/* #ifdef HAVE_GCRYPT_H */
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
 
 libspectrum_error
 libspectrum_print_error( libspectrum_error error, const char *format, ... )

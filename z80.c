@@ -114,6 +114,9 @@ libspectrum_z80_read( libspectrum_snap *snap,
   const libspectrum_byte *data;
   int version, compressed;
 
+  /* Assume the Z80 isn't halted */
+  libspectrum_snap_set_halted( snap, 0 );
+
   error = read_header( buffer, snap, &data, &version, &compressed );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
@@ -331,9 +334,12 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
       }
     }
 
-    if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) &&
-	( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH                 )    ) {
-      libspectrum_snap_set_out_plus3_memoryport( snap, extra_header[54] );
+    if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) {
+      if( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH ) {
+	libspectrum_snap_set_out_plus3_memoryport( snap, extra_header[54] );
+      } else {
+	libspectrum_snap_set_out_plus3_memoryport( snap, 0 );
+      }
     }
 
     (*data) = buffer + LIBSPECTRUM_Z80_HEADER_LENGTH + 2 + extra_length;

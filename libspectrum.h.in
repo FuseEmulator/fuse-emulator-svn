@@ -35,7 +35,10 @@ extern "C" {
 #endif				/* #ifdef __cplusplus */
 
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdlib.h>
+
+LIBSPECTRUM_INCLUDE_GCRYPT
 
 /* Standard typedefs */
 LIBSPECTRUM_DEFINE_TYPES
@@ -67,6 +70,11 @@ typedef enum libspectrum_error {
 
 } libspectrum_error;
 
+/* Initialisation */
+
+libspectrum_error libspectrum_init( void );
+
+/* Error handling */
 typedef libspectrum_error
 (*libspectrum_error_function_t)( libspectrum_error error,
 				 const char *format, va_list ap );
@@ -228,6 +236,12 @@ libspectrum_error libspectrum_creator_set_minor( libspectrum_creator *creator,
 						 libspectrum_word minor );
 libspectrum_word
 libspectrum_creator_minor( libspectrum_creator *creator );
+
+libspectrum_error
+libspectrum_creator_set_competition_code( libspectrum_creator *creator,
+					  libspectrum_dword competition_code );
+libspectrum_dword
+libspectrum_creator_competition_code( libspectrum_creator *creator );
 
 /*
  * Snap handling routines
@@ -470,14 +484,38 @@ size_t libspectrum_rzx_set_tstates( libspectrum_rzx *rzx, size_t tstates );
 /* Get the current frame's instruction count */
 size_t libspectrum_rzx_instructions( libspectrum_rzx *rzx );
 
+typedef struct libspectrum_rzx_dsa_key {
+
+  /* The standard DSA parameters, represented as hex strings with MSB first.
+     Set x = NULL for a public key */
+  const char *p, *q, *g, *y, *x;
+
+} libspectrum_rzx_dsa_key;
+
+typedef struct libspectrum_rzx_signature {
+
+  /* The key ID (low 32 bits of 'y') */
+  libspectrum_dword key_id;
+
+  /* Where in the buffer is the signed data? */
+  const libspectrum_byte *start; ptrdiff_t length;
+
+  LIBSPECTRUM_SIGNATURE_PARAMETERS
+
+} libspectrum_rzx_signature;
+
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
-	              const libspectrum_byte *buffer, const size_t length );
+	              const libspectrum_byte *buffer, const size_t length,
+		      libspectrum_rzx_signature *signature );
 
 libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_rzx *rzx, libspectrum_snap *snap,
-		       libspectrum_creator *creator, int compress );
+		       libspectrum_creator *creator, int compress,
+		       libspectrum_rzx_dsa_key *key );
+
+libspectrum_error libspectrum_rzx_alloc( libspectrum_rzx **rzx );
 
 /*
  * Timex DOCK/EXROM handling routines
@@ -518,6 +556,14 @@ libspectrum_error libspectrum_dck_free( libspectrum_dck *dck, int keep_pages );
 libspectrum_error
 libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
                       size_t length );
+
+/*
+ * Crypto functions
+ */
+
+libspectrum_error
+libspectrum_verify_signature( libspectrum_rzx_signature *signature,
+			      libspectrum_rzx_dsa_key *key );
 
 #ifdef __cplusplus
 };

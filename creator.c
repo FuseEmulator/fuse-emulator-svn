@@ -36,6 +36,8 @@ struct libspectrum_creator {
   libspectrum_byte program[32];
   libspectrum_word major, minor;
 
+  libspectrum_dword competition_code;
+
 };
 
 libspectrum_error
@@ -99,3 +101,18 @@ libspectrum_creator_minor( libspectrum_creator *creator )
 {
   return creator->minor;
 }
+
+libspectrum_error
+libspectrum_creator_set_competition_code( libspectrum_creator *creator,
+					  libspectrum_dword competition_code )
+{
+  creator->competition_code = competition_code;
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_dword
+libspectrum_creator_competition_code( libspectrum_creator *creator )
+{
+  return creator->competition_code;
+}
+

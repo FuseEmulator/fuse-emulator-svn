@@ -968,5 +968,5 @@ libspectrum_tape_block*
 libspectrum_tape_iterator_next( libspectrum_tape_iterator *iterator )
 {
   *iterator = (*iterator)->next;
-  return iterator ? (*iterator)->data : NULL;
+  return *iterator ? (*iterator)->data : NULL;
 }
