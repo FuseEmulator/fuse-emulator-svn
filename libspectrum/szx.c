@@ -102,7 +102,10 @@ static const libspectrum_word ZXSTRF_COMPRESSED = 1;
 #define ZXSTBID_USPEECH "USPE"
 #define ZXSTBID_SPECDRUM "DRUM"
 #define ZXSTBID_ZXTAPE "TAPE"
+
 #define ZXSTBID_KEYBOARD "KEYB"
+static const libspectrum_dword ZXSTKF_ISSUE2 = 1;
+
 #define ZXSTBID_JOYSTICK "JOY\0"
 #define ZXSTBID_IF2ROM "IF2R"
 #define ZXSTBID_MOUSE "AMXM"
@@ -161,6 +164,9 @@ write_z80r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap );
+static libspectrum_error
+write_keyb_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -368,6 +374,31 @@ read_cfrp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   }
 
   libspectrum_snap_set_zxcf_ram( snap, page, data );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+read_keyb_chunk( libspectrum_snap *snap, libspectrum_word version,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
+{
+  size_t expected_length;
+  libspectrum_dword flags;
+
+  expected_length = version >= 0x0101 ? 5 : 4;
+
+  if( data_length != expected_length ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "%s:read_scld_chunk: unknown length %lu",
+			     __FILE__, (unsigned long)data_length );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  flags = libspectrum_read_dword( buffer );
+  libspectrum_snap_set_issue2( snap, flags & ZXSTKF_ISSUE2 );
+
+  (*buffer)++;		/* Skip the keyboard joystick flag */
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -663,7 +694,7 @@ static struct read_chunk_t read_chunks[] = {
   { ZXSTBID_IF1,	    skip_chunk      },
   { ZXSTBID_IF2ROM,	    read_if2r_chunk },
   { ZXSTBID_JOYSTICK,	    skip_chunk      },
-  { ZXSTBID_KEYBOARD,	    skip_chunk      },
+  { ZXSTBID_KEYBOARD,	    read_keyb_chunk },
   { ZXSTBID_MICRODRIVE,	    skip_chunk      },
   { ZXSTBID_MOUSE,	    skip_chunk      },
   { ZXSTBID_MULTIFACE,	    skip_chunk      },
@@ -874,6 +905,9 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
   if( error ) return error;
 
   error = write_spcr_chunk( buffer, &ptr, length, snap );
+  if( error ) return error;
+
+  error = write_keyb_chunk( buffer, &ptr, length, snap );
   if( error ) return error;
 
   error = write_ram_pages( buffer, &ptr, length, snap, compress );
@@ -1114,6 +1148,25 @@ write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+static libspectrum_error
+write_keyb_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+  libspectrum_dword flags;
+
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_KEYBOARD, 5 );
+  if( error ) return error;
+
+  flags = 0;
+  if( libspectrum_snap_issue2( snap ) ) flags |= ZXSTKF_ISSUE2;
+
+  libspectrum_write_dword( ptr, flags );
+  *(*ptr)++ = '\0';	/* Keyboard joystick flag; ignored for now */
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+  
 static libspectrum_error
 write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		 size_t *length, libspectrum_snap *snap, int compress )
