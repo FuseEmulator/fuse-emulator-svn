@@ -139,3 +139,10 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040109 bzip2.c, configure.in: check we have libbz2 1.x (0.9.x and
 	 earlier use different function names).
 20040111 bzip2.c: #include <stdio.h>: needed by libbz2 < 1.0.2.
+20040113 hacking/cvs-tags: Add documentation of libspectrum's CVS tags.
+20040113 TAG: libspectrum_0_2_1-trunk
+	 BRANCH: libspectrum_0_2_1-branch
+20040113 Makefile.am, configure.in: bump version number to 0.2.1pre1 and
+	 update the library soname (libspectrum_0_2_1-branch).
+20040114 ChangeLog: bring up to date.
+20040117 TAG: libspectrum_0_2_1pre1 (libspectrum_0_2_1-branch).
