@@ -88,8 +88,7 @@ rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length );
 static libspectrum_error
 rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		   size_t *length, const char *program, libspectrum_word major,
-		   libspectrum_word minor );
+		   size_t *length, libspectrum_creator *creator );
 static libspectrum_error
 rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		    size_t *length, libspectrum_snap *snap, int compress );
@@ -630,8 +629,7 @@ rzx_read_frames( libspectrum_rzx *rzx,
 libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_rzx *rzx, libspectrum_snap *snap,
-		       const char *program, libspectrum_word major,
-		       libspectrum_word minor, int compress )
+		       libspectrum_creator *creator, int compress )
 {
   libspectrum_error error;
   libspectrum_byte *ptr = *buffer;
@@ -639,7 +637,7 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
   error = rzx_write_header( buffer, &ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-  error = rzx_write_creator( buffer, &ptr, length, program, major, minor );
+  error = rzx_write_creator( buffer, &ptr, length, creator );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   if( snap ) {
@@ -681,8 +679,7 @@ rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 static libspectrum_error
 rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		   size_t *length, const char *program, libspectrum_word major,
-		   libspectrum_word minor )
+		   size_t *length, libspectrum_creator *creator )
 {
   libspectrum_error error;
 
@@ -695,11 +692,11 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
   *(*ptr)++ = LIBSPECTRUM_RZX_CREATOR_BLOCK;
   libspectrum_write_dword( ptr, 29 );	/* Block length */
 
-  strncpy( *ptr, program, 19 ); (*ptr) += 19;
-  *(*ptr)++ = '\0';
+  snprintf( *ptr, 20, "%s", libspectrum_creator_program( creator ) );
+  (*ptr) += 20;
 
-  libspectrum_write_word( ptr, major );
-  libspectrum_write_word( ptr, minor );
+  libspectrum_write_word( ptr, libspectrum_creator_major( creator ) );
+  libspectrum_write_word( ptr, libspectrum_creator_minor( creator ) );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
