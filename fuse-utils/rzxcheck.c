@@ -80,7 +80,7 @@ main( int argc, char **argv )
     printf( "%s: no signature found in '%s'\n", progname, rzxfile );
     libspectrum_rzx_free( rzx );
     munmap( buffer, length );
-    return 0;
+    return 1;
   }
 
   for( key = known_keys; key->id; key++ )
@@ -91,7 +91,7 @@ main( int argc, char **argv )
 	    signature.key_id );
     libspectrum_rzx_free( rzx );
     munmap( buffer, length );
-    return 0;
+    return 1;
   }
 
   error = libspectrum_verify_signature( &signature, &( key->key ) );
