@@ -31,4 +31,4 @@ tzx_read.c tzx_write.c z80.c zlib.c
 
 noinst_HEADERS = libspectrum.h rzx.h tape.h
 
-INCLUDES = @GLIB_CFLAGS@ @GTK_CFLAGS@
+INCLUDES = @GLIB_CFLAGS@
