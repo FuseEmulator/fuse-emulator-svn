@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\"
 .\" snapconv.1: snapconv man page
-.\" Copyright (c) 2003 Philip Kendall
+.\" Copyright (c) 2003-2004 Philip Kendall
 .\"
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 .\" Postal address: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
 .\"
 .\"
-.TH snapconv 1 "13th September, 2003" "Version 0.6.1" "Emulators"
+.TH snapconv 1 "4th February, 2004" "Version 0.6.2" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -48,12 +48,15 @@ Snapconv converts between ZX Spectrum snapshot files.
 .SH OPTIONS
 .TP
 .I infile
-specifies the snapshot to be converted. This file can be a .sna, .snp, .sp, .szx, .z80, .zxs
-or +D snapshot.
+specifies the snapshot to be converted. This file can be in any of the
+snapshot formats supported by
+.IR libspectrum "(3)."
 .TP
 .I outfile
 specifies the output snapshot. The format will be determined by the
-file extension, which can be any of .sna, .szx or .z80.
+file extension and can be in any of the formats
+.IR libspectrum "(3)"
+supports for output.
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -64,15 +67,10 @@ None known.
 .\"
 .SH SEE ALSO
 .IR fuse "(1),"
+.IR fuse-utils "(1),"
+.IR libspectrum "(3),"
 .IR listbasic "(1),"
-.IR rzxcheck "(1),"
-.IR rzxdump "(1),"
-.IR rzxtool "(1),"
-.IR scl2trd "(1),"
-.IR tapeconv "(1),"
-.IR tzxlist "(1),"
-.IR xspect "(1),"
-.IR xzx "(1)"
+.IR snap2tzx "(1)"
 .PP
 The comp.sys.sinclair Spectrum FAQ, at
 .br
