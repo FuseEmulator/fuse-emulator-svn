@@ -92,8 +92,9 @@ libspectrum_rzx_dsa_key rzx_key = {
 /* The time we started recording this RZX file */
 static struct timeval start_time;
 
-/* How many seconds do we expect to have elapsed since we started recording? */
-static float expected_time;
+/* How many 1/50ths of a second do we expect to have elapsed since we
+   started recording? */
+static int expected_time;
 
 /* By how much is the speed allowed to deviate from 100% whilst recording
    a competition mode RZX file */
@@ -106,10 +107,6 @@ static int counter_reset( void );
 
 int rzx_init( void )
 {
-  libspectrum_error error;
-
-  error = libspectrum_rzx_alloc( &rzx ); if( error ) return error;
-
   rzx_recording = rzx_playback = 0;
 
   rzx_in_bytes = NULL;
@@ -124,6 +121,8 @@ int rzx_start_recording( const char *filename, int embed_snapshot )
   int error; libspectrum_error libspec_error;
 
   if( rzx_playback ) return 1;
+
+  error = libspectrum_rzx_alloc( &rzx ); if( error ) return error;
 
   /* Store the filename */
   rzx_filename = strdup( filename );
@@ -143,6 +142,8 @@ int rzx_start_recording( const char *filename, int embed_snapshot )
       libspectrum_snap_free( rzx_snap ); rzx_snap = NULL;
       return 1;
     }
+  } else {
+    rzx_snap = NULL;
   }
 
   /* Start the count of instruction fetches here */
@@ -158,18 +159,9 @@ int rzx_start_recording( const char *filename, int embed_snapshot )
   if( settings_current.competition_mode ) {
 
     expected_time = 0;
-
-    error = gettimeofday( &start_time, NULL );
-    if( error ) {
-      ui_error( UI_ERROR_INFO,
-		"Couldn't get start time: %s: competition mode disabled",
-		strerror( errno ) );
-      rzx_competition_mode = 0;
-    } else {
-      settings_current.emulation_speed = 100;
-      timer_count = 0;
-      rzx_competition_mode = 1;
-    }
+    settings_current.emulation_speed = 100;
+    timer_count = 0;
+    rzx_competition_mode = 1;
     
   }
     
@@ -180,6 +172,8 @@ int rzx_stop_recording( void )
 {
   libspectrum_byte *buffer; size_t length;
   libspectrum_error libspec_error; int error;
+
+  if( !rzx_recording ) return 0;
 
   /* Stop recording data */
   rzx_recording = 0;
@@ -222,7 +216,9 @@ int rzx_start_playback( const char *filename, int (*load_snap)(void) )
   libspectrum_error libspec_error; int error;
   libspectrum_snap *snap;
 
-  if( rzx_recording) return 1;
+  if( rzx_recording ) return 1;
+
+  error = libspectrum_rzx_alloc( &rzx ); if( error ) return error;
 
   error = utils_read_file( filename, &file );
   if( error ) return error;
@@ -240,10 +236,7 @@ int rzx_start_playback( const char *filename, int (*load_snap)(void) )
     return 1;
   }
 
-  if( snap ) {
-    error = libspectrum_snap_free( snap );
-    if( error ) { libspectrum_rzx_free( rzx ); return error; }
-  } else if( load_snap ) {
+  if( !snap && load_snap ) {
     error = load_snap();
     if( error ) { libspectrum_rzx_free( rzx ); return 1; }
   }
@@ -253,6 +246,11 @@ int rzx_start_playback( const char *filename, int (*load_snap)(void) )
     if( snap ) libspectrum_snap_free( snap );
     libspectrum_rzx_free( rzx );
     return error;
+  }
+
+  if( snap ) {
+    error = libspectrum_snap_free( snap );
+    if( error ) { libspectrum_rzx_free( rzx ); return error; }
   }
 
   return 0;
@@ -265,6 +263,8 @@ rzx_start_playback_from_buffer( const unsigned char *buffer, size_t length )
   int error;
 
   if( rzx_recording ) return 0;
+
+  error = libspectrum_rzx_alloc( &rzx ); if( error ) return error;
 
   error = libspectrum_rzx_read( rzx, &snap, buffer, length, NULL );
   if( error ) return error;
@@ -359,12 +359,34 @@ static int recording_frame( void )
     struct timeval current_time;
     float elapsed_time;
 
-    expected_time += 0.02;
+    expected_time++;
 
-    /* Small time measurements are highly inaccurate, so wait at least
-       one second before doing them */
-    if( expected_time > 1.0 ) {
-    
+    /* We wait one second before starting time measurements at all.
+       This is to allow any initial speed fluctuations caused by the
+       menu system to settle down (notably, with a widget UI and OSS
+       sound, the first few frames run fast as the sound buffers fill
+       up) */
+    if( expected_time == 50 ) {
+      
+      error = gettimeofday( &start_time, NULL );
+      if( error ) {
+	ui_error(
+          UI_ERROR_INFO,
+	  "couldn't get start time: %s: stopping competition mode RZX recording",
+	  strerror( errno )
+	);
+	rzx_stop_recording();
+	return 1;
+      }
+
+
+    /* Measuring small time intervals will be inaccurate, so don't
+       start checking for speed violations until at least one second
+       of measured time has elapsed (ie two seconds into recording) */
+    } else if( expected_time > 100 ) {
+
+      float seconds;
+
       error = gettimeofday( &current_time, NULL );
       if( error ) {
 	ui_error(
@@ -376,15 +398,21 @@ static int recording_frame( void )
 	return 1;
       }
 
+      /* -1 to account for the fact we don't time the first second */
+      seconds = ( expected_time * 0.02 ) - 1;
+
       elapsed_time =   current_time.tv_sec  - start_time.tv_sec +
 	             ( current_time.tv_usec - start_time.tv_usec ) / 1000000.0;
-      if( fabs( expected_time / elapsed_time - 1 ) > SPEED_TOLERANCE ) {
+      if( fabs( seconds / elapsed_time - 1 ) > SPEED_TOLERANCE ) {
+
+	rzx_stop_recording();
+
 	ui_error(
 	  UI_ERROR_INFO,
 	  "emulator speed is %d%%: stopping competition mode RZX recording",
-	  (int)( 100 * ( expected_time / elapsed_time ) )
+	  (int)( 100 * ( seconds / elapsed_time ) )
 	);
-	rzx_stop_recording();
+
       }
     }
 

@@ -192,3 +192,5 @@
 	 (Release-0_6_1-branch)
 20030913 Makefile.am: distribute compat.h (Release-0_6_1-branch)
 20030913 lib/Makefile.am: distribute disk_plus3.z80 (Release-0_6_1-branch)
+20030923 fuse.c, rzx.c, widget/menu.c: port RZX bugfixes from HEAD
+	 (Release-0_6_1-branch)

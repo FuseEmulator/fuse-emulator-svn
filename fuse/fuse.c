@@ -255,8 +255,6 @@ static int fuse_init(int argc, char **argv)
     trdos_disk_insert( TRDOS_DRIVE_A, settings_current.trdosdisk_file );
   }
 
-  if( parse_nonoption_args( argc, argv, first_arg, autoload ) ) return 1;
-
   fuse_emulation_paused = 0;
 
   return 0;
