@@ -56,7 +56,7 @@ noinst_HEADERS = internals.h
 
 noinst_PROGRAMS = make-perl
 
-libspectrum.h: libspectrum.h.in generate.pl
+libspectrum.h: libspectrum.h.in generate.pl snap_accessors.txt
 	@PERL@ -p generate.pl libspectrum.h.in > libspectrum.h
 
 generate.pl: make-perl
