@@ -52,7 +52,10 @@ if test "$prefix" != "NONE"; then
 fi)
 
 dnl Check that libgcrypt is available
-AC_CHECK_LIB(gcrypt,gcry_check_version)
+AC_CHECK_LIB(gcrypt,gcry_check_version,
+	     AC_DEFINE(HAVE_LIBGCRYPT) LIBS="$LIBS -lgcrypt"
+	     RZXCHECK="rzxcheck")
+AC_SUBST(RZXCHECK)
 
 # Either find glib or use the replacement (as supplied by libspectrum)
 AC_MSG_CHECKING(whether to use glib)
