@@ -104,7 +104,7 @@ libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
       inflateEnd( &stream );
       return LIBSPECTRUM_ERROR_SIGNATURE;
     default:			/* some other error */
-      libspectrum_print_error( "libspectrum_zlib_inflate: %s\n", stream.msg );
+      libspectrum_print_error( "libspectrum_zlib_inflate: %s", stream.msg );
       inflateEnd( &stream );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
@@ -139,8 +139,7 @@ libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
 	inflateEnd( &stream );
 	return LIBSPECTRUM_ERROR_MEMORY;
       default:			/* corrupt data or needs dictionary */
-	libspectrum_print_error( "libspectrum_zlib_inflate: %s\n",
-				 stream.msg);
+	libspectrum_print_error( "libspectrum_zlib_inflate: %s", stream.msg);
 	inflateEnd( &stream );
 	return LIBSPECTRUM_ERROR_CORRUPT;
       }

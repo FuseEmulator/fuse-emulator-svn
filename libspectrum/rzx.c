@@ -169,7 +169,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
 
     default:
       libspectrum_print_error(
-        "libspectrum_rzx_read: unknown RZX block ID 0x%02x\n", id
+        "libspectrum_rzx_read: unknown RZX block ID 0x%02x", id
       );
       return LIBSPECTRUM_ERROR_UNKNOWN;
     }
@@ -183,17 +183,13 @@ rzx_read_header( const libspectrum_byte **ptr, const libspectrum_byte *end )
 {
   /* Check the header exists */
   if( end - (*ptr) < 10 ) {
-    libspectrum_print_error(
-      "rzx_read_header: not enough data in buffer\n"
-    );
+    libspectrum_print_error( "rzx_read_header: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
   /* Check the RZX signature exists */
   if( memcmp( *ptr, signature, strlen( signature ) ) ) {
-    libspectrum_print_error(
-      "rzx_read_header: RZX signature not found\n"
-    );
+    libspectrum_print_error( "rzx_read_header: RZX signature not found" );
     return LIBSPECTRUM_ERROR_SIGNATURE;
   }
 
@@ -209,9 +205,7 @@ rzx_read_creator( const libspectrum_byte **ptr, const libspectrum_byte *end )
 
   /* Check we've got enough data for the block */
   if( end - (*ptr) < 28 ) {
-    libspectrum_print_error(
-      "rzx_read_creator: not enough data in buffer\n"
-    );
+    libspectrum_print_error( "rzx_read_creator: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
@@ -221,9 +215,7 @@ rzx_read_creator( const libspectrum_byte **ptr, const libspectrum_byte *end )
   /* Check there's still enough data (the -1 is because we've already read
      the block ID) */
   if( end - (*ptr) < (ptrdiff_t)length - 1 ) {
-    libspectrum_print_error(
-      "rzx_read_creator: not enough data in buffer\n"
-    );
+    libspectrum_print_error( "rzx_read_creator: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
@@ -245,14 +237,14 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
   libspectrum_byte *gzsnap; size_t uncompressed_length = 0;
 
   if( end - (*ptr) < 16 ) {
-    libspectrum_print_error("rzx_read_snapshot: not enough data in buffer\n");
+    libspectrum_print_error( "rzx_read_snapshot: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
   blocklength = libspectrum_read_dword( ptr );
 
   if( end - (*ptr) < (ptrdiff_t)blocklength - 5 ) {
-    libspectrum_print_error("rzx_read_snapshot: not enough data in buffer\n");
+    libspectrum_print_error( "rzx_read_snapshot: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
@@ -275,7 +267,7 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
     }
     if( uncompressed_length != snaplength ) {
       libspectrum_print_error(
-        "rzx_read_snapshot: compressed snapshot has wrong length\n"
+        "rzx_read_snapshot: compressed snapshot has wrong length"
       );
       free( gzsnap );
       return LIBSPECTRUM_ERROR_CORRUPT;
@@ -287,7 +279,7 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
     /* If not compressed, check things are consistent */
     if( blocklength != snaplength + 17 ) {
       libspectrum_print_error(
-        "rzx_read_snapshot: inconsistent snapshot lengths\n"
+        "rzx_read_snapshot: inconsistent snapshot lengths"
       );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
@@ -316,7 +308,7 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
     error = libspectrum_sna_read( snap_ptr, uncompressed_length, (*snap) );
   } else {
     libspectrum_print_error(
-      "rzx_read_snapshot: unrecognised snapshot format\n"
+      "rzx_read_snapshot: unrecognised snapshot format"
     );
     if( compressed ) free( gzsnap );
     free( *snap ); (*snap) = 0;
@@ -342,9 +334,7 @@ rzx_read_input( libspectrum_rzx *rzx,
 
   /* Check we've got enough data for the block */
   if( end - (*ptr) < 18 ) {
-    libspectrum_print_error(
-      "rzx_read_input: not enough data in buffer\n"
-    );
+    libspectrum_print_error( "rzx_read_input: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
@@ -360,9 +350,7 @@ rzx_read_input( libspectrum_rzx *rzx,
     (libspectrum_rzx_frame_t*)malloc( rzx->count *
 				      sizeof( libspectrum_rzx_frame_t) );
   if( rzx->frames == NULL ) {
-    libspectrum_print_error(
-      "rzx_read_input: out of memory\n"
-    );
+    libspectrum_print_error( "rzx_read_input: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
   rzx->allocated = rzx->count;
@@ -436,9 +424,7 @@ rzx_read_frames( libspectrum_rzx *rzx,
 
     /* Check the two length bytes exist */
     if( end - (*ptr) < 4 ) {
-      libspectrum_print_error(
-	"rzx_read_frames: not enough data in buffer\n"
-      );
+      libspectrum_print_error( "rzx_read_frames: not enough data in buffer" );
       for( j=0; j<i; j++ ) {
 	if( !rzx->frames[i].repeat_last ) free( rzx->frames[j].in_bytes );
       }
@@ -459,9 +445,7 @@ rzx_read_frames( libspectrum_rzx *rzx,
     rzx->frames[i].repeat_last = 0;
 
     if( end - (*ptr) < (ptrdiff_t)rzx->frames[i].count ) {
-      libspectrum_print_error(
-	"rzx_read_frames: not enough data in buffer\n"
-      );
+      libspectrum_print_error( "rzx_read_frames: not enough data in buffer" );
       for( j=0; j<i; j++ ) {
 	if( !rzx->frames[i].repeat_last ) free( rzx->frames[j].in_bytes );
       }
@@ -473,9 +457,7 @@ rzx_read_frames( libspectrum_rzx *rzx,
       (libspectrum_byte*)malloc( rzx->frames[i].count *
 				 sizeof( libspectrum_byte ) );
     if( rzx->frames[i].in_bytes == NULL ) {
-      libspectrum_print_error(
-	"rzx_read_input: out of memory\n"
-      );
+      libspectrum_print_error( "rzx_read_input: out of memory" );
       for( j=0; j<i; j++ ) {
 	if( !rzx->frames[i].repeat_last ) free( rzx->frames[j].in_bytes );
       }
@@ -529,9 +511,7 @@ rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   error = libspectrum_make_room( buffer, strlen(signature) + 6, ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    libspectrum_print_error(
-      "rzx_write_header: out of memory\n"
-    );
+    libspectrum_print_error( "rzx_write_header: out of memory" );
     return error;
   }
 
@@ -554,7 +534,7 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   error = libspectrum_make_room( buffer, 29, ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    libspectrum_print_error( "rzx_write_creator: out of memory\n" );
+    libspectrum_print_error( "rzx_write_creator: out of memory" );
     return error;
   }
 
@@ -582,7 +562,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
     error = libspectrum_zlib_compress( snap, snap_length, &gzsnap, &gzlength );
     if( error != LIBSPECTRUM_ERROR_NONE ) {
-      libspectrum_print_error( "rzx_write_snapshot: compression error: %s\n",
+      libspectrum_print_error( "rzx_write_snapshot: compression error: %s",
 			       libspectrum_error_message( error ) );
       return error;
     }
@@ -593,7 +573,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   if( error != LIBSPECTRUM_ERROR_NONE ) {
     if( gzsnap ) free( gzsnap );
-    libspectrum_print_error( "rzx_write_snapshot: out of memory\n" );
+    libspectrum_print_error( "rzx_write_snapshot: out of memory" );
     return error;
   }
 
@@ -629,9 +609,7 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 
   error = libspectrum_make_room( buffer, 18, ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    libspectrum_print_error(
-      "rzx_write_input: out of memory\n"
-    );
+    libspectrum_print_error( "rzx_write_input: out of memory" );
     return error;
   }
 
@@ -668,7 +646,7 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 
     error = libspectrum_make_room( buffer, 4 + frame->count, ptr, length );
     if( error != LIBSPECTRUM_ERROR_NONE ) {
-      libspectrum_print_error( "rzx_write_input: out of memory\n" );
+      libspectrum_print_error( "rzx_write_input: out of memory" );
       return error;
     }
 
@@ -698,7 +676,7 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
     error = libspectrum_zlib_compress( data_ptr, *ptr - data_ptr,
 				       &gzsnap, &gzlength );
     if( error != LIBSPECTRUM_ERROR_NONE ) {
-      libspectrum_print_error( "rzx_write_input: compression error: %s\n",
+      libspectrum_print_error( "rzx_write_input: compression error: %s",
 			       libspectrum_error_message( error ) );
       return error;
     }
