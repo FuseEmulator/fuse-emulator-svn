@@ -1,5 +1,5 @@
 /* bzip2.c: routines for bzip2 decompression of data
-   Copyright (c) 2003 Philip Kendall
+   Copyright (c) 2003-2004 Philip Kendall
 
    $Id$
 
@@ -28,6 +28,7 @@
 
 #ifdef HAVE_LIBBZ2
 
+#include <stdio.h>		/* Needed by bzlib.h < v 1.0.2 */
 #include <stdlib.h>
 
 #include <bzlib.h>
