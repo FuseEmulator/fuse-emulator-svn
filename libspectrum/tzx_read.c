@@ -688,7 +688,7 @@ tzx_read_select( libspectrum_tape *tape, const libspectrum_byte **ptr,
 
   /* Get the number of selections */
   count = **ptr; (*ptr)++;
-  libspectrum_tape_block_set_count( block, count ); (*ptr)++;
+  libspectrum_tape_block_set_count( block, count );
 
   /* Allocate memory */
   offsets = malloc( count * sizeof( int ) );

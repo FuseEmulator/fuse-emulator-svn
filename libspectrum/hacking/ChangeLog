@@ -162,3 +162,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040205 TAG: libspectrum_0_2_1pre2 (libspectrum_0_2_1-branch)
 20040211 configure.in: bump version number to 0.2.1
 	 (libspectrum_0_2_1-branch).
+20040211 tzx_read.c: don't double step over count when reading select
+	 blocks (libspectrum_0_2_1-branch).
