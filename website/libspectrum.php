@@ -77,7 +77,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
 
   <h3>Source</h3>
   <ul>
-   <li><a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.2.1.tar.gz?download">libspectrum-0.2.1.tar.gz</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.2.1.tar.gz.sig?download">PGP signature</a>) or from <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.2.1.tar.gz">World of Spectrum</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.2.1.tar.gz.sig">signature</a>).</li>
+   <li><a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.2.2.tar.gz?download">libspectrum-0.2.2.tar.gz</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.2.2.tar.gz.sig?download">PGP signature</a>) <!-- or from <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.2.1.tar.gz">World of Spectrum</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.2.1.tar.gz.sig">signature</a>) -->.</li>
    <li>The source code release above is signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.1.1 release as I forgot the passphrase for that key <tt>:-(</tt>.</li>
   </ul>
 
@@ -94,9 +94,6 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
    <li><a href="http://www.unix-city.co.uk/rh9_x86/index.html">RedHat 9</a> (0.2.0.1), by Ian Chapman or <a href="http://solid.bounceme.net/downloads/?&amp;&amp;path=rpm%2Ffuse/">Fedora Core 1</a> (0.2.1), by LineS.</li>
    <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has made a <a href="libspectrum-0.2.0.1-i386-1spec.tgz">Slackware 9.1</a> (<a href="libspectrum-0.2.0.1-i386-1spec.tgz.md5">md5 sum</a>) package of 0.2.0.1.</li>
   </ul>
-
-  <h3>Work in Progress</h3>
-  <p>9 July 2004: the <a href="libspectrum-0.2.2pre1.tar.gz">first release candidate</a> for version 0.2.2 is now available.</p>
 
 END_SECTION
 );

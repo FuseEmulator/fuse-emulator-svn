@@ -39,7 +39,7 @@ fuse_section (NULL, "What is it?", <<<END_SECTION
   <p>Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat unsurprisingly, a Spectrum emulator for Unix. However, it has now also been ported to Mac OS X, which may or may not count as a Unix variant depending on your advocacy position.</p>
 
   <ul>
-   <li>An alpha version of a Win32 port is available; see the <a href="#What_s_new">What's New</a> section for more details.</li>
+   <li>An "buggy snapshot" of a Win32 port is available; see the <a href="#What_s_new">What's New</a> section for more details.</li>
    <li>Fuse 0.4.0 was ported to the PocketPC by Anders Holmberg as <a href="http://pocketclive.emuunlim.com/">PocketClive</a>.</li>
    <li>And PocketClive has been ported to the <a href="http://www.davemoller-nz.demon.co.uk/PocketClive.html">Nokia Smartphone</a>.</li>
   </ul>
@@ -53,12 +53,13 @@ $img = mk_image('screens/f-large.png', 650, 532, 4);
 fuse_section ("Features", "What features does it have?", <<<END_SECTION
   $img
   <ul>
-   <li>Working 16K, 48K, 128K, +2, +2A, +3, TC2048, TC2068 and Pentagon emulation, running at true Speccy speed on any computer you're likely to try it on.</li>
+   <li>Working 16K, 48K, 128K, +2, +2A, +3, +3e, SE, TC2048, TC2068, Pentagon 128 and Scorpion ZS 256 emulation, running at true Speccy speed on any computer you're likely to try it on.</li>
    <li>Support for loading from .tzx files.</li>
    <li>Sound (on systems supporting the Open Sound System, SDL or OpenBSD/Solaris's <tt>/dev/audio</tt>).</li>
    <li>Kempston joystick emulation.</li>
    <li>Emulation of the various printers you could attach to the Spectrum.</li>
    <li>Support for the RZX input recording file format, including 'competition mode'.</li>
+   <li>Emulation of the Spectrum +3e, ZXATASP and ZXCF IDE interfaces.</li>
   </ul>
 
 END_SECTION
@@ -115,12 +116,12 @@ fuse_section ("Download", "Where can I get it from?", <<<END_SECTION
   <h3>Source</h3>
   $img
   <ul>
-   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.6.2.1.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.6.2.1.tar.gz.sig?download">PGP signature</a>).</li>
-   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.6.2.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.6.2.tar.gz.sig?download">PGP signature</a>). Note that
+   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.7.0.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.7.0.tar.gz.sig?download">PGP signature</a>).</li>
+   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.7.0.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.7.0.tar.gz.sig?download">PGP signature</a>). Note that
 you'll still need <a href="libspectrum.php">libspectrum</a> installed to run these.</li>
-   <li>The above are also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a
+   <!-- <li>The above are also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a
 href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.2.1.tar.gz">Fuse source</a> (<a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.2.1.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.2.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.2.tar.gz.sig">signature</a>).</li>
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.2.1.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.2.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.2.tar.gz.sig">signature</a>).</li> -->
    <li>The source code releases above are signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.6.0(.1) releases as I forgot the passphrase for that key <tt>:-(</tt>.</li>
   </ul>
 
@@ -147,28 +148,16 @@ END_SECTION
 #<!-- ======================================================= -->
 
 fuse_section (NULL, "What's new?", <<<END_SECTION
-  <h3>0.6.2.1</h3>
+  <h3>0.7.0</h3>
   <ul>
-   <li>Compilation and other bugfixes for 0.6.2.</li>
+    <li>Scorpion ZS 256, Spectrum +3e and Spectrum SE support.</li>
+    <li>Interface II, ZXATASP and ZXCF support.</li>
+    <li>Much improved contended memory and floating bus emulation.</li>
+    <li>Improved display timings.</li>
+    <li>(fuse-utils) New createhdf utility for creating blank .hdf IDE hard disk images.</li>
   </ul>
-  <p>Full details are available in the <a href="http://sourceforge.net/forum/forum.php?forum_id=353610">release announcement</a>.</p>
-
-  <h3>0.6.2</h3>
-  <ul>
-   <li>Support for using real joysticks.</li>
-   <li>The 'poke finder': a built-in Lifeguard like utility.</li>
-   <li>Black and white TV emulation (optional!)</li>
-   <li>'Undoable' disks: writes to disk images will not be committed to disk unless explicitly requested by the user.</li>
-   <li>Improved interrupt handling in the Z80 core.</li>
-   <li>(fuse-utils) New snap2tzx utility for converting snapshots to .tzx files.</li>
-  </ul>
-  <p>See the <a href="http://sourceforge.net/forum/forum.php?forum_id=351904">release announcement</a> for more details.</p>
-
-  <h3>9 July 2004</h3>
-  <p>The first release candidate for version 0.7.0 is now available: <a href="fuse-0.7.0pre1.tar.gz">Fuse</a> and the <a href="fuse-utils-0.7.0pre1.tar.gz">utilities</a>.</p>
-
-  <h3>1 January 2004</h3>
-  <p>An alpha version of a port of Fuse to Win32 is now <a href="fuse-win32.zip">available</a>. See the <a href="http://sourceforge.net/forum/forum.php?forum_id=341379">announcement</a> for more details.</p>
+  <p>See the <a href="http://fuse-emulator.sourceforge.net/fuse.ChangeLog">ChangeLog</a> for full details.</p>
+  <p>A "buggy Win32 snapshot missing a lot of functionality" is also <a href="http://www.castlesofpoland.com/fuse-win32-snapshot.zip">available</a>, with thanks to Marek Januszewski.</p>
 
 END_SECTION
 );
