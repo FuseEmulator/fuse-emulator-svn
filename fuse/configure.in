@@ -398,5 +398,5 @@ ui/scaler/Makefile \
 ui/win32/Makefile \
 ui/xlib/Makefile \
 widget/Makefile \
-z80/Makefile)
-
+z80/Makefile \
+z80/tests/Makefile)

@@ -498,3 +498,5 @@
 	 Release-0_6_2pre1 tag to this version) (Release-0_6_2-branch).
 20040120 configure.in, ui/Makefile.am, ui/win32/Makefile.am: put the win32
 	 UI code in the distribution tarball (Release-0_6_2-branch).
+20040120 configure.in, z80/Makefile.am, z80/test/Makefile.am: put the z80
+	 core tests in the distribution tarball (Release-0_6_2-branch).

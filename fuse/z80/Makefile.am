@@ -59,6 +59,8 @@ EXTRA_DIST = opcodes_base.dat \
 
 ## The core tester
 
+SUBDIRS = tests
+
 noinst_PROGRAMS = coretest
 
 coretest_SOURCES = coretest.c z80.c
