@@ -80,8 +80,60 @@ typedef enum szx_machine_type {
 static const char *signature = "ZXST";
 static const size_t signature_length = 4;
 
-#define ZXSTDP_RAM              0x02
-#define ZXSTDP_EXROMDOCK        0x04
+/* Constants etc for each chunk type */
+
+#define ZXSTBID_CREATOR "CRTR"
+
+#define ZXSTBID_Z80REGS "Z80R"
+static const libspectrum_byte ZXSTZF_EILAST = 1;
+static const libspectrum_byte ZXSTZF_HALTED = 2;
+
+#define ZXSTBID_SPECREGS "SPCR"
+
+#define ZXSTBID_RAMPAGE "RAMP"
+static const libspectrum_word ZXSTRF_COMPRESSED = 1;
+
+#define ZXSTBID_AY "AY\0\0"
+#define ZXSTBID_MULTIFACE "MFCE"
+#define ZXSTBID_USPEECH "USPE"
+#define ZXSTBID_SPECDRUM "DRUM"
+#define ZXSTBID_ZXTAPE "TAPE"
+#define ZXSTBID_KEYBOARD "KEYB"
+#define ZXSTBID_JOYSTICK "JOY\0"
+#define ZXSTBID_IF2ROM "IF2R"
+#define ZXSTBID_MOUSE "AMXM"
+#define ZXSTBID_ROM "ROM\0"
+#define ZXSTBID_ZXPRINTER "ZXPR"
+#define ZXSTBID_IF1 "IF1\0"
+#define ZXSTBID_MICRODRIVE "MDRV"
+#define ZXSTBID_PLUS3DISK "+3\0\0"
+#define ZXSTBID_DSKFILE "DSK\0"
+#define ZXSTBID_TIMEXREGS "SCLD"
+
+#define ZXSTBID_BETA128 "B128"
+static const libspectrum_dword ZXSTBETAF_CONNECTED = 1;
+static const libspectrum_dword ZXSTBETAF_PAGED = 4;
+static const libspectrum_dword ZXSTBETAF_SEEKLOWER = 16;
+
+#define ZXSTBID_BETADISK "BDSK"
+#define ZXSTBID_GS "GS\0\0"
+#define ZXSTBID_GSRAMPAGE "GSRP"
+#define ZXSTBID_COVOX "COVX"
+
+#define ZXSTBID_DOCK "DOCK"
+static const libspectrum_word ZXSTDOCKF_RAM = 2;
+static const libspectrum_word ZXSTDOCKF_EXROMDOCK = 4;
+
+#define ZXSTBID_ZXATASP "ZXAT"
+static const libspectrum_word ZXSTZXATF_UPLOAD = 1;
+static const libspectrum_word ZXSTZXATF_WRITEPROTECT = 2;
+
+#define ZXSTBID_ZXATASPRAMPAGE "ATRP"
+
+#define ZXSTBID_ZXCF "ZXCF"
+static const libspectrum_word ZXSTZXCFF_UPLOAD = 1;
+
+#define ZXSTBID_ZXCFRAMPAGE "CFRP"
 
 static libspectrum_error
 read_chunk( libspectrum_snap *snap, libspectrum_word version,
@@ -174,7 +226,7 @@ read_ram_page( libspectrum_byte **data, size_t *page,
 
   *page = **buffer; (*buffer)++;
 
-  if( *flags & 0x01 ) {
+  if( *flags & ZXSTRF_COMPRESSED ) {
 
     uncompressed_length = 0x4000;
 
@@ -273,8 +325,9 @@ read_b128_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   }
 
   flags = libspectrum_read_dword( buffer );
-  libspectrum_snap_set_beta_paged( snap, flags & 0x04 );
-  libspectrum_snap_set_beta_direction( snap, !( flags & 0x20 ) );
+  libspectrum_snap_set_beta_paged( snap, flags & ZXSTBETAF_PAGED );
+  libspectrum_snap_set_beta_direction( snap,
+				       !( flags & ZXSTBETAF_SEEKLOWER ) );
 
   (*buffer)++;		/* Skip the number of drives */
   libspectrum_snap_set_beta_system( snap, **buffer ); (*buffer)++;
@@ -431,7 +484,7 @@ read_z80r_chunk( libspectrum_snap *snap, libspectrum_word version,
     (*buffer)++;		/* Skip dwHoldIntReqCycles */
     
     /* Flags; ignore the 'last instruction EI' flag for now */
-    libspectrum_snap_set_halted( snap, **buffer & 0x02 ? 1 : 0 );
+    libspectrum_snap_set_halted( snap, **buffer & ZXSTZF_HALTED );
     (*buffer)++;
 
     (*buffer)++;		/* Skip the hidden register */
@@ -461,8 +514,9 @@ read_zxat_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   libspectrum_snap_set_zxatasp_active( snap, 1 );
 
   flags = libspectrum_read_word( buffer );
-  libspectrum_snap_set_zxatasp_upload( snap, flags & 0x01 );
-  libspectrum_snap_set_zxatasp_writeprotect( snap, flags & 0x02 );
+  libspectrum_snap_set_zxatasp_upload( snap, flags & ZXSTZXATF_UPLOAD );
+  libspectrum_snap_set_zxatasp_writeprotect( snap,
+					     flags & ZXSTZXATF_WRITEPROTECT );
 
   libspectrum_snap_set_zxatasp_port_a( snap, **buffer ); (*buffer)++;
   libspectrum_snap_set_zxatasp_port_b( snap, **buffer ); (*buffer)++;
@@ -491,7 +545,7 @@ read_zxcf_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   libspectrum_snap_set_zxcf_active( snap, 1 );
 
   flags = libspectrum_read_word( buffer );
-  libspectrum_snap_set_zxcf_upload( snap, flags & 0x01 );
+  libspectrum_snap_set_zxcf_upload( snap, flags & ZXSTZXCFF_UPLOAD );
 
   libspectrum_snap_set_zxcf_memctl( snap, **buffer ); (*buffer)++;
   libspectrum_snap_set_zxcf_pages( snap, **buffer ); (*buffer)++;
@@ -560,9 +614,9 @@ read_dock_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 
   libspectrum_snap_set_dock_active( snap, 1 );
 
-  writeable = flags & ZXSTDP_RAM;
+  writeable = flags & ZXSTDOCKF_RAM;
 
-  if( flags & ZXSTDP_EXROMDOCK ) {
+  if( flags & ZXSTDOCKF_EXROMDOCK ) {
     libspectrum_snap_set_dock_ram( snap, page, writeable );
     libspectrum_snap_set_dock_cart( snap, page, data );
   } else {
@@ -593,36 +647,36 @@ struct read_chunk_t {
 
 static struct read_chunk_t read_chunks[] = {
 
-  { "+3\0\0", skip_chunk      },
-  { "AMXM",   skip_chunk      },
-  { "ATRP",   read_atrp_chunk },
-  { "AY\0\0", read_ay_chunk   },
-  { "B128",   read_b128_chunk },
-  { "BDSK",   skip_chunk      },
-  { "CFRP",   read_cfrp_chunk },
-  { "COVX",   skip_chunk      },
-  { "CRTR",   skip_chunk      },
-  { "DOCK",   read_dock_chunk },
-  { "DRUM",   skip_chunk      },
-  { "DSK\0",  skip_chunk      },
-  { "GSRP",   skip_chunk      },
-  { "GS\0\0", skip_chunk      },
-  { "IF1\0",  skip_chunk      },
-  { "IF2R",   read_if2r_chunk },
-  { "JOY\0",  skip_chunk      },
-  { "KEYB",   skip_chunk      },
-  { "MDRV",   skip_chunk      },
-  { "MFCE",   skip_chunk      },
-  { "RAMP",   read_ramp_chunk },
-  { "ROM\0",  skip_chunk      },
-  { "SCLD",   read_scld_chunk },
-  { "SPCR",   read_spcr_chunk },
-  { "TAPE",   skip_chunk      },
-  { "USPE",   skip_chunk      },
-  { "Z80R",   read_z80r_chunk },
-  { "ZXAT",   read_zxat_chunk },
-  { "ZXCF",   read_zxcf_chunk },
-  { "ZXPR",   skip_chunk      },
+  { ZXSTBID_AY,		    read_ay_chunk   },
+  { ZXSTBID_BETA128,	    read_b128_chunk },
+  { ZXSTBID_BETADISK,	    skip_chunk      },
+  { ZXSTBID_COVOX,	    skip_chunk      },
+  { ZXSTBID_CREATOR,	    skip_chunk      },
+  { ZXSTBID_DOCK,	    read_dock_chunk },
+  { ZXSTBID_DSKFILE,	    skip_chunk      },
+  { ZXSTBID_GS,		    skip_chunk      },
+  { ZXSTBID_GSRAMPAGE,	    skip_chunk      },
+  { ZXSTBID_IF1,	    skip_chunk      },
+  { ZXSTBID_IF2ROM,	    read_if2r_chunk },
+  { ZXSTBID_JOYSTICK,	    skip_chunk      },
+  { ZXSTBID_KEYBOARD,	    skip_chunk      },
+  { ZXSTBID_MICRODRIVE,	    skip_chunk      },
+  { ZXSTBID_MOUSE,	    skip_chunk      },
+  { ZXSTBID_MULTIFACE,	    skip_chunk      },
+  { ZXSTBID_PLUS3DISK,	    skip_chunk      },
+  { ZXSTBID_RAMPAGE,	    read_ramp_chunk },
+  { ZXSTBID_ROM,	    skip_chunk      },
+  { ZXSTBID_SPECDRUM,	    skip_chunk      },
+  { ZXSTBID_SPECREGS,	    read_spcr_chunk },
+  { ZXSTBID_TIMEXREGS,	    read_scld_chunk },
+  { ZXSTBID_USPEECH,	    skip_chunk      },
+  { ZXSTBID_Z80REGS,	    read_z80r_chunk },
+  { ZXSTBID_ZXATASPRAMPAGE, read_atrp_chunk },
+  { ZXSTBID_ZXATASP,	    read_zxat_chunk },
+  { ZXSTBID_ZXCF,	    read_zxcf_chunk },
+  { ZXSTBID_ZXCFRAMPAGE,    read_cfrp_chunk },
+  { ZXSTBID_ZXPRINTER,	    skip_chunk      },
+  { ZXSTBID_ZXTAPE,	    skip_chunk      },
 
 };
 
@@ -943,7 +997,7 @@ write_crtr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   custom_length = libspectrum_creator_custom_length( creator );
 
-  error = write_chunk_header( buffer, ptr, length, "CRTR",
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_CREATOR,
 			      36 + custom_length );
   if( error ) return error;
 
@@ -967,7 +1021,7 @@ write_z80r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_byte flags;
   libspectrum_error error;
 
-  error = write_chunk_header( buffer, ptr, length, "Z80R", 37 );
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_Z80REGS, 37 );
   if( error ) return error;
 
   *(*ptr)++ = libspectrum_snap_a ( snap );
@@ -1005,8 +1059,8 @@ write_z80r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   }
 
   flags = '\0';
-  if( libspectrum_snap_last_instruction_ei( snap ) ) flags |= 0x01;
-  if( libspectrum_snap_halted( snap ) ) flags |= 0x02;
+  if( libspectrum_snap_last_instruction_ei( snap ) ) flags |= ZXSTZF_EILAST;
+  if( libspectrum_snap_halted( snap ) ) flags |= ZXSTZF_HALTED;
   *(*ptr)++ = flags;
 
   /* Hidden register not supported */
@@ -1025,7 +1079,7 @@ write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_error error;
   int capabilities;
 
-  error = write_chunk_header( buffer, ptr, length, "SPCR", 8 );
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_SPECREGS, 8 );
   if( error ) return error;
 
   capabilities =
@@ -1119,8 +1173,8 @@ write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   data = libspectrum_snap_pages( snap, page );
 
-  error = write_ram_page( buffer, ptr, length, "RAMP", data, 0x4000, page,
-			  compress, 0x00 );
+  error = write_ram_page( buffer, ptr, length, ZXSTBID_RAMPAGE, data, 0x4000,
+			  page, compress, 0x00 );
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -1170,9 +1224,10 @@ write_ram_page( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 #endif				/* #ifdef HAVE_ZLIB_H */
 
+  if( use_compression ) extra_flags |= ZXSTRF_COMPRESSED;
+
   libspectrum_write_dword( &block_length, 3 + data_length );
-  libspectrum_write_word( &flags,
-                          extra_flags | (use_compression ? 0x01 : 0x00) );
+  libspectrum_write_word( &flags, extra_flags );
 
   error = libspectrum_make_room( buffer, data_length, ptr, length );
   if( error ) { if( compressed_data ) free( compressed_data ); return error; }
@@ -1191,7 +1246,7 @@ write_ay_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_error error;
   size_t i;
 
-  error = write_chunk_header( buffer, ptr, length, "AY\0\0", 18 );
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_AY, 18 );
   if( error ) return error;
 
   *(*ptr)++ = '\0';			/* Flags */
@@ -1209,7 +1264,7 @@ write_scld_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 {
   libspectrum_error error;
 
-  error = write_chunk_header( buffer, ptr, length, "SCLD", 2 );
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_TIMEXREGS, 2 );
   if( error ) return error;
 
   *(*ptr)++ = libspectrum_snap_out_scld_hsr( snap );
@@ -1225,12 +1280,12 @@ write_b128_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_error error;
   libspectrum_dword flags;
 
-  error = write_chunk_header( buffer, ptr, length, "B128", 10 );
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_BETA128, 10 );
   if( error ) return error;
 
-  flags = 0x01;		/* Betadisk interface connected */
-  if( libspectrum_snap_beta_paged( snap ) ) flags |= 0x04;
-  if( !libspectrum_snap_beta_direction( snap ) ) flags |= 0x20;
+  flags = ZXSTBETAF_CONNECTED;	/* Betadisk interface connected */
+  if( libspectrum_snap_beta_paged( snap ) ) flags |= ZXSTBETAF_PAGED;
+  if( !libspectrum_snap_beta_direction( snap ) ) flags |= ZXSTBETAF_SEEKLOWER;
   libspectrum_write_dword( ptr, flags );
 
   *(*ptr)++ = 2;	/* 2 drives connected */
@@ -1250,11 +1305,12 @@ write_zxat_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_word flags;
   libspectrum_error error;
 
-  error = write_chunk_header( buffer, ptr, length, "ZXAT", 8 );
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_ZXATASP, 8 );
 
   flags = 0;
-  if( libspectrum_snap_zxatasp_upload      ( snap ) ) flags |= 0x01;
-  if( libspectrum_snap_zxatasp_writeprotect( snap ) ) flags |= 0x02;
+  if( libspectrum_snap_zxatasp_upload ( snap ) ) flags |= ZXSTZXATF_UPLOAD;
+  if( libspectrum_snap_zxatasp_writeprotect( snap ) )
+    flags |= ZXSTZXATF_WRITEPROTECT;
   libspectrum_write_word( ptr, flags );
 
   *(*ptr)++ = libspectrum_snap_zxatasp_port_a( snap );
@@ -1277,8 +1333,8 @@ write_atrp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   data = libspectrum_snap_zxatasp_ram( snap, page );
 
-  error = write_ram_page( buffer, ptr, length, "ATRP", data, 0x4000, page,
-			  compress, 0x00 );
+  error = write_ram_page( buffer, ptr, length, ZXSTBID_ZXATASPRAMPAGE, data,
+			  0x4000, page, compress, 0x00 );
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -1291,10 +1347,10 @@ write_zxcf_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_word flags;
   libspectrum_error error;
 
-  error = write_chunk_header( buffer, ptr, length, "ZXCF", 4 );
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_ZXCF, 4 );
 
   flags = 0;
-  if( libspectrum_snap_zxcf_upload( snap ) ) flags |= 0x01;
+  if( libspectrum_snap_zxcf_upload( snap ) ) flags |= ZXSTZXCFF_UPLOAD;
   libspectrum_write_word( ptr, flags );
 
   *(*ptr)++ = libspectrum_snap_zxcf_memctl( snap );
@@ -1313,8 +1369,8 @@ write_cfrp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   data = libspectrum_snap_zxcf_ram( snap, page );
 
-  error = write_ram_page( buffer, ptr, length, "CFRP", data, 0x4000, page,
-			  compress, 0x00 );
+  error = write_ram_page( buffer, ptr, length, ZXSTBID_ZXCFRAMPAGE, data,
+			  0x4000, page, compress, 0x00 );
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -1334,7 +1390,7 @@ write_if2r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   error = libspectrum_make_room( buffer, 8 + 4, ptr, length );
   if( error ) return error;
 
-  memcpy( *ptr, "IF2R", 4 ); (*ptr) += 4;
+  memcpy( *ptr, ZXSTBID_IF2ROM, 4 ); (*ptr) += 4;
 
   /* Store this location for later */
   block_length = *ptr; *ptr += 4;
@@ -1373,11 +1429,12 @@ write_dock_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_error error;
   libspectrum_byte extra_flags;
 
-  extra_flags  = (writeable ? ZXSTDP_RAM : 0x00);
-  extra_flags |= (exrom_dock ? ZXSTDP_EXROMDOCK : 0x00);
+  extra_flags = 0;
+  if( writeable  ) extra_flags |= ZXSTDOCKF_RAM;
+  if( exrom_dock ) extra_flags |= ZXSTDOCKF_EXROMDOCK;
 
-  error = write_ram_page( buffer, ptr, length, "DOCK", data, 0x2000, page,
-			  compress, extra_flags );
+  error = write_ram_page( buffer, ptr, length, ZXSTBID_DOCK, data, 0x2000,
+			  page, compress, extra_flags );
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
