@@ -38,7 +38,7 @@ INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 listbasic_SOURCES = listbasic.c utils.c
 listbasic_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
-rzxdump_SOURCES = rzxdump.c
+rzxdump_SOURCES = rzxdump.c utils.c
 
 rzxtool_SOURCES = rzxtool.c utils.c
 rzxtool_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
@@ -48,5 +48,5 @@ scl2trd_SOURCES = scl2trd.c
 tapeconv_SOURCES = tapeconv.c utils.c
 tapeconv_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
 
-tzxlist_SOURCES = tzxlist.c
+tzxlist_SOURCES = tzxlist.c utils.c
 tzxlist_LDADD = @GLIB_LIBS@ @LIBSPEC_LIBS@
