@@ -48,10 +48,6 @@ static const int LIBSPECTRUM_Z80_HEADER_LENGTH = 30;
 static libspectrum_byte slt_signature[] = "\0\0\0SLT";
 static size_t slt_signature_length = 6;
 
-/* What to set the tstates counter to if it's not specified in the file.
-   Why this value? Because it's what z80's `convert' uses :-) */
-static const libspectrum_dword DEFAULT_TSTATES = 69664;
-
 static libspectrum_error
 read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	     const libspectrum_byte **data, int *version, int *compressed );
@@ -113,9 +109,6 @@ libspectrum_z80_read( libspectrum_snap *snap,
   libspectrum_error error;
   const libspectrum_byte *data;
   int version, compressed;
-
-  /* Assume the Z80 isn't halted */
-  libspectrum_snap_set_halted( snap, 0 );
 
   error = read_header( buffer, snap, &data, &version, &compressed );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
@@ -214,8 +207,6 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
         );
 	return LIBSPECTRUM_ERROR_UNKNOWN;
       }
-
-      libspectrum_snap_set_tstates( snap, DEFAULT_TSTATES );
 
       break;
 
@@ -334,13 +325,9 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
       }
     }
 
-    if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) {
-      if( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH ) {
-	libspectrum_snap_set_out_plus3_memoryport( snap, extra_header[54] );
-      } else {
-	libspectrum_snap_set_out_plus3_memoryport( snap, 0 );
-      }
-    }
+    if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) &&
+	( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH )                    )
+      libspectrum_snap_set_out_plus3_memoryport( snap, extra_header[54] );
 
     (*data) = buffer + LIBSPECTRUM_Z80_HEADER_LENGTH + 2 + extra_length;
 
@@ -351,9 +338,6 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     /* Need to flag this for later */
     *compressed = ( header[12] & 0x20 ) ? 1 : 0;
-
-    /* Not specified in the file, so choose the default */
-    libspectrum_snap_set_tstates( snap, DEFAULT_TSTATES );
 
     (*data) = buffer + LIBSPECTRUM_Z80_HEADER_LENGTH;
 

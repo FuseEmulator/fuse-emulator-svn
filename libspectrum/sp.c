@@ -126,8 +126,5 @@ libspectrum_sp_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 
   free( memory );
 
-  /* Just before an interrupt */
-  libspectrum_snap_set_tstates( snap, 69664 );
-
   return LIBSPECTRUM_ERROR_NONE;
 }
