@@ -19,17 +19,11 @@ its own directory under the ui/ directory.
 ui.h
 ----
 
-* int ui_init( int *argc, char ***argv, int width, int height )
+* int ui_init( int *argc, char ***argv )
 
-Initalise all of the UI-specific bits (display, keyboard, etc) for a
-display of (preferred) size `width' x `height' pixels; note that
-`width' and `height' refer to the entire canvas on which the screen
-and emulated border is to be drawn, not just the Spectrum's
-screen. `argc' and `argv' are pointers to `argc' and `argv' as
-supplied to `main()'. The current UIs delegate the actual setting up
-of the emulated Spectrum's screen to `uidisplay_init()', but there's
-no fundamental need for this to happen as the only place
-`uidisplay_init()' is called is from `ui_init()'.
+Initalise all of the UI-specific bits except the display (keyboard, etc).
+`argc' and `argv' are pointers to `argc' and `argv' as supplied to
+`main()'.
 
 * int ui_event( void )
 
@@ -57,8 +51,13 @@ uidisplay.h
 
 * int uidisplay_init( int width, int height )
 
-As mentioned in the `ui_init()' description above, this can be used to
-setup the emulated Spectrum's screen.
+Initalise all of the display-specific bits for a display of (preferred)
+size `width' x `height' pixels; note that `width' and `height' refer
+to the entire canvas on which the screen and emulated border is to be
+drawn, not just the Spectrum's screen. This will be called each time
+a machine is selected by the user to set the appropriate canvas
+(typically 320x240 for Sinclair/Amstrad models, 640x480 for Timex
+models to allow for hires modes).
 
 * void uidisplay_putpixel( int x, int y, int colour )
 
@@ -67,6 +66,16 @@ emulated Spectrum's screen to colour `colour'. Colours 0-7 correspond
 to the Spectrum's colours 0-7, whilst 8-15 are the bright
 versions. Note that `x' and `y' are offsets from the top-level pixel
 of the border, not of the screen.
+The x and y coordinates supplied by the spectrum emulation need some
+transformation before being plotted to the screen. In order to handle
+emulation of the Timex hires screen modes the x axis of the spectrum
+emulator runs from 0-640, the y axis runs from 0-240 as you would
+expect.
+When in normal lowres spectrum screen mode the odd pixels on the
+x-axis should be ignored, and the even pixels should be divided by 2
+to produce the Spectrum's 320x240 image. When in Timex hires mode
+every pixel on the x-axis should be plotted, and each pixel on the
+y-axis should be doubled in size to produce a 640x480 image.
 
 * void uidisplay_area( int x, int y, int w, int h )
 
@@ -80,9 +89,28 @@ not that of the actual screen.
 This is called at the end of every spectrum frame, giving the ui a
 chance to flush all the drawing done over the course of the frame.
 
+* void uidisplay_hotswap_gfx_mode( void )
+
+This is called when the user has changed the scaler in use by the
+emulator. The ui should change the window to a multiple of the
+size set in uidisplay_init as required by the requested scaler.
+A ui does not have to support all or any of the scalers.
+
 * void uidisplay_end( void )
 
 Just undo whatever was done by `uidisplay_init()'.
+
+* void uidisplay_init_scalers( void );
+
+This function should set the scalers supported for the particular
+machine and ui in question. For example the half size scaler only
+makes sense for Timex machines (as it drops even scanlines), and
+you may only want to enable it when a Timex machine has been
+enabled.
+Alteratively, if your emulator has a fixed display mode (say
+320x240), then you may want to only enable the scalers that will
+generate a 320x240 screen (i.e. Normal1x for Sinclair/Amstrad
+machines, and Half for Timex models).
 
 Keyboard handling
 -----------------

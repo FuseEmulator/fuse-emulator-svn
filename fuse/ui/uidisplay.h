@@ -33,12 +33,13 @@
 
 /* User interface specific functions */
 
-int uidisplay_init(int width, int height);
+int uidisplay_init( int width, int height );
 
-void uidisplay_putpixel(int x,int y,int colour);
+inline void uidisplay_putpixel(int x,int y,int colour);
 void uidisplay_area( int x, int y, int w, int h );
 void uidisplay_frame_end( void );
-int uidisplay_toggle_fullscreen( void );
+void uidisplay_hotswap_gfx_mode( void );
+void uidisplay_init_scalers( void );
 
 int uidisplay_end(void);
 

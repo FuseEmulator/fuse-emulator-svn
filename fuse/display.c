@@ -138,11 +138,11 @@ int display_init(int *argc, char ***argv)
 {
   int i,j,k,x,y;
 
-  if(ui_init(argc, argv, DISPLAY_ASPECT_WIDTH, DISPLAY_SCREEN_HEIGHT))
+  if(ui_init(argc, argv))
     return 1;
 
   /* We can now output error messages to our output device */
-  display_ui_initialised = 1;
+  display_ui_initialised = 0;
 
   /* Set up the 'all pixels must be refreshed' marker */
   display_all_dirty = 0;

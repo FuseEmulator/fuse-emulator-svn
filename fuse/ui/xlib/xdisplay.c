@@ -319,7 +319,7 @@ xdisplay_configure_notify( int width, int height GCC_UNUSED )
   return 0;
 }
 
-void uidisplay_putpixel(int x,int y,int colour)
+inline void uidisplay_putpixel(int x,int y,int colour)
 {
 #ifdef USE_LIBPNG
   screenshot_screen[y][x] = colour;

@@ -53,6 +53,8 @@
 #include "tc2048.h"
 #include "tape.h"
 #include "ui/ui.h"
+#include "ui/uidisplay.h"
+#include "ui/scaler/scaler.h"
 #include "utils.h"
 #include "z80/z80.h"
 
@@ -146,6 +148,13 @@ int machine_select_id( const char *id )
 
   for( i=0; i < machine_count; i++ ) {
     if( ! strcmp( machine_types[i]->id, id ) ) {
+      machine_current = machine_types[i];
+
+      uidisplay_init_scalers();
+
+      error = scaler_select_id( settings_current.start_scaler_mode );
+      if( error ) return error;
+
       error = machine_select_machine( machine_types[i] );
       if( error ) return error;
       return 0;
@@ -167,8 +176,13 @@ machine_get_id( libspectrum_machine type )
   return NULL;
 }
 
-static int machine_select_machine( fuse_machine_info *machine )
+static int
+machine_select_machine( fuse_machine_info *machine )
 {
+  int width, height;
+  int capabilities = libspectrum_machine_capabilities( machine->machine );
+  machine_current = machine;
+
   settings_set_string( &settings_current.start_machine, machine->id );
   
   tstates = 0;
@@ -189,6 +203,19 @@ static int machine_select_machine( fuse_machine_info *machine )
   contend_memory = machine->ram.contend_memory;
   contend_port = machine->ram.contend_port;
   
+  if( uidisplay_end() ) return 1;
+
+  /* Set screen sizes here */
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) {
+    width = DISPLAY_SCREEN_WIDTH;
+    height = 2*DISPLAY_SCREEN_HEIGHT;
+  } else {
+    width = DISPLAY_ASPECT_WIDTH;
+    height = DISPLAY_SCREEN_HEIGHT;
+  }
+
+  if( uidisplay_init( width, height ) ) return 1;
+
   if( machine_reset() ) return 1;
 
   return 0;

@@ -51,6 +51,7 @@
 #include "tape.h"
 #include "timer.h"
 #include "ui/ui.h"
+#include "ui/scaler/scaler.h"
 #include "utils.h"
 
 #ifdef USE_WIDGET
@@ -85,7 +86,7 @@ static int parse_nonoption_args( int argc, char **argv, int first_arg,
 
 static int fuse_end(void);
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
   if(fuse_init(argc,argv)) {
     fprintf(stderr,"%s: error initalising -- giving up!\n", fuse_progname);
@@ -137,19 +138,22 @@ static int fuse_init(int argc, char **argv)
   if( widget_init() ) return 1;
 #endif				/* #ifdef USE_WIDGET */
 
-  if(display_init(&argc,&argv)) return 1;
+  if( event_init() ) return 1;
+  
+  if( display_init(&argc,&argv) ) return 1;
 
   /* Drop root privs if we have them */
   if( !geteuid() ) { setuid( getuid() ); }
 
   if( debugger_init() ) return 1;
 
-  if(event_init()) return 1;
-  
   if( printer_init() ) return 1;
   if( rzx_init() ) return 1;
 
   z80_init();
+
+  error = scaler_select_id( settings_current.start_scaler_mode );
+  if( error ) return error;
 
   error = machine_init_machines();
   if( error ) return error;
