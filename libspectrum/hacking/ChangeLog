@@ -192,3 +192,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040402 libspectrum.c,timings.c: enough to make the +3e support actually
 	 usable by Fuse.
 20040402 libspectrum.h.in,tape.c: add libspectrum_tape_write() function.
+20040402 libspectrum.c: add capabilities for the +3e.

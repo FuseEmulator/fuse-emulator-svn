@@ -226,6 +226,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PLUS3E:
   case LIBSPECTRUM_MACHINE_TC2068:
   case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_AY; break;
@@ -237,6 +238,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PLUS3E:
   case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY; break;
   default:
@@ -246,6 +248,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   /* +3 Spectrum-style 0x1ffd memory paging */
   switch( type ) {
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PLUS3E:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY; break;
   default:
     break;
@@ -253,7 +256,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
 
   /* +3 Spectrum-style disk */
   switch( type ) {
-  case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PLUS3: case LIBSPECTRUM_MACHINE_PLUS3E:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK; break;
   default:
     break;
@@ -296,7 +299,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   /* Sinclair-style joystick ports */
   switch( type ) {
   case LIBSPECTRUM_MACHINE_PLUS2: case LIBSPECTRUM_MACHINE_PLUS2A:
-  case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PLUS3: case LIBSPECTRUM_MACHINE_PLUS3E:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_SINCLAIR_JOYSTICK; break;
   default:
     break;
