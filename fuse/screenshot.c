@@ -219,15 +219,15 @@ get_rgb32_data( libspectrum_byte *rgb32_data, size_t stride,
 
       colour = saved_screen[y][x];
 
-      if( settings_current.colour_tv ) {
+      if( settings_current.bw_tv ) {
+
+	red = green = blue = grey_palette[colour];
+
+      } else {
 
 	red   = palette[colour][0];
 	green = palette[colour][1];
 	blue  = palette[colour][2];
-
-      } else {
-
-	red = green = blue = grey_palette[colour];
 
       }
       

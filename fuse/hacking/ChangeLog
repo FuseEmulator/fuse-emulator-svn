@@ -534,3 +534,5 @@
 20040208 settings.dat, man/fuse.1, ui/options.dat, ui/gtk/gtkdisplay.c,
 	 ui/sdl/sdldisplay.c: Rename Colour TV to Black and white TV for
 	 extra clarity (Release-0_6_2-branch).
+20040209 screenshot.c: final rename of the colour_tv member of settings
+	 to bw_tv (Release-0_6_2-branch).
