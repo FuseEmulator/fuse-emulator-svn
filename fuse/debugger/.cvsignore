@@ -1,0 +1,6 @@
+.deps
+Makefile
+Makefile.in
+commandl.c
+commandy.c
+commandy.h
