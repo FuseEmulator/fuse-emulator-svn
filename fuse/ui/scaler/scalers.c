@@ -859,13 +859,16 @@ Half(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
     int i;
     r = (WORD *) dstPtr;
 
-    for (i = 0; i < width; i+=2, ++r) {
-      WORD color1 = *(((WORD *) srcPtr) + i);
-      WORD color2 = *(((WORD *) srcPtr) + i + 1);
+    if( ( height & 1 ) == 0 ) {
+      for (i = 0; i < width; i+=2, ++r) {
+        WORD color1 = *(((WORD *) srcPtr) + i);
+        WORD color2 = *(((WORD *) srcPtr) + i + 1);
 
-      *r = INTERPOLATE(color1, color2);
+        *r = INTERPOLATE(color1, color2);
+      }
+      dstPtr += dstPitch;
     }
-    dstPtr += dstPitch;
+
     srcPtr += srcPitch;
   }
 }
@@ -964,25 +967,6 @@ TV2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
     }
     p += nextlineSrc;
     q += nextlineDst << 1;
-  }
-}
-
-void 
-Timex1x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
-	int width, int height)
-{
-  WORD *r1, *r2;
-
-  while (height--) {
-    int i;
-    r1 = (WORD *)dstPtr; dstPtr += dstPitch;
-    r2 = (WORD *)dstPtr; dstPtr += dstPitch;
-    for (i = 0; i < width; ++i, ++r1, ++r2) {
-      WORD color = *(((WORD *) srcPtr) + i);
-
-      *r1 = color; *r2 = color;
-    }
-    srcPtr += srcPitch;
   }
 }
 
