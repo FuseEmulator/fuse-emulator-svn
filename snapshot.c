@@ -123,6 +123,8 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
     libspectrum_snap_set_dock_cart( *snap, i, NULL );
   }
 
+  libspectrum_snap_set_issue2( *snap, 0 );
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 
