@@ -26,7 +26,7 @@
 
 #include <config.h>
 
-#ifndef HAVE_LIBGTK		/* Use this iff we're not using GTK+ */
+#ifdef UI_X			/* Use this iff we're using Xlib */
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
@@ -109,4 +109,4 @@ void xkeyboard_keyrelease(XKeyEvent *event)
 
 }
 
-#endif				/* #ifndef HAVE_LIBGTK */
+#endif				/* #ifdef UI_X */

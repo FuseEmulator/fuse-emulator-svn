@@ -1,5 +1,5 @@
-/* xdisplay.h: Routines for dealing with the X display
-   Copyright (c) 2000 Philip Kendall
+/* svgadisplay.h: Routines for dealing with the svgalib display
+   Copyright (c) 2000-2001 Philip Kendall, Matan Ziv-Av
 
    $Id$
 
@@ -24,18 +24,17 @@
 
 */
 
-#ifndef FUSE_XDISPLAY_H
-#define FUSE_XDISPLAY_H
+#ifndef FUSE_SVGADISPLAY_H
+#define FUSE_SVGADISPLAY_H
 
-int xdisplay_init(int width, int height);
+int svgadisplay_init(int width, int height);
 
-int xdisplay_configure_notify(int width, int height);
+void svgadisplay_putpixel(int x,int y,int colour);
+void svgadisplay_line(int y);
+void svgadisplay_area(int x, int y, int width, int height);
+void svgadisplay_set_border(int line, int pixel_from, int pixel_to,
+			    int colour);
 
-void xdisplay_putpixel(int x,int y,int colour);
-void xdisplay_line(int y);
-void xdisplay_area(int x, int y, int width, int height);
-void xdisplay_set_border(int line, int pixel_from, int pixel_to, int colour);
+int svgadisplay_end(void);
 
-int xdisplay_end(void);
-
-#endif			/* #ifndef FUSE_XDISPLAY_H */
+#endif			/* #ifndef FUSE_SVGADISPLAY_H */

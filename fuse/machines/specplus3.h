@@ -1,5 +1,5 @@
 /* specplus3.h: Spectrum +2A/+3 specific routines
-   Copyright (c) 1999-2000 Philip Kendall
+   Copyright (c) 1999-2001 Philip Kendall
 
    $Id$
 
@@ -36,5 +36,7 @@ BYTE specplus3_read_screen_memory(WORD offset);
 void specplus3_writebyte(WORD address, BYTE b);
 int specplus3_init(void);
 int specplus3_reset(void);
+
+void specplus3_memoryport_write(WORD port, BYTE b);
 
 #endif			/* #ifndef FUSE_SPECPLUS3_H */

@@ -1,5 +1,5 @@
-/* xkeyboard.h: X routines for dealing with the keyboard
-   Copyright (c) 2000 Philip Kendall
+/* svgakeyboard.h: svgalib routines for dealing with the keyboard
+   Copyright (c) 2000-2001 Philip Kendall, Matan Ziv-Av
 
    $Id$
 
@@ -24,10 +24,14 @@
 
 */
 
-#ifndef FUSE_SKEYBOARD_H
-#define FUSE_SKEYBOARD_H
+#ifndef FUSE_SVGAKEYBOARD_H
+#define FUSE_SVGAKEYBOARD_H
 
-int xkeyboard_keypress(int keysym);
-void xkeyboard_keyrelease(int keysy);
+int svgakeyboard_init(void);
 
-#endif			/* #ifndef FUSE_SKEYBOARD_H */
+int svgakeyboard_keypress(int keysym);
+void svgakeyboard_keyrelease(int keysym);
+
+int svgakeyboard_end(void);
+
+#endif			/* #ifndef FUSE_SVGAKEYBOARD_H */

@@ -1,5 +1,5 @@
-/* x.c: Routines for dealing with X events
-   Copyright (c) 2000 Philip Kendall
+/* svga.c: Main svgalib routines
+   Copyright (c) 2000-2001 Philip Kendall, Matan Ziv-Av
 
    $Id$
 
@@ -24,12 +24,20 @@
 
 */
 
+/* Should this file really exist? At the moment, it's here more for
+   symmetry with the GTK+/Xlib versions that for any good reason of its
+   own
+*/
+
 #include <config.h>
 
-#include <stdio.h>
-#include <stdlib.h>
+#ifdef UI_SVGA			/* Use this iff we're using svgalib */
 
-#include "display.h"
-#include "sdisplay.h"
-#include "skeyboard.h"
+#include <vgakeyboard.h>
 
+int svga_event() {
+    keyboard_update();
+    return 0;
+}
+
+#endif				/* #ifdef UI_SVGA */
