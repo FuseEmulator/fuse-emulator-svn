@@ -199,6 +199,7 @@ static int
 read_snapshot_block( unsigned char **ptr, unsigned char *end )
 {
   size_t block_length;
+  libspectrum_dword flags;
 
   if( end - *ptr < 16 ) {
     fprintf( stderr,
@@ -209,11 +210,15 @@ read_snapshot_block( unsigned char **ptr, unsigned char *end )
   printf( "Found a snapshot block\n" );
 
   block_length = read_dword( ptr );
-  printf( "  Length: %ld bytes\n", (unsigned long)block_length );
+  printf( "  Length: %lu bytes\n", (unsigned long)block_length );
 
-  printf( "  Flags: %d\n", read_dword( ptr ) );
+  flags = read_dword( ptr );
+  printf( "  Flags: %lu\n", (unsigned long)flags );
   printf( "  Snapshot extension: `%s'\n", *ptr ); (*ptr) += 4;
   printf( "  Snap length: %d bytes\n", read_dword( ptr ) );
+
+  if( ( flags & 0x01 ) && !( flags & 0x02 ) )
+    printf( "  Snap path: %s\n", *ptr + 4 );
 
   (*ptr) += block_length - 17;
 
