@@ -280,7 +280,7 @@ mmap_file( const char *filename, unsigned char **buffer, size_t *length )
   (*length) = file_info.st_size;
 
   (*buffer) = mmap( 0, *length, PROT_READ, MAP_SHARED, fd, 0 );
-  if( buffer == (void*)-1 ) {
+  if( (*buffer) == (void*)-1 ) {
     fprintf( stderr, "%s: couldn't mmap `%s': %s\n", progname, filename,
 	     strerror( errno ) );
     close(fd);
