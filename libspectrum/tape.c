@@ -262,7 +262,7 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
-			     "libspectrum_tape_read: not a snapshot file" );
+			     "libspectrum_tape_read: not a tape file" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
