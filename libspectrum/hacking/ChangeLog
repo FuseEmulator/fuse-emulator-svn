@@ -157,3 +157,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 core' message appearing (libspectrum_0_2_1-branch).
 20040205 Makefile.am, README, configure.in, doc/: doc updates
 	 (libspectrum_0_2_1-branch).
+20040205 configure.in: bump version number to 0.2.1pre2
+	 (libspectrum_0_2_1-branch).
+20040205 TAG: libspectrum_0_2_1pre2 (libspectrum_0_2_1-branch)
