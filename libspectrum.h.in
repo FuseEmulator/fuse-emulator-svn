@@ -128,6 +128,10 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_COMPRESSED_BZ2,	/* bzip2 compressed file */
   LIBSPECTRUM_ID_COMPRESSED_GZ,		/* gzip compressed file */
 
+  /* Below here, present only in [FIXME] and later */
+
+  LIBSPECTRUM_ID_HARDDISK_HDF,		/* .hdf hard disk image */
+
 } libspectrum_id_t;
 
 /* And 'classes' of file */
@@ -145,6 +149,10 @@ typedef enum libspectrum_class_t {
   /* Below here, present only in 0.2.1 and later */
 
   LIBSPECTRUM_CLASS_COMPRESSED,		/* A compressed file */
+
+  /* Below here, present only in [FIXME] and later */
+
+  LIBSPECTRUM_CLASS_HARDDISK,		/* A hard disk image */
 
 } libspectrum_class_t;
 

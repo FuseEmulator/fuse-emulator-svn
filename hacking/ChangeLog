@@ -183,3 +183,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040320 szx.c: bump version number to 1.2, save Scorpion port 0x1ffd
 	 and add some comments about the failures in the .szx
 	 specification.
+20040320 libspectrum.c,libspectrum.h.in: add identification of .hdf hard
+	 disk images.
+
