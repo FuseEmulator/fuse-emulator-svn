@@ -293,3 +293,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (patch #1080531) (Fred).
 20050108 libspectrum.c: Declare libspectrum_default_error_function before
          referring to it (Fred).
+20050108 timings.c: fix Pentagon and Scorpion CPU speeds to give them 50Hz
+	 frame rates (rest of patch #1080531) (Fred).
