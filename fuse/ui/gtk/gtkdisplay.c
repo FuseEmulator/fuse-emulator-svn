@@ -51,9 +51,9 @@ unsigned long gtkdisplay_colours[16];
 int image_width, image_height;
 
 /* The scaled image */
-static WORD scaled_image[3*DISPLAY_SCREEN_HEIGHT][3*DISPLAY_SCREEN_WIDTH];
+static WORD scaled_image[2*DISPLAY_SCREEN_HEIGHT][2*DISPLAY_SCREEN_WIDTH];
 static const ptrdiff_t scaled_pitch =
-                                     3 * DISPLAY_SCREEN_WIDTH * sizeof( WORD );
+                                     2 * DISPLAY_SCREEN_WIDTH * sizeof( WORD );
 
 /* The current size of the window (in units of DISPLAY_SCREEN_*) */
 static int gtkdisplay_current_size=1;
@@ -78,7 +78,7 @@ gtkdisplay_init( void )
   GdkGCValues gc_values;
 
   image = gdk_image_new(GDK_IMAGE_FASTEST, gdk_visual_get_system(),
-			3 * DISPLAY_SCREEN_WIDTH, 3 * DISPLAY_SCREEN_HEIGHT );
+			2 * DISPLAY_SCREEN_WIDTH, 2 * DISPLAY_SCREEN_HEIGHT );
 
   gtk_signal_connect( GTK_OBJECT(gtkui_drawing_area), "expose_event", 
 		      GTK_SIGNAL_FUNC(gtkdisplay_expose), NULL);
@@ -106,7 +106,6 @@ uidisplay_init_scalers( void )
 
   scaler_register( GFX_NORMAL );
   scaler_register( GFX_DOUBLESIZE );
-  scaler_register( GFX_TRIPLESIZE );
   scaler_register( GFX_2XSAI );
   scaler_register( GFX_SUPER2XSAI );
   scaler_register( GFX_SUPEREAGLE );
@@ -211,10 +210,20 @@ static int gtkdisplay_configure_notify( int width )
 
   switch( gtkdisplay_current_size ) {
 
-  case 1: scaler_proc = Normal1x; break;
-  case 2: scaler_proc = Normal2x; break;
-  case 3: scaler_proc = Normal3x; break;
-
+  case 1:
+    if( machine_current->timex ) {
+      scaler_proc = Half;
+    } else {
+      scaler_proc = Normal1x;
+    }
+    break;
+  case 2:
+    if( machine_current->timex ) {
+      scaler_proc = Timex1x;
+    } else {
+      scaler_proc = Normal2x;
+    }
+    break;
   }
 
   /* Redraw the entire screen... */
@@ -250,17 +259,16 @@ uidisplay_frame_end( void )
 void
 uidisplay_area( int x, int y, int w, int h )
 {
-  int
-    scaled_x = gtkdisplay_current_size * x,
-    scaled_y = gtkdisplay_current_size * y,
-    xx, yy;
+  int timex = machine_current->timex;
+  float scale = timex ? gtkdisplay_current_size / 2.0
+                      : gtkdisplay_current_size;
+  int scaled_x = scale * x, scaled_y = gtkdisplay_current_size * y, xx, yy;
 
   /* Create scaled image */
   scaler_proc( (BYTE*)&display_image[y][x], display_pitch, NULL, 
 	       (BYTE*)&scaled_image[scaled_y][scaled_x], scaled_pitch, w, h );
 
-  w *= gtkdisplay_current_size;
-  h *= gtkdisplay_current_size;
+  w *= scale; h *= gtkdisplay_current_size;
 
   /* Call putpixel multiple times */
   for( yy = scaled_y; yy < scaled_y + h; yy++ )

@@ -214,6 +214,8 @@ void display_line(void)
      send to the screen, send it now */
   else {
 
+    int scale = machine_current->timex ? 16 : 8;
+
     /* Force all rectangles into the inactive list */
     error = end_line( display_next_line ); if( error ) return;
 
@@ -222,13 +224,15 @@ void display_line(void)
 
       if( display_redraw_all ) {
 	uidisplay_area( 0, 0,
-			DISPLAY_ASPECT_WIDTH, DISPLAY_SCREEN_HEIGHT );
+			machine_current->timex ? DISPLAY_SCREEN_WIDTH
+			                       : DISPLAY_ASPECT_WIDTH,
+			DISPLAY_SCREEN_HEIGHT );
 	display_redraw_all = 0;
       } else {
 	for( i = 0, ptr = inactive_rectangle;
 	     i < inactive_rectangle_count;
 	     i++, ptr++ ) {
-	  uidisplay_area( 8 * ptr->x, ptr->y, 8 * ptr->w, ptr->h );
+	  uidisplay_area( scale * ptr->x, ptr->y, scale * ptr->w, ptr->h );
 	}
       }
 

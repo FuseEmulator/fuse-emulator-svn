@@ -148,13 +148,6 @@ int machine_select_id( const char *id )
 
   for( i=0; i < machine_count; i++ ) {
     if( ! strcmp( machine_types[i]->id, id ) ) {
-      machine_current = machine_types[i];
-
-      uidisplay_init_scalers();
-
-      error = scaler_select_id( settings_current.start_scaler_mode );
-      if( error ) return error;
-
       error = machine_select_machine( machine_types[i] );
       if( error ) return error;
       return 0;
