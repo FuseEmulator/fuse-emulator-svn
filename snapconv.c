@@ -59,6 +59,8 @@ main( int argc, char **argv )
     return 1;
   }
 
+  error = init_libspectrum(); if( error ) return error;
+
   error = libspectrum_snap_alloc( &snap ); if( error ) return error;
 
   if( mmap_file( argv[1], &buffer, &length ) ) {

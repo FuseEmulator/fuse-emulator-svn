@@ -74,6 +74,8 @@ int main(int argc, char* argv[])
     return 1;
   }
 
+  error = init_libspectrum(); if( error ) return error;
+
   error = mmap_file( argv[1], &buffer, &length ); if( error ) return error;
 
   error = libspectrum_identify_file( &type, argv[1], buffer, length );

@@ -40,12 +40,31 @@
 
 extern char *progname;
 
+/* The minimum version of libspectrum we need */
+static const char *LIBSPECTRUM_MIN_VERSION = "0.2.0";
+
+int
+init_libspectrum( void )
+{
+  if( libspectrum_check_version( LIBSPECTRUM_MIN_VERSION ) ) {
+    if( libspectrum_init() ) return 1;
+  } else {
+    fprintf( stderr, "libspectrum version %s found, but %s required",
+	     libspectrum_version(), LIBSPECTRUM_MIN_VERSION );
+    return 1;
+  }
+
+  return 0;
+}
+
 int
 get_creator( libspectrum_creator **creator, const char *program )
 {
   char *custom;
+  int version[4] = { 0, 0, 0, 0 };
   struct utsname buf;
   libspectrum_error error; int sys_error;
+  size_t i;
 
   sys_error = uname( &buf );
   if( sys_error == -1 ) {
@@ -60,10 +79,16 @@ get_creator( libspectrum_creator **creator, const char *program )
   error = libspectrum_creator_set_program( *creator, program );
   if( error ) { libspectrum_creator_free( *creator ); return error; }
 
-  error = libspectrum_creator_set_major( *creator, 0x0006 );
+  sscanf( VERSION, "%u.%u.%u.%u",
+	  &version[0], &version[1], &version[2], &version[3] );
+  for( i=0; i<4; i++ ) if( version[i] > 0xff ) version[i] = 0xff;
+
+  error = libspectrum_creator_set_major( *creator,
+					 version[0] * 0x100 + version[1] );
   if( error ) { libspectrum_creator_free( *creator ); return error; }
 
-  error = libspectrum_creator_set_minor( *creator, 0x0100 );
+  error = libspectrum_creator_set_minor( *creator,
+					 version[2] * 0x100 + version[3] );
   if( error ) { libspectrum_creator_free( *creator ); return error; }
 
   custom = malloc( 256 );
@@ -74,8 +99,9 @@ get_creator( libspectrum_creator **creator, const char *program )
     return 1;
   }
 
-  snprintf( custom, 256, "uname: %s %s %s\n", buf.sysname, buf.machine,
-	    buf.release );
+  snprintf( custom, 256, "libspectrum: %s\nuname: %s %s %s\n",
+	    libspectrum_version(),
+	    buf.sysname, buf.machine, buf.release );
 
   error = libspectrum_creator_set_custom( *creator,
 					  custom, strlen( custom ) );

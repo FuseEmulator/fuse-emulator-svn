@@ -46,12 +46,14 @@ char *progname;
 int
 main( int argc, char **argv )
 {
-  int c;
+  int c, error;
   char *input_type_string = NULL; libspectrum_id_t input_type;
   char *output_type_string = NULL; libspectrum_id_t output_type;
   libspectrum_tape *tzx;
 
   progname = argv[0];
+
+  error = init_libspectrum(); if( error ) return error;
 
   /* Don't screw up people's terminals */
   if( isatty( STDOUT_FILENO ) ) {

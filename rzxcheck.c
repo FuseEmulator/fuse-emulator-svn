@@ -57,7 +57,7 @@ main( int argc, char **argv )
 
   progname = argv[0];
 
-  if( libspectrum_init() ) return 16;
+  if( init_libspectrum() ) return 16;
 
   if( argc < 2 ) {
     fprintf( stderr, "%s: usage: %s <rzxfile>\n", progname, progname );
