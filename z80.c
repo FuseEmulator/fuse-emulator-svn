@@ -102,6 +102,18 @@ static libspectrum_error
 uncompress_block( libspectrum_byte **dest, size_t *dest_length,
 		  const libspectrum_byte *src, size_t src_length);
 
+/* The various things which can appear in the .slt data */
+enum slt_type {
+
+  LIBSPECTRUM_SLT_TYPE_END = 0,
+  LIBSPECTRUM_SLT_TYPE_LEVEL,
+  LIBSPECTRUM_SLT_TYPE_INSTRUCTIONS,
+  LIBSPECTRUM_SLT_TYPE_SCREEN,
+  LIBSPECTRUM_SLT_TYPE_PICTURE,
+  LIBSPECTRUM_SLT_TYPE_POKE,
+
+};
+
 libspectrum_error
 libspectrum_z80_read( libspectrum_snap *snap,
 	              const libspectrum_byte *buffer, size_t buffer_length )

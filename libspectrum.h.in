@@ -249,17 +249,6 @@ libspectrum_creator_competition_code( libspectrum_creator *creator );
  * Snap handling routines
  */
 
-typedef enum libspectrum_slt_type {
-
-  LIBSPECTRUM_SLT_TYPE_END = 0,
-  LIBSPECTRUM_SLT_TYPE_LEVEL,
-  LIBSPECTRUM_SLT_TYPE_INSTRUCTIONS,
-  LIBSPECTRUM_SLT_TYPE_SCREEN,
-  LIBSPECTRUM_SLT_TYPE_PICTURE,
-  LIBSPECTRUM_SLT_TYPE_POKE,
-
-} libspectrum_slt_type;
-
 typedef struct libspectrum_snap libspectrum_snap;
 
 libspectrum_error libspectrum_snap_alloc( libspectrum_snap **snap );
