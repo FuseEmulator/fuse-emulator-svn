@@ -1,4 +1,6 @@
-200?-??-??  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+2004-02-09  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+
+	* Version 0.6.2 released.
 
 	* Add some small bits of system information (OS, libspectrum
 	  version) into creator custom data for formats which support this
