@@ -579,6 +579,7 @@ rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
+#ifdef HAVE_GCRYPT_H
   error = libspectrum_verify_signature( *ptr, length, sign_start,
 					(*ptr) - sign_start - 5 );
   if( error ) {
@@ -590,6 +591,11 @@ rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
       return error;
     }
   }
+#else				/* #ifdef HAVE_GCRYPT_H */
+  libspectrum_print_error(
+    "couldn't verify signature: libgcrypt not available"
+  );
+#endif				/* #ifdef HAVE_GCRYPT_H */
 
   (*ptr) += length;
 
