@@ -207,3 +207,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040513 timings.c: improved timings for the TC2048 and TC2068 (more of
 	 patch #929112) (Fred).
 20040514 szx.c: use symbolic constants for the .szx machine numbers.
+20040514 szx.c: allow loading of +3e snaps to work.

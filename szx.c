@@ -513,7 +513,9 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS3 );
     break;
 
-  /* case 6: +3e: not supported yet */
+  case SZX_MACHINE_PLUS3E:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PLUS3E );
+    break;
 
   case SZX_MACHINE_PENTAGON:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PENT );
