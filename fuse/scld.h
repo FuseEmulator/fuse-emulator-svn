@@ -48,17 +48,17 @@
 
 #define ALTDFILE_OFFSET 0x2000
 
-extern BYTE is_altdfile;
-extern BYTE is_extcolour;
-extern BYTE is_hires;
-extern BYTE is_intdisable;
-extern BYTE is_altmembank;     /* 0 = cartridge, 1 = exrom */
+extern BYTE scld_altdfile;
+extern BYTE scld_extcolour;
+extern BYTE scld_hires;
+extern BYTE scld_intdisable;
+extern BYTE scld_altmembank;	     /* 0 = cartridge, 1 = exrom */
 
 extern BYTE scld_screenmode;
 
-extern BYTE last_scld_dec;           /* The last byte sent to Timex DEC port */
+extern BYTE scld_last_dec;           /* The last byte sent to Timex DEC port */
 
-extern BYTE last_scld_hsr;           /* The last byte sent to Timex HSR port */
+extern BYTE scld_last_hsr;           /* The last byte sent to Timex HSR port */
 
 void scld_reset(void);
 void scld_dec_write(WORD port, BYTE b);

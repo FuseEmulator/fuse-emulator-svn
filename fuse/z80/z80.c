@@ -109,7 +109,7 @@ void z80_interrupt()
     PUSH16(PCL,PCH);
 
     switch(IM) {
-      case 0: if (is_intdisable) break; PC = 0x0038; tstates+=12; break;
+      case 0: if( scld_intdisable ) break; PC = 0x0038; tstates+=12; break;
       case 1: PC = 0x0038; tstates+=13; break;
       case 2: 
 	{

@@ -54,7 +54,7 @@
 #define DISPLAY_BORDER_HEIGHT ( DISPLAY_BORDER_HEIGHT_COLS * 8 )
 
 /* The width and height of the window we'll be displaying */
-#define DISPLAY_SCREEN_WIDTH  ( DISPLAY_WIDTH + 2 * DISPLAY_BORDER_WIDTH  )
+#define DISPLAY_SCREEN_WIDTH  ( DISPLAY_WIDTH  + 2 * DISPLAY_BORDER_WIDTH  )
 #define DISPLAY_SCREEN_HEIGHT ( DISPLAY_HEIGHT + 2 * DISPLAY_BORDER_HEIGHT )
 
 /* The aspect ratio corrected display width */

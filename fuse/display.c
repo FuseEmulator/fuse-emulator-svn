@@ -31,6 +31,7 @@
 
 #include "display.h"
 #include "event.h"
+#include "fuse.h"
 #include "machine.h"
 #include "spectrum.h"
 #include "ui/ui.h"
@@ -107,7 +108,7 @@ static WORD display_get_addr(int x, int y);
 
 static WORD display_get_addr(int x, int y)
 {
-  switch (scld_screenmode)
+  switch( scld_screenmode )
   {
     case HIRES:
       return display_line_start[y]+x;
@@ -120,7 +121,9 @@ static WORD display_get_addr(int x, int y)
       return display_line_start[y]+x;
       break;
   }
-  exit(1);
+
+  fprintf( stderr, "Impossible screenmode `%d'", scld_screenmode );
+  fuse_abort();
 }
 
 int display_init(int *argc, char ***argv)
@@ -201,7 +204,7 @@ static void display_draw_line(int y)
   WORD hires_data;
 
   redraw = 0;
-  colour = is_hires ? display_hires_border : display_lores_border;
+  colour = scld_hires ? display_hires_border : display_lores_border;
   
   /* If we're in the main screen, see if anything redrawing; if so,
      copy the data to the image buffer, and flag that we need to copy
@@ -220,11 +223,14 @@ static void display_draw_line(int y)
 	/* Skip to next 8 pixel chunk if this chunk is clean */
 	if( ! ( display_is_dirty[screen_y] & 0x01 ) ) continue;
 
-	data = read_screen_memory( display_get_addr(x, screen_y));
+	data = read_screen_memory( display_get_addr( x, screen_y ) );
 	display_get_attr( x, screen_y, &ink, &paper );
 
-	if(is_hires) {
-	  hires_data = (data<<8) + read_screen_memory( display_get_addr(x, screen_y)+ALTDFILE_OFFSET);
+	if( scld_hires ) {
+	  hires_data = (data<<8) +
+	    read_screen_memory( display_get_addr( x, screen_y ) +
+				ALTDFILE_OFFSET
+			      );
 
 	  display_plot16( x<<1, screen_y, hires_data, ink, paper );
 	} else
@@ -287,12 +293,12 @@ static void display_draw_line(int y)
    `address'; 0x4000 <= address < 0x5b00 */
 void display_dirty( WORD address )
 {
-  switch (scld_screenmode)
+  switch( scld_screenmode )
   {
     case ALTDFILE:  /* Same as standard, but base at 0x6000 */
-      if(address>=0x7b00)
+      if( address >= 0x7b00 )
         return;
-      if(address<0x7800) {		/* 0x5800 = first attributes byte */
+      if( address < 0x7800 ) {		/* 0x7800 = first attributes byte */
         display_dirty8(address-ALTDFILE_OFFSET);
       } else {
         display_dirty64(address-ALTDFILE_OFFSET);
@@ -301,7 +307,6 @@ void display_dirty( WORD address )
 
     case HIRES:
     case EXTCOLOUR:
-    /*case EXTCOLOUR|ALTDFILE:*/
       if((address>=0x7800) || ((address>=0x5800) && (address<0x6000)))
         return;
       if(address>=0x6000) address-=ALTDFILE_OFFSET;
@@ -317,9 +322,7 @@ void display_dirty( WORD address )
         display_dirty64(address);
       }
       break;
-
   }
-
 }
 
 static void display_dirty8(WORD address)
@@ -399,7 +402,7 @@ static void display_get_attr(int x,int y,BYTE *ink,BYTE *paper)
 {
   BYTE attr;
 
-  switch (scld_screenmode)
+  switch( scld_screenmode )
   {
     case ALTDFILE:  /* Same as standard, but base at 0x6000 */
       attr=read_screen_memory(display_attr_start[y]+x+ALTDFILE_OFFSET);
@@ -448,7 +451,7 @@ static void display_set_border(void)
 {
   int current_line,time_since_line,current_pixel,colour;
 
-  colour=is_hires ? display_hires_border : display_lores_border;
+  colour = scld_hires ? display_hires_border : display_lores_border;
   current_line=display_border_line();
 
   /* Check if we're in vertical retrace; if we are, don't need to do
@@ -603,11 +606,13 @@ void display_refresh_all(void)
   for(y=0;y<DISPLAY_HEIGHT;y++) {
     for(x=0;x<DISPLAY_WIDTH_COLS;x++) {
       display_get_attr(x,y,&ink,&paper);
-	if(is_hires) {
-	  hires_data = (read_screen_memory(display_get_addr(x,y))<<8) + read_screen_memory( display_get_addr(x, y)+ALTDFILE_OFFSET);
+	if( scld_hires ) {
+	  hires_data = (read_screen_memory( display_get_addr(x,y) ) << 8 ) +
+	    read_screen_memory( display_get_addr( x, y ) + ALTDFILE_OFFSET );
 	  display_plot16( x<<1, y, hires_data, ink, paper );
 	} else
-	  display_plot8( x<<1, y, read_screen_memory(display_get_addr(x,y)), ink, paper );
+	  display_plot8( x<<1, y, read_screen_memory( display_get_addr(x,y) ),
+			 ink, paper );
     }
     display_is_dirty[y] = display_all_dirty;	/* Marks all pixels as dirty */
   }

@@ -30,46 +30,46 @@
 #include "scld.h"
 #include "display.h"
 
-BYTE is_altdfile     = 0;
-BYTE is_extcolour    = 0;
-BYTE is_hires        = 0;
-BYTE is_intdisable   = 0;
-BYTE is_altmembank   = 0;
+BYTE scld_altdfile   = 0;
+BYTE scld_extcolour  = 0;
+BYTE scld_hires      = 0;
+BYTE scld_intdisable = 0;
+BYTE scld_altmembank = 0;
 
 BYTE scld_screenmode = 0;
 
-BYTE last_scld_dec   = 0;           /* The last byte sent to Timex DEC port */
+BYTE scld_last_dec   = 0;           /* The last byte sent to Timex DEC port */
 
-BYTE last_scld_hsr   = 0;           /* The last byte sent to Timex HSR port */
+BYTE scld_last_hsr   = 0;           /* The last byte sent to Timex HSR port */
 
 BYTE scld_dec_read(WORD port)
 {
-  return last_scld_dec;
+  return scld_last_dec;
 }
 
 void scld_dec_write(WORD port, BYTE b)
 {
-  int old_dec     = last_scld_dec;
+  int old_dec       = scld_last_dec;
   BYTE old_hirescol = hires_get_attr();
   BYTE ink,paper;
 
   old_dec        &= (ALTDFILE|EXTCOLOUR|HIRES);
 
-  last_scld_dec   = b;
+  scld_last_dec   = b;
 
-  is_altdfile     = last_scld_dec & ALTDFILE;
-  is_extcolour    = last_scld_dec & EXTCOLOUR;
-  is_hires        = last_scld_dec & HIRES;
-  is_intdisable   = last_scld_dec & INTDISABLE;
-  is_altmembank   = last_scld_dec & ALTMEMBANK;
+  scld_altdfile   = scld_last_dec & ALTDFILE;
+  scld_extcolour  = scld_last_dec & EXTCOLOUR;
+  scld_hires      = scld_last_dec & HIRES;
+  scld_intdisable = scld_last_dec & INTDISABLE;
+  scld_altmembank = scld_last_dec & ALTMEMBANK;
 
-  scld_screenmode = last_scld_dec & (ALTDFILE|EXTCOLOUR|HIRES);
+  scld_screenmode = scld_last_dec & (ALTDFILE|EXTCOLOUR|HIRES);
 
   /* If we changed the active screen, or change the colour in hires
    * mode mark the entire display file as dirty so we redraw it on
    * the next pass */
   if((scld_screenmode != old_dec)
-       || (is_hires && (old_hirescol != hires_get_attr()))) {
+       || (scld_hires && (old_hirescol != hires_get_attr()))) {
     display_refresh_all();
   }
 
@@ -79,30 +79,30 @@ void scld_dec_write(WORD port, BYTE b)
 
 void scld_reset(void)
 {
-  is_altdfile     = 0;
-  is_extcolour    = 0;
-  is_hires        = 0;
-  is_intdisable   = 0;
-  is_altmembank   = 0;
+  scld_altdfile   = 0;
+  scld_extcolour  = 0;
+  scld_hires      = 0;
+  scld_intdisable = 0;
+  scld_altmembank = 0;
 
   scld_screenmode = 0;
 
-  last_scld_dec   = 0;
+  scld_last_dec   = 0;
 }
 
 void scld_hsr_write (WORD port, BYTE b)
 {
-  last_scld_hsr   = b;
+  scld_last_hsr = b;
 }
 
 BYTE scld_hsr_read (WORD port)
 {
-  return last_scld_hsr;
+  return scld_last_hsr;
 }
 
 BYTE hires_get_attr(void)
 {
-  switch (last_scld_dec & HIRESCOLMASK)
+  switch (scld_last_dec & HIRESCOLMASK)
   {
     case YELLOWBLUE:
       return (BYTE) 0x31;

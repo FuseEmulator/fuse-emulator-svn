@@ -46,11 +46,13 @@
 static DWORD tc2048_contend_delay( void );
 
 spectrum_port_info tc2048_peripherals[] = {
-  /*{ 0x0001, 0x0000, spectrum_ula_read, spectrum_ula_write },*/
   { 0x0004, 0x0000, printer_zxp_read, printer_zxp_write },
   { 0x00e0, 0x0000, joystick_kempston_read, joystick_kempston_write },
   { 0x00ff, 0x00f4, scld_hsr_read, scld_hsr_write },
-  { 0x00ff, 0x00fe, spectrum_ula_read, spectrum_ula_write }, /* Timex ports are fully decoded */
+
+  /* Timex ports are fully decoded (at least in the lower 8 bits) */
+  { 0x00ff, 0x00fe, spectrum_ula_read, spectrum_ula_write },
+
   { 0x00ff, 0x00ff, scld_dec_read, scld_dec_write },
   { 0, 0, NULL, NULL } /* End marker. DO NOT REMOVE */
 };
