@@ -57,28 +57,26 @@ int timer_init(void)
   return 0;
 }
 
+#ifndef DEBUG_MODE
 static void timer_setup_timer(void)
 {
-#ifndef DEBUG_MODE
   struct itimerval timer;
   timer.it_interval.tv_sec=0;
   timer.it_interval.tv_usec=20000;
   timer.it_value.tv_sec=0;
   timer.it_value.tv_usec=20000;
   setitimer(ITIMER_REAL,&timer,&timer_old_timer);
-#endif				/* #ifndef DEBUG_MODE */
 }
 
 static void timer_setup_handler(void)
 {
-#ifndef DEBUG_MODE
   struct sigaction handler; 
   handler.sa_handler=timer_signal;
   sigemptyset(&handler.sa_mask);
   handler.sa_flags=0;
   sigaction(SIGALRM,&handler,&timer_old_handler);
-#endif				/* #ifndef DEBUG_MODE */
 }  
+#endif				/* #ifndef DEBUG_MODE */
 
 void
 timer_signal( int signo GCC_UNUSED )
