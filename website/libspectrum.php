@@ -93,6 +93,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
    <li><a href="http://en.docs.pld-linux.org/">PLD</a> users have a package of 0.2.1 available.</li>
    <li><a href="http://www.unix-city.co.uk/rh9_x86/index.html">RedHat 9</a> (0.2.0.1), by Ian Chapman or <a href="http://solid.bounceme.net/downloads/?&amp;&amp;path=rpm%2Ffuse/">Fedora Core 1</a> (0.2.1), by LineS.</li>
    <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has made a <a href="libspectrum-0.2.0.1-i386-1spec.tgz">Slackware 9.1</a> (<a href="libspectrum-0.2.0.1-i386-1spec.tgz.md5">md5 sum</a>) package of 0.2.0.1.</li>
+   <li><a href="libspectrum-0.2.2-1.i386.rpm">0.2.2</a> for <a href="http://www.suse.com">SuSE</a> 9.1, with thanks to Cristi&aacute;n Gonz&aacute;lez</a>.
   </ul>
 
 END_SECTION

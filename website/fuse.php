@@ -138,9 +138,9 @@ href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.7.0.tar.g
 href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse-utils/">ports/emulators/fuse-utils/</a>, with thanks to Alexander Yurchenko.</li>
    <li>The <a href="http://en.docs.pld-linux.org/">Polish Linux Distribution</a> has packages of Fuse 0.6.2.1 and the utilities.</li>
    <li>There is a <a href="http://www.unix-city.co.uk/rh9_x86/index.html">RedHat 9 package</a> of 0.6.1.1 (by Ian Chapman), or a <a href="http://solid.bounceme.net/downloads/?&amp;&amp;path=rpm%2Ffuse/">Fedora Core 1 package</a> of 0.6.2.1 (by LineS).</li>
-   <li>And <a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has produced a <a href="http://www.slackware.com/">Slackware</a> 9.1 packages of <a href="fuse-0.6.1.1-i386-1spec.tgz">0.6.1.1</a> (<a href="fuse-0.6.1.1-i386-1spec.tgz.md5">md5 sum</a>) and <a href="fuse-utils-0.6.1-i386-1spec.tgz">the utilities</a> (<a href="fuse-utils-0.6.1-i386-1spec.tgz.md5">md5 sum</a>).</li>
+   <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has produced a <a href="http://www.slackware.com/">Slackware</a> 9.1 packages of <a href="fuse-0.6.1.1-i386-1spec.tgz">0.6.1.1</a> (<a href="fuse-0.6.1.1-i386-1spec.tgz.md5">md5 sum</a>) and <a href="fuse-utils-0.6.1-i386-1spec.tgz">the utilities</a> (<a href="fuse-utils-0.6.1-i386-1spec.tgz.md5">md5 sum</a>).</li>
+   <li>And Cristi&aacute;n Gonz&aacute;lez has made <a href="http://www.suse.com">SuSE</a> 9.1 packages of 0.7.0 with either the <a href="fuse-0.7.0-2.i386.gtk2.rpm">GTK+ 2.x</a> or <a href="fuse-0.7.0-2.i386.sdl.rpm">SDL</a> user interfaces.
   </ul>
-
 
 END_SECTION
 );
