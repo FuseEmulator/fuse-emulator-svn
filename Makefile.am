@@ -27,13 +27,15 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = man
 
 bin_PROGRAMS = listbasic \
-	       rzxcheck \
+	       @RZXCHECK@ \
 	       rzxdump \
 	       rzxtool \
 	       scl2trd \
 	       snapconv \
 	       tapeconv \
 	       tzxlist
+
+EXTRA_PROGRAMS = rzxcheck
 
 INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 

@@ -1,5 +1,5 @@
 /* acconfig.h: Descriptions of macros produced by autoconf
-   Copyright (c) 2000,2002 Philip Kendall
+   Copyright (c) 2000-2003 Philip Kendall
 
    $Id$
 
@@ -26,5 +26,9 @@
 
 @TOP@
 
+/* Defined if we've got libgcrypt */
+#undef HAVE_LIBGCRYPT
+
 /* Defined if we've got glib */
 #undef HAVE_LIB_GLIB
+
