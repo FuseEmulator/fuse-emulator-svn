@@ -48,3 +48,4 @@
 20031006 rzxcheck.c: return 1 if no signature or unknown key.
 20031007 tapeconv.c: remove double-free bug if tape reading fails.
 20031009 utils.c: add information from uname() into creator custom data.
+20031010 utils.c: on Solaris, uname() returns 1 to indicate success.

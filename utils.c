@@ -48,7 +48,7 @@ get_creator( libspectrum_creator **creator, const char *program )
   libspectrum_error error; int sys_error;
 
   sys_error = uname( &buf );
-  if( sys_error ) {
+  if( sys_error == -1 ) {
     fprintf( stderr, "%s: error getting system information: %s\n", progname,
 	     strerror( errno ) );
     return 1;
