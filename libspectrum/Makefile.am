@@ -52,7 +52,7 @@ libspectrum_la_SOURCES = creator.c \
 			 zlib.c \
 			 zxs.c
 
-libspectrum_la_LDFLAGS = -version-info 2:0:0
+libspectrum_la_LDFLAGS = -version-info 2:1:0
 
 BUILT_SOURCES = libspectrum.h snap_accessors.c tape_accessors.c tape_set.c
 
