@@ -47,6 +47,15 @@
 /* The count of instruction fetches needed for .rzx files */
 size_t rzx_instructions;
 
+/* The number of bytes read via IN during the current frame */
+size_t rzx_in_count;
+
+/* And the values of those bytes */
+libspectrum_byte *rzx_in_bytes;
+
+/* How big is the above array? */
+size_t rzx_in_allocated;
+
 /* Are we currently recording a .rzx file? */
 int rzx_recording;
 
@@ -69,30 +78,23 @@ int rzx_init( void )
 {
   rzx_recording = rzx_playback = 0;
 
+  rzx_in_bytes = NULL;
+  rzx_in_allocated = 0;
+
   return 0;
 }
 
 int rzx_start_recording( const char *filename )
 {
-  libspectrum_error error;
-
-  size_t i; libspectrum_byte keyboard[8];
-
   if( rzx_playback ) return 1;
 
   /* Note that we're recording */
   rzx_recording = 1;
 
-  for( i=0; i<8; i++ )
-    keyboard[i] = keyboard_default_value & keyboard_return_values[i];
+  /* Start the counters here */
+  rzx_instructions = 0; rzx_in_count = 0;
 
-  error = libspectrum_rzx_frame( &rzx, 0, keyboard );
-  if( error ) return error;
-
-  /* Start the count of instruction fetches here */
-  rzx_instructions = 0;
-
-  /* Store the filename */
+  /* Store the filename. FIXME: should use strdup() */
   rzx_filename = (char*)malloc( strlen(filename) + 1 );
   if( rzx_filename == NULL ) {
     ui_error( UI_ERROR_ERROR, "out of memory in rzx_start_recording" );
@@ -166,7 +168,9 @@ int rzx_start_playback( const char *filename )
 
   /* We're now playing this RZX file */
   rzx_playback = 1;
-  rzx_current_frame = 0; rzx_instructions = 0;
+  rzx_current_frame = 0;
+
+  rzx_instructions = 0; rzx_in_count = 0;
 
   return 0;
 }
@@ -204,16 +208,14 @@ static int recording_frame( void )
 {
   libspectrum_error error;
 
-  size_t i; libspectrum_byte keyboard[8];
+  if( rzx_instructions == 0 ) return 0;
 
-  for( i=0; i<8; i++ )
-    keyboard[i] = keyboard_default_value & keyboard_return_values[i];
-
-  error = libspectrum_rzx_frame( &rzx, rzx_instructions, keyboard );
+  error = libspectrum_rzx_frame( &rzx, rzx_instructions,
+				 rzx_in_count, rzx_in_bytes );
   if( error ) return error;
 
-  /* Reset the instruction counter */
-  rzx_instructions = 0;
+  /* Reset the counters */
+  rzx_instructions = 0; rzx_in_count = 0;
 
   return 0;
 }
@@ -226,8 +228,35 @@ static int playback_frame( void )
     return rzx_stop_playback();
   }
 
-  /* If we've got more frame to do, just reset the count and continue */
-  rzx_instructions = 0;
+  /* If we've got more frames to do, just reset the counters and continue */
+  rzx_instructions = 0; rzx_in_count = 0;
+
+  return 0;
+}
+
+int rzx_store_byte( libspectrum_byte value )
+{
+  /* Get more space if we need it; allocate twice as much as we currently
+     have, with a minimum of 50 */
+  if( rzx_in_count == rzx_in_allocated ) {
+
+    libspectrum_byte *ptr; size_t new_allocated;
+
+    new_allocated = rzx_in_allocated >= 25 ? 2 * rzx_in_allocated : 50;
+    ptr =
+      (libspectrum_byte*)realloc(
+        rzx_in_bytes, new_allocated * sizeof(libspectrum_byte)
+      );
+    if( ptr == NULL ) {
+      ui_error( UI_ERROR_ERROR, "Out of memory in rzx_store_byte\n" );
+      return 1;
+    }
+
+    rzx_in_bytes = ptr;
+    rzx_in_allocated = new_allocated;
+  }
+
+  rzx_in_bytes[ rzx_in_count++ ] = value;
 
   return 0;
 }
