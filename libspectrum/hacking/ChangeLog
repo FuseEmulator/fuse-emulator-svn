@@ -85,3 +85,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 tape_set.pl and tape_block.h.
 20030926 rzx.c: port the rzx bugfixes from HEAD
 	 (libspectrum_0_2_0-bugfix-branch)
+20030926 ChangeLog, Makefile.am, README, configure.in: prepare for 0.2.0.1
+	 release (libspectrum_0_2_0-bugfix-branch).
