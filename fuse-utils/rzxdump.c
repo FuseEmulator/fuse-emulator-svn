@@ -310,8 +310,9 @@ read_sign_start_block( unsigned char **ptr, unsigned char *end )
 
   printf( "  Length: %ld bytes\n", (unsigned long)length );
   printf( "  Key ID: 0x%08x\n", (unsigned int)read_dword( ptr ) );
+  printf( "  Week code: 0x%08x\n", (unsigned int)read_dword( ptr ) );
 
-  (*ptr) += length - 9;
+  (*ptr) += length - 13;
 
   return 0;
 }
