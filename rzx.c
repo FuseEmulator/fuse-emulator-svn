@@ -1080,7 +1080,7 @@ rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
 #ifdef HAVE_GCRYPT_H
   libspectrum_error error;
   
-  error = libspectrum_make_room( buffer, 9, ptr, length );
+  error = libspectrum_make_room( buffer, 13, ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 			     "rzx_write_signed_start: out of memory" );
