@@ -72,3 +72,5 @@
 20031218 snap2tzx.c: slow 6000 bps loader down slightly so it works with
 	 (more) emulators; this is the only signficant change made between
 	 z802tzx 1.0 and z802tzx 1.1.
+20031218 COPYING: add a copy of the GPL to the distribution.
+
