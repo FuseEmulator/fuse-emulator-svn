@@ -1,5 +1,5 @@
 /* libspectrum.h: the library for dealing with ZX Spectrum emulator files
-   Copyright (c) 2001-2003 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2004 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -425,6 +425,11 @@ libspectrum_error
 libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 		       size_t length, libspectrum_id_t type,
 		       const char *filename );
+
+/* Write a tape file */
+libspectrum_error
+libspectrum_tape_write( libspectrum_byte **buffer, size_t *length,
+			libspectrum_tape *tape, libspectrum_id_t type );
 
 /* Does this tape structure actually contain a tape? */
 int libspectrum_tape_present( const libspectrum_tape *tape );
