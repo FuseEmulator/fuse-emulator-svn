@@ -30,38 +30,73 @@
 
 int main(void)
 {
-  printf( "s/LIBSPECTRUM_DEFINE_BYTE/typedef " );
-  if( sizeof( unsigned char ) == 1 ) {
-    printf( "unsigned  char" );
-  } else if( sizeof( unsigned short ) == 1 ) {
-    printf( "unsigned short" );
+  printf( "if( /LIBSPECTRUM_DEFINE_TYPES/ ) {\n\n  $_ = << \"CODE\";\n" );
+
+#ifdef HAVE_STDINT_H
+
+  printf( "#include <stdint.h>\n\n" );
+
+  printf( "typedef  uint8_t libspectrum_byte;\n" );
+  printf( "typedef   int8_t libspectrum_signed_byte;\n" );
+
+  printf( "typedef uint16_t libspectrum_word;\n" );
+  printf( "typedef  int16_t libspectrum_signed_word;\n" );
+
+  printf( "typedef uint32_t libspectrum_dword;\n" );
+  printf( "typedef  int32_t libspectrum_signed_dword;\n" );
+
+  printf( "typedef uint64_t libspectrum_qword;\n" );
+  printf( "typedef  int64_t libspectrum_signed_qword;\n" );
+
+#else				/* #ifdef HAVE_STDINT_H */
+
+  if( sizeof( char ) == 1 ) {
+    printf( "typedef unsigned char libspectrum_byte;\n" );
+    printf( "typedef   signed char libspectrum_signed_byte;\n" );
+  } else if( sizeof( short ) == 1 ) {
+    printf( "typedef unsigned short libspectrum_byte;\n" );
+    printf( "typedef   signed short libspectrum_signed_byte;\n" );
   } else {
     fprintf( stderr, "No plausible 8 bit types found\n" );
     return 1;
   }
-  printf( " libspectrum_byte;/;\n" );
 
-  printf( "s/LIBSPECTRUM_DEFINE_WORD/typedef " );
-  if( sizeof( unsigned short ) == 2 ) {
-    printf( "unsigned short" );
-  } else if( sizeof( unsigned int ) == 2 ) {
-    printf( "unsigned   int" );
+  if( sizeof( short ) == 2 ) {
+    printf( "typedef unsigned short libspectrum_word;\n" );
+    printf( "typedef   signed short libspectrum_signed_word;\n" );
+  } else if( sizeof( int ) == 2 ) {
+    printf( "typedef unsigned int libspectrum_word;\n" );
+    printf( "typedef   signed int libspectrum_signed_word;\n" );
   } else {
     fprintf( stderr, "No plausible 16 bit types found\n" );
     return 1;
   }
-  printf( " libspectrum_word;/;\n" );
 
-  printf( "s/LIBSPECTRUM_DEFINE_DWORD/typedef " );
-  if( sizeof( unsigned int ) == 4 ) {
-    printf( "unsigned   int" );
-  } else if( sizeof( unsigned long ) == 4 ) {
-    printf( "unsigned  long" );
+  if( sizeof( int ) == 4 ) {
+    printf( "typedef unsigned int libspectrum_dword;\n" );
+    printf( "typedef   signed int libspectrum_signed_dword;\n" );
+  } else if( sizeof( long ) == 4 ) {
+    printf( "typedef unsigned long libspectrum_dword;\n" );
+    printf( "typedef   signed long libspectrum_signed_dword;\n" );
   } else {
     fprintf( stderr, "No plausible 32 bit types found\n" );
     return 1;
   }
-  printf( " libspectrum_dword;/;\n" );
+
+  if( sizeof( long ) == 8 ) {
+    printf( "typedef unsigned long libspectrum_qword;\n" );
+    printf( "typedef   signed long libspectrum_signed_qword;\n" );
+  } else if( sizeof( long long ) == 8 ) {
+    printf( "typedef unsigned long long libspectrum_qword;\n" );
+    printf( "typedef   signed long long libspectrum_signed_qword;\n" );
+  } else {
+    fprintf( stderr, "No plausible 64 bit types found\n" );
+    return 1;
+  }
+
+#endif				/* #ifdef HAVE_STDINT_H */
+
+  printf( "CODE\n}\n" );
 
   printf( "\nif( /LIBSPECTRUM_GLIB_REPLACEMENT/ ) {\n\n" );
 
