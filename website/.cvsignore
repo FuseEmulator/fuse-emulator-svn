@@ -1,5 +1,6 @@
 *.tar.gz
 *.tgz
 *.tgz.md5
+fuse-win32.zip
 fuse-xvideo.patch.bz2
 libspectrum.txt
