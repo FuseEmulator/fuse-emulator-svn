@@ -22,47 +22,20 @@
 
 #include <config.h>
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <unistd.h>
 
 #include <libspectrum.h>
 
-typedef struct Snapshot
-{
-	libspectrum_byte reg_a;
-	libspectrum_byte reg_f;
-	libspectrum_word reg_bc;
-	libspectrum_word reg_hl;
-	libspectrum_word reg_pc;
-	libspectrum_word reg_sp;
-	libspectrum_byte reg_i;
-	libspectrum_byte reg_r;
-    libspectrum_word reg_de;
-	libspectrum_word reg_bc2;
-	libspectrum_word reg_de2;
-	libspectrum_word reg_hl2;
-	libspectrum_byte reg_a2;
-	libspectrum_byte reg_f2;
-	libspectrum_word reg_iy;
-	libspectrum_word reg_ix;
+#include "utils.h"
 
-	libspectrum_byte border;
-	int ei;				// 0 = DI , 1 = EI
-	libspectrum_byte iff2;
-	libspectrum_byte inter_mode;		// 0,1 or 2
+char *progname;				/* argv[0] */
 
-	int mode128;
-	libspectrum_byte last_out_7ffd;		// 128 Page
-
-	libspectrum_byte last_out_fffd;		// Sound Chip reg.
-	libspectrum_byte reg_ay[16];
-	
-	libspectrum_byte page[8][16384];	// Memory
-} Snapshot;
-
-Snapshot snap;
+libspectrum_snap *snap;
 char filename[512];
 char out_filename[512];
 char loader_name[256] = "\0";
@@ -95,41 +68,6 @@ void print_verbose(char * text)
 	{
 		printf("%s\n",text);
 	}
-}
-
-static int decrunch_z80 (libspectrum_byte *BufferIn, libspectrum_word BlLength, libspectrum_byte *BufferOut, libspectrum_word OutLength)
-
-/**********************************************************************************************************************************/
-/* Pre   : `BufferIn' points to the crunched spectrum block, `BlLength' holds the length, `BufferOut' points to the result.       */
-/*         `OutLength' is the expected length after decrunching.                                                                  */
-/*         The version of Z80 file must have been determined.                                                                     */
-/* Post  : The block has been decrunched from `BufferIn' to `BufferOut'. The return value is TRUE if all went well.               */
-/* Import: None.                                                                                                                  */
-/**********************************************************************************************************************************/
-
-{
-  libspectrum_word register IndexIn;
-  libspectrum_word register IndexOut       = 0;
-  libspectrum_word register RunTimeLength;
-
-  for (IndexIn = 0 ; IndexIn < BlLength ; IndexIn ++)                                       /* Decrunch it into the second buffer */
-  {
-    if (IndexOut >= OutLength)                                                                           /* Past maximum length ? */
-      return (0);                                                                           /* Then there's an error for sure */
-    if (*(BufferIn + IndexIn) != 0xED)                                                                  /* Start of crunch code ? */
-      *(BufferOut + (IndexOut ++)) = *(BufferIn + IndexIn);                                                      /* No, just copy */
-    else
-      if (*(BufferIn + IndexIn + 1) != 0xED)                                                                  /* Crunch confirm ? */
-        *(BufferOut + (IndexOut ++)) = *(BufferIn + IndexIn);                                                    /* No, just copy */
-      else                                                                                                      /* Yes, decrunch! */
-      {
-        RunTimeLength = *(BufferIn + IndexIn + 2);                                                             /* Run time length */
-        while (RunTimeLength -- > 0 && IndexOut < OutLength)
-          *(BufferOut + (IndexOut ++)) = *(BufferIn + IndexIn + 3);
-        IndexIn += 3;
-      }
-  }
-  return (IndexOut == OutLength);
 }
 
 static void crunch_z80 (libspectrum_byte *BufferIn, libspectrum_word BlLength, libspectrum_byte *BufferOut, libspectrum_word *CrunchedLength)
@@ -324,50 +262,6 @@ static void reverse_block (libspectrum_byte *BufferOut, libspectrum_byte *Buffer
     *(BOut --) = *(BIn ++);
 }
  
-void init_snap(void)
-{
-	int i, j;
-
-	snap.reg_a = 0;
-	snap.reg_f = 0;
-	snap.reg_bc = 0;
-	snap.reg_hl = 0;
-	snap.reg_pc = 0;
-	snap.reg_sp = 0;
-	snap.reg_i = 0;
-	snap.reg_r = 0;
-    snap.reg_de = 0;
-	snap.reg_bc2 = 0;
-	snap.reg_de2 = 0;
-	snap.reg_hl2 = 0;
-	snap.reg_a2 = 0;
-	snap.reg_f2 = 0;
-	snap.reg_iy = 0;
-	snap.reg_ix = 0;
-
-	snap.border = 0;
-	snap.ei = 0;
-	snap.iff2 = 0;
-	snap.inter_mode = 0;
-
-	snap.mode128 = 0;
-	snap.last_out_7ffd = 0x10;		// Default page
-
-	snap.last_out_fffd = 0;
-	for (i=0; i < 16; i++)
-	{
-		snap.reg_ay[i] = 0;
-	}
-
-	for (i=0; i < 8; i++)
-	{
-		for (j=0; j < 16384; j++)
-		{
-			snap.page[i][j]=0;
-		}
-	}
-}
-
 void create_out_filename()
 {
 	strcpy(out_filename, filename);
@@ -689,215 +583,56 @@ libspectrum_word gw(libspectrum_byte * t)
 
 void print_verbose_registers()
 {
-	char tempc[256];
-	print_verbose(" A  F   BC   HL   PC   SP  I  R   DE B'C' D'E' H'L' A' F'   IY   IX Bd EI I2 IM");
-//	sprintf(tempc,"00 00 0000 0000 0000 0000 00 00 0000 0000 0000 0000 00 00 0000 0000 00 00 00 00",
-	sprintf(tempc,"%02x %02x %04x %04x %04x %04x %02x %02x %04x %04x %04x %04x %02x %02x %04x %04x %02x %02x %02x %02x\n",
-		snap.reg_a, snap.reg_f, snap.reg_bc, snap.reg_hl, snap.reg_pc, snap.reg_sp, snap.reg_i, snap.reg_r,
-		snap.reg_de, snap.reg_bc2, snap.reg_de2, snap.reg_hl2, snap.reg_a2, snap.reg_f2, snap.reg_iy,
-		snap.reg_ix, snap.border, snap.ei, snap.iff2, snap.inter_mode);
-	print_verbose(tempc);
+  char tempc[256];
+
+  print_verbose(" A  F   BC   HL   PC   SP  I  R   DE B'C' D'E' H'L' A'F'   IY   IX Bd EI I2 IM");
+  
+  snprintf( tempc, 256,
+	    "%02x %02x %04x %04x %04x %04x %02x %02x %04x %04x %04x %04x %02x"
+	    "%02x %04x %04x %02x %02x %02x %02x\n",
+	    libspectrum_snap_a( snap ),       libspectrum_snap_f( snap ),
+	    libspectrum_snap_bc( snap ),      libspectrum_snap_hl( snap ),
+	    libspectrum_snap_pc( snap ),      libspectrum_snap_sp( snap ),
+	    libspectrum_snap_i( snap ),       libspectrum_snap_r( snap ),
+	    libspectrum_snap_de( snap ),      libspectrum_snap_bc_( snap ),
+	    libspectrum_snap_de_( snap ),     libspectrum_snap_hl_( snap ),
+	    libspectrum_snap_a_( snap ),      libspectrum_snap_f_( snap ),
+	    libspectrum_snap_iy( snap ),      libspectrum_snap_ix( snap ),
+	    libspectrum_snap_out_ula( snap ), libspectrum_snap_iff1( snap ),
+	    libspectrum_snap_iff2( snap ),    libspectrum_snap_im( snap )
+	  );
+
+  print_verbose(tempc);
 }
 
-int import_z80()
+int
+load_snap( void )
 {
-	char tempc[256];
-	int i;
+  int error;
+  unsigned char *buffer; size_t length;
 
-	libspectrum_byte z80_12 = snap_bin[12];
-	if (z80_12 == 255)
-	{
-		z80_12 = 1;									// Old version of 1.45 Z80
-	}
+  error = libspectrum_snap_alloc( &snap ); if( error ) return error;
 
-	snap.reg_a   = snap_bin[0];
-	snap.reg_f   = snap_bin[1];
-	snap.reg_bc  = gw(&snap_bin[2]);
-	snap.reg_hl  = gw(&snap_bin[4]);
-	snap.reg_pc  = gw(&snap_bin[6]);
-	snap.reg_sp  = gw(&snap_bin[8]);
-	snap.reg_i   = snap_bin[10];
-	snap.reg_r   = snap_bin[11];					// least 7 bits of R
-	snap.reg_r  |= 128*(z80_12&1);					// bit 7 of R
-	snap.border  = (z80_12>>1)&7;					// Border in bits 1,2,3
-	snap.reg_de  = gw(&snap_bin[13]);
-	snap.reg_bc2 = gw(&snap_bin[15]);
-	snap.reg_de2 = gw(&snap_bin[17]);
-	snap.reg_hl2 = gw(&snap_bin[19]);
-	snap.reg_a2  = snap_bin[21];
-	snap.reg_f2  = snap_bin[22];
-	snap.reg_iy  = gw(&snap_bin[23]);
-	snap.reg_ix  = gw(&snap_bin[25]);
-	snap.ei      = snap_bin[27]>0;
-	snap.iff2    = snap_bin[28];
-	snap.inter_mode = snap_bin[29]&3;				// Interrupt mode in bits 0,1
+  if( mmap_file( filename, &buffer, &length ) ) {
+    libspectrum_snap_free( snap );
+    return 1;
+  }
 
-	if (snap.reg_pc != 0)
-	{
-		print_verbose("Snapshot Version is 1.45 or Older (48k only)\n");
-		print_verbose_registers();
-		// Old 1.45 version of the snapshot ! Here follows the 48k memory compressed
-		int mem_len = snap_len - 30;
-		if (z80_12&32)		// Compressed snapshot
-		{
-			libspectrum_byte buffer[49152];
-			mem_len -= 4;		// Don't need the end marker in compressed data (1.45 only)
-			if (!decrunch_z80(&snap_bin[30], mem_len, buffer, 49152))
-			{
-				print_error("Snapshot Corrupted");
-				return 0;
-			}
-			memcpy(snap.page[5], buffer      , 16384);
-			memcpy(snap.page[1], buffer+16384, 16384);
-			memcpy(snap.page[2], buffer+32768, 16384);
-		}
-		else
-		{
-			// Uncompressed , just copy the memory to appropritate pages
-			memcpy(snap.page[5], &snap_bin[30      ], 16384);
-			memcpy(snap.page[1], &snap_bin[30+16384], 16384);
-			memcpy(snap.page[2], &snap_bin[30+32768], 16384);
-		}
+  error = libspectrum_snap_read( snap, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
+				 filename );
+  if( error ) {
+    libspectrum_snap_free( snap ); munmap( buffer, length );
+    return error;
+  }
 
-		return 1;
-	}
-	// v 2.01 and UP Z80
+  if( munmap( buffer, length ) == -1 ) {
+    fprintf( stderr, "%s: couldn't munmap '%s': %s\n", progname, filename,
+	     strerror( errno ) );
+    libspectrum_snap_free( snap );
+    return 1;
+  }
 
- 	snap.reg_pc = gw(&snap_bin[32]);
-
-	libspectrum_word additional_len = gw(&snap_bin[30]);
-	libspectrum_byte hardware_mode = snap_bin[34];
-
-	if (additional_len == 23)
-	{
-		print_verbose("Snapshot Version is 2.01\n");
-		// v 2.01 Z80 - check for 128k
-		if (hardware_mode == 3 || hardware_mode == 4)
-		{
-			snap.mode128 = 1;
-		}
-	}
-	else
-	{
-		if (additional_len == 54)
-		{
-			print_verbose("Snapshot Version is 3.0 or Newer\n");
-			// v 3.0> Z80 - check for 128k
-			if (hardware_mode > 3 && hardware_mode < 7)
-			{
-				snap.mode128 = 1;
-			}
-		}
-		else
-		{
-			print_error("Snapshot Corrupted");
-			return 0;
-		}
-	}
-
-	print_verbose_registers();
-
-	if (snap.mode128)
-	{
-		// 128 Mode, fill in additional 128 registers !
-		snap.last_out_7ffd = snap_bin[35];
-		snap.last_out_fffd = snap_bin[38];
-		memcpy(snap.reg_ay, &snap_bin[39], 16);	// Copy AY registers
-		sprintf(tempc, "128k Snapshot, Last-Out Registers: 7ffd:%02x  fffd:%02x\n", snap.last_out_7ffd, snap.last_out_fffd);
-		print_verbose(tempc);
-	}
-	else
-	{
-		print_verbose("48k Snapshot\n");
-	}
-
-	// Fill the memory pages
-
-	int pos = 32+additional_len;
-	libspectrum_word block_len;
-	libspectrum_byte page_num;
-
-	int pages[8]={0,0,0,0,0,0,0,0};
-
-	while (pos < snap_len)
-	{
-		block_len = gw(&snap_bin[pos]);
-		page_num = snap_bin[pos+2]-3;
-		pages[page_num]=1;
-		if (block_len == 0xffff)
-		{
-			// uncompressed
-			block_len = 16384;
-			memcpy(snap.page[page_num], &snap_bin[pos+3], block_len);
-		}
-		else
-		{
-			if (!decrunch_z80(&snap_bin[pos+3], block_len, snap.page[page_num], 16384))
-			{
-				print_verbose("Warning: Error when decompressing memory page!");
-//				return 0;
-			}
-		}
-		pos += 3+block_len;
-	}
-	if (verbose)
-	{
-		sprintf(tempc,"Used Memory Pages: ");
-		int prvi = 1;
-		for (i=0; i < 8; i++)
-		{
-			if(pages[i])
-			{
-				if(!prvi)
-				{
-					sprintf(tempc,"%s,%i",tempc,i);
-				}
-				else
-				{
-					prvi = 0;
-					sprintf(tempc,"%s%i",tempc,i);
-				}
-			}
-		}
-		print_verbose(tempc);
-	}
-
-	return 1;
-}
-
-int load_snap(void)
-{
-	int succ = 0;
-
-	if (!get_type())
-	{
-		print_error("Snapshot type not recognised!");
-		return 0;
-	}
-
- 	FILE * file = NULL;
-	file = fopen(filename, "rb");
-	if (file == NULL)
-	{
-		print_error("Snapshot cannot be loaded!");
-		return 0;
-	}
-	snap_len = fread((void *)snap_bin, sizeof(libspectrum_byte), 256000, file);
-	fclose(file);	
-
-	switch (snap_type)
-	{
-	case 0:	//Z80
-		print_verbose("Snapshot Type is Z80\n");
-		succ = import_z80();
-		break;
-	}
-
-	if (!succ)
-	{
-		return 0;
-	}
-	return 1;
+  return 0;
 }
 
 #define LOADERPREPIECE  (224+1)-87+12-1+41+41                                                  /* Length of the BASIC part before the loader code */
@@ -1165,7 +900,7 @@ struct tzx_turbo_head_str
   } PageOrder_s;	/* Notice that the 3 blocks for an 48K machine have different block numbers for a 48K and 128K snapshot! */
 
   struct PageOrder_s      PageOrder48S[4]           = {{255, 0xC000 },	// Loading screen (external)
-														{ 1, 0x8000 },  // + With alternate loading screen
+														{ 0, 0x8000 },  // + With alternate loading screen
                                                         { 2, 0xC000 },  // +
                                                         { 5, 0x4000 }}; // + Must be decompressed !
 
@@ -1180,8 +915,8 @@ struct tzx_turbo_head_str
                                                         { 5, 0x4000 }}; // + Must be decompressed
 
   struct PageOrder_s      PageOrder48N[3]            = {{ 5, 0xC000 },  // + Loading screen from memory
-                                                        { 1, 0x8000 },  // +
-                                                        { 2, 0xC000 }}; // +
+                                                        { 2, 0x8000 },  // +
+                                                        { 0, 0xC000 }}; // +
 
   struct PageOrder_s      PageOrder128N[8]           = {{ 5, 0xC000 },  // + Loading screen from memory
                                                         { 2, 0x8000 },  // +
@@ -1275,26 +1010,24 @@ libspectrum_byte calc_checksum(libspectrum_byte data[], int len)
 
 void create_main_header()
 {
-	int len = (LOADERPREPIECE-1)+768, i;
+  int len = ( LOADERPREPIECE - 1 ) + 768, i;
 
-	// Fill in the name
-	int tlen = strlen(loader_name);
-	for (i=0; i < tlen; i++)
-	{
-		tzx_header[9+i] = loader_name[i];
-	}
+  // Fill in the name
+  int tlen = strlen( loader_name );
+  for( i=0; i < tlen; i++ )
+    tzx_header[ 9 + i ] = loader_name[ i ];
 
-	// Fill in the length of data
-	tzx_header[17] = len&255;
-	tzx_header[18] = len>>8;
+  // Fill in the length of data
+  tzx_header[17] = len & 0xff;
+  tzx_header[18] = len >> 8;
 
-	int var = (LOADERPREPIECE-1)-21;	// Varables start here
-	// Fill in proper variable area
-	tzx_header[21] = var&255;
-	tzx_header[22] = var>>8;
+  int var = ( LOADERPREPIECE - 1 ) - 21;	// Variables start here
+  // Fill in proper variable area
+  tzx_header[21] = var & 0xff;
+  tzx_header[22] = var >> 8;
 
-	// Calc checksum
-	tzx_header[23] = calc_checksum(tzx_header+5, 18);
+  // Calc checksum
+  tzx_header[23] = calc_checksum( tzx_header + 5, 18 );
 }
 
 void set_loader_speed()
@@ -1304,7 +1037,7 @@ void set_loader_speed()
 	libspectrum_byte xor_colour;
 	if (load_colour == -1)
 	{
-		load_colour = snap.border;
+		load_colour = libspectrum_snap_out_ula( snap ) & 0x07;
 	}
     if (load_colour == 0x00)      
 	{
@@ -1350,494 +1083,471 @@ void set_loader_speed()
 		
 void create_main_data()
 {
-	char tempc[256];
+  char tempc[256];
 
-	int len = (LOADERPREPIECE-1)+768+2, i, j;
-	// Fill in the length of data
-	tzx_header_data[3] = len&255;
-	tzx_header_data[4] = len>>8;
+  int len = (LOADERPREPIECE-1) + 768 + 2, i, j;
 
-	// Fill the loader with appropriate speed values and colour
-	set_loader_speed();
-	// Copy the loader to its position in the data
-	memcpy(loader_data+341+256, turbo_loader, 144);
+  // Fill in the length of data
+  tzx_header_data[3] = len & 0xff;
+  tzx_header_data[4] = len >> 8;
 
-	data_pos = 0;
-	add_data(tzx_header_data, 6);
+  // Fill the loader with appropriate speed values and colour
+  set_loader_speed();
 
-	// Copy the Game Name here and the info lines
-	memcpy(SpectrumBASICData+32, game_name, 32);
-	memcpy(SpectrumBASICData+103, info1, 32);
-	memcpy(SpectrumBASICData+144, info2, 32);
+  // Copy the loader to its position in the data
+  memcpy(loader_data+341+256, turbo_loader, 144);
 
-	add_data(SpectrumBASICData, LOADERPREPIECE-1);
+  data_pos = 0;
+  add_data( tzx_header_data, 6 );
 
-	int loader_start_pos = data_pos;	// Remember where the main loader starts so we can fill the table later
-	int loader_table_pos = loader_start_pos + POS_TABLE;
+  // Copy the Game Name here and the info lines
+  memcpy( SpectrumBASICData+32, game_name, 32 );
+  memcpy( SpectrumBASICData+103, info1, 32 );
+  memcpy( SpectrumBASICData+144, info2, 32 );
 
-	int pp = loader_start_pos;
+  add_data( SpectrumBASICData, LOADERPREPIECE-1 );
 
-	add_data(loader_data, 768);
-//	snap_bin[data_pos]= calc_checksum(snap_bin+5, data_pos-5);  // need to recalc this in the end !!!
-	int main_checksum = data_pos;
+  int loader_start_pos = data_pos;	// Remember where the main loader
+					// starts so we can fill the table
+					// later
 
-	data_pos++;
+  int loader_table_pos = loader_start_pos + POS_TABLE;
 
-	// setup turbo header
+  int pp = loader_start_pos;
 
-	tzx_turbo_head[0]       = 0x11;
-	tzx_turbo_head[1]       = turbo_vars[speed_value]._LenPilot&255;
-	tzx_turbo_head[2]       = turbo_vars[speed_value]._LenPilot>>8;
-	tzx_turbo_head[3]       = turbo_vars[speed_value]._LenSync0&255;
-	tzx_turbo_head[4]       = turbo_vars[speed_value]._LenSync0>>8;
-	tzx_turbo_head[5]       = turbo_vars[speed_value]._LenSync0&255;
-	tzx_turbo_head[6]       = turbo_vars[speed_value]._LenSync0>>8;
-	tzx_turbo_head[7]       = turbo_vars[speed_value]._Len0&255;
-	tzx_turbo_head[8]       = turbo_vars[speed_value]._Len0>>8;
-	tzx_turbo_head[9]       = (turbo_vars[speed_value]._Len0*2)&255;
-	tzx_turbo_head[10]      = (turbo_vars[speed_value]._Len0*2)>>8;
-	tzx_turbo_head[11]      = (libspectrum_word)((libspectrum_dword)3500000 / turbo_vars[speed_value]._LenPilot)&255;
-	tzx_turbo_head[12]      = (libspectrum_word)((libspectrum_dword)3500000 / turbo_vars[speed_value]._LenPilot)>>8;
-	tzx_turbo_head[13]      = 8;
-	tzx_turbo_head[14]      = 0;
-	tzx_turbo_head[15]      = 0;
-	tzx_turbo_head[16]      = 0;	// Lowest two filled in later
-	tzx_turbo_head[17]      = 0;
-	tzx_turbo_head[18]      = 0;	// Highest byte of length is 0 !
-	tzx_turbo_head[19]      = 0xaa;
+  add_data( loader_data, 768 );
 
-	// We only need to write proper lenght later !
+  int main_checksum = data_pos;
 
-	int num_pages;
-	PageOrder_s * page_order;
+  data_pos++;
 
-	if (snap.mode128)
-	{
-		if (external)
-		{
-			num_pages = 9;
-			page_order = PageOrder128S;
-		}
-		else
-		{
-			num_pages = 8;
-			page_order = PageOrder128N;
-		}
-	}
-	else
-	{
-		if (external)
-		{
-			num_pages = 4;
-			page_order = PageOrder48S;
-		}
-		else
-		{
-			num_pages = 3;
-			page_order = PageOrder48N;
-		}
-	}
+  // setup turbo header
+  tzx_turbo_head[0] = 0x11;
+  tzx_turbo_head[1] = turbo_vars[speed_value]._LenPilot&255;
+  tzx_turbo_head[2] = turbo_vars[speed_value]._LenPilot>>8;
+  tzx_turbo_head[3] = turbo_vars[speed_value]._LenSync0&255;
+  tzx_turbo_head[4] = turbo_vars[speed_value]._LenSync0>>8;
+  tzx_turbo_head[5] = turbo_vars[speed_value]._LenSync0&255;
+  tzx_turbo_head[6] = turbo_vars[speed_value]._LenSync0>>8;
+  tzx_turbo_head[7] = turbo_vars[speed_value]._Len0&255;
+  tzx_turbo_head[8] = turbo_vars[speed_value]._Len0>>8;
+  tzx_turbo_head[9] = (turbo_vars[speed_value]._Len0*2)&255;
+  tzx_turbo_head[10] = (turbo_vars[speed_value]._Len0*2)>>8;
+  tzx_turbo_head[11] = (libspectrum_word)((libspectrum_dword)3500000 / turbo_vars[speed_value]._LenPilot)&255;
+  tzx_turbo_head[12] = (libspectrum_word)((libspectrum_dword)3500000 / turbo_vars[speed_value]._LenPilot)>>8;
+  tzx_turbo_head[13] = 8;
+  tzx_turbo_head[14] = 0;
+  tzx_turbo_head[15] = 0;
+  tzx_turbo_head[16] = 0;	// Lowest two filled in later
+  tzx_turbo_head[17] = 0;
+  tzx_turbo_head[18] = 0;	// Highest byte of length is 0 !
+  tzx_turbo_head[19] = 0xaa;
 
-	
-	int loader_table_entry = 0;
-	libspectrum_word add;
-	libspectrum_byte num;
-	libspectrum_word pagelen;
-	libspectrum_word loadlen;
-	int smallpage;
+  // We only need to write proper lenght later !
 
-	libspectrum_byte external_screen[6912];
+  int num_pages;
+  PageOrder_s *page_order;
 
-	int shortpage=2;	// The page which contains loader - 1 on 48k and 2 on 128k !
+  int capabilities;
 
-	for (i=0; i < num_pages; i++)
-	{
-		if (page_order[i].PageStart == 0x8000)
-		{
-			shortpage = page_order[i].PageNumber;
-		}
-	}
+  libspectrum_machine machine = libspectrum_snap_machine( snap );
+  capabilities = libspectrum_machine_capabilities( machine );
 
-		// Get the information on which pages need to be loaded in !
-	// Pages that are not loaded in are filled with 0 !
-	int load;
-	for (i=0; i < 8; i++)
-	{
-		load = 0;
-		if (i != shortpage)
-		{
-			// Pages 0, 2-8 are loaded in FULL
-			for (j=0; j < 16384 && !load; j++)
-			{
-				if (snap.page[i][j] != 0)
-				{
-					load = 1;
-				}
-			}
-		}
-		else
-		{
-			// Page 1 (48k) or 2 (128k) contains loader, so it is loaded in 2 parts
-			for (j=0; j < 16384-768 && !load; j++)
-			{
-				if (snap.page[i][j] != 0)
-				{
-					load = 1;
-				}
-			}
-			for (j=16384-768; j < 16384 && !load_768; j++)
-			{
-				if (snap.page[i][j] != 0)
-				{
-					load_768 = 1;
-				}
-			}
-		}
-		load_page[i] = load;
-	}
+  int mode_128 = capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY;
 
-	for (i=0; i < num_pages; i++)
-	{
-		num = page_order[i].PageNumber;
-		if (num == 255)
-		{
-			// External Loading screen
-			FILE * exfile = NULL;
-			exfile = fopen(external_filename, "rb");
-			if (exfile == NULL)
-			{
-				print_error("Could not read the Loading Screen!");
-				return;
-			}
-			fread(external_screen, 1, 6912, exfile);
-			fclose(exfile);
-			add = page_order[i].PageStart;
+  if( mode_128 ) {
 
-			pagelen = 6912;
+    if( external ) {
+      num_pages = 9;
+      page_order = PageOrder128S;
+    } else {
+      num_pages = 8;
+      page_order = PageOrder128N;
+    }
 
-			crunch_z80(external_screen, pagelen, WorkBuffer, &loadlen);
-
-			// Fill in the table data
-			add = add+(pagelen-1);
-			libspectrum_byte addhi = (add>>8)&255;
-			
-			snap_bin[loader_table_pos+(loader_table_entry*4)] = 0x10;
-			snap_bin[loader_table_pos+(loader_table_entry*4)+1] = addhi;
-			snap_bin[loader_table_pos+(loader_table_entry*4)+2] = loadlen&255;
-			snap_bin[loader_table_pos+(loader_table_entry*4)+3] = loadlen>>8;
-
-			if (loadlen == 0)
-			{
-				sprintf(tempc,"- Adding Separate Loading Screen (Uncompressed) Len: %04x", 6912);
-			}
-			else
-			{
-				sprintf(tempc,"- Adding Separate Loading Screen  (Compressed)  Len: %04x", loadlen);
-			}
-			print_verbose(tempc);
-
-			if (loadlen == 0)
-			{
-				loadlen = pagelen;	// The crunch_z80 returns 0 if the block could not be crunched
-			}
-
-			// Update the TZX Turbo header with the page length
-			tzx_turbo_head[16] = (libspectrum_byte) ((loadlen+2)&255);
-			tzx_turbo_head[17] = (libspectrum_byte) ((loadlen+2)>>8);
-
-			add_data(tzx_turbo_head, 20);	// Add the turbo header to the file
-			add_data(WorkBuffer, loadlen);	// Add the actual data
-			snap_bin[data_pos]= calc_checksum((snap_bin+data_pos)-(loadlen+1), loadlen+1);
-			data_pos++;				
-
-			loader_table_entry++;
-		}
-		else
-		{
-			if (load_page[num])
-			{
-				// This page needs to be loaded
-				add = page_order[i].PageStart;
-				pagelen = 16384;
-
-				libspectrum_byte realnum;
-
-				if (snap.mode128)
-				{
-					if (loader_table_entry == 0)
-					{
-						realnum = 0x10;
-					}
-					else
-					{
-						realnum = num | 0x10;
-					}
-				}
-				else
-				{
-					realnum = 0x10;
-				}			
-				
-				if (add == 0x8000)
-				{
-					// Special case - load 768 bytes less
-					pagelen-=768;
-
-					realnum = 0x12;	// Always assume 32768 page when loading short !
-
-					smallpage = num;	// Remember which page it was for later !
-				}
-				// Now crunch the block
-				crunch_z80(snap.page[num], pagelen, WorkBuffer, &loadlen);
-
-				if (external && num == 5)
-				{
-					// Check if external screen is loading and last page selected
-					// If so then check if it would overwrite loading screen - if so then load decrunched
-					if (loadlen > (16384-6912))
-					{
-						reverse_block(WorkBuffer, snap.page[num]);
-						loadlen = 0;	// Not compressed !
-					}
-				}
-
-				int reverse_off = 0;
-
-				if (loadlen != 0)
-				{
-					// Check if it would overwrite itself ?
-					if (test_rev_decz80(WorkBuffer, pagelen, loadlen))
-					{
-						reverse_block(WorkBuffer, snap.page[num]);
-						if (pagelen != 16384)
-						{
-							reverse_off = 768;		// We flipped the whole block, need only lower part !
-						}
-						loadlen = 0;	// Not compressed !
-					}
-				}
-
-/*				char ttt[255];
-				sprintf(ttt,"page%d.bin",num);
-				FILE * fff = fopen(ttt,"wb");
-				fwrite(snap.page[num],1,pagelen,fff);
-				fclose(fff);
-*/				
-				// Fill in the table data
-				add = add+(pagelen-1);
-				libspectrum_byte addhi = (add>>8)&255;
-				
-				snap_bin[loader_table_pos+(loader_table_entry*4)] = realnum;
-				snap_bin[loader_table_pos+(loader_table_entry*4)+1] = addhi;
-				snap_bin[loader_table_pos+(loader_table_entry*4)+2] = loadlen&255;
-				snap_bin[loader_table_pos+(loader_table_entry*4)+3] = loadlen>>8;
-
-				if (loadlen == 0)
-				{
-					sprintf(tempc,"- Adding Memory Page %i           (Uncompressed) Len: %04x", num, pagelen);
-				}
-				else
-				{
-					sprintf(tempc,"- Adding Memory Page %i            (Compressed)  Len: %04x", num, loadlen);
-				}
-				print_verbose(tempc);
-
-				if (loadlen == 0)
-				{
-					loadlen = pagelen;	// The crunch_z80 returns 0 if the block could not be crunched
-				}
-
-				// Update the TZX Turbo header with the page length
-				tzx_turbo_head[16] = (libspectrum_byte) ((loadlen+2)&255);
-				tzx_turbo_head[17] = (libspectrum_byte) ((loadlen+2)>>8);
-
-				add_data(tzx_turbo_head, 20);	// Add the turbo header to the file
-				add_data(WorkBuffer+reverse_off, loadlen);	// Add the actual data
-				snap_bin[data_pos]= calc_checksum((snap_bin+data_pos)-(loadlen+1), loadlen+1);
-				data_pos++;				
-
-				loader_table_entry++;
-			}
-		}
-	}
-
-	if (load_768)
-	{
-		// Area where the loader is was not empty - need to load it in
-		print_verbose("- Adding Extra ROM Loading Block");
+  } else {
 		
-		tzx_header_data[3] = (768+2)&255;	// Length of extra block
-		tzx_header_data[4] = (768+2)>>8;
-		tzx_header_data[5] = 0x55;		// Flag is 0x55
+    if( external ) {
+      num_pages = 4;
+      page_order = PageOrder48S;
+    } else {
+      num_pages = 3;
+      page_order = PageOrder48N;
+    }
 
-		add_data(tzx_header_data, 6);
-		int cstart = data_pos-1;
-		add_data(&snap.page[smallpage][16384-768],768);
-		snap_bin[data_pos]= calc_checksum(snap_bin+cstart, 769);
-		data_pos++;
+  }
 
-		// Set the 768 load flag to FF !
-		snap_bin[pp+POS_768_LOAD] = 0xFF;
-
-	}
-	else
-	{
-		// Set the 768 load flag to 01 !
-		snap_bin[pp+POS_768_LOAD] = 0x00;
-
-		// Change the load stuff to LDIR stuff !
-		snap_bin[pp+POS_CLEAN_1]   = 0xed;
-		snap_bin[pp+POS_CLEAN_1+1] = 0xb0;
-		snap_bin[pp+POS_CLEAN_1+2] = 0x00;
-		snap_bin[pp+POS_CLEAN_2]   = 0xed;
-		snap_bin[pp+POS_CLEAN_2+1] = 0xb0;
-		snap_bin[pp+POS_CLEAN_2+2] = 0x00;
-	}
-
-	// Now lets fill the registers and stuff
 	
-	snap_bin[pp+POS_HL2]   = snap.reg_hl2&255;
-	snap_bin[pp+POS_HL2+1] = snap.reg_hl2>>8;
+  int loader_table_entry = 0;
+  libspectrum_word add;
+  libspectrum_byte num;
+  libspectrum_word pagelen;
+  libspectrum_word loadlen;
+  int smallpage;
 
-	snap_bin[pp+POS_DE2]   = snap.reg_de2&255;
-	snap_bin[pp+POS_DE2+1] = snap.reg_de2>>8;
+  libspectrum_byte external_screen[6912];
 
-	snap_bin[pp+POS_BC2]   = snap.reg_bc2&255;
-	snap_bin[pp+POS_BC2+1] = snap.reg_bc2>>8;
+  int shortpage = 2;	// The page which contains loader - 1 on 48k and
+			// 2 on 128k !
 
-	snap_bin[pp+POS_IY]    = snap.reg_iy&255;
-	snap_bin[pp+POS_IY+1]  = snap.reg_iy>>8;
+  for( i=0; i < num_pages; i++ )
+    if( page_order[i].PageStart == 0x8000 )
+      shortpage = page_order[i].PageNumber;
 
-	snap_bin[pp+POS_LAST_ATTR] = load_colour|(load_colour<<3)|bright;
+  // Get the information on which pages need to be loaded in !
+  // Pages that are not loaded in are filled with 0 !
 
-	if (snap.mode128)
-	{
-		snap_bin[pp+POS_48K_1] = 0x57;
-		snap_bin[pp+POS_48K_2] = 0x57;
+  int load;
+
+  for( i=0; i < 8; i++ ) {
+
+    if( !libspectrum_snap_pages( snap, i ) ) {
+      load_page[i] = 0;
+      continue;
+    }
+
+    load = 0;
+
+    if( i != shortpage ) {
+
+      // Pages 0, 2-8 are loaded in FULL
+      for (j=0; j < 16384 && !load; j++)
+	if( ( libspectrum_snap_pages( snap, i ) )[j] != 0 )
+	  load = 1;
+
+    } else {
+
+      // Page 1 (48k) or 2 (128k) contains loader, so it is loaded in 2 parts
+      for (j=0; j < 16384-768 && !load; j++) {
+	if( (libspectrum_snap_pages( snap, i ))[j] != 0 ) {
+	  load = 1;
 	}
-	else
-	{
-		snap_bin[pp+POS_48K_1] = 0x56;
-		snap_bin[pp+POS_48K_2] = 0x56;
+      }
+
+      for (j=16384-768; j < 16384 && !load_768; j++) {
+	if( (libspectrum_snap_pages( snap, i ))[j] != 0 )
+	  load_768 = 1;
+      }
+
+    }
+
+    load_page[i] = load;
+
+  }
+
+  for( i=0; i < num_pages; i++ ) {
+
+    num = page_order[i].PageNumber;
+
+    if( num == 255 ) {
+
+      // External Loading screen
+      FILE * exfile = NULL;
+      exfile = fopen(external_filename, "rb");
+      if (exfile == NULL) {
+	print_error("Could not read the Loading Screen!");
+	return;
+      }
+
+      fread(external_screen, 1, 6912, exfile);
+      fclose(exfile);
+      add = page_order[i].PageStart;
+
+      pagelen = 6912;
+
+      crunch_z80(external_screen, pagelen, WorkBuffer, &loadlen);
+
+      // Fill in the table data
+      add = add+(pagelen-1);
+      libspectrum_byte addhi = (add>>8)&255;
+      
+      snap_bin[loader_table_pos+(loader_table_entry*4)] = 0x10;
+      snap_bin[loader_table_pos+(loader_table_entry*4)+1] = addhi;
+      snap_bin[loader_table_pos+(loader_table_entry*4)+2] = loadlen&255;
+      snap_bin[loader_table_pos+(loader_table_entry*4)+3] = loadlen>>8;
+
+      if (loadlen == 0) {
+	sprintf(tempc,"- Adding Separate Loading Screen (Uncompressed) Len: %04x", 6912);
+      } else {
+	sprintf(tempc,"- Adding Separate Loading Screen  (Compressed)  Len: %04x", loadlen);
+      }
+      print_verbose(tempc);
+
+      if( loadlen == 0 ) {
+	loadlen = pagelen;	// The crunch_z80 returns 0 if the block could not be crunched
+      }
+
+      // Update the TZX Turbo header with the page length
+      tzx_turbo_head[16] = (libspectrum_byte) ((loadlen+2)&255);
+      tzx_turbo_head[17] = (libspectrum_byte) ((loadlen+2)>>8);
+
+      add_data(tzx_turbo_head, 20);	// Add the turbo header to the file
+      add_data(WorkBuffer, loadlen);	// Add the actual data
+      snap_bin[data_pos]= calc_checksum((snap_bin+data_pos)-(loadlen+1), loadlen+1);
+      data_pos++;				
+      
+      loader_table_entry++;
+
+    } else {
+
+      if( load_page[num] ) {
+
+	// This page needs to be loaded
+	add = page_order[i].PageStart;
+	pagelen = 16384;
+
+	libspectrum_byte realnum;
+
+	if( mode_128 ) {
+
+	  if (loader_table_entry == 0) {
+	    realnum = 0x10;
+	  } else {
+	    realnum = num | 0x10;
+	  }
+
+	} else {
+	  realnum = 0x10;
+	}			
+				
+	if( add == 0x8000) {
+	  // Special case - load 768 bytes less
+	  pagelen-=768;
+
+	  realnum = 0x12;	// Always assume 32768 page when loading short !
+
+	  smallpage = num;	// Remember which page it was for later !
 	}
 
-	snap_bin[pp+POS_LAST_AY] = snap.last_out_fffd;
+	// Now crunch the block
+	crunch_z80( libspectrum_snap_pages( snap, num ), pagelen, WorkBuffer,
+		    &loadlen );
 
-	snap_bin[pp+POS_SP]   = snap.reg_sp&255;
-	snap_bin[pp+POS_SP+1] = snap.reg_sp>>8;
+	if( external && num == 5 ) {
 
-	switch(snap.inter_mode)
-	{
-	case 0:
-		snap_bin[pp+POS_IM] = 0x46;
-		break;
-	case 1:
-		snap_bin[pp+POS_IM] = 0x56;
-		break;
-	case 2:
-		snap_bin[pp+POS_IM] = 0x5E;
-		break;
+	  // Check if external screen is loading and last page selected
+	  // If so then check if it would overwrite loading screen - if so
+	  // then load decrunched
+	  if( loadlen > (16384-6912) ) {
+	    reverse_block(WorkBuffer, libspectrum_snap_pages( snap, num ) );
+	    loadlen = 0;	// Not compressed !
+	  }
+
 	}
 
-	if (snap.ei)
-	{
-		snap_bin[pp+POS_DIEI] = 0xfb;
+	int reverse_off = 0;
+
+	if( loadlen != 0 ) {
+	  // Check if it would overwrite itself ?
+	  if( test_rev_decz80(WorkBuffer, pagelen, loadlen) ) {
+	    reverse_block( WorkBuffer, libspectrum_snap_pages( snap, num ) );
+	    if( pagelen != 16384 ) {
+	      reverse_off = 768;	// We flipped the whole block, need
+					// only lower part !
+	    }
+
+	    loadlen = 0;	// Not compressed !
+	  }
 	}
-	else
-	{
-		snap_bin[pp+POS_DIEI] = 0xf3;		
+
+	// Fill in the table data
+	add = add+(pagelen-1);
+	libspectrum_byte addhi = (add>>8)&255;
+				
+	snap_bin[loader_table_pos+(loader_table_entry*4)] = realnum;
+	snap_bin[loader_table_pos+(loader_table_entry*4)+1] = addhi;
+	snap_bin[loader_table_pos+(loader_table_entry*4)+2] = loadlen&255;
+	snap_bin[loader_table_pos+(loader_table_entry*4)+3] = loadlen>>8;
+
+	if( loadlen == 0 ) {
+	  sprintf(tempc,"- Adding Memory Page %i           (Uncompressed) Len: %04x", num, pagelen);
+	} else {
+	  sprintf(tempc,"- Adding Memory Page %i            (Compressed)  Len: %04x", num, loadlen);
+	}
+	print_verbose(tempc);
+
+	if( loadlen == 0 ) {
+	  loadlen = pagelen;	// The crunch_z80 returns 0 if the block could not be crunched
 	}
 
-	snap_bin[pp+POS_PC]   = snap.reg_pc&255;
-	snap_bin[pp+POS_PC+1] = snap.reg_pc>>8;
+	// Update the TZX Turbo header with the page length
+	tzx_turbo_head[16] = (libspectrum_byte) ((loadlen+2)&255);
+	tzx_turbo_head[17] = (libspectrum_byte) ((loadlen+2)>>8);
 
-	snap_bin[pp+POS_BORDER] = load_colour;
+	add_data(tzx_turbo_head, 20);	// Add the turbo header to the file
+	add_data(WorkBuffer+reverse_off, loadlen);	// Add the actual data
+	snap_bin[data_pos]= calc_checksum((snap_bin+data_pos)-(loadlen+1), loadlen+1);
+	data_pos++;				
 
-	snap_bin[pp+POS_PAGE] = snap.last_out_7ffd;
+	loader_table_entry++;
+      
+      }
+    }
+  }
 
-	snap_bin[pp+POS_IX]   = snap.reg_ix&255;
-	snap_bin[pp+POS_IX+1] = snap.reg_ix>>8;
+  if( load_768 ) {
 
-	snap_bin[pp+POS_F2] = snap.reg_f2;
-	snap_bin[pp+POS_A2] = snap.reg_a2;
+    // Area where the loader is was not empty - need to load it in
+    print_verbose("- Adding Extra ROM Loading Block");
+		
+    tzx_header_data[3] = (768+2)&255;	// Length of extra block
+    tzx_header_data[4] = (768+2)>>8;
+    tzx_header_data[5] = 0x55;		// Flag is 0x55
 
-	libspectrum_word rr = (libspectrum_word) snap.reg_r;
-	rr-=0x0a;	// Compensate for the instructions after R is loaded !
+    add_data(tzx_header_data, 6);
+    int cstart = data_pos-1;
+    add_data( libspectrum_snap_pages( snap, smallpage ) + 16384 - 768, 768 );
+    snap_bin[data_pos]= calc_checksum(snap_bin+cstart, 769);
+    data_pos++;
 
-	snap_bin[pp+POS_R] = rr&255;
-	snap_bin[pp+POS_I] = snap.reg_i;
+    // Set the 768 load flag to FF !
+    snap_bin[pp+POS_768_LOAD] = 0xFF;
 
-	snap_bin[pp+POS_HL]   = snap.reg_hl&255;
-	snap_bin[pp+POS_HL+1] = snap.reg_hl>>8;
+  } else {
+
+    // Set the 768 load flag to 01 !
+    snap_bin[pp+POS_768_LOAD] = 0x00;
+
+    // Change the load stuff to LDIR stuff !
+    snap_bin[pp+POS_CLEAN_1]   = 0xed;
+    snap_bin[pp+POS_CLEAN_1+1] = 0xb0;
+    snap_bin[pp+POS_CLEAN_1+2] = 0x00;
+    snap_bin[pp+POS_CLEAN_2]   = 0xed;
+    snap_bin[pp+POS_CLEAN_2+1] = 0xb0;
+    snap_bin[pp+POS_CLEAN_2+2] = 0x00;
+
+  }
+
+  // Now lets fill the registers and stuff
 	
-	snap_bin[pp+POS_DE]   = snap.reg_de&255;
-	snap_bin[pp+POS_DE+1] = snap.reg_de>>8;
+  snap_bin[pp+POS_HL2]   = libspectrum_snap_hl_( snap ) & 0xff;
+  snap_bin[pp+POS_HL2+1] = libspectrum_snap_hl_( snap ) >> 8;
 
-	snap_bin[pp+POS_BC]   = snap.reg_bc&255;
-	snap_bin[pp+POS_BC+1] = snap.reg_bc>>8;
+  snap_bin[pp+POS_DE2]   = libspectrum_snap_de_( snap ) & 0xff;
+  snap_bin[pp+POS_DE2+1] = libspectrum_snap_de_( snap ) >> 8;
 
-	snap_bin[pp+POS_F] = snap.reg_f;
-	snap_bin[pp+POS_A] = snap.reg_a;
+  snap_bin[pp+POS_BC2]   = libspectrum_snap_bc_( snap ) & 0xff;
+  snap_bin[pp+POS_BC2+1] = libspectrum_snap_bc_( snap ) >> 8;
 
-	int ppay = POS_AYREG+1;
-	for (i=0; i < 16; i++)
-	{
-		snap_bin[pp+ppay] = snap.reg_ay[15-i];
-		ppay+=2;
-	}
+  snap_bin[pp+POS_IY]    = libspectrum_snap_iy( snap ) & 0xff;
+  snap_bin[pp+POS_IY+1]  = libspectrum_snap_iy( snap ) >> 8;
 
-	snap_bin[main_checksum]= calc_checksum(snap_bin+5, main_checksum-5);  // need to recalc this in the end!!!
+  snap_bin[pp+POS_LAST_ATTR] = load_colour|(load_colour<<3)|bright;
+
+  if( mode_128 ) {
+    snap_bin[pp+POS_48K_1] = 0x57;
+    snap_bin[pp+POS_48K_2] = 0x57;
+  } else {
+    snap_bin[pp+POS_48K_1] = 0x56;
+    snap_bin[pp+POS_48K_2] = 0x56;
+  }
+
+  snap_bin[pp+POS_LAST_AY] = libspectrum_snap_out_ay_registerport( snap );
+
+  snap_bin[pp+POS_SP]   = libspectrum_snap_sp( snap ) & 0xff;
+  snap_bin[pp+POS_SP+1] = libspectrum_snap_sp( snap ) >> 8;
+
+  switch( libspectrum_snap_im( snap ) ) {
+  case 0: snap_bin[pp+POS_IM] = 0x46; break;
+  case 1: snap_bin[pp+POS_IM] = 0x56; break;
+  case 2: snap_bin[pp+POS_IM] = 0x5E; break;
+  }
+
+  if( libspectrum_snap_iff1( snap ) ) {
+    snap_bin[pp+POS_DIEI] = 0xfb;
+  } else {
+    snap_bin[pp+POS_DIEI] = 0xf3;		
+  }
+
+  snap_bin[pp+POS_PC]   = libspectrum_snap_pc( snap ) & 0xff;
+  snap_bin[pp+POS_PC+1] = libspectrum_snap_pc( snap ) >> 8;
+
+  snap_bin[pp+POS_BORDER] = load_colour;
+
+  if( mode_128 ) {
+    snap_bin[pp+POS_PAGE] = libspectrum_snap_out_128_memoryport( snap );
+  } else {
+    snap_bin[pp+POS_PAGE] = 0x10;
+  }
+
+  snap_bin[pp+POS_IX]   = libspectrum_snap_ix( snap ) & 0xff;
+  snap_bin[pp+POS_IX+1] = libspectrum_snap_ix( snap ) >> 8;
+
+  snap_bin[pp+POS_F2] = libspectrum_snap_f_( snap );
+  snap_bin[pp+POS_A2] = libspectrum_snap_a_( snap );
+
+  libspectrum_word rr = (libspectrum_word) libspectrum_snap_r( snap );
+  rr-=0x0a;	// Compensate for the instructions after R is loaded !
+
+  snap_bin[pp+POS_R] = rr & 0xff;
+  snap_bin[pp+POS_I] = libspectrum_snap_i( snap );
+
+  snap_bin[pp+POS_HL]   = libspectrum_snap_hl( snap ) & 0xff;
+  snap_bin[pp+POS_HL+1] = libspectrum_snap_hl( snap ) >> 8;
+	
+  snap_bin[pp+POS_DE]   = libspectrum_snap_de( snap ) & 0xff;
+  snap_bin[pp+POS_DE+1] = libspectrum_snap_de( snap ) >> 8;
+
+  snap_bin[pp+POS_BC]   = libspectrum_snap_bc( snap ) & 0xff;
+  snap_bin[pp+POS_BC+1] = libspectrum_snap_bc( snap ) >> 8;
+
+  snap_bin[pp+POS_F] = libspectrum_snap_f( snap );
+  snap_bin[pp+POS_A] = libspectrum_snap_a( snap );
+
+  int ppay = POS_AYREG+1;
+  for( i=0; i < 16; i++ ) {
+    snap_bin[pp+ppay] = libspectrum_snap_ay_registers( snap, 15 - i );
+    ppay+=2;
+  }
+
+  snap_bin[main_checksum] = calc_checksum( snap_bin + 5, main_checksum - 5 );  // need to recalc this in the end!!!
 }
 
-void convert_snap()
+void
+convert_snap( void )
 {
-	print_verbose("\nCreating TZX File :");
+  print_verbose("\nCreating TZX File :");
 
-	FILE * file= NULL;
-	file = fopen(out_filename,"wb");
+  FILE * file= NULL;
+  file = fopen(out_filename,"wb");
 
-	if (file == NULL)
-	{
-		print_error("Output File could not be Opened!");
-		return;
-	}
-	data_pos=0;
-	add_data(tzx_start, 10);	// TZX start - ZXTape!...
+  if (file == NULL) {
+    print_error("Output File could not be Opened!");
+    return;
+  }
 
-	create_main_header();
-	add_data(tzx_header, tzx_header_size);
+  data_pos=0;
+  add_data( tzx_start, 10 );	// TZX start - ZXTape!...
 
-	fwrite(snap_bin, 1, data_pos, file);
+  create_main_header();
+  add_data( tzx_header, tzx_header_size );
 
-	print_verbose("- Adding Loader");
+  fwrite( snap_bin, 1, data_pos, file );
 
-	// TEST - load the loader from the loader.bin file - will be hard-coded in the program when release !!!
-//	FILE * file2 = fopen("loader.bin","rb");
-//	fread(loader_data, 1, 768, file2);
-//	fclose(file2);
+  print_verbose( "- Adding Loader" );
 
+  create_main_data();
+  fwrite( snap_bin, 1, data_pos, file );
 
-	create_main_data();
-	fwrite(snap_bin, 1, data_pos, file);
-
-	fclose(file);
+  fclose( file );
 }
 
-int main(int argc, char* argv[])
+int
+main( int argc, char **argv )
 {
+  int error;
 
-	init_snap();
+  progname = argv[0];
 
-	if (parse_args(argc, argv))
-	{
-		if (load_snap())
-		{
-			convert_snap();
-		}
-	}
+  error = init_libspectrum(); if( error ) return error;
 
-	print_verbose("\nDone!");
+  if( !parse_args( argc, argv ) ) return 1;
 
-	return 0;
+  error = load_snap(); if( error ) return error;
+
+  convert_snap();
+
+  print_verbose("\nDone!");
+
+  return 0;
 }
-

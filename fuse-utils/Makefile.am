@@ -54,7 +54,8 @@ rzxtool_LDADD = @LIBSPEC_LIBS@
 
 scl2trd_SOURCES = scl2trd.c
 
-snap2tzx_SOURCES = snap2tzx.c
+snap2tzx_SOURCES = snap2tzx.c utils.c
+snap2tzx_LDADD = @LIBSPEC_LIBS@
 
 snapconv_SOURCES = snapconv.c utils.c
 snapconv_LDADD = @LIBSPEC_LIBS@
