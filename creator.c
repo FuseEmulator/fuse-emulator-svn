@@ -26,6 +26,7 @@
 
 #include <config.h>
 
+#include <stdio.h>
 #include <string.h>
 
 #include "internals.h"
@@ -62,7 +63,8 @@ libspectrum_error
 libspectrum_creator_set_program( libspectrum_creator *creator,
 				 const libspectrum_byte *program )
 {
-  memcpy( creator->program, program, 32 );
+  memset( creator->program, 0, sizeof( creator->program ) );
+  snprintf( creator->program, sizeof( creator->program ), "%s", program );
   return LIBSPECTRUM_ERROR_NONE;
 }
 
