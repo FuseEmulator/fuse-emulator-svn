@@ -96,6 +96,7 @@ typedef struct input_block_t {
 
 typedef struct signature_block_t {
 
+  size_t length;	/* Length of the signed data from rzx->signed_start */
   gcry_mpi_t r, s;
 
 } signature_block_t;
@@ -126,6 +127,10 @@ struct libspectrum_rzx {
 
   libspectrum_rzx_frame_t *data_frame;
   size_t in_count;
+
+  /* Signature parameters */
+  const libspectrum_byte *signed_start;
+  size_t signed_length;
 
 };
 
@@ -202,6 +207,7 @@ block_free( rzx_block_t *block )
 {
   size_t i;
   input_block_t *input;
+  signature_block_t *signature;
 
   switch( block->type ) {
 
@@ -217,6 +223,20 @@ block_free( rzx_block_t *block )
     libspectrum_snap_free( block->types.snap );
     free( block );
     return LIBSPECTRUM_ERROR_NONE;
+
+  case LIBSPECTRUM_RZX_SIGN_START_BLOCK:
+    free( block );
+    return LIBSPECTRUM_ERROR_NONE;
+
+  case LIBSPECTRUM_RZX_SIGN_END_BLOCK:
+    signature = &( block->types.signature );
+    gcry_mpi_release( signature->r );
+    gcry_mpi_release( signature->s );
+    free( block );
+    return LIBSPECTRUM_ERROR_NONE;
+
+  case LIBSPECTRUM_RZX_CREATOR_BLOCK:
+    break;
 
   }
 
@@ -243,6 +263,8 @@ libspectrum_rzx_alloc( libspectrum_rzx **rzx )
   (*rzx)->blocks = NULL;
   (*rzx)->current_block = NULL;
   (*rzx)->current_input = NULL;
+
+  (*rzx)->signed_start = NULL;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -370,14 +392,6 @@ libspectrum_rzx_store_frame( libspectrum_rzx *rzx, size_t instructions,
   return 0;
 }
 
-gint
-find_input( gconstpointer a, gconstpointer b )
-{
-  const rzx_block_t *block = a;
-
-  return block->type != LIBSPECTRUM_RZX_INPUT_BLOCK;
-}
-
 libspectrum_error
 libspectrum_rzx_start_playback( libspectrum_rzx *rzx, int which,
 				libspectrum_snap **snap )
@@ -427,6 +441,15 @@ libspectrum_rzx_start_playback( libspectrum_rzx *rzx, int which,
   return LIBSPECTRUM_ERROR_INVALID;
 }
 
+gint
+find_block( gconstpointer a, gconstpointer b )
+{
+  const rzx_block_t *block = a;
+  libspectrum_byte id = GPOINTER_TO_INT( b );
+
+  return block->type - id;
+}
+
 libspectrum_error
 libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished )
 {
@@ -447,7 +470,9 @@ libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished )
   if( ++rzx->current_frame >= rzx->current_input->count ) {
 
     rzx->current_block =
-      g_slist_find_custom( rzx->current_block->next, NULL, find_input );
+      g_slist_find_custom( rzx->current_block->next,
+			   GINT_TO_POINTER( LIBSPECTRUM_RZX_INPUT_BLOCK ),
+			   find_block );
     
     if( rzx->current_block ) {
     
@@ -519,6 +544,53 @@ libspectrum_rzx_instructions( libspectrum_rzx *rzx )
   return rzx->current_input->frames[ rzx->current_frame ].instructions;
 }
 
+libspectrum_dword
+libspectrum_rzx_get_keyid( libspectrum_rzx *rzx )
+{
+  GSList *list;
+  rzx_block_t *block;
+
+  list =
+    g_slist_find_custom( rzx->blocks,
+			 GINT_TO_POINTER( LIBSPECTRUM_RZX_SIGN_START_BLOCK ),
+			 find_block );
+  if( !list ) return 0;
+
+  block = list->data;
+  return block->types.keyid;
+}
+
+libspectrum_error
+libspectrum_rzx_get_signature( libspectrum_rzx *rzx,
+			       libspectrum_signature *signature )
+{
+  GSList *list;
+  rzx_block_t *block;
+  signature_block_t *sigblock;
+
+  list =
+    g_slist_find_custom( rzx->blocks,
+			 GINT_TO_POINTER( LIBSPECTRUM_RZX_SIGN_END_BLOCK ),
+			 find_block );
+  if( !list ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "no end of signed data block found" );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  block = list->data;
+  sigblock = &( block->types.signature );
+
+  signature->start = rzx->signed_start;
+  signature->length = sigblock->length;
+
+  signature->r = gcry_mpi_copy( sigblock->r );
+  signature->s = gcry_mpi_copy( sigblock->s );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+  
+
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
 		      size_t length )
@@ -553,6 +625,8 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
 
   error = rzx_read_header( &ptr, end );
   if( error != LIBSPECTRUM_ERROR_NONE ) { free( new_buffer ); return error; }
+
+  rzx->signed_start = ptr;
 
   while( ptr < end ) {
 
@@ -1025,8 +1099,11 @@ rzx_read_sign_start( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
 
   block->types.keyid = libspectrum_read_dword( ptr );
 
-  /* Skip the rest of this block (the week code) */
-  (*ptr) += length - 9;
+  /* Skip the week code */
+  *ptr += 4;
+
+  /* Skip anything we don't know about */
+  *ptr += length - 13;
 
   rzx->blocks = g_slist_append( rzx->blocks, block );
 
@@ -1060,14 +1137,12 @@ rzx_read_sign_end( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  /* FIXME: handle this */
-  /* Store the end of the signed data */
-/*   signature->length = (*ptr) - signature->start - 5; */
-
   error = block_alloc( &block, LIBSPECTRUM_RZX_SIGN_END_BLOCK );
   if( error ) return error;
 
   signature = &( block->types.signature );
+
+  signature->length = *ptr - rzx->signed_start;
 
 #ifdef HAVE_GCRYPT_H
   { 
@@ -1133,29 +1208,21 @@ libspectrum_rzx_write2( libspectrum_byte **buffer, size_t *length,
   error = rzx_write_header( buffer, &ptr, length, &sign_offset, key ? 1 : 0 );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
+  if( creator ) {
+    error = rzx_write_creator( buffer, &ptr, length, creator );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  }
+
+  if( key ) {
+    error = rzx_write_signed_start( buffer, &ptr, length, key, creator );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  }
+
   for( list = rzx->blocks; list; list = list->next ) {
 
     rzx_block_t *block = list->data;
 
     switch( block->type ) {
-    case LIBSPECTRUM_RZX_CREATOR_BLOCK:
-      error = rzx_write_creator( buffer, &ptr, length, creator );
-      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
-      break;
-
-    case LIBSPECTRUM_RZX_SIGN_START_BLOCK:
-      if( key ) {
-	error = rzx_write_signed_start( buffer, &ptr, length, key, creator );
-	if( error != LIBSPECTRUM_ERROR_NONE ) return error;
-      }
-      break;
-
-    case LIBSPECTRUM_RZX_SIGN_END_BLOCK:
-      if( key ) {
-	error = rzx_write_signed_end( buffer, &ptr, length, sign_offset, key );
-	if( error != LIBSPECTRUM_ERROR_NONE ) return error;
-      }
-      break;
 
     case LIBSPECTRUM_RZX_SNAPSHOT_BLOCK:
       error = rzx_write_snapshot( buffer, &ptr, length, block->types.snap,
@@ -1169,7 +1236,17 @@ libspectrum_rzx_write2( libspectrum_byte **buffer, size_t *length,
       if( error != LIBSPECTRUM_ERROR_NONE ) return error;
       break;
 
+    case LIBSPECTRUM_RZX_CREATOR_BLOCK:
+    case LIBSPECTRUM_RZX_SIGN_START_BLOCK:
+    case LIBSPECTRUM_RZX_SIGN_END_BLOCK:
+      break;
+
     }
+  }
+
+  if( key ) {
+    error = rzx_write_signed_end( buffer, &ptr, length, sign_offset, key );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
   
   /* *length is the allocated size; we want to return how much is used */

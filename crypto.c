@@ -303,7 +303,7 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 #include <stdio.h>
 
 libspectrum_error
-libspectrum_verify_signature( libspectrum_rzx_signature *signature,
+libspectrum_verify_signature( libspectrum_signature *signature,
 			      libspectrum_rzx_dsa_key *key )
 {
   libspectrum_error error;
@@ -351,7 +351,7 @@ libspectrum_verify_signature( libspectrum_rzx_signature *signature,
 }
 
 libspectrum_error
-libspectrum_signature_free( libspectrum_rzx_signature *signature )
+libspectrum_signature_free( libspectrum_signature *signature )
 {
   gcry_mpi_release( signature->r ); gcry_mpi_release( signature->s );
 

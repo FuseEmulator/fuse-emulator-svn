@@ -568,6 +568,21 @@ size_t WIN32_DLL libspectrum_rzx_tstates( libspectrum_rzx *rzx );
 /* Get the current frame's instruction count */
 size_t WIN32_DLL libspectrum_rzx_instructions( libspectrum_rzx *rzx );
 
+libspectrum_dword WIN32_DLL libspectrum_rzx_get_keyid( libspectrum_rzx *rzx );
+
+typedef struct libspectrum_signature {
+
+  /* Where in the buffer is the signed data? */
+  const libspectrum_byte *start; ptrdiff_t length;
+
+  LIBSPECTRUM_SIGNATURE_PARAMETERS
+
+} libspectrum_signature;
+
+libspectrum_error WIN32_DLL
+libspectrum_rzx_get_signature( libspectrum_rzx *rzx,
+			       libspectrum_signature *signature );
+
 typedef struct libspectrum_rzx_dsa_key {
 
   /* The standard DSA parameters, represented as hex strings with MSB first.
@@ -575,18 +590,6 @@ typedef struct libspectrum_rzx_dsa_key {
   const char *p, *q, *g, *y, *x;
 
 } libspectrum_rzx_dsa_key;
-
-typedef struct libspectrum_rzx_signature {
-
-  /* The key ID (low 32 bits of 'y') */
-  libspectrum_dword key_id;
-
-  /* Where in the buffer is the signed data? */
-  const libspectrum_byte *start; ptrdiff_t length;
-
-  LIBSPECTRUM_SIGNATURE_PARAMETERS
-
-} libspectrum_rzx_signature;
 
 libspectrum_error WIN32_DLL
 libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
@@ -660,10 +663,10 @@ libspectrum_dck_read2( libspectrum_dck *dck, const libspectrum_byte *buffer,
  */
 
 libspectrum_error WIN32_DLL
-libspectrum_verify_signature( libspectrum_rzx_signature *signature,
+libspectrum_verify_signature( libspectrum_signature *signature,
 			      libspectrum_rzx_dsa_key *key );
 libspectrum_error WIN32_DLL
-libspectrum_signature_free( libspectrum_rzx_signature *signature );
+libspectrum_signature_free( libspectrum_signature *signature );
 
 /*
  * IDE hard disk handling routines
