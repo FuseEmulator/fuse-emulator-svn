@@ -34,17 +34,19 @@ const static char *signature = "ZXST";
 const static size_t signature_length = 4;
 
 static libspectrum_error
-read_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
-	    const libspectrum_byte *end );
+read_chunk( libspectrum_snap *snap, libspectrum_word version,
+	    const libspectrum_byte **buffer, const libspectrum_byte *end );
 
 typedef libspectrum_error (*read_chunk_fn)( libspectrum_snap *snap,
+					    libspectrum_word version,
 					    const libspectrum_byte **buffer,
 					    const libspectrum_byte *end,
 					    size_t data_length );
 
 static libspectrum_error
-read_ay_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
-	       const libspectrum_byte *end, size_t data_length )
+read_ay_chunk( libspectrum_snap *snap, libspectrum_word version,
+	       const libspectrum_byte **buffer, const libspectrum_byte *end,
+	       size_t data_length )
 {
   size_t i;
 
@@ -67,8 +69,9 @@ read_ay_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
 }
 
 static libspectrum_error
-read_ramp_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
-		 const libspectrum_byte *end, size_t data_length )
+read_ramp_chunk( libspectrum_snap *snap, libspectrum_word version,
+		 const libspectrum_byte **buffer, const libspectrum_byte *end,
+		 size_t data_length )
 {
   libspectrum_word flags;
   libspectrum_byte page, *buffer2;
@@ -134,9 +137,12 @@ read_ramp_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
 }
 
 static libspectrum_error
-read_spcr_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
-		 const libspectrum_byte *end, size_t data_length )
+read_spcr_chunk( libspectrum_snap *snap, libspectrum_word version,
+		 const libspectrum_byte **buffer, const libspectrum_byte *end,
+		 size_t data_length )
 {
+  libspectrum_byte out_ula;
+
   if( data_length != 8 ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_UNKNOWN,
@@ -145,18 +151,25 @@ read_spcr_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
-  libspectrum_snap_set_out_ula( snap, **buffer ); (*buffer)++;
+  out_ula = **buffer & 0x07; (*buffer)++;
+
   libspectrum_snap_set_out_128_memoryport( snap, **buffer ); (*buffer)++;
   libspectrum_snap_set_out_plus3_memoryport( snap, **buffer ); (*buffer)++;
 
-  *buffer += 5;			/* Skip 'reserved' data */
+  if( version >= 0x0101 ) out_ula |= **buffer & 0x18;
+  (*buffer)++;
+
+  libspectrum_snap_set_out_ula( snap, out_ula );
+
+  *buffer += 4;			/* Skip 'reserved' data */
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
-read_z80r_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
-		 const libspectrum_byte *end, size_t data_length )
+read_z80r_chunk( libspectrum_snap *snap, libspectrum_word version,
+		 const libspectrum_byte **buffer, const libspectrum_byte *end,
+		 size_t data_length )
 {
   if( data_length != 37 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
@@ -190,14 +203,15 @@ read_z80r_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
 
   libspectrum_snap_set_tstates( snap, libspectrum_read_dword( buffer ) );
 
-  *buffer += 4;	/* Skip dwHoldIntReqCycles as I don't know what it does */
+  *buffer += 4;			/* Skip some bits */
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
-skip_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
-	    const libspectrum_byte *end, size_t data_length )
+skip_chunk( libspectrum_snap *snap, libspectrum_word version,
+	    const libspectrum_byte **buffer, const libspectrum_byte *end,
+	    size_t data_length )
 {
   *buffer += data_length;
   return LIBSPECTRUM_ERROR_NONE;
@@ -257,8 +271,8 @@ read_chunk_header( char *id, libspectrum_dword *data_length,
 }
 
 static libspectrum_error
-read_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
-	    const libspectrum_byte *end )
+read_chunk( libspectrum_snap *snap, libspectrum_word version,
+	    const libspectrum_byte **buffer, const libspectrum_byte *end )
 {
   char id[5];
   libspectrum_dword data_length;
@@ -281,7 +295,8 @@ read_chunk( libspectrum_snap *snap, const libspectrum_byte **buffer,
   for( i = 0; !done && i < read_chunks_count; i++ ) {
 
     if( !memcmp( id, read_chunks[i].id, 4 ) ) {
-      error = read_chunks[i].function( snap, buffer, end, data_length );
+      error = read_chunks[i].function( snap, version, buffer, end,
+				       data_length );
       if( error ) return error;
       done = 1;
     }
@@ -301,6 +316,8 @@ libspectrum_error
 libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 		      size_t length )
 {
+  libspectrum_word version;
+
   libspectrum_error error;
   const libspectrum_byte *end = buffer + length;
 
@@ -319,9 +336,9 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
     );
     return LIBSPECTRUM_ERROR_SIGNATURE;
   }
+  buffer += signature_length;
 
-  /* Skip the signature and the two version bytes */
-  buffer += signature_length + 2;
+  version = (*buffer++) << 8; version |= *buffer++;
 
   switch( *buffer ) {
 
@@ -367,7 +384,7 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
   buffer += 2;
 
   while( buffer < end ) {
-    error = read_chunk( snap, &buffer, end );
+    error = read_chunk( snap, version, &buffer, end );
     if( error ) {
 
       /* Tidy up any RAM pages we may have allocated */
