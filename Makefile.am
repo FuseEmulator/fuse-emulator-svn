@@ -41,6 +41,7 @@ libspectrum_la_SOURCES = creator.c \
 			 tap.c \
 			 tape.c \
 			 tape_accessors.c \
+			 tape_block.c \
 			 tape_set.c \
 		 	 timings.c \
 			 tzx_read.c \
@@ -59,7 +60,7 @@ noinst_HEADERS = internals.h
 
 noinst_PROGRAMS = make-perl
 
-libspectrum.h: libspectrum.h.in generate.pl snap_accessors.txt
+libspectrum.h: libspectrum.h.in generate.pl snap_accessors.txt tape_accessors.txt
 	@PERL@ -p generate.pl libspectrum.h.in > libspectrum.h
 
 generate.pl: make-perl
