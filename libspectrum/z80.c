@@ -274,6 +274,8 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
     if( extra_header[5] & 0x80 ) {
       switch( snap->machine ) {
 
+      case LIBSPECTRUM_MACHINE_48:
+	snap->machine = LIBSPECTRUM_MACHINE_16; break;
       case LIBSPECTRUM_MACHINE_128:
 	snap->machine = LIBSPECTRUM_MACHINE_PLUS2; break;
       case LIBSPECTRUM_MACHINE_PLUS3:
@@ -834,6 +836,7 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_write_word( ptr, snap->pc );
 
   switch( snap->machine ) {
+  case LIBSPECTRUM_MACHINE_16:
   case LIBSPECTRUM_MACHINE_48:
     *(*ptr)++ = 0; break;
   case LIBSPECTRUM_MACHINE_128:
@@ -869,12 +872,20 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = '\0';		/* IF1 disabled */
   }
 
-  *(*ptr)++ = '\0';		/* No special emulation features */
+  /* Support 16K snapshots via Spectaculator's extension; see the
+     comment in read_header for details */
+  if( snap->machine == LIBSPECTRUM_MACHINE_16 ) {
+    *(*ptr)++ = 0x80;
+  } else {
+    *(*ptr)++ = '\0';		/* No special emulation features */
+  }
+
   *(*ptr)++ = snap->out_ay_registerport;
   memcpy( *ptr, snap->ay_registers, 16 ); *ptr += 16;
 
   /* Number of T-states in 1/4 of a frame */
-  quarter_states = ( snap->machine == LIBSPECTRUM_MACHINE_48 ) ?
+  quarter_states = ( snap->machine == LIBSPECTRUM_MACHINE_48 ||
+                     snap->machine == LIBSPECTRUM_MACHINE_16 ) ?
     17472 : 17727;
   libspectrum_write_word(
     ptr, quarter_states - ( snap->tstates % quarter_states ) - 1
