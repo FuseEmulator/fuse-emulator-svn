@@ -622,7 +622,7 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   case LIBSPECTRUM_MACHINE_PLUS2:  **ptr = 3; break;
   case LIBSPECTRUM_MACHINE_PLUS2A: **ptr = 4; break;
   case LIBSPECTRUM_MACHINE_PLUS3:  **ptr = 5; break;
-  /* 6 = +3e */
+  case LIBSPECTRUM_MACHINE_PLUS3E: **ptr = 6; break;
   case LIBSPECTRUM_MACHINE_PENT:   **ptr = 7; break;
   case LIBSPECTRUM_MACHINE_TC2048: **ptr = 8; break;
   case LIBSPECTRUM_MACHINE_TC2068:

@@ -309,6 +309,7 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
     
   case LIBSPECTRUM_MACHINE_PLUS2A:
   case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PLUS3E:
   case LIBSPECTRUM_MACHINE_PENT:
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
     /* Fall through */

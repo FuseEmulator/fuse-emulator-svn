@@ -194,6 +194,7 @@ typedef enum libspectrum_machine {
   LIBSPECTRUM_MACHINE_TC2068,
 
   LIBSPECTRUM_MACHINE_SCORP,
+  LIBSPECTRUM_MACHINE_PLUS3E,
 } libspectrum_machine;
 
 const char* libspectrum_machine_name( libspectrum_machine type );
