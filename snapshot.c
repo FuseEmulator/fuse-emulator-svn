@@ -120,6 +120,38 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 
 }
 
+libspectrum_error
+libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
+			int *out_flags, libspectrum_snap *snap,
+	 		libspectrum_id_t type, int in_flags )
+{
+  libspectrum_class_t class;
+  libspectrum_error error;
+
+  *out_flags = 0;
+
+  error = libspectrum_identify_class( &class, type );
+  if( error ) return error;
+
+  if( class != LIBSPECTRUM_CLASS_SNAPSHOT ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_INVALID,
+			     "libspectrum_snap_write: not a snapshot format" );
+    return LIBSPECTRUM_ERROR_INVALID;
+  }
+
+  switch( type ) {
+
+  case LIBSPECTRUM_ID_SNAPSHOT_Z80:
+    return libspectrum_z80_write( buffer, length, snap );
+
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "libspectrum_snap_write: format not supported" );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+
+  }
+}
+
 /* Given a 48K memory dump `data', place it into the
    appropriate bits of `snap' for a 48K machine */
 int
