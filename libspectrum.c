@@ -75,7 +75,7 @@ libspectrum_machine_name( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_TC2048: return "Timex TC2048";
   case LIBSPECTRUM_MACHINE_128:    return "Spectrum 128K";
   case LIBSPECTRUM_MACHINE_PLUS2:  return "Spectrum +2";
-  case LIBSPECTRUM_MACHINE_PENT:   return "Pentagon";
+  case LIBSPECTRUM_MACHINE_PENT:   return "Pentagon 128K";
   case LIBSPECTRUM_MACHINE_PLUS2A: return "Spectrum +2A";
   case LIBSPECTRUM_MACHINE_PLUS3:  return "Spectrum +3";
   default:			   return "unknown";
@@ -94,6 +94,8 @@ const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY = 1 << 4;
                                             /* TC20[46]8-style memory paging */
 const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO  = 1 << 5;
                                               /* TC20[46]8-style video modes */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK   = 1 << 6;
+                                                    /* TRDOS-style disk drive */
 
 /* Given a machine type, what features does it have? */
 int
@@ -105,6 +107,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PENT:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_AY; break;
   default:
     break;
@@ -114,6 +117,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PENT:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY; break;
   default:
     break;
@@ -151,6 +155,14 @@ libspectrum_machine_capabilities( libspectrum_machine type )
     break;
   }
 
+  /* TRDOS-style disk */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_PENT:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK; break;
+  default:
+    break;
+  }
+
   return capabilities;
 }
 
@@ -181,6 +193,9 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 
       { LIBSPECTRUM_ID_TAPE_TAP,      "tap", "\x13\0\0", 0, 3, 1 },
       { LIBSPECTRUM_ID_TAPE_TZX,      "tzx", "ZXTape!",  0, 7, 3 },
+
+      { LIBSPECTRUM_ID_DISK_DSK,      "dsk", NULL,       0, 0, 0 },
+      { LIBSPECTRUM_ID_DISK_TRD,      "trd", NULL,       0, 0, 0 },
 
       { -1, NULL, NULL, 0, 0, 0 }, /* End marker */
 
