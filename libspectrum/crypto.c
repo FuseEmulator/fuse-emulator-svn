@@ -140,7 +140,7 @@ get_hash( GcrySexp *hash, const libspectrum_byte *data, size_t data_length )
 
   free( digest );
 
-  error = gcry_sexp_build( hash, NULL, hash_format, hash_mpi );
+  error = gcry_sexp_build( hash, NULL, "(%m)", hash_mpi );
   if( error ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "get_hash: error creating hash sexp: %s",
@@ -324,6 +324,15 @@ libspectrum_verify_signature( libspectrum_rzx_signature *signature,
       return LIBSPECTRUM_ERROR_LOGIC;
     }
   }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_signature_free( libspectrum_rzx_signature *signature )
+{
+  if( signature->r ) gcry_mpi_release( signature->r );
+  if( signature->s ) gcry_mpi_release( signature->s );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
