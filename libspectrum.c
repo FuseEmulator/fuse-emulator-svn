@@ -155,7 +155,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
 
 /* Given a buffer and optionally a filename, make a best guess as to
    what sort of file this is */
-int
+libspectrum_error
 libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 			   const unsigned char *buffer, size_t length )
 {
@@ -221,7 +221,7 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
     *type = best_guess;
   }
 
-  return 0;
+  return LIBSPECTRUM_ERROR_NONE;
 }
 
 /* Ensure there is room for `requested' characters after the current
