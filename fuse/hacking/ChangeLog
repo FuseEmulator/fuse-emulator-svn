@@ -481,3 +481,4 @@
 	 reformat slightly (Release-0_6_2-branch).
 20040114 memory.h, z80/{Makefile.am,coretest.c,z80_macros.h}: get the
 	 core tester working again (Release-0_6_2-branch).
+20040114 ChangeLog: bring up to date (Release-0_6_2-branch).
