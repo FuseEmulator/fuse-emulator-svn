@@ -45,8 +45,10 @@ fi)
 
 dnl Check that libgcrypt is available
 AC_CHECK_LIB(gcrypt,gcry_check_version,
-	     AC_DEFINE(HAVE_LIBGCRYPT) GCRYPT_LIBS="$LIBS -lgcrypt"
-	     RZXCHECK="rzxcheck")
+  AC_DEFINE([HAVE_LIBGCRYPT], 1, [Defined if we've got libgcrypt])
+  GCRYPT_LIBS="$LIBS -lgcrypt"
+  RZXCHECK="rzxcheck"
+)
 AC_SUBST(GCRYPT_LIBS)
 AC_SUBST(RZXCHECK)
 
