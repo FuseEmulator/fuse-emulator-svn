@@ -43,22 +43,25 @@
 
 char *progname;			/* argv[0] */
 
-static const char *filename;
-static char out_filename[512];
-static char loader_name[9];
+typedef struct settings_t {
 
-static char game_name[33];
-static char info1[33]     = "                                ";
-static char info2[33]     = "                                ";
+  const char *input_filename;	/* Snapshot file to convert */
+  const char *external_filename; /* External screenshot */
+  char output_filename[512];	/* Target filename */
+
+  char loader_name[9];		/* Name displayed by BASIC loader */
+  char game_name[33];		/* Name displayed while game is loading */
+  char info1[33], info2[33];	/* Extra lines displayed while loading */
+
+  int speed;			/* Loader speed */
+  int load_colour;		/* Border colour */
+  libspectrum_byte bright;	/* Should final attributes line be bright? */
+
+} settings_t;
 
 static libspectrum_byte WorkBuffer[65535];
 
 static int verbose = 0;
-static int speed_value = 3;
-static int load_colour = -1;
-static int external = 0;
-static const char *external_filename;
-static libspectrum_byte bright = 0;
 
 static void
 print_error( char *format, ... )
@@ -250,9 +253,37 @@ static void reverse_block (libspectrum_byte *BufferOut, libspectrum_byte *Buffer
   for (BIn = BufferIn, BOut = BufferOut + 16383, Cnt = 0 ; Cnt < 16384 ; Cnt ++)
     *(BOut --) = *(BIn ++);
 }
- 
+
+static int
+initialise_settings( settings_t *settings )
+{
+  settings->input_filename = NULL;
+  settings->external_filename = NULL;
+
+  settings->loader_name[0] = '\0';
+  settings->game_name[0] = '\0';
+
+  /* 32 spaces */
+  strncpy( settings->info1, "                                ", 33 );
+  strncpy( settings->info2, "                                ", 33 );
+
+  settings->speed = 3;
+  settings->load_colour = -1;
+  settings->bright = 0x00;
+
+  return 0;
+}
+
+/* Replace any occurences of '~' in 'buffer' with the copyright symbol
+   (0x7f in the Spectrum's character set) */
 static void
-center_name( char *name )
+change_copyright( char *buffer )
+{
+  for( ; *buffer; buffer++ ) if( *buffer == '~' ) *buffer = 0x7f;
+}
+
+static void
+centre_name( char *name )
 {
   int i, num;
 
@@ -263,6 +294,16 @@ center_name( char *name )
     for( i=31; i >= num/2; i-- ) name[i] = name[i-(num/2)];
     for( i=0; i < num/2; i++ ) name[i]=' ';
   }
+}
+
+static int
+setup_string( char *dest, size_t length, const char *src )
+{
+  snprintf( dest, length + 1, "%*s", (int)-length, src );
+  change_copyright( dest );
+  centre_name( dest );
+
+  return 0;
 }
 
 static void
@@ -317,19 +358,13 @@ print_usage( int title )
 	);
 }
 
-/* Replace any occurences of '~' in 'buffer' with the copyright symbol
-   (0x7f in the Spectrum's character set) */
-static void
-change_copyright( char *buffer )
-{
-  for( ; *buffer; buffer++ ) if( *buffer == '~' ) *buffer = 0x7f;
-}
-
 static int
-parse_args( int argc, char **argv )
+parse_args( settings_t *settings, int argc, char **argv )
 {
-  int c, got_game_name, got_loader_name, got_out_filename;
+  int c, got_game_name, got_loader_name, got_out_filename, error;
   char *buffer, *buffer2, *last_dot;
+
+  error = initialise_settings( settings ); if( error ) return error;
 
   got_game_name = got_loader_name = got_out_filename = 0;
 
@@ -337,54 +372,51 @@ parse_args( int argc, char **argv )
     switch (c) {
 
     case '1':
-      snprintf( info1, 33, "%-32s", optarg );
-      change_copyright( info1 );
-      center_name( info1 );
+      error = setup_string( settings->info1, 32, optarg );
+      if( error ) return error;
       break;
 
     case '2':
-      snprintf( info2, 33, "%-32s", optarg );
-      change_copyright( info2 );
-      center_name( info2 );
+      error = setup_string( settings->info2, 32, optarg );
+      if( error ) return error;
       break;
 
       /* Border Colour when loading */
     case 'b':
-      load_colour = atoi( optarg );
-      if( load_colour < 0 || load_colour > 7 ) {
-	print_error( "invalid border colour (%d)", load_colour );
+      settings->load_colour = atoi( optarg );
+      if( settings->load_colour < 0 || settings->load_colour > 7 ) {
+	print_error( "invalid border colour (%d)", settings->load_colour );
 	return 1;
       }
       break;
 
       /* Game Name (When Loader is loaded) */
     case 'g':
-      snprintf( game_name, 33, "%-32s", optarg );
-      change_copyright( game_name );
-      center_name( game_name );
+      error = setup_string( settings->game_name, 32, optarg );
+      if( error ) return error;
       got_game_name = 1;
       break;
 
       /* Loader Name (Loading: Name) */
     case 'l':
-      snprintf( loader_name, 9, "%-8s", optarg );
+      snprintf( settings->loader_name, 9, "%-8s", optarg );
       got_loader_name = 1;
       break;
       
       /* Output Filename */
     case 'o':
-      strncpy( out_filename, optarg, 511 );
-      out_filename[511] = 0;
+      strncpy( settings->output_filename, optarg, 511 );
+      settings->output_filename[511] = 0;
       got_out_filename = 1;
       break;
 
-    case 'r': bright = 0x40; break;
+    case 'r': settings->bright = 0x40; break;
 
       /* Speed value  */
     case 's':
-      speed_value=atoi( optarg );
-      if( speed_value < 0 || speed_value > 3 ) {
-	print_error( "invalid speed value (%d)", speed_value );
+      settings->speed = atoi( optarg );
+      if( settings->speed < 0 || settings->speed > 3 ) {
+	print_error( "invalid speed (%d)", settings->speed );
 	return 1;
       }
       break;
@@ -393,7 +425,7 @@ parse_args( int argc, char **argv )
     case 'v': verbose = 1; break;
 
       /* External Loading Screen */
-    case '$': external = 1; external_filename = optarg; break;
+    case '$': settings->external_filename = optarg; break;
 
     case '?':
       print_error( "unknown option" );
@@ -409,13 +441,13 @@ parse_args( int argc, char **argv )
   }
 
   /* Snapshot filename */
-  filename = argv[ optind ];
+  settings->input_filename = argv[ optind ];
 
   /* Get the basename without the last extension. Not always going to
      be exactly what we want ('gamename.z80.gz') but will be close to
      right in most cases */
   
-  buffer = strdup( filename );
+  buffer = strdup( settings->input_filename );
   if( !buffer ) {
     print_error( "out of memory at %s:%d", __FILE__, __LINE__ );
     return 1;
@@ -428,15 +460,15 @@ parse_args( int argc, char **argv )
 
     /* 4 characters less than the size of the buffer so we will always
        have room to append ".tzx" */
-    strncpy( out_filename, buffer2, 507 ); out_filename[507] = '\0';
-    strcat( out_filename, ".tzx" );
+    strncpy( settings->output_filename, buffer2, 507 );
+    settings->output_filename[507] = '\0';
+    strcat( settings->output_filename, ".tzx" );
   }
 
-  if( !got_loader_name ) snprintf( loader_name, 9, "%-8s", buffer2 );
+  if( !got_loader_name ) snprintf( settings->loader_name, 9, "%-8s", buffer2 );
   if( !got_game_name ) {
-    snprintf( game_name, 33, "%-32s", buffer2 );
-    change_copyright( game_name );
-    center_name( game_name );
+    error = setup_string( settings->game_name, 32, buffer2 );
+    if( error ) return error;
   }
 
   free( buffer );
@@ -445,7 +477,7 @@ parse_args( int argc, char **argv )
 }
 
 static int
-load_snap( libspectrum_snap **snap )
+load_snap( libspectrum_snap **snap, const char *filename )
 {
   int error;
   unsigned char *buffer; size_t length;
@@ -848,7 +880,7 @@ add_rom_block( libspectrum_tape *tape, const libspectrum_byte flag,
 }
 
 static int
-create_main_header( libspectrum_tape *tape )
+create_main_header( libspectrum_tape *tape, const char *loader_name )
 {
   libspectrum_byte header[17], *ptr;
   size_t i, length;
@@ -885,23 +917,20 @@ create_main_header( libspectrum_tape *tape )
 }
 
 static void
-set_loader_speed( libspectrum_byte border_colour )
+set_loader_speed( int speed, libspectrum_byte border_colour )
 {
   libspectrum_byte xor_colour;
   turbo_variables_t *ptr;
 
-  ptr = &turbo_variables[ speed_value ];
+  ptr = &turbo_variables[ speed ];
 
   turbo_loader[ 94] = ptr->compare;
   turbo_loader[118] = ptr->delay;
-	
-  if( load_colour == 0 ) {
-    /* If border is going to be black, use blue as the counter colour */
-    xor_colour = 0x41;
-  } else {
-    /* Use the ultimate colour as counter colour for the loading stripes */
-    xor_colour = 0x40 | border_colour;
-  }
+
+  /* In general, use black/<final border colour> as the colours for the
+     loading stripes, unless the final colour is black, in which case we
+     (somewhat arbitrarily) use black/blue */
+  xor_colour = ( border_colour == 0 ? 0x41 : 0x40 | border_colour );
 
   turbo_loader[134] = xor_colour;
 }
@@ -957,15 +986,19 @@ snap_mode_128( libspectrum_snap *snap )
 }
 
 static int
-create_loader( libspectrum_snap *snap )
+create_loader( libspectrum_snap *snap, const settings_t *settings )
 {
+  int border_colour;
   size_t i, ppay;
+  libspectrum_byte attributes;
 
-  if( load_colour == -1 )
-    load_colour = libspectrum_snap_out_ula( snap ) & 0x07;
+  border_colour = settings->load_colour;
+
+  if( border_colour == -1 )
+    border_colour = libspectrum_snap_out_ula( snap ) & 0x07;
 
   /* Fill the loader with appropriate speed values and colour */
-  set_loader_speed( load_colour );
+  set_loader_speed( settings->speed, border_colour );
 
   /* Copy the loader to its position in the data */
   memcpy( loader_data + 341 + 256, turbo_loader, 144 );
@@ -977,7 +1010,8 @@ create_loader( libspectrum_snap *snap )
   write_word( &loader_data[ POS_BC2 ], libspectrum_snap_bc_( snap ) );
   write_word( &loader_data[ POS_IY  ], libspectrum_snap_iy( snap ) );
 
-  loader_data[ POS_LAST_ATTR ] = load_colour|(load_colour<<3)|bright;
+  attributes = border_colour | ( border_colour << 3 ) | settings->bright;
+  loader_data[ POS_LAST_ATTR ] = attributes;
 
   if( snap_mode_128( snap ) ) {
     loader_data[ POS_48K_1 ] = 0x57;
@@ -1005,7 +1039,7 @@ create_loader( libspectrum_snap *snap )
 
   write_word( &loader_data[ POS_PC ], libspectrum_snap_pc( snap ) );
 
-  loader_data[ POS_BORDER ] = load_colour;
+  loader_data[ POS_BORDER ] = border_colour;
 
   if( snap_mode_128( snap ) ) {
     loader_data[ POS_PAGE ] = libspectrum_snap_out_128_memoryport( snap );
@@ -1036,7 +1070,7 @@ create_loader( libspectrum_snap *snap )
 
 static int
 add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
-		  libspectrum_snap *snap )
+		  libspectrum_snap *snap, const settings_t *settings )
 {
   libspectrum_tape_block *block;
   libspectrum_error error;
@@ -1061,14 +1095,14 @@ add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
   (*loader)[0] = 0xff;		/* Data block */
 
   /* Copy the game name and info lines into the BASIC code */
-  memcpy( SpectrumBASICData+32, game_name, 32 );
-  memcpy( SpectrumBASICData+103, info1, 32 );
-  memcpy( SpectrumBASICData+144, info2, 32 );
+  memcpy( SpectrumBASICData+32, settings->game_name, 32 );
+  memcpy( SpectrumBASICData+103, settings->info1, 32 );
+  memcpy( SpectrumBASICData+144, settings->info2, 32 );
 
   /* Put the BASIC code into the buffer */
   memcpy( &(*loader)[1], SpectrumBASICData, LOADERPREPIECE - 1 );
 
-  error2 = create_loader( snap );
+  error2 = create_loader( snap, settings );
   if( error2 ) { libspectrum_tape_block_free( block ); return error; }
   
   /* And put the whole loader into the buffer */
@@ -1141,7 +1175,7 @@ get_loading_screen( libspectrum_byte *screen, const char *filename )
 static int
 add_page( libspectrum_tape *tape, libspectrum_snap *snap, int page,
 	  libspectrum_word address, libspectrum_byte *loader,
-	  size_t *loader_table_entry )
+	  size_t *loader_table_entry, const settings_t *settings )
 {
   libspectrum_tape_block *block;
   libspectrum_error error;
@@ -1151,7 +1185,7 @@ add_page( libspectrum_tape *tape, libspectrum_snap *snap, int page,
   error = libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_TURBO );
   if( error ) return error;
 
-  error = create_turbo_header( block, speed_value ); if( error ) {
+  error = create_turbo_header( block, settings->speed ); if( error ) {
     libspectrum_tape_block_free( block );
     return error;
   }
@@ -1164,7 +1198,7 @@ add_page( libspectrum_tape *tape, libspectrum_snap *snap, int page,
 
     libspectrum_byte screen[ 0x1b00 ];
 
-    error = get_loading_screen( screen, external_filename );
+    error = get_loading_screen( screen, settings->external_filename );
     if( error ) { libspectrum_tape_block_free( block ); return error; }
 
     page_length = 0x1b00;
@@ -1223,7 +1257,7 @@ add_page( libspectrum_tape *tape, libspectrum_snap *snap, int page,
     /* Now crunch the block */
     crunch_z80( data, page_length, WorkBuffer, &compressed_length );
 
-    if( external && page == 5 ) {
+    if( settings->external_filename && page == 5 ) {
 
       /* Check if external screen is loading and last page selected
 	 If so then check if it would overwrite loading screen - if so
@@ -1346,18 +1380,20 @@ add_extra_block( libspectrum_tape *tape, libspectrum_snap *snap,
 }
 
 static int
-create_main_data( libspectrum_tape *tape, libspectrum_snap *snap )
+create_main_data( libspectrum_tape *tape, libspectrum_snap *snap,
+		  const settings_t *settings )
 {
   int i, num_pages, error;
   PageOrder_s *page_order;
   libspectrum_byte *loader;
   size_t loader_table_entry;
 
-  error = add_loader_block( tape, &loader, snap ); if( error ) return error;
+  error = add_loader_block( tape, &loader, snap, settings );
+  if( error ) return error;
 
   if( snap_mode_128( snap ) ) {
 
-    if( external ) {
+    if( settings->external_filename ) {
       num_pages = 9;
       page_order = PageOrder128S;
     } else {
@@ -1367,7 +1403,7 @@ create_main_data( libspectrum_tape *tape, libspectrum_snap *snap )
 
   } else {
 		
-    if( external ) {
+    if( settings->external_filename ) {
       num_pages = 4;
       page_order = PageOrder48S;
     } else {
@@ -1382,7 +1418,7 @@ create_main_data( libspectrum_tape *tape, libspectrum_snap *snap )
   for( i = 0; i < num_pages; i++ ) {
     error =
       add_page( tape, snap, page_order[i].PageNumber, page_order[i].PageStart,
-		loader, &loader_table_entry );
+		loader, &loader_table_entry, settings );
     if( error ) return error;
   }
 
@@ -1420,12 +1456,10 @@ write_tape( libspectrum_tape *tape, const char *filename )
   written = fwrite( buffer, 1, length, f );
   if( written != length ) {
     if( written == -1 ) {
-      print_error( "error writing to '%s': %s", out_filename,
-		   strerror( errno ) );
+      print_error( "error writing to '%s': %s", filename, strerror( errno ) );
     } else {
       print_error( "could write only %lu of %lu bytes to '%s'",
-		   (unsigned long)written, (unsigned long)length,
-		   out_filename );
+		   (unsigned long)written, (unsigned long)length, filename );
     }
     free( buffer );
     return 1;
@@ -1442,7 +1476,7 @@ write_tape( libspectrum_tape *tape, const char *filename )
 }  
 
 static int
-convert_snap( libspectrum_snap *snap )
+convert_snap( libspectrum_snap *snap, const settings_t *settings )
 {
   libspectrum_tape *tape;
   int error;
@@ -1451,13 +1485,13 @@ convert_snap( libspectrum_snap *snap )
 
   error = libspectrum_tape_alloc( &tape ); if( error ) return error;
 
-  error = create_main_header( tape );
+  error = create_main_header( tape, settings->loader_name );
   if( error ) { libspectrum_tape_free( tape ); return error; }
 
-  error = create_main_data( tape, snap );
+  error = create_main_data( tape, snap, settings );
   if( error ) { libspectrum_tape_free( tape ); return error; }
 
-  error = write_tape( tape, out_filename );
+  error = write_tape( tape, settings->output_filename );
   if( error ) { libspectrum_tape_free( tape ); return error; }
 
   libspectrum_tape_free( tape );
@@ -1468,16 +1502,19 @@ convert_snap( libspectrum_snap *snap )
 int
 main( int argc, char **argv )
 {
+  settings_t settings;
   libspectrum_snap *snap;
   int error;
 
   progname = argv[0];
 
   error = init_libspectrum(); if( error ) return error;
-  error = parse_args( argc, argv ); if( error ) return error;
-  error = load_snap( &snap ); if( error ) return error;
+  error = parse_args( &settings, argc, argv ); if( error ) return error;
 
-  error = convert_snap( snap );
+  error = load_snap( &snap, settings.input_filename );
+  if( error ) return error;
+
+  error = convert_snap( snap, &settings );
   if( error ) { libspectrum_snap_free( snap ); return error; }
 
   libspectrum_snap_free( snap );
