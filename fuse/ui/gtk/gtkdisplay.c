@@ -1,5 +1,5 @@
 /* gtkdisplay.c: GTK+ routines for dealing with the Speccy screen
-   Copyright (c) 2000 Philip Kendall
+   Copyright (c) 2000-2003 Philip Kendall
 
    $Id$
 
@@ -36,7 +36,6 @@
 #include "display.h"
 #include "fuse.h"
 #include "gtkui.h"
-#include "machine.h"
 #include "screenshot.h"
 #include "ui/ui.h"
 #include "ui/uidisplay.h"
@@ -48,8 +47,9 @@ static GdkImage *image;
 
 unsigned long gtkdisplay_colours[16];
 
-/* The size of a 1x1 image */
-int image_width, image_height;
+/* The size of a 1x1 image in units of
+   DISPLAY_ASPECT WIDTH x DISPLAY_SCREEN_HEIGHT */
+int image_scale;
 
 /* The scaled image */
 static WORD scaled_image[2*DISPLAY_SCREEN_HEIGHT][2*DISPLAY_SCREEN_WIDTH];
@@ -103,12 +103,22 @@ uidisplay_init_scalers( void )
 {
   scaler_register_clear();
 
-  if( machine_current->timex ) {
-    scaler_register( GFX_HALF );
-    scaler_register( GFX_NORMAL );
-  } else {
+  switch( image_scale ) {
+
+  case 1:	/* `Normal' machines */
     scaler_register( GFX_NORMAL );
     scaler_register( GFX_DOUBLESIZE );
+    break;
+
+  case 2:	/* Timex machines */
+    scaler_register( GFX_HALF );
+    scaler_register( GFX_NORMAL );
+    break;
+
+  default:
+    ui_error( UI_ERROR_ERROR, "Unknown image scale %d", image_scale );
+    break;
+
   }
 }
 
@@ -117,8 +127,7 @@ uidisplay_init( int width, int height )
 {
   int error;
 
-  image_width = width;
-  image_height = height;
+  image_scale = width / DISPLAY_ASPECT_WIDTH;
 
   uidisplay_init_scalers();
   error = select_sensible_scaler(); if( error ) return error;
@@ -221,14 +230,14 @@ select_sensible_scaler( void )
   switch( gtkdisplay_current_size ) {
 
   case 1:
-    if( machine_current->timex ) {
+    if( image_scale == 2 ) {
       scaler_select_scaler( GFX_HALF );
     } else {
       scaler_select_scaler( GFX_NORMAL );
     }
     break;
   case 2:
-    if( machine_current->timex ) {
+    if( image_scale == 2 ) {
       scaler_select_scaler( GFX_NORMAL );
     } else {
       scaler_select_scaler( GFX_DOUBLESIZE );
@@ -270,9 +279,7 @@ uidisplay_frame_end( void )
 void
 uidisplay_area( int x, int y, int w, int h )
 {
-  int timex = machine_current->timex;
-  float scale = timex ? gtkdisplay_current_size / 2.0
-                      : gtkdisplay_current_size;
+  float scale = (float)gtkdisplay_current_size / image_scale;
   int scaled_x = scale * x, scaled_y = scale * y, xx, yy;
 
   /* Create scaled image */
