@@ -184,6 +184,7 @@ typedef enum libspectrum_machine {
   LIBSPECTRUM_MACHINE_16,
   LIBSPECTRUM_MACHINE_TC2068,
 
+  LIBSPECTRUM_MACHINE_SCORP,
 } libspectrum_machine;
 
 const char* libspectrum_machine_name( libspectrum_machine type );
@@ -208,6 +209,8 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_SINCLAIR_JOYSTICK;
                                             /* Sinclair-style joystick ports */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK;
                                             /* Kempston-style joystick ports */
+extern const int LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY;
+                                             /* Scorpion-style memory paging */
 
 /* Get the capabilities of a machine */
 int libspectrum_machine_capabilities( libspectrum_machine type );

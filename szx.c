@@ -123,7 +123,7 @@ read_ramp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   flags = libspectrum_read_word( buffer );
 
   page = **buffer; (*buffer)++;
-  if( page > 7 ) {
+  if( page > 15 ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
       "szx_read_ramp_chunk: unknown page number %d", page
@@ -445,6 +445,10 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_TC2068 );
     break;
 
+  case 10:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SCORP );
+    break;
+
   default:
     libspectrum_print_error(
       LIBSPECTRUM_MACHINE_UNKNOWN,
@@ -463,7 +467,7 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
       /* Tidy up any RAM pages we may have allocated */
       size_t i;
 
-      for( i = 0; i < 8; i++ ) {
+      for( i = 0; i < 16; i++ ) {
 	libspectrum_byte *page = libspectrum_snap_pages( snap, i );
 	if( page ) {
 	  free( page );
@@ -723,6 +727,13 @@ write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
     if( error ) return error;
     error = write_ramp_chunk( buffer, ptr, length, snap, 7, compress );
     if( error ) return error;
+    if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY ) {
+      int i;
+      for( i = 8; i < 16; i++ ) {
+        error = write_ramp_chunk( buffer, ptr, length, snap, i, compress );
+        if( error ) return error;
+      }
+    }
   }
 
   return LIBSPECTRUM_ERROR_NONE;
