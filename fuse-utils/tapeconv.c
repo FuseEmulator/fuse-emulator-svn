@@ -1,4 +1,4 @@
-/* tzxconf.c: Convert .tzx files to .tap files
+/* tapeconf.c: Convert .tzx files to .tap files
    Copyright (c) 2002 Philip Kendall
 
    $Id$
