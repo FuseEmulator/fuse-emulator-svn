@@ -1,5 +1,5 @@
 /* rzx.c: routines for dealing with .rzx files
-   Copyright (c) 2002 Philip Kendall
+   Copyright (c) 2002-2003 Philip Kendall
 
    $Id$
 
@@ -36,10 +36,13 @@
 typedef enum libspectrum_rzx_block_t {
 
   LIBSPECTRUM_RZX_CREATOR_BLOCK = 0x10,
+
+  LIBSPECTRUM_RZX_SIGN_START_BLOCK = 0x20,
+  LIBSPECTRUM_RZX_SIGN_END_BLOCK = 0x21,
+
   LIBSPECTRUM_RZX_SNAPSHOT_BLOCK = 0x30,
+
   LIBSPECTRUM_RZX_INPUT_BLOCK = 0x80,
-  LIBSPECTRUM_RZX_SIGN_START_BLOCK = 0xfe,
-  LIBSPECTRUM_RZX_SIGN_END_BLOCK = 0xff,
 
 } libspectrum_rzx_block_t;
 
