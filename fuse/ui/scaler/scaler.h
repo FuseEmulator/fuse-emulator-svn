@@ -36,11 +36,18 @@ typedef enum scaler_type {
   GFX_NUM
 } scaler_type;
 
+typedef enum scaler_flags_t {
+  SCALER_FLAGS_NONE        = 0,
+  SCALER_EXPAND_1_PIXEL    = 1 << 0,
+  SCALER_EXPAND_2_Y_PIXELS = 1 << 1,
+} scaler_flags_t;
+
 typedef void ScalerProc(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
 	                BYTE *dstPtr, DWORD dstPitch, int width, int height);
 
 extern scaler_type current_scaler;
 extern ScalerProc *scaler_proc;
+extern scaler_flags_t scaler_flags;
 extern int scalers_registered;
 
 int scaler_select_id( const char *scaler_mode );

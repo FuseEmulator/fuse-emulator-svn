@@ -49,13 +49,6 @@ static SDL_Surface *tmp_screen=NULL; /* Temporary screen for scalers */
 
 static int tmp_screen_width;
 
-static DWORD scaler_mode_flags;
-
-enum {
-  UPDATE_EXPAND_1_PIXEL = 1 << 0,
-  UPDATE_EXPAND_2_Y_PIXELS = 1 << 1
-};
-
 static Uint32 colour_values[16];
 
 static SDL_Color colour_palette[] = {
@@ -129,7 +122,7 @@ uidisplay_init( int width, int height )
 
   uidisplay_init_scalers();
 
-  if ( scaler_select_scaler( current_scaler ) ) current_scaler = GFX_NORMAL;
+  if ( scaler_select_scaler( current_scaler ) ) return 1;
 
   ret = sdldisplay_load_gfx_mode();
 
@@ -160,7 +153,6 @@ sdldisplay_load_gfx_mode( void )
   Uint16 *tmp_screen_pixels;
 
   sdldisplay_force_full_refresh = 1;
-  scaler_mode_flags = 0;
 
   tmp_screen = NULL;
   tmp_screen_width = (image_width + 3);
@@ -168,27 +160,21 @@ sdldisplay_load_gfx_mode( void )
   switch( current_scaler ) {
   case GFX_2XSAI:
     sdldisplay_current_size = 2;
-    scaler_mode_flags = UPDATE_EXPAND_1_PIXEL;
     break;
   case GFX_SUPER2XSAI:
     sdldisplay_current_size = 2;
-    scaler_mode_flags = UPDATE_EXPAND_1_PIXEL;
     break;
   case GFX_SUPEREAGLE:
     sdldisplay_current_size = 2;
-    scaler_mode_flags = UPDATE_EXPAND_1_PIXEL;
     break;
   case GFX_ADVMAME2X:
     sdldisplay_current_size = 2;
-    scaler_mode_flags = UPDATE_EXPAND_1_PIXEL;
     break;
   case GFX_TV2X:
     sdldisplay_current_size = 2;
-    scaler_mode_flags = UPDATE_EXPAND_1_PIXEL;
     break;
   case GFX_TIMEXTV:
     sdldisplay_current_size = 1;
-    scaler_mode_flags = UPDATE_EXPAND_2_Y_PIXELS;
     break;
   case GFX_DOUBLESIZE:
     sdldisplay_current_size = 2;
@@ -385,12 +371,12 @@ uidisplay_area( int x, int y, int width, int height )
 
   /* Extend the dirty region by 1 pixel for scalers
      that "smear" the screen, e.g. 2xSAI */
-  if (scaler_mode_flags & UPDATE_EXPAND_1_PIXEL) {
+  if( scaler_flags & SCALER_EXPAND_1_PIXEL ) {
     x--;
     y--;
     width+=2;   
     height+=2;
-  } else if (scaler_mode_flags & UPDATE_EXPAND_2_Y_PIXELS) {
+  } else if ( scaler_flags & SCALER_EXPAND_2_Y_PIXELS ) {
     y-=2;
     height+=4;
   }
