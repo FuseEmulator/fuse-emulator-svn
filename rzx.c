@@ -32,6 +32,34 @@
 
 #include "internals.h"
 
+typedef struct libspectrum_rzx_frame_t {
+
+  size_t instructions;
+
+  size_t count;
+  libspectrum_byte* in_bytes;
+
+  int repeat_last;			/* Set if we should use the last
+					   frame's IN bytes */
+
+} libspectrum_rzx_frame_t;
+
+struct libspectrum_rzx {
+
+  libspectrum_rzx_frame_t *frames;
+  size_t count;
+  size_t allocated;
+
+  size_t tstates;
+
+  /* Playback variables */
+  size_t current_frame;		/* The number of the current playback frame */
+  size_t in_count;		/* How many INs done in current frame */
+  libspectrum_rzx_frame_t *data_frame;
+				/* Which frame we're reading INs from */
+
+};
+
 static libspectrum_error
 rzx_read_header( const libspectrum_byte **ptr, const libspectrum_byte *end );
 static libspectrum_error
