@@ -203,6 +203,29 @@ libspectrum_timings_lines_per_frame( libspectrum_machine machine );
 libspectrum_dword
 libspectrum_timings_tstates_per_frame( libspectrum_machine machine );
 
+/* Creator information */
+
+typedef struct libspectrum_creator libspectrum_creator;
+
+libspectrum_error libspectrum_creator_alloc( libspectrum_creator **creator );
+libspectrum_error libspectrum_creator_free( libspectrum_creator *creator );
+
+libspectrum_error
+libspectrum_creator_set_program( libspectrum_creator *creator,
+				 const libspectrum_byte *program );
+const libspectrum_byte*
+libspectrum_creator_program( libspectrum_creator *creator );
+
+libspectrum_error libspectrum_creator_set_major( libspectrum_creator *creator,
+						 libspectrum_word major );
+libspectrum_word
+libspectrum_creator_major( libspectrum_creator *creator );
+
+libspectrum_error libspectrum_creator_set_minor( libspectrum_creator *creator,
+						 libspectrum_word minor );
+libspectrum_word
+libspectrum_creator_minor( libspectrum_creator *creator );
+
 /*
  * Snap handling routines
  */
@@ -678,8 +701,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
 libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_rzx *rzx, libspectrum_snap *snap,
-		       const char *program, libspectrum_word major,
-		       libspectrum_word minor, int compress );
+		       libspectrum_creator *creator, int compress );
 
 /*
  * Timex DOCK/EXROM handling routines
