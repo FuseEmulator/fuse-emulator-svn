@@ -1,0 +1,10 @@
+libspectrum is brought to you by:
+
+* Darren Salt: SLT support, TZX raw data blocks, RZX embedded snapshots,
+               RZX compression.
+
+* Matan Ziv-Av: The glib emulation code.
+
+* Philip Kendall: everything else.
+
+$Id$
