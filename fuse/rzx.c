@@ -38,6 +38,7 @@
 #include "rzx.h"
 #include "settings.h"
 #include "snapshot.h"
+#include "timer.h"
 #include "ui/ui.h"
 #include "utils.h"
 #include "z80/z80.h"
@@ -140,7 +141,11 @@ int rzx_start_recording( const char *filename, int embed_snapshot )
   /* Note that we're recording */
   rzx_recording = 1;
   rzx_competition_mode = settings_current.competition_mode;
-
+  if( settings_current.competition_mode ) {
+    settings_current.emulation_speed = 100;
+    timer_count = 0;
+  }
+    
   ui_menu_activate_recording( 1 );
 
   return 0;
