@@ -268,6 +268,9 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
 
   ptr = buffer; end = buffer + length;
 
+  /* Indicate 'no snap stored in this file' */
+  *snap = NULL;
+
   error = rzx_read_header( &ptr, end );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
