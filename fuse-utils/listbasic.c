@@ -65,6 +65,7 @@ int main(int argc, char* argv[])
   int error;
   unsigned char *buffer; size_t length;
   libspectrum_id_t type;
+  libspectrum_class_t type;
 
   progname = argv[0];
 
@@ -78,21 +79,22 @@ int main(int argc, char* argv[])
   error = libspectrum_identify_file( &type, argv[1], buffer, length );
   if( error ) { munmap( buffer, length ); return error; }
 
-  switch( type ) {
+  error = libspectrum_identify_class( &class, type );
+  if( error ) { munmap( buffer, length ); return error; }
 
-  case LIBSPECTRUM_ID_SNAPSHOT_SNA:
-  case LIBSPECTRUM_ID_SNAPSHOT_Z80:
+  switch( class ) {
+
+  case LIBSPECTRUM_CLASS_SNAPSHOT:
     error = parse_snapshot_file( buffer, length, type );
     if( error ) { munmap( buffer, length ); return error; }
     break;
 
-  case LIBSPECTRUM_ID_TAPE_TAP:
-  case LIBSPECTRUM_ID_TAPE_TZX:
+  case LIBSPECTRUM_CLASS_TAPE:
     error = parse_tape_file( buffer, length, type );
     if( error ) { munmap( buffer, length ); return error; }
     break;
 
-  case LIBSPECTRUM_ID_UNKNOWN:
+  case LIBSPECTRUM_CLASS_UNKNOWN:
     fprintf( stderr, "%s: couldn't identify the file type of `%s'\n",
 	     progname, argv[1] );
     munmap( buffer, length );
