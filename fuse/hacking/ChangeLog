@@ -490,3 +490,6 @@
 	 patch #871182) (Release-0_6_2-branch) (Fred).
 20040115 ui/uijoystick.h: add #include <libspectrum.h> (more of patch
 	 #871182) (Release-0_6_2-branch) (Fred).
+20040115 Add optional tape and disk icons for the SDL UI (slightly
+	 modified version of the rest of patch #871182)
+	 (Release-0_6_2-branch) (Fred/Phil).
