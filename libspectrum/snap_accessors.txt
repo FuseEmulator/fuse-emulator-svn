@@ -75,6 +75,17 @@ size_t slt_length 1
 libspectrum_byte* slt_screen
 int slt_screen_level
 
+int zxatasp_active
+int zxatasp_upload
+int zxatasp_writeprotect
+libspectrum_byte zxatasp_port_a
+libspectrum_byte zxatasp_port_b
+libspectrum_byte zxatasp_port_c
+libspectrum_byte zxatasp_control
+size_t zxatasp_pages
+size_t zxatasp_current_page
+libspectrum_byte* zxatasp_ram 1
+
 int zxcf_active
 int zxcf_upload
 libspectrum_byte zxcf_memctl

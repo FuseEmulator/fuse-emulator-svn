@@ -112,6 +112,16 @@ struct libspectrum_snap {
   libspectrum_byte beta_system, beta_track, beta_sector, beta_data,
     beta_status;
 
+  /* ZXATASP status */
+  int zxatasp_active;
+  int zxatasp_upload;
+  int zxatasp_writeprotect;
+  libspectrum_byte zxatasp_port_a, zxatasp_port_b, zxatasp_port_c;
+  libspectrum_byte zxatasp_control;
+  size_t zxatasp_pages;
+  size_t zxatasp_current_page;
+  libspectrum_byte *zxatasp_ram[ SNAPSHOT_ZXATASP_PAGES ];
+
   /* ZXCF status */
   int zxcf_active;
   int zxcf_upload;
