@@ -156,8 +156,10 @@ void widget_rectangle( int x, int y, int w, int h, int col )
 void
 widget_display_lines( int y, int h )
 {
-  uidisplay_area( 0, DISPLAY_BORDER_HEIGHT + 8 * y,
-		  DISPLAY_ASPECT_WIDTH, 8 * ( h + 7 ) );
+  int scale = machine_current->timex ? 2 : 1;
+
+  uidisplay_area( 0, scale * ( DISPLAY_BORDER_HEIGHT + 8 * y ),
+		  scale * DISPLAY_ASPECT_WIDTH, scale * 8 * ( h + 7 ) );
   uidisplay_frame_end();
 }
 

@@ -29,12 +29,15 @@
 #include <stdio.h>
 
 #include "display.h"
+#include "machine.h"
 #include "ui/uidisplay.h"
 
 void uidisplay_spectrum_screen( const BYTE *screen, int border )
 {
   int x,y;
   BYTE attr,data; int ink, paper;
+
+  int scale = machine_current->timex ? 2 : 1;
 
   for( y=0; y < DISPLAY_BORDER_HEIGHT; y++ ) {
     for( x=0; x < DISPLAY_ASPECT_WIDTH; x++ ) {
@@ -67,5 +70,6 @@ void uidisplay_spectrum_screen( const BYTE *screen, int border )
     }
   }
 
-  uidisplay_area( 0, 0, DISPLAY_SCREEN_WIDTH, DISPLAY_SCREEN_HEIGHT );
+  uidisplay_area( 0, 0, scale * DISPLAY_ASPECT_WIDTH,
+		  scale * DISPLAY_SCREEN_HEIGHT );
 }

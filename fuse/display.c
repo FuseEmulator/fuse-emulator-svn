@@ -585,7 +585,15 @@ static void display_dirty64(WORD address)
 void
 display_putpixel( int x, int y, int colour )
 {
-  display_image[y][x] = colour;
+  if( machine_current->timex ) {
+    x <<= 1; y <<= 1;
+    display_image[y  ][x  ] = colour;
+    display_image[y  ][x+1] = colour;
+    display_image[y+1][x  ] = colour;
+    display_image[y+1][x+1] = colour;
+  } else {
+    display_image[y][x] = colour;
+  }
 }
 
 /* Print the 8 pixels in `data' using ink colour `ink' and paper
