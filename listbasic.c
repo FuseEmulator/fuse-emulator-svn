@@ -78,10 +78,8 @@ int main(int argc, char* argv[])
 
   error = mmap_file( argv[1], &buffer, &length ); if( error ) return error;
 
-  error = libspectrum_identify_file( &type, argv[1], buffer, length );
-  if( error ) { munmap( buffer, length ); return error; }
-
-  error = libspectrum_identify_class( &class, type );
+  error = libspectrum_identify_file_with_class( &type, &class, argv[1], buffer,
+						length );
   if( error ) { munmap( buffer, length ); return error; }
 
   switch( class ) {
