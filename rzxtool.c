@@ -37,6 +37,8 @@
 
 #include <libspectrum.h>
 
+#include "utils.h"
+
 struct options {
 
   char *rzxfile;		/* The RZX file we'll operate on */
@@ -54,7 +56,6 @@ char *progname;			/* argv[0] */
 
 void init_options( struct options *options );
 int parse_options( int argc, char **argv, struct options *options );
-int mmap_file( const char *filename, unsigned char **buffer, size_t *length );
 int write_snapshot( libspectrum_snap *snap );
 int make_snapshot( unsigned char **buffer, size_t *length,
 		   libspectrum_snap *snap );
@@ -243,44 +244,6 @@ parse_options( int argc, char **argv, struct options *options )
 
   options->rzxfile = argv[optind];
 
-  return 0;
-}
-
-int
-mmap_file( const char *filename, unsigned char **buffer, size_t *length )
-{
-  int fd; struct stat file_info;
-  
-  if( ( fd = open( filename, O_RDONLY ) ) == -1 ) {
-    fprintf( stderr, "%s: couldn't open `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    return 1;
-  }
-
-  if( fstat( fd, &file_info) ) {
-    fprintf( stderr, "%s: couldn't stat `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  (*length) = file_info.st_size;
-
-  (*buffer) = mmap( 0, *length, PROT_READ, MAP_SHARED, fd, 0 );
-  if( (*buffer) == (void*)-1 ) {
-    fprintf( stderr, "%s: couldn't mmap `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  if( close(fd) ) {
-    fprintf( stderr, "%s: couldn't close `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    munmap( *buffer, *length );
-    return 1;
-  }
-  
   return 0;
 }
 
