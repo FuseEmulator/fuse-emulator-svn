@@ -1,4 +1,4 @@
-libspectrum 0.2.1
+libspectrum 0.2.2
 =================
 
 libspectrum is a library which is designed to make the input and
@@ -47,4 +47,4 @@ released tarballs, you'll need to run `autogen.sh' before running
 'configure' for the first time.
 
 Philip Kendall <pak21-fuse@srcf.ucam.org>
-11 February 2004
+26 June 2004
