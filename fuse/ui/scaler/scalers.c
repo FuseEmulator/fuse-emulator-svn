@@ -900,23 +900,23 @@ static void
 AdvMame2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
 	  int width, int height)
 {
-  unsigned int nextlineSrc = srcPitch / sizeof(short);
-  short *p = (short *) srcPtr;
+  unsigned int nextlineSrc = srcPitch / sizeof( scaler_data_type );
+  scaler_data_type *p = (scaler_data_type*) srcPtr;
 
-  unsigned nextlineDst = dstPitch / sizeof(short);
-  short *q = (short *) dstPtr;
+  unsigned nextlineDst = dstPitch / sizeof( scaler_data_type );
+  scaler_data_type *q = (scaler_data_type*) dstPtr;
 
   while (height--) {
     int i;
     for (i = 0; i < width; ++i) {
       /* short A = *(p + i - nextlineSrc - 1); */
-      short B = *(p + i - nextlineSrc);
+      scaler_data_type B = *(p + i - nextlineSrc);
       /* short C = *(p + i - nextlineSrc + 1); */
-      short D = *(p + i - 1);
-      short E = *(p + i);
-      short F = *(p + i + 1);
+      scaler_data_type D = *(p + i - 1);
+      scaler_data_type E = *(p + i);
+      scaler_data_type F = *(p + i + 1);
       /* short G = *(p + i + nextlineSrc - 1); */
-      short H = *(p + i + nextlineSrc);
+      scaler_data_type H = *(p + i + nextlineSrc);
       /* short I = *(p + i + nextlineSrc + 1); */
 
       *(q + (i << 1)) = D == B && B != F && D != H ? D : E;
@@ -933,16 +933,16 @@ void
 Half(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
 	 int width, int height)
 {
-  WORD *r;
+  scaler_data_type *r;
 
   while (height--) {
     int i;
-    r = (WORD *) dstPtr;
+    r = (scaler_data_type*) dstPtr;
 
     if( ( height & 1 ) == 0 ) {
       for (i = 0; i < width; i+=2, ++r) {
-        WORD color1 = *(((WORD *) srcPtr) + i);
-        WORD color2 = *(((WORD *) srcPtr) + i + 1);
+        scaler_data_type color1 = *(((scaler_data_type*) srcPtr) + i);
+        scaler_data_type color2 = *(((scaler_data_type*) srcPtr) + i + 1);
 
         *r = INTERPOLATE(color1, color2);
       }
