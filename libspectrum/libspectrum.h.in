@@ -100,6 +100,9 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_DISK_SCL,
   LIBSPECTRUM_ID_DISK_TRD,
 
+  /* Timex DOCK/EXROM files */
+  LIBSPECTRUM_ID_CARTRIDGE_DCK,
+
 } libspectrum_id_t;
 
 libspectrum_error
@@ -685,6 +688,46 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_rzx *rzx, libspectrum_snap *snap,
 		       const char *program, libspectrum_word major,
 		       libspectrum_word minor, int compress );
+
+/*
+ * Timex DOCK/EXROM handling routines
+ */
+
+/* The types of memory which this bank will page into */
+typedef enum libspectrum_dck_bank {
+  LIBSPECTRUM_DCK_BANK_DOCK = 0,
+  LIBSPECTRUM_DCK_BANK_EXROM = 254,
+  LIBSPECTRUM_DCK_BANK_HOME = 255
+} libspectrum_dck_bank; 
+
+/* The type of one 8Kb page */
+typedef enum libspectrum_dck_page_type {
+  LIBSPECTRUM_DCK_PAGE_NULL = 0,
+  LIBSPECTRUM_DCK_PAGE_RAM_EMPTY,
+  LIBSPECTRUM_DCK_PAGE_ROM,
+  LIBSPECTRUM_DCK_PAGE_RAM
+} libspectrum_dck_page_type;
+
+/* One set of 8 x 8Kb pages */
+typedef struct libspectrum_dck_block {
+  libspectrum_dck_bank bank;
+  libspectrum_dck_page_type access[8];
+  libspectrum_byte *pages[8];
+} libspectrum_dck_block;
+
+/* A number of 8 x 8Kb page sets */
+/* FIXME: Remove the arbitrary limit on the number of banks */
+typedef struct libspectrum_dck {
+  libspectrum_dck_block *dck[256];	/* dck block data */
+} libspectrum_dck;
+
+libspectrum_error libspectrum_dck_alloc( libspectrum_dck **dck );
+libspectrum_error libspectrum_dck_free( libspectrum_dck *dck, int keep_pages );
+
+/* Read in a DCK file */
+libspectrum_error
+libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
+                      size_t length );
 
 #ifdef __cplusplus
 };
