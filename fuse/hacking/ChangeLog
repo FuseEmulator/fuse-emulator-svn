@@ -566,3 +566,5 @@
 	 (Darren).
 20040217 settings.dat, ui/uijoystick.c: allow selectable joystick devices
 	 (Release-0_6_2-branch) (Darren).
+20040218 ui/uijoystick.c: open_stick should be open_joystick
+	 (Release-0_6_2-branch).

@@ -1,5 +1,5 @@
 /* uijoystick.c: Joystick emulation (using libjsw)
-   Copyright (c) 2003 Darren Salt
+   Copyright (c) 2003-2004 Darren Salt, Philip Kendall
 
    $Id$
 
@@ -157,10 +157,10 @@ ui_joystick_init( void )
   sprintf( calibration, "%s/%s", home, JSDefaultCalibration );
 
   /* If we can't init the first, don't try the second */
-  error = open_stick( 0, settings_current.joystick_1, calibration );
+  error = open_joystick( 0, settings_current.joystick_1, calibration );
   if( error ) return 0;
 
-  error = open_stick( 1, settings_current.joystick_2, calibration );
+  error = open_joystick( 1, settings_current.joystick_2, calibration );
   if( error ) return 1;
 
   return 2;
