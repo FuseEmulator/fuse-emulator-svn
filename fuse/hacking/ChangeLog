@@ -496,3 +496,5 @@
 20040117 TAG: Release-0_6_2pre1 (Release-0_6_2-branch).
 20040119 ui/Makefile.am: distribute uijoystick.[ch] (and move the
 	 Release-0_6_2pre1 tag to this version) (Release-0_6_2-branch).
+20040120 configure.in, ui/Makefile.am, ui/win32/Makefile.am: put the win32
+	 UI code in the distribution tarball (Release-0_6_2-branch).

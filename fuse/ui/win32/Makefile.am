@@ -24,20 +24,15 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = @UI@ scaler
+noinst_LIBRARIES = libuiwin32.a
 
-DIST_SUBDIRS = fb \
-	       ggi \
-	       gtk \
-	       scaler \
-	       sdl \
-	       svga \
-	       win32 \
-	       xlib
+libuiwin32_a_SOURCES = error.c \
+		       keysyms.c \
+		       win32display.c \
+		       win32keyboard.c \
+		       win32ui.c
 
-noinst_HEADERS = ui.h \
-		 uidisplay.h \
-		 uijoystick.h
+noinst_HEADERS = win32display.h \
+		 win32keyboard.h
 
-EXTRA_DIST = options.dat \
-	     uijoystick.c
+EXTRA_DIST = todo.txt
