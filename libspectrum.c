@@ -209,6 +209,8 @@ const int LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK = 1 << 9;
                                             /* Kempston-style joystick ports */
 const int LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY = 1 << 10;
                                              /* Scorpion-style memory paging */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_EVEN_M1 = 1 << 11;
+                             /* M1 cycles always start on even tstate counts */
 
 /* Given a machine type, what features does it have? */
 int
@@ -308,6 +310,14 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_SCORP:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY; break;
+  default:
+    break;
+  }
+
+  /* M1 cycles forced to start on even tstates */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_SCORP:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_EVEN_M1; break;
   default:
     break;
   }
