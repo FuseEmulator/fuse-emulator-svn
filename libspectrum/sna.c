@@ -319,6 +319,8 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
   case LIBSPECTRUM_MACHINE_PLUS3:
   case LIBSPECTRUM_MACHINE_PLUS3E:
   case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_SCORP:
+  case LIBSPECTRUM_MACHINE_SE:
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
     /* Fall through */
   case LIBSPECTRUM_MACHINE_PLUS2:
@@ -329,13 +331,6 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
   case LIBSPECTRUM_MACHINE_UNKNOWN:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "Emulated machine type is set to 'unknown'!" );
-    return LIBSPECTRUM_ERROR_LOGIC;
-
-  default:
-    /* Should never happen */
-    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
-			     "libspectrum_sna_write: unknown machine type %d",
-			     libspectrum_snap_machine( snap ) );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
