@@ -239,3 +239,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040620 README,autogen.sh: add script to do the autotools invocation.
 20040620 hacking/cvs-tags: remove (use doc/cvs-tags instead).
 20040621 z80.c: remove literal machine constants.
+20040621 z80.c: allow the extensions to the .z80 machine type be valid
+	 for both v2 and v3 files.
