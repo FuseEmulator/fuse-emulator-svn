@@ -195,3 +195,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040402 libspectrum.c: add capabilities for the +3e.
 20040408 Makefile.am,configure.in,myglib.c,myglib/{.cvsignore,Makefile.am}:
 	 move the glib replacement code into its own directory.
+20040408 myglib/Makefile.am,myglib/ghash.c: add minimal GHashTable
+	 replacement (borrowed from glib 2.4.0).
