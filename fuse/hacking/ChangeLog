@@ -493,4 +493,6 @@
 20040115 Add optional tape and disk icons for the SDL UI (slightly
 	 modified version of the rest of patch #871182)
 	 (Release-0_6_2-branch) (Fred/Phil).
-20040117 TAG: Release-0_6_2pre1
+20040117 TAG: Release-0_6_2pre1 (Release-0_6_2-branch).
+20040119 ui/Makefile.am: distribute uijoystick.[ch] (and move the
+	 Release-0_6_2pre1 tag to this version) (Release-0_6_2-branch).
