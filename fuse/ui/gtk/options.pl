@@ -204,6 +204,7 @@ CODE
     print << "CODE";
   gtk_widget_destroy( ptr->dialog );
 
+  gtkstatusbar_set_visibility( settings_current.statusbar );
   display_refresh_all();
 
   gtk_main_quit();
