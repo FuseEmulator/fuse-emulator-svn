@@ -176,6 +176,8 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 
       { LIBSPECTRUM_ID_SNAPSHOT_SNA,  "sna", NULL,       0, 0, 0 },
       { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "z80", "\0\0",     6, 2, 1 },
+      /* .slt files also dealt with by the .z80 loading code */
+      { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "slt", "\0\0",     6, 2, 1 },
 
       { LIBSPECTRUM_ID_TAPE_TAP,      "tap", "\x13\0\0", 0, 3, 1 },
       { LIBSPECTRUM_ID_TAPE_TZX,      "tzx", "ZXTape!",  0, 7, 3 },
