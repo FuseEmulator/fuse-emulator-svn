@@ -62,8 +62,11 @@ AC_CHECK_HEADERS(zlib.h,LIBS="$LIBS -lz")
 dnl Check for libgcrypt
 AC_CHECK_HEADERS(gcrypt.h,LIBS="$LIBS -lgcrypt")
 
-dnl Check for libbz2
-AC_CHECK_HEADERS(bzlib.h,LIBS="$LIBS -lbz2")
+dnl Check for libbz2 1.0 or greater
+AC_CHECK_HEADER(
+  bzlib.h,
+  AC_CHECK_LIB(bz2,BZ2_bzDecompressInit)
+)
 
 dnl Either find glib or use the replacement
 AC_MSG_CHECKING(whether to use glib)

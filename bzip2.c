@@ -26,7 +26,7 @@
 
 #include <config.h>
 
-#ifdef HAVE_BZLIB_H
+#ifdef HAVE_LIBBZ2
 
 #include <stdlib.h>
 
@@ -162,4 +162,4 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
   }				/* Matches if( *outlength ) { ... } */
 }
 
-#endif				/* #ifdef HAVE_BZLIB_H */
+#endif				/* #ifdef HAVE_LIBBZ2 */
