@@ -679,19 +679,21 @@ frame of `rzx'.
 
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
-		      const libspectrum_byte *buffer, const size_t length )
+		      const libspectrum_byte *buffer, const size_t length,
+		      libspectrum_rzx_signature *signature )
 
 Given a .rzx file of `length' bytes starting at `buffer', extract the
 input recording data into `rzx' and the embedded snapshot into
 `*snap'. If there is no embedded snapshot, `*snap' will be NULL after
-the call.
+the call. If the RZX file contains a digital signature, `*signature'
+will contain the information from that signature; see below for
+information on this.
 
 libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_rzx *rzx,
-		       libspectrum_byte *snap, const char *program,
-		       libspectrum_word major, libspectrum_word minor,
-		       int compress )
+		       libspectrum_byte *snap, libspectrum_creator *creator,
+		       int compress, libspectrum_rzx_dsa_key *key )
 
 Given input recording data in `rzx' and a snapshot in `snap', create a
 .rzx file in `*buffer'. If no embedded snapshot is required, set
@@ -699,10 +701,92 @@ Given input recording data in `rzx' and a snapshot in `snap', create a
 least `*length' bytes (can be zero). After the call, `*length'
 contains the length of the .rzx file.
 
-`program', `major' and `minor' give the values to be placed in the
-.rzx header fields. If `compress' is non-zero (and `zlib' was
-available when libspectrum was compiled), the resulting .rzx file will
-have its snapshot and input recording data compressed.
+`creator' contains the creator information which should be written
+into the RZX file. If `key' is non-NULL, the RZX file will be
+digitally signed using the specified DSA key; see below for more
+details.
+
+Digital signatures in RZX files
+-------------------------------
+
+One use of input recording files is to allow a `best Spectrum games
+player' tournament to be held: everybody records themselves playing a
+game, sends in input recordings of themselves doing this, and then
+everyone can see who is the best player. When using an emulator, it is
+obviously rather easy to cheat at this by using snapshots, slowing
+down the emulator and all sorts of other ways. Fundamentally, there's
+no way round this problem except by running a the emulator on trusted
+hardware, which is a whole different kettle of fish.
+
+One such `best player' tournament, the Speccy Tour 2003 (see
+http://www.speccy.org/SpeccyTour03/ ) required that for an emulator to
+be `allowable' for the Tour, it must implement a `competition mode' in
+which snapshot saving etc is forbidden and must then `prove' that the
+RZX file was made in competition mode by digitally signing the RZX
+file. This is clearly still insecure as the key must be present in the
+emulator to allow it to sign files, but that's what the organisers
+wanted, so it's implemented in libspectrum. What information you wish
+to draw from the presence or absence of a digitial signature on an RZX
+file is entirely up to you.
+
+The digital signature routines use libgcrypt to provide the necessary
+support. If this is not present when libspectrum is compiled, the
+signature routines will not available.
+
+If you're not aware of the DSA algorithm, the rest of this section
+probably won't make much sense to you; go and read a good cryptography
+textbook :-)
+
+To sign an RZX file, all that is required is a DSA key. libspectrum
+uses a `libspectrum_rzx_dsa_key' structure to represent this:
+
+typedef struct libspectrum_rzx_dsa_key {
+
+  const char *p, *q, *g, *y, *x;
+
+} libspectrum_rzx_dsa_key;
+
+Each of the fields is one of the standard DSA parameters, stored as a
+hex string with the MSB first. `x' should be set to NULL for a public
+key.
+
+When a digitally signed RZX file is read, the signature information
+will be read into a `libspectrum_rzx_signature' structure:
+
+typedef struct libspectrum_rzx_signature {
+
+  libspectrum_dword key_id;
+
+  const libspectrum_byte *start; ptrdiff_t length;
+
+  GcryMPI r, s;
+
+} libspectrum_rzx_signature;
+
+`key_id' is the low 32-bits of the `y' parameter of the key used to
+sign this file; you'll have to implement your own lookup table to find
+the rest of the key. `start' points to the signed data, which is
+`length' bytes long. `r' and `s' are the standard DSA signature
+parameters, stored in libgcrypt's native MPI format. (If libgcrypt is
+not available, these parameters are simply not present in the
+structure).
+
+To verify a signature, simply call `libspectrum_verify_signature':
+
+libspectrum_error
+libspectrum_verify_signature( libspectrum_rzx_signature *signature,
+			      libspectrum_rzx_dsa_key *key )
+
+This will return LIBSPECTRUM_ERROR_NONE if the signature is valid or
+LIBSPECTRUM_ERROR_SIGNATURE if it is invalid.
+
+Once you're done with a signature, `libspectrum_signature_free' will
+release the memory it was using:
+
+libspectrum_error
+libspectrum_signature_free( libspectrum_rzx_signature *signature )
+
+Note this will not free the data pointed to by `start'.
 
 Timex dock/exrom handling functions
 ===================================
