@@ -54,3 +54,5 @@
 	 functions.
 20031014 .cvsignore, configure.in, fuse-utils.gpg.in: add QNX6 package
 	 file (thanks, Mike Gorchak).
+20031014 configure.in, rzxtool.c, scl2trd.c: we need <strings.h> for
+	 strncasecmp on QNX6 (thanks, Mike Gorchak).
