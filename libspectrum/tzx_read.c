@@ -247,9 +247,7 @@ libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   if( ! tape->blocks ) return LIBSPECTRUM_ERROR_NONE;
 
   /* Otherwise, initialise the first block */
-  error = libspectrum_tape_init_block(
-            (libspectrum_tape_block*)tape->current_block->data
-          );
+  error = libspectrum_tape_init_block( tape->current_block );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
