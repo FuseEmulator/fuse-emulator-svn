@@ -216,3 +216,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040521 szx.c: save RAM page 8 for the Spectrum SE.
 20040521 sna.c,z80.c: allow SE (sna/z80) and Scorpion (z80) snapshots to
 	 be (badly) saved.
+20040525 accessor.pl,sna.c,snap_accessors.txt,szx.c,z80.c: add support for
+         saving Timex Dock/Exrom information in .szx snapshots.
