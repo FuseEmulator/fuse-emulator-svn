@@ -46,9 +46,11 @@ static libspectrum_error
 rzx_read_frames( libspectrum_rzx *rzx,
 		 const libspectrum_byte **ptr, const libspectrum_byte *end );
 static libspectrum_error
-rzx_read_sign_start( const libspectrum_byte **ptr,
-		     const libspectrum_byte *end,
+rzx_read_sign_start( const libspectrum_byte **ptr, const libspectrum_byte *end,
 		     const libspectrum_byte **sign_start );
+static libspectrum_error
+rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
+		   const libspectrum_byte *sign_start );
 
 static libspectrum_error
 rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -193,6 +195,11 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
 
     case LIBSPECTRUM_RZX_SIGN_START_BLOCK:
       error = rzx_read_sign_start( &ptr, end, &sign_start );
+      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+      break;
+
+    case LIBSPECTRUM_RZX_SIGN_END_BLOCK:
+      error = rzx_read_sign_end( &ptr, end, sign_start );
       if( error != LIBSPECTRUM_ERROR_NONE ) return error;
       break;
 
@@ -512,13 +519,12 @@ rzx_read_frames( libspectrum_rzx *rzx,
 }
 
 static libspectrum_error
-rzx_read_sign_start( const libspectrum_byte **ptr,
-		     const libspectrum_byte *end,
+rzx_read_sign_start( const libspectrum_byte **ptr, const libspectrum_byte *end,
 		     const libspectrum_byte **sign_start )
 {
   size_t length;
 
-  /* Check we've got enough data for the block */
+  /* Check we've got enough data for the length */
   if( end - (*ptr) < 4 ) {
     libspectrum_print_error(
       "rzx_read_sign_start: not enough data in buffer"
@@ -526,10 +532,9 @@ rzx_read_sign_start( const libspectrum_byte **ptr,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  /* Get the length */
   length = libspectrum_read_dword( ptr );
 
-  /* Check there's still enough data (the -1 is because we've already read
+  /* Check there's still enough data (the -5 is because we've already read
      the block ID) */
   if( end - (*ptr) < (ptrdiff_t)length - 5 ) {
     libspectrum_print_error(
@@ -543,14 +548,48 @@ rzx_read_sign_start( const libspectrum_byte **ptr,
   *sign_start = *ptr;
 
   return LIBSPECTRUM_ERROR_NONE;
-}  
+}
+
+static libspectrum_error
+rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
+		   const libspectrum_byte *sign_start )
+{
+  size_t length;
+
+  if( !sign_start ) {
+    libspectrum_print_error(
+      "rzx_read_sign_end: no start of signed data block seen"
+    );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+  
+  /* Check we've got enough data for the length */
+  if( end - (*ptr) < 4 ) {
+    libspectrum_print_error( "rzx_read_sign_end: not enough data in buffer" );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  length = libspectrum_read_dword( ptr );
+
+  /* Check there's still enough data (the -5 is because we've already read
+     the block ID) */
+  if( end - (*ptr) < (ptrdiff_t)length - 5 ) {
+    libspectrum_print_error( "rzx_read_sign_end: not enough data in buffer" );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  (*ptr) += length - 5;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+  
 
 libspectrum_error
 libspectrum_rzx_write( libspectrum_rzx *rzx,
 		       libspectrum_byte **buffer, size_t *length,
 		       libspectrum_byte *snap, size_t snap_length,
 		       const char *program, libspectrum_word major,
-		       libspectrum_word minor, int compress )
+		       libspectrum_word minor, int compress, int sign )
 {
   libspectrum_error error;
   libspectrum_byte *ptr = *buffer;
@@ -559,8 +598,10 @@ libspectrum_rzx_write( libspectrum_rzx *rzx,
   error = rzx_write_header( buffer, &ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-  error = rzx_write_signed_start( buffer, &ptr, length, &sign_offset );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  if( sign ) {
+    error = rzx_write_signed_start( buffer, &ptr, length, &sign_offset );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  }
 
   error = rzx_write_creator( buffer, &ptr, length, program, major, minor );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
@@ -574,8 +615,10 @@ libspectrum_rzx_write( libspectrum_rzx *rzx,
   error = rzx_write_input( rzx, buffer, &ptr, length, compress );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   
-  error = rzx_write_signed_end( buffer, &ptr, length, sign_offset );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  if( sign ) {
+    error = rzx_write_signed_end( buffer, &ptr, length, sign_offset );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  }
 
   /* *length is the allocated size; we want to return how much is used */
   *length = ptr - *buffer;
