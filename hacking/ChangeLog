@@ -109,3 +109,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 writing custom data in the creator blocks.
 20031013 libspectrum.c, libspectrum.h.in: add routines to check
 	 libspectrum's version.
+20031013 libspectrum.c, libspectrum.h.in: add routines to get the version
+	 of libgcrypt in use.
