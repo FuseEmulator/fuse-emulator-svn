@@ -109,6 +109,18 @@ Spectrum beeper. Same as the Sound Option dialog's
 option.
 .RE
 .PP
+.I --colour-tv
+.RS
+Specify whether the display should simulate a colour or black and
+white television. This option is effective only under the GTK+ and SDL
+user interfaces: the others will always simulate a colour TV. (Enabled
+by default, but you can use
+.RI ` --no-colour-tv '
+to disable). The same as the General Option dialog's
+.I "Colour TV"
+option.
+.RE
+.PP
 .I --competition-code
 .RS
 Specify the code to be written to competition mode RZX files. The same
@@ -295,6 +307,15 @@ Specify the speed (as a percentage of real Spectrum speed) at which
 emulation should attempt to proceed. Same as the General Options
 dialog's
 .I "Emulation speed"
+option.
+.RE
+.PP
+.I "--statusbar"
+.RS
+For the GTK+ UI, enables the statusbar beneath the display. For the
+SDL UI, enables the status icons showing whether the disk and tape are
+being accessed. Same as the General Options dialog's
+.I "Show statusbar"
 option.
 .RE
 .PP
@@ -634,6 +655,21 @@ you'll have to manually use
 .I "Options, Save"
 afterwards to ensure that this setting gets written to Fuse's
 configuration file.
+.RE
+.PP
+.I "Colour TV"
+.RS
+This option allows you to choose whether to simulate a colour or black
+and white television. This is effective only under the GTK+ and SDL
+user interfaces: the others will always simulate a colour TV.
+.RE
+.PP
+.I "Show statusbar"
+.RS
+For the GTK+ UI, enables the statusbar beneath the display. For the
+SDL UI, enables the status icons showing whether the disk and tape are
+being accessed. This option has no effect for the other user
+interfaces.
 .RE
 .RE
 .PP
