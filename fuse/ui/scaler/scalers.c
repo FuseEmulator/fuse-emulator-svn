@@ -1,7 +1,7 @@
 /* ScummVM - Scumm Interpreter
  * Copyright (C) 2001  Ludvig Strigeus
  * Copyright (C) 2001/2002 The ScummVM project
- * Copyright (C) 2003  Fredrick Meunier
+ * Copyright (C) 2003  Fredrick Meunier, Philip Kendall
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,52 +30,78 @@
 #include "ui/ui.h"
 #include "ui/uidisplay.h"
 
+static void _2xSaI(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr, BYTE *dstPtr,
+                   DWORD dstPitch, int width, int height);
+static void Super2xSaI(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
+	               BYTE *dstPtr, DWORD dstPitch, int width, int height);
+static void SuperEagle(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
+	               BYTE *dstPtr, DWORD dstPitch, int width, int height);
+static void AdvMame2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
+	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
+static void Half(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
+	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
+static void Normal1x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
+	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
+static void Normal2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
+	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
+static void Normal3x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
+	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
+static void TV2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
+               BYTE *dstPtr, DWORD dstPitch, int width, int height);
+static void TimexTV(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
+               DWORD dstPitch, int width, int height);
+
 static int scaler_supported[GFX_NUM] = {0};
 
 int scalers_registered = 0;
 
-static const char *scaler_names[] = { 
-  "Timex Half size",
-  "Normal",
-  "Double size",
-  "Triple size",
-  "2xSaI",
-  "Super 2xSaI",
-  "SuperEagle",
-  "AdvMAME 2x",
-  "TV 2x",
-  "Timex TV"
+struct scaler_info {
+
+  const char *name;
+  const char *id;
+  ScalerProc *scaler;
+
 };
 
-static const char *scaler_types[] = { 
-  "half",
-  "normal",
-  "2x",
-  "3x",
-  "2xsai",
-  "super2xsai",
-  "supereagle",
-  "advmame2x",
-  "tv2x",
-  "timextv"
+/* Information on each of the available scalers. Make sure this array stays
+   in the same order as scaler.h:scaler_type */
+static struct scaler_info available_scalers[] = {
+
+  { "Timex Half size", "half",       Half       },
+  { "Normal",	       "normal",     Normal1x   },
+  { "Double size",     "2x",	     Normal2x   },
+  { "Triple size",     "3x",	     Normal3x   },
+  { "2xSaI",	       "2xsai",	     _2xSaI     },
+  { "Super 2xSaI",     "super2xsai", Super2xSaI },
+  { "SuperEagle",      "supereagle", SuperEagle },
+  { "AdvMAME 2x",      "advmame2x",  AdvMame2x  },
+  { "TV 2x",	       "tv2x",	     TV2x	},
+  { "Timex TV",	       "timextv",    TimexTV    },
+
 };
 
 scaler_type current_scaler;
+ScalerProc *scaler_proc;
 
 int
 scaler_select_scaler( scaler_type scaler )
 {
   if( !scaler_is_supported( scaler ) ) return 1;
-  if( current_scaler == scaler ) return 0;
+
+  if( scaler_proc &&				/* Deal with startup */
+      current_scaler == scaler ) return 0;
 
   current_scaler = scaler;
 
   if( settings_current.start_scaler_mode ) free( settings_current.start_scaler_mode );
-  settings_current.start_scaler_mode = strdup( scaler_types[current_scaler] );
+  settings_current.start_scaler_mode =
+    strdup( available_scalers[current_scaler].id );
   if( !settings_current.start_scaler_mode ) {
     ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
     return 1;
   }
+
+  scaler_proc = scaler_get_proc( current_scaler );
 
   uidisplay_hotswap_gfx_mode();
 
@@ -88,7 +114,7 @@ scaler_select_id( const char *id )
   scaler_type i;
 
   for( i=0; i < GFX_NUM; i++ ) {
-    if( ! strcmp( scaler_types[i], id ) ) {
+    if( ! strcmp( available_scalers[i].id, id ) ) {
       current_scaler = i;
       return 0;
     }
@@ -122,7 +148,13 @@ scaler_is_supported( scaler_type scaler )
 const char *
 scaler_name( scaler_type scaler )
 {
-  return scaler_names[scaler];
+  return available_scalers[scaler].name;
+}
+
+ScalerProc*
+scaler_get_proc( scaler_type scaler )
+{
+  return available_scalers[scaler].scaler;
 }
 
 /********** 2XSAI Filter *****************/
@@ -252,7 +284,7 @@ Q_INTERPOLATE(DWORD A, DWORD B, DWORD C, DWORD D)
 #define RED_MASK555 0x7C007C00
 #define GREEN_MASK555 0x03E003E0
 
-void 
+static void 
 Super2xSaI(BYTE *srcPtr, DWORD srcPitch,
 	BYTE *deltaPtr, BYTE *dstPtr, DWORD dstPitch, int width, int height)
 {
@@ -373,7 +405,7 @@ Super2xSaI(BYTE *srcPtr, DWORD srcPitch,
   }
 }
 
-void 
+static void 
 SuperEagle(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
 	   BYTE *dstPtr, DWORD dstPitch, int width, int height)
 {
@@ -494,7 +526,7 @@ SuperEagle(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
   }
 }
 
-void 
+static void 
 _2xSaI(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
        BYTE *dstPtr, DWORD dstPitch, int width, int height)
 {
@@ -816,7 +848,7 @@ Scale_2xSaI(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
   }
 }
 
-void 
+static void 
 AdvMame2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
 	  int width, int height)
 {
@@ -873,7 +905,7 @@ Half(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
   }
 }
 
-void 
+static void 
 Normal1x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
 	 int width, int height)
 {
@@ -892,7 +924,7 @@ Normal1x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
   }
 }
 
-void 
+static void 
 Normal2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
 	 int width, int height)
 {
@@ -914,7 +946,7 @@ Normal2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
   }
 }
 
-void 
+static void 
 Normal3x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
 	 int width, int height)
 {
@@ -943,7 +975,7 @@ Normal3x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
   }
 }
 
-void
+static void
 TV2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch, 
             int width, int height)
 {
@@ -970,7 +1002,7 @@ TV2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
   }
 }
 
-void
+static void
 TimexTV(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch, 
             int width, int height)
 {
