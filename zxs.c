@@ -134,9 +134,9 @@ inflate_block( libspectrum_byte **uncompressed, size_t *uncompressed_length,
 }
 
 static libspectrum_error
-read_riff_chunk( libspectrum_snap *snap, int *compression,
+read_riff_chunk( libspectrum_snap *snap, int *compression GCC_UNUSED,
 		 const libspectrum_byte **buffer, const libspectrum_byte *end,
-		 size_t data_length, int parameter )
+		 size_t data_length GCC_UNUSED, int parameter GCC_UNUSED)
 {
   char id[5];
   libspectrum_error error;
@@ -168,8 +168,9 @@ read_riff_chunk( libspectrum_snap *snap, int *compression,
 
 static libspectrum_error
 read_fmtz_chunk( libspectrum_snap *snap, int *compression,
-		 const libspectrum_byte **buffer, const libspectrum_byte *end,
-		 size_t data_length, int parameter )
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED,
+		 size_t data_length, int parameter GCC_UNUSED )
 {
   libspectrum_word model;
 
@@ -238,9 +239,10 @@ read_fmtz_chunk( libspectrum_snap *snap, int *compression,
 }
 
 static libspectrum_error
-read_rz80_chunk( libspectrum_snap *snap, int *compression,
-		 const libspectrum_byte **buffer, const libspectrum_byte *end,
-		 size_t data_length, int parameter )
+read_rz80_chunk( libspectrum_snap *snap, int *compression GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED,
+		 size_t data_length, int parameter GCC_UNUSED )
 {
   if( data_length != 33 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
@@ -278,9 +280,10 @@ read_rz80_chunk( libspectrum_snap *snap, int *compression,
 }
 
 static libspectrum_error
-read_r048_chunk( libspectrum_snap *snap, int *compression,
-		 const libspectrum_byte **buffer, const libspectrum_byte *end,
-		 size_t data_length, int parameter )
+read_r048_chunk( libspectrum_snap *snap, int *compression GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED,
+		 size_t data_length, int parameter GCC_UNUSED )
 {
   if( data_length != 9 ) {
     libspectrum_print_error(
@@ -298,9 +301,10 @@ read_r048_chunk( libspectrum_snap *snap, int *compression,
 }
 
 static libspectrum_error
-read_r128_chunk( libspectrum_snap *snap, int *compression,
-		 const libspectrum_byte **buffer, const libspectrum_byte *end,
-		 size_t data_length, int parameter )
+read_r128_chunk( libspectrum_snap *snap, int *compression GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED,
+		 size_t data_length, int parameter GCC_UNUSED )
 {
   size_t i;
 
@@ -322,10 +326,10 @@ read_r128_chunk( libspectrum_snap *snap, int *compression,
 }
 
 static libspectrum_error
-read_rplus3_chunk( libspectrum_snap *snap, int *compression,
+read_rplus3_chunk( libspectrum_snap *snap, int *compression GCC_UNUSED,
 		   const libspectrum_byte **buffer,
-		   const libspectrum_byte *end, size_t data_length,
-		   int parameter )
+		   const libspectrum_byte *end GCC_UNUSED, size_t data_length,
+		   int parameter GCC_UNUSED )
 {
   if( data_length != 1 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
@@ -341,7 +345,8 @@ read_rplus3_chunk( libspectrum_snap *snap, int *compression,
 
 static libspectrum_error
 read_ram_chunk( libspectrum_snap *snap, int *compression,
-		const libspectrum_byte **buffer, const libspectrum_byte *end,
+		const libspectrum_byte **buffer,
+		const libspectrum_byte *end GCC_UNUSED,
 		size_t data_length, int parameter )
 {
   int page = parameter;
@@ -392,9 +397,10 @@ read_ram_chunk( libspectrum_snap *snap, int *compression,
 }
 
 static libspectrum_error
-skip_chunk( libspectrum_snap *snap, int *compression,
-	    const libspectrum_byte **buffer, const libspectrum_byte *end,
-	    size_t data_length, int parameter )
+skip_chunk( libspectrum_snap *snap GCC_UNUSED, int *compression GCC_UNUSED,
+	    const libspectrum_byte **buffer,
+	    const libspectrum_byte *end GCC_UNUSED,
+	    size_t data_length, int parameter GCC_UNUSED )
 {
   *buffer += data_length;
   return LIBSPECTRUM_ERROR_NONE;
@@ -402,7 +408,7 @@ skip_chunk( libspectrum_snap *snap, int *compression,
 
 struct read_chunk_t {
 
-  char *id;
+  const char *id;
   read_chunk_fn function;
   int parameter;
 

@@ -34,7 +34,7 @@
 static const int DCK_PAGE_SIZE = 0x2000;
 
 /* Initialise a libspectrum_dck_block structure */
-libspectrum_error
+static libspectrum_error
 libspectrum_dck_block_alloc( libspectrum_dck_block **dck )
 {
   size_t i;
@@ -57,7 +57,7 @@ libspectrum_dck_block_alloc( libspectrum_dck_block **dck )
 }
 
 /* Free all memory used by a libspectrum_dck_block structure */
-libspectrum_error
+static libspectrum_error
 libspectrum_dck_block_free( libspectrum_dck_block *dck, int keep_pages )
 {
   size_t i;

@@ -45,7 +45,7 @@ static libspectrum_error
 skip_gzip_header( const libspectrum_byte **gzptr, size_t *gzlength );
 static libspectrum_error
 skip_null_terminated_string( const libspectrum_byte **ptr, size_t *length,
-			     char *name );
+			     const char *name );
 static libspectrum_error
 zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
 	      libspectrum_byte **outptr, size_t *outlength, int gzip_hack );
@@ -304,7 +304,7 @@ skip_gzip_header( const libspectrum_byte **gzptr, size_t *gzlength )
 
 static libspectrum_error
 skip_null_terminated_string( const libspectrum_byte **ptr, size_t *length,
-			     char *name )
+			     const char *name )
 {
   while( **ptr && *length ) { (*ptr)++; (*length)--; }
 

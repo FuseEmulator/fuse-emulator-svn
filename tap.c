@@ -84,7 +84,7 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
     ptr += 2;
 
     /* Have we got enough bytes left in buffer? */
-    if( end - ptr < data_length ) {
+    if( end - ptr < (ptrdiff_t)data_length ) {
       libspectrum_tape_free( tape );
       free( block );
       libspectrum_print_error(

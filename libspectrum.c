@@ -91,20 +91,20 @@ libspectrum_check_version( const char *version )
 {
   size_t i;
 
-  int libspectrum_version[4] = { 0, 0, 0, 0 },
-      required_version[4]    = { 0, 0, 0, 0 };
+  int actual_version[4]   = { 0, 0, 0, 0 },
+      required_version[4] = { 0, 0, 0, 0 };
 
   sscanf( VERSION, "%d.%d.%d.%d",
-	  &libspectrum_version[0], &libspectrum_version[1],
-	  &libspectrum_version[2], &libspectrum_version[3] );
+	  &actual_version[0], &actual_version[1],
+	  &actual_version[2], &actual_version[3] );
   sscanf( version, "%d.%d.%d.%d",
 	  &required_version[0], &required_version[1],
 	  &required_version[2], &required_version[3] );
 
   for( i = 0; i < 4; i++ ) {
     
-    if( libspectrum_version[i] < required_version[i] ) return 0;
-    if( libspectrum_version[i] > required_version[i] ) return 1;
+    if( actual_version[i] < required_version[i] ) return 0;
+    if( actual_version[i] > required_version[i] ) return 1;
 
   }
 
@@ -341,9 +341,9 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
 
     int type;
 
-    char *extension; int extension_score;
+    const char *extension; int extension_score;
 
-    char *signature; size_t offset, length; int sig_score;
+    const char *signature; size_t offset, length; int sig_score;
   };
 
   struct type *ptr,
@@ -373,7 +373,7 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_COMPRESSED_BZ2,"bz2", 3, "BZh",		    0, 3, 4 },
       { LIBSPECTRUM_ID_COMPRESSED_GZ, "gz",  3, "\x1f\x8b",	    0, 2, 4 },
 
-      { -1 }, /* End marker */
+      { -1, NULL, 0, NULL, 0, 0, 0 }, /* End marker */
 
     };
 
