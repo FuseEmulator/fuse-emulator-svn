@@ -773,6 +773,10 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = 13; break;
   case LIBSPECTRUM_MACHINE_TC2048:
     *(*ptr)++ = 14; break;
+  default:
+    libspectrum_print_error( "write_extended_header: unknown machine type %d",
+			     snap->machine );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
   if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) {
