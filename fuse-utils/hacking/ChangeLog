@@ -84,3 +84,5 @@
 	 (fuse-utils_0_6_2-branch).
 20040207 keys.c: change description of the Fuse key
 	 (fuse-utils_0_6_2-branch).
+20040211 configure.in: bump version number to 0.6.2
+	 (fuse-utils_0_6_2-branch).
