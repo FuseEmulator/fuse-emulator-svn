@@ -200,7 +200,7 @@ if test -z "$ui"; then
   AC_DEFINE(UI_X)
   ui=xlib
   AC_DEFINE(USE_WIDGET)
-  UI_LIBS="ui/xlib/libuixlib.a widget/libwidget.a"
+  UI_LIBS="ui/xlib/libuixlib.a ui/scaler/libscaler.a widget/libwidget.a"
 fi
 
 AC_SUBST(UI_LIBS)
