@@ -41,15 +41,6 @@
 
 char *progname;			/* argv[0] */
 
-/* Fuse's DSA key */
-libspectrum_rzx_dsa_key rzx_key = {
-  "9E140C4CEA9CA011AA8AD17443CB5DC18DC634908474992D38AB7D4A27038CBB209420BA2CAB8508CED35ADF8CBD31A0A034FC082A168A0E190FFC4CCD21706F", /* p */
-  "C52E9CA1804BD021FFAD30E8FB89A94437C2E4CB",	       /* q */
-  "90E56D9493DE80E1A35F922007357888A1A47805FD365AD27BC5F184601EBC74E44F576AA4BF8C5244D202BBAE697C4F9132DFB7AD0A56892A414C96756BD21A", /* g */
-  "7810A35AC94EA5750934FB9C922351EE597C71E2B83913C121C6655EA25CE7CBE2C259FA3168F8475B2510AA29C5FEB50ACAB25F34366C2FFC93B3870A522232", /* y */
-  NULL						       /* x */
-};
-
 int
 main( int argc, char **argv )
 {
@@ -58,9 +49,11 @@ main( int argc, char **argv )
   const char *rzxfile;
 
   libspectrum_rzx *rzx;
+
   libspectrum_snap *snap = NULL;
   libspectrum_rzx_signature signature;
   libspectrum_error error;
+  struct rzx_key *key;
 
   progname = argv[0];
 
@@ -90,15 +83,18 @@ main( int argc, char **argv )
     return 0;
   }
 
-  if( signature.key_id != 0x0a522232 ) {
-    printf( "%s: don't know anything about key ID 0x%08x\n", progname,
+  for( key = known_keys; key->id; key++ )
+    if( signature.key_id == key->id ) break;
+
+  if( !key->id ) {
+    printf( "%s: don't know anything about key ID %08x\n", progname,
 	    signature.key_id );
     libspectrum_rzx_free( rzx );
     munmap( buffer, length );
     return 0;
   }
 
-  error = libspectrum_verify_signature( &signature, &rzx_key );
+  error = libspectrum_verify_signature( &signature, &( key->key ) );
   if( error && error != LIBSPECTRUM_ERROR_SIGNATURE ) {
     libspectrum_rzx_free( rzx ); return 16;
   }
@@ -113,12 +109,12 @@ main( int argc, char **argv )
   libspectrum_rzx_free( rzx );
 
   if( error == LIBSPECTRUM_ERROR_SIGNATURE ) {
-    printf( "%s: BAD signature with key 0x%08x on '%s'\n", progname,
-	    signature.key_id, rzxfile );
+    printf( "%s: BAD signature with key %08x (%s) in '%s'\n", progname,
+	    key->id, key->description, rzxfile );
     return 1;
   } else {
-    printf( "%s: good signature with key 0x%08x on '%s'\n", progname,
-	    signature.key_id, rzxfile );
+    printf( "%s: good signature with key %08x (%s) in '%s'\n", progname,
+	    key->id, key->description, rzxfile );
     return 0;
   }
 

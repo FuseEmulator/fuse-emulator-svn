@@ -32,4 +32,12 @@
 int get_creator( libspectrum_creator **creator, const char *program );
 int mmap_file( const char *filename, unsigned char **buffer, size_t *length );
 
+struct rzx_key {
+  libspectrum_dword id;
+  const char *description;
+  libspectrum_rzx_dsa_key key;
+};
+
+extern struct rzx_key known_keys[];
+
 #endif				/* #ifndef FUSE_UTILS_UTILS_H */
