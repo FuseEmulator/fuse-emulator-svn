@@ -1,5 +1,5 @@
 /* scl2trd.c: Convert .SCL disk images to .TRD disk images
-   Copyright (c) 2002-2003 Dmitry Sanarin, Philip Kendall and Fredrick Meunier
+   Copyright (c) 2002-2004 Dmitry Sanarin, Philip Kendall and Fredrick Meunier
 
    $Id$
 
@@ -255,10 +255,8 @@ parse_options(int argc, char **argv, struct options * options)
       break;
     }
 
-  if (unknown) {
-    fprintf(stderr, "%s: unknown option `%c'\n", progname, (char) c);
-    return 1;
-  }
+  if( unknown ) return 1;
+
   if (argv[optind] == NULL) {
     fprintf(stderr, "%s: no SCL file given\n", progname);
     return 1;

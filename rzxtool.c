@@ -1,5 +1,5 @@
 /* rzxtool.c: (Un)compress RZX data and add, remove or extract embedded snaps
-   Copyright (c) 2002-2003 Philip Kendall
+   Copyright (c) 2002-2004 Philip Kendall
 
    $Id$
 
@@ -240,13 +240,10 @@ parse_options( int argc, char **argv, struct options *options )
     case 'e': options->extract = 1;    break;
     case 'r': options->remove = 1;     break;
     case 'u': options->uncompress = 1; break;
-    case '?': unknown = c;	       break;
+    case '?': unknown = 1;	       break;
     }
 
-  if( unknown ) {
-    fprintf( stderr, "%s: unknown option `%c'\n", progname, (char)c );
-    return 1;
-  }
+  if( unknown ) return 1;
 
   if( options->add || options->remove || options->uncompress ) output_rzx = 1;
   if( options->extract ) output_snapshot = 1;

@@ -73,4 +73,5 @@
 	 (more) emulators; this is the only signficant change made between
 	 z802tzx 1.0 and z802tzx 1.1.
 20031218 COPYING: add a copy of the GPL to the distribution.
-
+20040117 rzxtool.c, scl2trd.c: stop recognised options producing two
+	 error messages.
