@@ -26,15 +26,50 @@ AUTOMAKE_OPTIONS = foreign
 
 bin_PROGRAMS = fuse
 
-SUBDIRS = hacking lib man perl roms ui widget z80
+SUBDIRS = compat debugger hacking lib man perl roms ui widget z80
 
-fuse_SOURCES = ay.c display.c event.c\
-	fuse.c keyboard.c machine.c osssound.c rzx.c settings.c\
-	snapshot.c sound.c spec128.c spec48.c specplus2.c specplus2a.c\
-	specplus3.c spectrum.c sunsound.c tape.c timer.c ui.c uidisplay.c\
-	utils.c	joystick.c printer.c tc2048.c scld.c screenshot.c
+fuse_SOURCES = ay.c \
+	dck.c \
+	display.c \
+	event.c \
+	fuse.c keyboard.c machine.c memory.c \
+	osssound.c \
+	pentagon.c \
+	psg.c \
+	rzx.c \
+	settings.c \
+	snapshot.c sound.c spec128.c \
+	spec16.c spec48.c specplus2.c specplus2a.c\
+	specplus3.c \
+	spectrum.c \
+	sunsound.c \
+	tape.c \
+	timer.c \
+	trdos.c \
+	ui.c \
+	uidisplay.c \
+	utils.c	\
+	joystick.c \
+	printer.c \
+	tc2048.c \
+	tc2068.c \
+	scld.c \
+	screenshot.c \
+	sdlsound.c
+
+fuse_LDADD = memory_internal.o \
+debugger/libdebugger.a \
+@UI_LIBS@ ui/scaler/libscaler.a debugger/libdebugger.a z80/libz80.a @DSKLIBS@ \
+@LIBSPEC_LIBS@ \
+@GLIB_LIBS@ @GTK_LIBS@ @PNG_LIBS@ @XML_LIBS@ compat/libcompat.a
+
+fuse_DEPENDENCIES = memory_internal.o @UI_LIBS@ debugger/libdebugger.a \
+	            z80/libz80.a
 
 BUILT_SOURCES = settings.c settings.h
+
+memory_internal.o: memory.c
+	$(COMPILE) -DINTERNAL -c memory.c -o memory_internal.o
 
 settings.c: settings.pl settings.dat
 	@PERL@ settings.pl settings.dat > settings.c
@@ -43,16 +78,35 @@ settings.h: settings-header.pl settings.dat
 	@PERL@ settings-header.pl settings.dat > settings.h
 
 INCLUDES = @GLIB_CFLAGS@ @GTK_CFLAGS@ @LIBSPEC_CFLAGS@ @DSK_CFLAGS@\
-@XML_CFLAGS@ -DDATADIR="\"${pkgdatadir}\""
-LDADD = @GLIB_LIBS@ @GTK_LIBS@ @PNG_LIBS@ @XML_LIBS@\
-ui/aalib/libuiaalib.a ui/fb/libuifb.a ui/gtk/libuigtk.a ui/svga/libuisvga.a\
-ui/xlib/libuixlib.a widget/libwidget.a z80/libz80.a @DSKLIBS@ @LIBSPEC_LIBS@
+@XML_CFLAGS@ -DFUSEDATADIR="\"${pkgdatadir}\""
 
-noinst_HEADERS = ay.h display.h event.h\
+noinst_HEADERS = ay.h \
+	dck.h \
+	display.h \
+	event.h \
 	fuse.h keyboard.h keysyms.h\
-	machine.h osssound.h rzx.h screenshot.h settings.h snapshot.h sound.h\
-        spec128.h spec48.h specplus2.h specplus2a.h specplus3.h spectrum.h\
-	sunsound.h tape.h timer.h types.h utils.h\
-	joystick.h printer.h tc2048.h scld.h
+	machine.h \
+	osssound.h \
+	pentagon.h \
+	psg.h \
+	rzx.h \
+	screenshot.h \
+	settings.h \
+	snapshot.h \
+	sound.h \
+        spec128.h \
+	spec16.h spec48.h specplus2.h specplus2a.h specplus3.h spectrum.h\
+	sunsound.h \
+	tape.h \
+	timer.h \
+	trdos.h \
+	utils.h \
+	sdlsound.h \
+	joystick.h \
+	printer.h \
+	tc2048.h \
+	tc2068.h \
+	scld.h
 
-EXTRA_DIST = AUTHORS README THANKS keysyms.dat keysyms.pl settings.pl
+EXTRA_DIST = AUTHORS README THANKS keysyms.dat keysyms.pl settings.pl \
+	     settings-header.pl settings.dat

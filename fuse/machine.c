@@ -1,5 +1,5 @@
 /* machine.c: Routines for handling the various machine types
-   Copyright (c) 1999-2002 Philip Kendall
+   Copyright (c) 1999-2003 Philip Kendall
 
    $Id$
 
@@ -30,24 +30,30 @@
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <settings.h>
 #include <string.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "event.h"
 #include "fuse.h"
 #include "machine.h"
+#include "pentagon.h"
+#include "printer.h"
 #include "scld.h"
+#include "snapshot.h"
+#include "sound.h"
+#include "spec16.h"
 #include "spec48.h"
 #include "spec128.h"
 #include "specplus2.h"
 #include "specplus2a.h"
 #include "specplus3.h"
 #include "tc2048.h"
+#include "tc2068.h"
 #include "tape.h"
 #include "ui/ui.h"
+#include "ui/uidisplay.h"
+#include "ui/scaler/scaler.h"
 #include "utils.h"
 #include "z80/z80.h"
 
@@ -62,12 +68,13 @@ static int machine_location;	/* Where is the current machine in
 
 static int machine_add_machine( int (*init_function)(fuse_machine_info *machine) );
 static int machine_select_machine( fuse_machine_info *machine );
-static int machine_free_machine( fuse_machine_info *machine );
 
 int machine_init_machines( void )
 {
   int error;
 
+  error = machine_add_machine( spec16_init    );
+  if (error ) return error;
   error = machine_add_machine( spec48_init    );
   if (error ) return error;
   error = machine_add_machine( spec128_init   );
@@ -85,6 +92,10 @@ int machine_init_machines( void )
 #endif				/* #ifdef HAVE_765_H */
 
   error = machine_add_machine( tc2048_init );
+  if (error ) return error;
+  error = machine_add_machine( tc2068_init );
+  if( error ) return error;
+  error = machine_add_machine( pentagon_init );
   if (error ) return error;
 
   return 0;
@@ -126,11 +137,28 @@ int machine_select( int type )
     if( machine_types[i]->machine == type ) {
       machine_location = i;
       error = machine_select_machine( machine_types[i] );
-      if( error ) return error;
+
+      if( !error ) return 0;
+
+      /* If we couldn't select the new machine type, try falling back
+	 to plain old 48K */
+      if( type != LIBSPECTRUM_MACHINE_48 ) 
+	error = machine_select( LIBSPECTRUM_MACHINE_48 );
+	
+      /* If that still didn't work, give up */
+      if( error ) {
+	ui_error( UI_ERROR_ERROR, "can't select 48K machine. Giving up." );
+	fuse_abort();
+      } else {
+	ui_error( UI_ERROR_INFO, "selecting 48K machine" );
+	return 0;
+      }
+      
       return 0;
     }
   }
 
+  ui_error( UI_ERROR_ERROR, "machine type %d unknown", type );
   return 1;
 }
 
@@ -150,109 +178,219 @@ int machine_select_id( const char *id )
   return 1;
 }
 
-static int machine_select_machine( fuse_machine_info *machine )
+const char*
+machine_get_id( libspectrum_machine type )
 {
+  int i;
+
+  for( i=0; i<machine_count; i++ )
+    if( machine_types[i]->machine == type ) return machine_types[i]->id;
+
+  return NULL;
+}
+
+static int
+machine_select_machine( fuse_machine_info *machine )
+{
+  int width, height;
+  int capabilities = libspectrum_machine_capabilities( machine->machine );
   machine_current = machine;
 
+  settings_set_string( &settings_current.start_machine, machine->id );
+  
   tstates = 0;
 
   /* Reset the event stack */
   event_reset();
-  if( event_add( machine->timings.cycles_per_frame, EVENT_TYPE_INTERRUPT) )
+  if( event_add( machine->timings.tstates_per_frame, EVENT_TYPE_INTERRUPT ) )
     return 1;
   if( event_add( machine->line_times[0], EVENT_TYPE_LINE) ) return 1;
 
-  /* Stop the tape playing */
-  tape_stop();
+  machine_current = machine;
 
   readbyte = machine->ram.read_memory;
+  readbyte_internal = machine->ram.read_memory_internal;
   read_screen_memory = machine->ram.read_screen;
   writebyte = machine->ram.write_memory;
+  writebyte_internal = machine->ram.write_memory_internal;
   contend_memory = machine->ram.contend_memory;
   contend_port = machine->ram.contend_port;
   
-  ROM = machine->roms;
+  if( uidisplay_end() ) return 1;
 
-  scld_reset();
-  machine->reset();
+  /* Set screen sizes here */
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO ) {
+    width = DISPLAY_SCREEN_WIDTH;
+    height = 2*DISPLAY_SCREEN_HEIGHT;
+  } else {
+    width = DISPLAY_ASPECT_WIDTH;
+    height = DISPLAY_SCREEN_HEIGHT;
+  }
 
+  if( uidisplay_init( width, height ) ) return 1;
+
+  if( machine_reset() ) return 1;
+
+  /* Activate appropriate menu items */
+  capabilities = libspectrum_machine_capabilities( machine_current->machine );
+
+  if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK ) ||
+      ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK )    ) {
+    ui_menu_activate_media_disk( 1 );
+  } else {
+    ui_menu_activate_media_disk( 0 );
+  }
+
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK ) {
+    ui_menu_activate_media_cartridge( 1 );
+    ui_menu_activate_media_cartridge_eject( 0 );
+  } else {
+    ui_menu_activate_media_cartridge( 0 );
+  };
+      
   return 0;
 }
 
-void machine_set_timings( fuse_machine_info *machine, DWORD hz,
-			  WORD left_border_cycles,  WORD screen_cycles,
-			  WORD right_border_cycles, WORD retrace_cycles,
-			  WORD lines_per_frame, DWORD first_line)
+int
+machine_load_rom( libspectrum_byte **data, char *filename,
+		  size_t expected_length )
 {
-  int y;
-
-  machine->timings.hz=hz;
-
-  machine->timings.left_border_cycles  = left_border_cycles;
-  machine->timings.screen_cycles       = screen_cycles;
-  machine->timings.right_border_cycles = right_border_cycles;
-  machine->timings.retrace_cycles      = retrace_cycles;
-
-  machine->timings.cycles_per_line     = left_border_cycles +
-                                         screen_cycles +
-                                         right_border_cycles +
-					 retrace_cycles;
-
-  machine->timings.lines_per_frame     = lines_per_frame;
-
-  machine->timings.cycles_per_frame    = 
-    machine->timings.cycles_per_line * 
-    (DWORD)lines_per_frame;
-
-  machine->line_times[0]=first_line;
-  for( y=1; y<DISPLAY_SCREEN_HEIGHT+1; y++ ) {
-    machine->line_times[y] = machine->line_times[y-1] + 
-                             machine->timings.cycles_per_line;
-  }
-
-}
-
-int machine_allocate_roms( fuse_machine_info *machine, size_t count )
-{
-  machine->rom_count = count;
-
-  machine->roms = (BYTE**)malloc( count * sizeof(BYTE*) );
-  if( machine->roms == NULL ) {
-    ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
-    return 1;
-  }
-
-  machine->rom_lengths = (size_t*)malloc( count * sizeof(size_t) );
-  if( machine->rom_lengths == NULL ) {
-    ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
-    free( machine->roms );
-    return 1;
-  }
-
-  return 0;
-}
-
-int machine_read_rom( fuse_machine_info *machine, size_t number,
-		      const char* filename )
-{
-  int fd;
-
-  int error;
-
-  assert( number < machine->rom_count );
+  int fd, error;
+  utils_file rom;
 
   fd = machine_find_rom( filename );
   if( fd == -1 ) {
     ui_error( UI_ERROR_ERROR, "couldn't find ROM '%s'", filename );
     return 1;
   }
-
-  error = utils_read_fd( fd, filename, &(machine->roms[number]),
-			 &(machine->rom_lengths[number]) );
+  
+  error = utils_read_fd( fd, filename, &rom );
   if( error ) return error;
+  
+  if( rom.length != expected_length ) {
+    ui_error( UI_ERROR_ERROR,
+	      "ROM '%s' is %ld bytes long; expected %ld bytes",
+	      filename, (unsigned long)rom.length,
+	      (unsigned long)expected_length );
+    return 1;
+  }
+
+  /* Take a copy of the ROM in case we want to write to it later */
+  *data = malloc( rom.length * sizeof( libspectrum_byte ) );
+  if( !(*data) ) {
+    ui_error( UI_ERROR_ERROR, "couldn't find ROM '%s'", filename );
+    return 1;
+  }
+
+  memcpy( *data, rom.buffer, rom.length );
+
+  if( utils_close_file( &rom ) ) return 1;
 
   return 0;
+}
 
+int
+machine_reset( void )
+{
+  size_t i;
+  int error;
+
+  /* These things should happen on all resets */
+  z80_reset();
+
+  /* sound_ay_reset() *absolutely must* be called before either
+     sound_frame() or sound_ay_write() */
+  sound_ay_reset();
+
+  snapshot_flush_slt();
+  printer_zxp_reset();
+  scld_reset();
+  tape_stop();
+
+  /* Load in the ROMs: remove any ROMs we've got in memory at the moment */
+  for( i = 0; i < spectrum_rom_count; i++ ) {
+    if( ROM[i] ) { free( ROM[i] ); ROM[i] = 0; }
+  }
+    
+  /* Make sure we have enough space for the new ROMs */
+  if( spectrum_rom_count < machine_current->rom_count ) {
+
+    libspectrum_byte **new_ROM =
+      realloc( ROM, machine_current->rom_count * sizeof( libspectrum_byte* ) );
+    if( !new_ROM ) {
+      ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
+      return 1;
+    }
+
+    ROM = new_ROM;
+  }
+  spectrum_rom_count = machine_current->rom_count;
+
+  /* Do the machine-specific bits, including loading the ROMs */
+  error = machine_current->reset(); if( error ) return error;
+
+  return 0;
+}
+
+int
+machine_set_timings( fuse_machine_info *machine )
+{
+  size_t y;
+
+  /* Pull timings we use repeatedly out of libspectrum and store them
+     for ourself */
+  machine->timings.processor_speed =
+    libspectrum_timings_processor_speed( machine->machine );
+  machine->timings.left_border =
+    libspectrum_timings_left_border( machine->machine );
+  machine->timings.horizontal_screen =
+    libspectrum_timings_horizontal_screen( machine->machine );
+  machine->timings.right_border =
+    libspectrum_timings_right_border( machine->machine );
+  machine->timings.tstates_per_line =
+    libspectrum_timings_tstates_per_line( machine->machine );
+  machine->timings.tstates_per_frame =
+    libspectrum_timings_tstates_per_frame( machine->machine );
+
+  /* Magic number alert
+
+     libspectrum_timings_top_left_pixel gives us the number of tstates
+     after the interrupt at which the top-left pixel of the screen is
+     displayed. However, what's more useful for Fuse is when the first
+     pixel of the top line of the border is displayed.
+
+     Fuse is currently hard-wired to show 24 lines of top and bottom border,
+     hence we subtract 24 times the line length. We also subtract the
+     appropriate number of left border cycles; the difference between this
+     and the actually displayed width is accounted for in
+     display.c:display_border_column()
+  */
+
+  machine->line_times[0]=
+    libspectrum_timings_top_left_pixel( machine->machine ) -
+    24 * machine->timings.tstates_per_line -
+    machine->timings.left_border;
+
+  for( y=1; y<DISPLAY_SCREEN_HEIGHT+1; y++ ) {
+    machine->line_times[y] = machine->line_times[y-1] + 
+                             machine->timings.tstates_per_line;
+  }
+
+  return 0;
+}
+
+int machine_allocate_roms( fuse_machine_info *machine, size_t count )
+{
+  machine->rom_count = count;
+
+  machine->rom_length = malloc( count * sizeof(size_t) );
+  if( machine->rom_length == NULL ) {
+    ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
+    free( machine->rom_length );
+    return 1;
+  }
+
+  return 0;
 }
 
 /* Find a ROM called `filename' in some likely locations; returns a fd
@@ -260,24 +398,31 @@ int machine_read_rom( fuse_machine_info *machine, size_t number,
 int machine_find_rom( const char *filename )
 {
   int fd;
-
   char path[ PATHNAME_MAX_LENGTH ];
 
-  /* First look off the current directory */
+  /* If this is an absolute path, just look there */
+  if( filename[0] == '/' ) return open( filename, O_RDONLY | O_BINARY );
+
+  /* If not, look in some likely places. Firstly, relative to the current
+     directory */
+  fd = open( filename, O_RDONLY | O_BINARY ); if( fd != -1 ) return fd;
+
+  /* Then in a 'roms' subdirectory (very useful when Fuse hasn't been
+     installed into /usr/local or wherever) */
   snprintf( path, PATHNAME_MAX_LENGTH, "roms/%s", filename );
-  fd = open( path, O_RDONLY );
+  fd = open( path, O_RDONLY | O_BINARY );
   if( fd != -1 ) return fd;
 
   /* Then look where Fuse may have installed the ROMs */
-  snprintf( path, PATHNAME_MAX_LENGTH, "%s/%s", DATADIR, filename );
-  fd = open( path, O_RDONLY );
+  snprintf( path, PATHNAME_MAX_LENGTH, "%s/%s", FUSEDATADIR, filename );
+  fd = open( path, O_RDONLY | O_BINARY );
   if( fd != -1 ) return fd;
 
 #ifdef ROMSDIR
   /* Finally look in a system-wide directory for ROMs. Debian uses
      /usr/share/spectrum-roms/ here */
   snprintf( path, PATHNAME_MAX_LENGTH, "%s/%s", ROMSDIR, filename );
-  fd = open( path, O_RDONLY );
+  fd = open( path, O_RDONLY | O_BINARY );
   if( fd != -1 ) return fd;
 #endif
 
@@ -287,33 +432,13 @@ int machine_find_rom( const char *filename )
 int machine_end( void )
 {
   int i;
-  int error;
 
   for( i=0; i<machine_count; i++ ) {
-    error = machine_free_machine( machine_types[i] );
-    if( error ) return error;
+    if( machine_types[i]->shutdown ) machine_types[i]->shutdown();
     free( machine_types[i] );
   }
 
   free( machine_types );
-
-  return 0;
-}
-
-static int machine_free_machine( fuse_machine_info *machine )
-{
-  size_t i;
-
-  if( machine->shutdown ) machine->shutdown();
-
-  for( i=0; i<machine->rom_count; i++ ) {
-
-    if( munmap( machine->roms[i], machine->rom_lengths[i] ) == -1 ) {
-      ui_error( UI_ERROR_ERROR, "couldn't munmap ROM %lu: %s",
-		(unsigned long)i, strerror( errno ) );
-      return 1;
-    }
-  }
 
   return 0;
 }

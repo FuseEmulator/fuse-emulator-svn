@@ -1,5 +1,5 @@
 /* xui.c: Routines for dealing with the Xlib user interface
-   Copyright (c) 2000 Philip Kendall
+   Copyright (c) 2000-2003 Philip Kendall
 
    $Id$
 
@@ -33,8 +33,10 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "display.h"
 #include "fuse.h"
 #include "keyboard.h"
+#include "settings.h"
 #include "ui/ui.h"
 #include "ui/uidisplay.h"
 #include "xdisplay.h"
@@ -49,7 +51,8 @@ Window xui_mainWindow;		/* Window ID for the main Fuse window */
 /* FIXME: not a prototype. What should it be? */
 Bool xui_trueFunction();
 
-int ui_init(int *argc, char ***argv, int width, int height)
+int
+ui_init( int *argc, char ***argv )
 {
   char *displayName=NULL;	/* Use default display */
   XWMHints *wmHints;
@@ -106,22 +109,29 @@ int ui_init(int *argc, char ***argv, int width, int height)
   /* Create the main window */
 
   xui_mainWindow = XCreateSimpleWindow(
-    display, RootWindow(display,xui_screenNum), 0, 0, width, height, 0,
-    BlackPixel(display,xui_screenNum), WhitePixel(display,xui_screenNum));
+    display, RootWindow( display, xui_screenNum ), 0, 0,
+    DISPLAY_ASPECT_WIDTH, DISPLAY_SCREEN_HEIGHT, 0,
+    BlackPixel( display, xui_screenNum ), WhitePixel( display, xui_screenNum )
+  );
 
   /* Set standard window properties */
 
-  sizeHints->flags = PBaseSize | PResizeInc | PAspect | PMaxSize;
+  sizeHints->flags = PBaseSize | PResizeInc | PMaxSize;
   sizeHints->base_width=0;
   sizeHints->base_height=0;
-  sizeHints->width_inc=width;
-  sizeHints->height_inc=height;
-  sizeHints->min_aspect.x=width;
-  sizeHints->min_aspect.y=height;
-  sizeHints->max_aspect.x=width;
-  sizeHints->max_aspect.y=height;
-  sizeHints->max_width=2*width;
-  sizeHints->max_height=2*height;
+
+  sizeHints->width_inc    =     DISPLAY_ASPECT_WIDTH;
+  sizeHints->height_inc   =     DISPLAY_SCREEN_HEIGHT;
+  sizeHints->max_width    = 2 * DISPLAY_ASPECT_WIDTH;
+  sizeHints->max_height   = 2 * DISPLAY_SCREEN_HEIGHT;
+
+  if( settings_current.aspect_hint ) {
+    sizeHints->flags |= PAspect;
+    sizeHints->min_aspect.x = DISPLAY_ASPECT_WIDTH;
+    sizeHints->min_aspect.y = DISPLAY_SCREEN_HEIGHT;
+    sizeHints->max_aspect.x = DISPLAY_ASPECT_WIDTH;
+    sizeHints->max_aspect.y = DISPLAY_SCREEN_HEIGHT;
+  }
 
   wmHints->flags=StateHint | InputHint;
   wmHints->initial_state=NormalState;
@@ -147,7 +157,7 @@ int ui_init(int *argc, char ***argv, int width, int height)
 	       KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |
 	       StructureNotifyMask | FocusChangeMask );
 
-  if(uidisplay_init(width,height)) return 1;
+  if( xdisplay_init() ) return 1;
 
   /* And finally display the window */
   XMapWindow(display,xui_mainWindow);
@@ -166,8 +176,8 @@ int ui_event(void)
 				event.xconfigure.height);
       break;
     case Expose:
-      xdisplay_area(event.xexpose.x,event.xexpose.y,
-		    event.xexpose.width,event.xexpose.height);
+      xdisplay_area( event.xexpose.x, event.xexpose.y,
+		     event.xexpose.width, event.xexpose.height );
       break;
     case FocusOut:
       keyboard_release_all();
@@ -197,7 +207,7 @@ int ui_end(void)
   XUnmapWindow(display,xui_mainWindow);
 
   /* Tidy up the low level stuff */
-  error=uidisplay_end(); if(error) return error;
+  error = xdisplay_end(); if( error ) return error;
 
   /* Now free up the window itself */
   XDestroyWindow(display,xui_mainWindow);

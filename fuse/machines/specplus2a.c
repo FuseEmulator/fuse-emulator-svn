@@ -28,20 +28,18 @@
 
 #include <stdio.h>
 
+#include <libspectrum.h>
+
 #include "ay.h"
 #include "display.h"
-#include "fuse.h"
 #include "joystick.h"
-#include "keyboard.h"
 #include "machine.h"
 #include "printer.h"
-#include "snapshot.h"
-#include "sound.h"
+#include "settings.h"
 #include "spec128.h"
 #include "specplus2a.h"
 #include "specplus3.h"
 #include "spectrum.h"
-#include "z80/z80.h"
 
 spectrum_port_info
 specplus2a_peripherals[] = {
@@ -65,25 +63,21 @@ specplus2a_init( fuse_machine_info *machine )
 
   machine->reset = specplus2a_reset;
 
-  machine_set_timings( machine, 3.54690e6, 24, 128, 24, 52, 311, 8865 );
+  error = machine_set_timings( machine ); if( error ) return error;
 
   machine->timex = 0;
-  machine->ram.read_memory    = specplus3_readbyte;
-  machine->ram.read_screen    = specplus3_read_screen_memory;
-  machine->ram.write_memory   = specplus3_writebyte;
-  machine->ram.contend_memory = specplus3_contend_memory;
-  machine->ram.contend_port   = specplus3_contend_port;
+  machine->ram.read_memory	     = specplus3_readbyte;
+  machine->ram.read_memory_internal  = specplus3_readbyte_internal;
+  machine->ram.read_screen	     = specplus3_read_screen_memory;
+  machine->ram.write_memory          = specplus3_writebyte;
+  machine->ram.write_memory_internal = specplus3_writebyte_internal;
+  machine->ram.contend_memory	     = specplus3_contend_memory;
+  machine->ram.contend_port	     = specplus3_contend_port;
 
   error = machine_allocate_roms( machine, 4 );
   if( error ) return error;
-  error = machine_read_rom( machine, 0, "plus3-0.rom" );
-  if( error ) return error;
-  error = machine_read_rom( machine, 1, "plus3-1.rom" );
-  if( error ) return error;
-  error = machine_read_rom( machine, 2, "plus3-2.rom" );
-  if( error ) return error;
-  error = machine_read_rom( machine, 3, "plus3-3.rom" );
-  if( error ) return error;
+  machine->rom_length[0] = machine->rom_length[1] = 
+    machine->rom_length[2] = machine->rom_length[3] = 0x4000;
 
   machine->peripherals = specplus2a_peripherals;
   machine->unattached_port = specplus3_unattached_port;
@@ -98,6 +92,8 @@ specplus2a_init( fuse_machine_info *machine )
 
 int specplus2a_reset(void)
 {
+  int error;
+
   machine_current->ram.current_page = 0;
   machine_current->ram.current_rom = 0;
   machine_current->ram.current_screen = 5;
@@ -105,9 +101,19 @@ int specplus2a_reset(void)
   machine_current->ram.special = 0;
   machine_current->ram.specialcfg = 0;
 
-  z80_reset();
-  sound_ay_reset();
-  snapshot_flush_slt();
+  error = machine_load_rom( &ROM[0], settings_current.rom_plus2a_0,
+			    machine_current->rom_length[0] );
+  if( error ) return error;
+  error = machine_load_rom( &ROM[1], settings_current.rom_plus2a_1,
+			    machine_current->rom_length[1] );
+  if( error ) return error;
+  error = machine_load_rom( &ROM[2], settings_current.rom_plus2a_2,
+			    machine_current->rom_length[2] );
+  if( error ) return error;
+  error = machine_load_rom( &ROM[3], settings_current.rom_plus2a_3,
+			    machine_current->rom_length[3] );
+  if( error ) return error;
 
   return 0;
 }
+

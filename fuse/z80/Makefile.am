@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-## Copyright (c) 2001 Philip Kendall
+## Copyright (c) 2001-2003 Philip Kendall
 
 ## $Id$
 
@@ -30,4 +30,46 @@ libz80_a_SOURCES = z80.c z80_ops.c
 
 INCLUDES = @GTK_CFLAGS@ @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 
-noinst_HEADERS = z80.h z80_cb.c z80_ddfd.c z80_ddfdcb.c z80_ed.c z80_macros.h 
+BUILT_SOURCES = opcodes_base.c z80_cb.c z80_ddfd.c z80_ddfdcb.c z80_ed.c
+
+opcodes_base.c: z80.pl opcodes_base.dat
+	@PERL@ z80.pl opcodes_base.dat > opcodes_base.c
+
+z80_cb.c: z80.pl opcodes_cb.dat
+	@PERL@ z80.pl opcodes_cb.dat > z80_cb.c
+
+z80_ddfd.c: z80.pl opcodes_ddfd.dat
+	@PERL@ z80.pl opcodes_ddfd.dat > z80_ddfd.c
+
+z80_ddfdcb.c: z80.pl opcodes_ddfd.dat
+	@PERL@ z80.pl opcodes_ddfdcb.dat > z80_ddfdcb.c
+
+z80_ed.c: z80.pl opcodes_ed.dat
+	@PERL@ z80.pl opcodes_ed.dat > z80_ed.c
+
+noinst_HEADERS = z80.h \
+		 z80_macros.h 
+
+EXTRA_DIST = opcodes_base.dat \
+	     opcodes_cb.dat \
+	     opcodes_ddfd.dat \
+	     opcodes_ddfdcb.dat \
+             opcodes_ed.dat \
+	     z80.pl
+
+## The core tester
+
+noinst_PROGRAMS = coretest
+
+coretest_SOURCES = coretest.c z80.c z80_ops.c
+
+test: coretest
+	for input in tests/*.in; do \
+	  output=`echo $$input | sed -e 's/.in$$//'`.out; \
+	  ./coretest $$input > coretest.out; \
+	  if cmp -s coretest.out $$output; then \
+	    /bin/true; \
+	  else \
+	    echo "$$input failed"; \
+	  fi \
+	done

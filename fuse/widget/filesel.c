@@ -26,6 +26,8 @@
 
 #include <config.h>
 
+#ifdef USE_WIDGET
+
 #include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
@@ -35,11 +37,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "display.h"
 #include "fuse.h"
 #include "keyboard.h"
-#include "ui/uidisplay.h"
-#include "widget.h"
+#include "widget_internals.h"
 
 struct widget_dirent **widget_filenames; /* Filenames in the current
 					    directory */
@@ -64,6 +64,9 @@ static int widget_print_filename( struct widget_dirent *filename, int position,
 
 /* The filename to return */
 char* widget_filesel_name;
+
+/* Should we exit all widgets when we're done with this selector? */
+static int exit_all_widgets;
 
 static int widget_scandir( const char *dir, struct widget_dirent ***namelist,
 			   int (*select_fn)(const struct dirent*) )
@@ -220,11 +223,19 @@ static int widget_scan_compare( const struct widget_dirent **a,
 /* File selection widget */
 
 int
-widget_filesel_draw( void* data GCC_UNUSED )
+widget_filesel_draw( void *data )
 {
   char *directory;
 
   int error;
+
+  /* Should we exit all widgets when we're done with the fileselector;
+     defaults to 'yes' if no data given for backward compatability reasons */
+  if( !data || *(int*)data ) {
+    exit_all_widgets = 1;
+  } else {
+    exit_all_widgets = 0;
+  }
 
   directory = widget_getcwd();
   if( directory == NULL ) return 1;
@@ -308,8 +319,7 @@ static int widget_print_all_filenames( struct widget_dirent **filenames, int n,
   }
 
   /* Display that lot */
-  uidisplay_lines( DISPLAY_BORDER_HEIGHT,
-		   DISPLAY_BORDER_HEIGHT + DISPLAY_HEIGHT );
+  widget_display_lines( 2, 20 );
 
   return 0;
 }
@@ -362,8 +372,7 @@ widget_filesel_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
     
   case KEYBOARD_1:		/* 1 used as `Escape' generates `EDIT',
 				   which is Caps + 1 */
-    if( key2 == KEYBOARD_Caps ) 
-      widget_return[ widget_level ].finished = WIDGET_FINISHED_CANCEL;
+    if( key2 == KEYBOARD_Caps ) widget_end_widget( WIDGET_FINISHED_CANCEL );
     break;
   
   case KEYBOARD_5:		/* Left */
@@ -410,7 +419,7 @@ widget_filesel_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
     /* Get the new directory name */
     fn = widget_getcwd();
     if( fn == NULL ) {
-      widget_return[ widget_level ].finished = WIDGET_FINISHED_CANCEL;
+      widget_end_widget( WIDGET_FINISHED_CANCEL );
       return;
     }
     ptr = fn;
@@ -420,7 +429,7 @@ widget_filesel_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
     );
     if( fn == NULL ) {
       free( ptr );
-      widget_return[ widget_level ].finished = WIDGET_FINISHED_CANCEL;
+      widget_end_widget( WIDGET_FINISHED_CANCEL );
       return;
     }
     strcat( fn, "/" ); strcat( fn, widget_filenames[ current_file ]->name );
@@ -428,7 +437,11 @@ widget_filesel_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
     if(chdir(fn)==-1) {
       if(errno==ENOTDIR) {
 	widget_filesel_name = fn;
-	widget_end_all( WIDGET_FINISHED_OK );
+	if( exit_all_widgets ) {
+	  widget_end_all( WIDGET_FINISHED_OK );
+	} else {
+	  widget_end_widget( WIDGET_FINISHED_OK );
+	}
       }
     } else {
       widget_scan( fn ); free( fn );
@@ -472,9 +485,7 @@ widget_filesel_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
       widget_print_filename( widget_filenames[ new_current_file ],
 			     new_current_file - top_left_file, 1 );
         
-      uidisplay_lines(DISPLAY_BORDER_HEIGHT,
-		      DISPLAY_BORDER_HEIGHT + DISPLAY_HEIGHT );
-	  
+      widget_display_lines( 2, 20 );
     }
 
     /* Reset the current file marker */
@@ -483,3 +494,5 @@ widget_filesel_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
   }
 
 }
+
+#endif				/* #ifdef USE_WIDGET */

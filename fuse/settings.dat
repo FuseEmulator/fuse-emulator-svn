@@ -31,13 +31,17 @@
 # <name on command line>, (defaults to <settings_info name> =~ s/_/-/g)
 # <name in config file>, (defaults to <command line> =~ s/-//g)
 
-emulation_speed, numeric, 100, 256, speed
+emulation_speed, numeric, 100,, speed
+frame_rate, numeric, 1,, rate
 
 issue2, boolean, 0
 joy_kempston, boolean, 0,, kempston
 tape_traps, boolean, 1,, traps, tapetraps
+auto_load, boolean, 1
 slt_traps, boolean, 1,, slt, slttraps
-double_screen, boolean, 0
+double_screen, null, 0
+full_screen, boolean, 0
+writable_roms, boolean, 0
 
 sound_device, string, NULL, 'd'
 sound, boolean, 1
@@ -52,5 +56,35 @@ tape_file, string, NULL, 't', tape, tapefile
 start_machine, string, strdup( "48" ), 'm', machine
 record_file, string, NULL, 'r', record, recordfile
 playback_file, string, NULL, 'p', playback, playbackfile
+plus3disk_file, string, NULL,, plus3disk
+trdosdisk_file, string, NULL,, trdosdisk
+dck_file, string, NULL,, dock
 
+printer_graphics_filename, string, strdup( "printout.pbm" ),, graphicsfile
+printer_text_filename, string, strdup( "printout.txt" ),, textfile
+
+aspect_hint, boolean, 1
 svga_mode, numeric, 320, 'v', svgamode
+
+start_scaler_mode, string, strdup( "normal" ), 'g', graphics-filter
+
+rom_16, string, strdup( "48.rom" ),
+rom_48, string, strdup( "48.rom" ),
+rom_128_0, string, strdup( "128-0.rom" ),
+rom_128_1, string, strdup( "128-1.rom" ),
+rom_plus2_0, string, strdup( "plus2-0.rom" ),
+rom_plus2_1, string, strdup( "plus2-1.rom" ),
+rom_plus2a_0, string, strdup( "plus3-0.rom" ),
+rom_plus2a_1, string, strdup( "plus3-1.rom" ),
+rom_plus2a_2, string, strdup( "plus3-2.rom" ),
+rom_plus2a_3, string, strdup( "plus3-3.rom" ),
+rom_plus3_0, string, strdup( "plus3-0.rom" ),
+rom_plus3_1, string, strdup( "plus3-1.rom" ),
+rom_plus3_2, string, strdup( "plus3-2.rom" ),
+rom_plus3_3, string, strdup( "plus3-3.rom" ),
+rom_tc2048, string, strdup( "tc2048.rom" ),
+rom_tc2068_0, string, strdup( "tc2068-0.rom" ),
+rom_tc2068_1, string, strdup( "tc2068-1.rom" ),
+rom_pentagon_0, string, strdup( "128p-0.rom" ),
+rom_pentagon_1, string, strdup( "128p-1.rom" ),
+rom_pentagon_2, string, strdup( "trdos.rom" ),

@@ -1,5 +1,5 @@
 /* machine.h: Routines for handling the various machine types
-   Copyright (c) 1999-2001 Philip Kendall
+   Copyright (c) 1999-2003 Philip Kendall
 
    $Id$
 
@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #endif			/* #ifndef _STDLIB_H */
 
+#include <libspectrum.h>
+
 #ifndef FUSE_AY_H
 #include "ay.h"
 #endif			/* #ifndef FUSE_AY_H */
@@ -39,51 +41,46 @@
 #include "display.h"
 #endif			/* #ifndef FUSE_DISPLAY_H */
 
-#ifndef FUSE_TYPES_H
-#include "types.h"
-#endif			/* #ifndef FUSE_TYPES_H */
-
 #ifndef FUSE_SPECTRUM_H
 #include "spectrum.h"
 #endif			/* #ifndef FUSE_SPECTRUM_H */
 
+typedef libspectrum_byte (*spectrum_unattached_port_fn)( void );
+
+/* How long do things take to happen; fields are pulled from libspectrum
+   via the libspectrum_timings_* functions */
 typedef struct machine_timings {
 
-  DWORD hz;		    /* Processor speed in Hz */
+  /* Processor speed */
+  libspectrum_dword processor_speed;
 
-  WORD left_border_cycles;  /* T-states spent drawing left border */
-  WORD screen_cycles;	    /* T-states spent drawing screen */
-  WORD right_border_cycles; /* T-states spent drawing right border */
-  WORD retrace_cycles;	    /* T-states spent in horizontal retrace */
-  WORD cycles_per_line;	    /* = sum of above four values */
+  /* Line timings in tstates */
+  libspectrum_word left_border, horizontal_screen, right_border;
+  libspectrum_word tstates_per_line;
 
-  WORD lines_per_frame;
+  /* Frame timing */
+  libspectrum_dword tstates_per_frame;
 
-  DWORD cycles_per_frame;   /* = cycles_per_line * lines_per_frame */
-
-} machine_timings;  
-
-typedef BYTE (*spectrum_unattached_port_fn)( void );
+} machine_timings;
 
 typedef struct fuse_machine_info {
 
-  int machine;		/* which machine type is this? */
-  const char *id;	/* Used used to select from command line */
+  libspectrum_machine machine; /* which machine type is this? */
+  const char *id;	/* Used to select from command line */
 
   int (*reset)(void);	/* Reset function */
 
-  int timex;            /* Timex machine (keyboard emulation/loading sounds etc.) */
+  int timex;      /* Timex machine (keyboard emulation/loading sounds etc.) */
 
   machine_timings timings; /* How long do things take to happen? */
   /* Redraw line y this many tstates after interrupt */
-  DWORD	line_times[DISPLAY_SCREEN_HEIGHT+1];
+  libspectrum_dword line_times[DISPLAY_SCREEN_HEIGHT+1];
 
   spectrum_raminfo ram; /* How do we access memory, and what's currently
 			   paged in */
 
-  size_t rom_count;
-  BYTE **roms;
-  size_t *rom_lengths;
+  size_t rom_count;	/* How many ROMs does this machine use? */
+  size_t *rom_length;	/* And how long is each ROM? */
 
   spectrum_port_info *peripherals; /* Which peripherals do we have? */
   spectrum_unattached_port_fn unattached_port; /* What to return if we read
@@ -96,12 +93,6 @@ typedef struct fuse_machine_info {
 
 } fuse_machine_info;
 
-/* The various capabilities of the different machines */
-extern const int MACHINE_CAPABILITY_AY;		/* AY-3-8192 */
-extern const int MACHINE_CAPABILITY_128_MEMORY; /* 128-style memory paging */
-extern const int MACHINE_CAPABILITY_PLUS3_MEMORY; /* +3-style memory paging */
-extern const int MACHINE_CAPABILITY_PLUS3_DISK; /* +3-style disk drive */
-
 extern fuse_machine_info **machine_types;	/* All available machines */
 extern int machine_count;		/* of which there are this many */
 
@@ -111,17 +102,16 @@ int machine_init_machines( void );
 
 int machine_select( int type );
 int machine_select_id( const char *id );
+const char* machine_get_id( libspectrum_machine type );
 
-void machine_set_timings( fuse_machine_info *machine, DWORD hz,
-			  WORD left_border_cycles,  WORD screen_cycles,
-			  WORD right_border_cycles, WORD retrace_cycles,
-			  WORD lines_per_frame, DWORD first_line);
+int machine_set_timings( fuse_machine_info *machine );
 
 int machine_allocate_roms( fuse_machine_info *machine, size_t count );
-int machine_read_rom( fuse_machine_info *machine, size_t number,
-		      const char* filename );
+int machine_load_rom( libspectrum_byte **data, char *filename,
+		      size_t expected_length );
 int machine_find_rom( const char *filename );
 
+int machine_reset( void );
 int machine_end( void );
 
 #endif			/* #ifndef FUSE_MACHINE_H */

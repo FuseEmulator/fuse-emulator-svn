@@ -1,5 +1,5 @@
 /* widget.c: Simple dialog boxes for all user interfaces.
-   Copyright (c) 2001,2002 Matan Ziv-Av, Philip Kendall, Russell Marks
+   Copyright (c) 2001-2003 Matan Ziv-Av, Philip Kendall, Russell Marks
 
    $Id$
 
@@ -26,12 +26,14 @@
 
 #include <config.h>
 
+#ifdef USE_WIDGET
+
 #include <errno.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/mman.h>
+
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -39,15 +41,16 @@
 #include "fuse.h"
 #include "display.h"
 #include "machine.h"
-#include "ui/ui.h"
 #include "ui/uidisplay.h"
 #include "keyboard.h"
 #include "options.h"
 #include "screenshot.h"
 #include "timer.h"
-#include "widget.h"
+#include "utils.h"
+#include "widget_internals.h"
 
 static void printchar(int x, int y, int col, int ch);
+static void widget_putpixel( int x, int y, int colour );
 
 static char widget_font[768];
 
@@ -55,14 +58,25 @@ static char widget_font[768];
 widget_keyhandler_fn widget_keyhandler;
 
 /* The data used for recursive widgets */
-widget_recurse_t widget_return[10];
+typedef struct widget_recurse_t {
+
+  widget_type type;		/* Which type of widget are we? */
+  void *data;			/* What data were we passed? */
+
+  int finished;			/* Have we finished this widget yet? */
+
+} widget_recurse_t;
+
+static widget_recurse_t widget_return[10]; /* The stack to recurse on */
 
 /* The settings used whilst playing with an options dialog box */
 settings_info widget_options_settings;
 
 static int widget_read_font( const char *filename, size_t offset )
 {
-  int fd; struct stat file_info; unsigned char *buffer;
+  int fd;
+  utils_file file;
+  int error;
 
   fd = machine_find_rom( filename );
   if( fd == -1 ) {
@@ -70,38 +84,15 @@ static int widget_read_font( const char *filename, size_t offset )
     return 1;
   }
 
-  if( fstat( fd, &file_info) ) {
-    ui_error( UI_ERROR_ERROR, "Couldn't stat '%s': %s", filename,
-	      strerror( errno ) );
-    close(fd);
-    return errno;
-  }
+  error = utils_read_fd( fd, filename, &file );
+  if( error ) return error;
 
-  buffer = mmap( 0, file_info.st_size, PROT_READ, MAP_SHARED, fd, 0 );
-  if( buffer == (void*)-1 ) {
-    ui_error( UI_ERROR_ERROR, "Couldn't mmap '%s': %s", filename,
-	      strerror( errno ) );
-    close(fd);
-    return errno;
-  }
+  memcpy( widget_font, file.buffer + offset - 1, 768 );
 
-  if( close(fd) ) {
-    ui_error( UI_ERROR_ERROR, "Couldn't close '%s': %s", filename,
-	      strerror( errno ) );
-    munmap( buffer, file_info.st_size );
-    return errno;
-  }
-
-  memcpy( widget_font, buffer+offset-1, 768 );
-
-  if( munmap( buffer, file_info.st_size ) == -1 ) {
-    ui_error( UI_ERROR_ERROR, "Couldn't munmap '%s': %s", filename,
-	      strerror( errno ) );
-    return errno;
-  }
+  error = utils_close_file( &file );
+  if( error ) return error;
 
   return 0;
-
 }
 
 static void printchar(int x, int y, int col, int ch) {
@@ -115,10 +106,7 @@ static void printchar(int x, int y, int col, int ch) {
         int b;
         b=widget_font[ch*8+my];
         for(mx=0; mx<8; mx++) {
-            if(b&128) {
-	      uidisplay_putpixel((mx<<1)+DISPLAY_BORDER_WIDTH+16*x, my+DISPLAY_BORDER_HEIGHT+8*y, col);
-	      uidisplay_putpixel((mx<<1)+1+DISPLAY_BORDER_WIDTH+16*x, my+DISPLAY_BORDER_HEIGHT+8*y, col);
-	    }
+            if( b & 0x80 ) widget_putpixel( mx + 8 * x, my + 8 * y, col );
             b<<=1;
         }
     }
@@ -141,12 +129,20 @@ void widget_rectangle( int x, int y, int w, int h, int col )
 {
     int mx, my;
     
-    for(my=0;my<h;my++)for(mx=0;mx<w;mx++) {
-        uidisplay_putpixel( DISPLAY_BORDER_WIDTH  + ( (x+mx) << 1 )    ,
-			    DISPLAY_BORDER_HEIGHT +    y+my, col );
-        uidisplay_putpixel( DISPLAY_BORDER_WIDTH  + ( (x+mx) << 1 ) + 1,
-			    DISPLAY_BORDER_HEIGHT +    y+my, col );
-    }
+    for( my = 0; my < h; my++ )
+      for( mx = 0; mx < w; mx++ )
+        widget_putpixel( x + mx, y + my, col );
+}
+
+/* Force screen lines y to (y+h) inclusive to be redrawn */
+void
+widget_display_lines( int y, int h )
+{
+  int scale = machine_current->timex ? 2 : 1;
+
+  uidisplay_area( 0, scale * ( DISPLAY_BORDER_HEIGHT + 8 * y ),
+		  scale * DISPLAY_ASPECT_WIDTH, scale * 8 * h );
+  uidisplay_frame_end();
 }
 
 /* Global initialisation/end routines */
@@ -197,9 +193,9 @@ int widget_do( widget_type which, void *data )
   /* If we're the top-level widget, save the screen and set up the timer */
   if( ! widget_level ) {
 
-#ifdef HAVE_PNG_H
+#ifdef USE_LIBPNG
     error = screenshot_save(); if( error ) { widget_level--; return error; }
-#endif				/* #ifdef HAVE_PNG_H */
+#endif				/* #ifdef USE_LIBPNG */
 
     error = widget_timer_init(); if( error ) { widget_level--; return error; }
   }
@@ -253,10 +249,16 @@ int widget_do( widget_type which, void *data )
 
     /* Refresh the Spectrum's display, including the border */
     display_refresh_all();
-    display_dirty_border();
-
   }
 
+  return 0;
+}
+
+/* End the currently running widget */
+int
+widget_end_widget( widget_finish_state state )
+{
+  widget_return[ widget_level ].finished = state;
   return 0;
 }
 
@@ -344,66 +346,36 @@ int widget_dialog_with_border( int x, int y, int width, int height )
 		    WIDGET_COLOUR_BACKGROUND );
   
   for( i=(8*x)-1; i<(8*(x+width))+1; i++ ) {
-    uidisplay_putpixel( (i<<1)           + DISPLAY_BORDER_WIDTH,
-			(8* y        )-4 + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (i<<1)+1         + DISPLAY_BORDER_WIDTH,
-			(8* y        )-4 + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (i<<1)           + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+3 + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (i<<1)+1         + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+3 + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( i, 8 *   y            - 4, WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( i, 8 * ( y + height ) + 3, WIDGET_COLOUR_FOREGROUND );
   }
 
   for( i=(8*y)-1; i<(8*(y+height))+1; i++ ) {
-    uidisplay_putpixel( (16* x       )-4 + DISPLAY_BORDER_WIDTH,
-			i                + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16* x       )-3 + DISPLAY_BORDER_WIDTH,
-			i                + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+3 + DISPLAY_BORDER_WIDTH,
-			i                + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+4 + DISPLAY_BORDER_WIDTH,
-			i                + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 *   x           - 4, i, WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 * ( x + width ) + 3, i, WIDGET_COLOUR_FOREGROUND );
   }
 
   for( i=0; i<2; i++ ) {
-    uidisplay_putpixel( (16* x       )-3+i + DISPLAY_BORDER_WIDTH,
-			(8* y        )-2-i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16* x       )-2+i + DISPLAY_BORDER_WIDTH,
-			(8* y        )-2-i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+2-i + DISPLAY_BORDER_WIDTH,
-			(8* y        )-2-i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+3-i + DISPLAY_BORDER_WIDTH,
-			(8* y        )-2-i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16* x       )-3+i + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+1+i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16* x       )-2+i + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+1+i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+2-i + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+1+i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
-    uidisplay_putpixel( (16*(x+width))+3-i + DISPLAY_BORDER_WIDTH,
-			(8*(y+height))+1+i + DISPLAY_BORDER_HEIGHT,
-			WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 *   x           - 3 + i, 8 *   y            - 2 - i,
+		     WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 * ( x + width ) + 2 - i, 8 *   y            - 2 - i,
+		     WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 *   x           - 3 + i, 8 * ( y + height ) + 1 + i,
+		     WIDGET_COLOUR_FOREGROUND );
+    widget_putpixel( 8 * ( x + width ) + 2 - i, 8 * ( y + height ) + 1 + i,
+		     WIDGET_COLOUR_FOREGROUND );
   }
 
-  uidisplay_lines( DISPLAY_BORDER_HEIGHT    + 8*(y       -1),
-		   DISPLAY_BORDER_HEIGHT -1 + 8*(y+height+1)  );
+  widget_display_lines( y-1, height+2 );
 
   return 0;
+}
+
+static void
+widget_putpixel( int x, int y, int colour )
+{
+  display_putpixel( x + DISPLAY_BORDER_ASPECT_WIDTH, y + DISPLAY_BORDER_HEIGHT,
+		    colour );
 }
 
 /* General functions used by the options dialogs */
@@ -412,14 +384,10 @@ int widget_options_print_option( int number, const char* string, int value )
 {
   char buffer[29];
 
-  snprintf( buffer, 23, "%-22s", string );
-  strcat( buffer, " : " );
-  strcat( buffer, value ? " On" : "Off" );
-
+  snprintf( buffer, 29, "%-22s : %s", string, value ? " On" : "Off" );
   widget_printstring( 2, number+4, WIDGET_COLOUR_FOREGROUND, buffer );
 
-  uidisplay_lines( DISPLAY_BORDER_HEIGHT + (number+4)*8,
-		   DISPLAY_BORDER_HEIGHT + (number+5)*8  );
+  widget_display_lines( number + 4, 1 );
 
   return 0;
 }
@@ -429,8 +397,25 @@ int widget_options_print_value( int number, int value )
   widget_rectangle( 27*8, (number+4)*8, 24, 8, WIDGET_COLOUR_BACKGROUND );
   widget_printstring( 27, number+4, WIDGET_COLOUR_FOREGROUND,
 		      value ? " On" : "Off" );
-  uidisplay_lines( DISPLAY_BORDER_HEIGHT + (number+4)*8,
-		   DISPLAY_BORDER_HEIGHT + (number+5)*8  );
+
+  widget_display_lines( number + 4, 1 );
+
+  return 0;
+}
+
+int
+widget_options_print_entry( int number, const char *prefix, int value,
+			    const char *suffix )
+{
+  char buffer[29];
+
+  widget_rectangle( 2*8, (number+4)*8, 28*8, 8, WIDGET_COLOUR_BACKGROUND );
+  
+  snprintf( buffer, 29, "%s: %d %s", prefix, value, suffix );
+  widget_printstring( 2, number + 4, WIDGET_COLOUR_FOREGROUND, buffer );
+
+  widget_display_lines( number + 4, 1 );
+
   return 0;
 }
 
@@ -462,5 +447,11 @@ widget_t widget_data[] = {
   { widget_error_draw,	  NULL,			 widget_error_keyhandler    },
   { widget_rzx_draw,      widget_options_finish, widget_rzx_keyhandler      },
   { widget_browse_draw,   widget_browse_finish,  widget_browse_keyhandler   },
+  { widget_text_draw,	  widget_text_finish,	 widget_text_keyhandler     },
+  { widget_scaler_draw,   widget_scaler_finish,  widget_scaler_keyhandler   },
+  { widget_debugger_draw, NULL,			 widget_debugger_keyhandler },
+  { widget_roms_draw,     widget_roms_finish,	 widget_roms_keyhandler     },
 
 };
+
+#endif				/* #ifdef USE_WIDGET */

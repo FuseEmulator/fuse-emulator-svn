@@ -26,15 +26,15 @@
 
 #include <config.h>
 
+#ifdef USE_WIDGET
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "display.h"
 #include "fuse.h"
 #include "keyboard.h"
 #include "tape.h"
-#include "ui/uidisplay.h"
-#include "widget.h"
+#include "widget_internals.h"
 
 /* The descriptions of the blocks */
 static char ***block_descriptions;
@@ -59,7 +59,7 @@ widget_browse_draw( void *data GCC_UNUSED )
   widget_dialog_with_border( 1, 2, 30, 20 );
 
   widget_printstring( 10, 2, WIDGET_COLOUR_FOREGROUND, "Browse Tape" );
-  uidisplay_lines( DISPLAY_BORDER_HEIGHT + 16, DISPLAY_BORDER_HEIGHT + 23 );
+  widget_display_lines( 2, 1 );
 
   highlight = tape_get_current_block();
   top_line = highlight - 8; if( top_line < 0 ) top_line = 0;
@@ -72,7 +72,7 @@ widget_browse_draw( void *data GCC_UNUSED )
 static void
 show_blocks( void )
 {
-  int i; char buffer[30];
+  size_t i; char buffer[30];
 
   widget_rectangle( 2*8, 4*8, 28*8, 18*8, WIDGET_COLOUR_BACKGROUND );
 
@@ -87,8 +87,7 @@ show_blocks( void )
     }
   }
 
-  uidisplay_lines( DISPLAY_BORDER_HEIGHT + 32,
-		   DISPLAY_BORDER_HEIGHT + 32 + 18 * 8 );
+  widget_display_lines( 2, 18 );
 }
 
 void
@@ -101,8 +100,7 @@ widget_browse_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
     break;
 
   case KEYBOARD_1: /* 1 used as `Escape' generates `Edit', which is Caps + 1 */
-    if( key2 == KEYBOARD_Caps )
-      widget_return[ widget_level ].finished = WIDGET_FINISHED_CANCEL;
+    if( key2 == KEYBOARD_Caps ) widget_end_widget( WIDGET_FINISHED_CANCEL );
     return;
 
   case KEYBOARD_6:
@@ -155,7 +153,7 @@ widget_browse_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
     break;
 
   case KEYBOARD_Enter:
-    widget_return[ widget_level ].finished = WIDGET_FINISHED_OK;
+    widget_end_widget( WIDGET_FINISHED_OK );
     return;
 
   default:	/* Keep gcc happy */
@@ -170,9 +168,11 @@ widget_browse_finish( widget_finish_state finished )
   tape_free_block_list( block_descriptions, blocks );
 
   if( finished == WIDGET_FINISHED_OK ) {
-    tape_select_block( highlight );
+    if( highlight != -1 ) tape_select_block( highlight );
     widget_end_all( WIDGET_FINISHED_OK );
   }
     
   return 0;
 }
+
+#endif				/* #ifdef USE_WIDGET */

@@ -1,5 +1,5 @@
 /* keysyms.h: keysym to Spectrum key mappings for both Xlib and GDK
-   Copyright (c) 2000 Philip Kendall
+   Copyright (c) 2000,2002 Philip Kendall
 
    $Id$
 
@@ -36,6 +36,6 @@ typedef struct keysyms_key_info {
   keyboard_key_name key1,key2;
 } keysyms_key_info;
 
-keysyms_key_info* keysyms_get_data(unsigned keysym);
+const keysyms_key_info* keysyms_get_data( unsigned keysym );
 
 #endif			/* #ifndef FUSE_KEYSYMS_H */

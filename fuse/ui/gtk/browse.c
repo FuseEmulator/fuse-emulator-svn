@@ -1,5 +1,5 @@
 /* browse.c: tape browser dialog box
-   Copyright (c) 2002 Philip Kendall
+   Copyright (c) 2002-2003 Philip Kendall
 
    $Id$
 
@@ -33,6 +33,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#include "compat.h"
 #include "fuse.h"
 #include "gtkui.h"
 #include "tape.h"
@@ -51,9 +52,10 @@ static void unselect_row( GtkWidget *widget, gint row, gint column,
 static void browse_done( GtkWidget *widget, gpointer data );
 
 void
-gtk_tape_browse( GtkWidget *widget, gpointer data )
+gtk_tape_browse( GtkWidget *widget GCC_UNUSED, gpointer data GCC_UNUSED )
 {
   GtkWidget *dialog;
+  GtkAccelGroup *accel_group;
   GtkWidget *scrolled_window, *clist;
   GtkWidget *ok_button, *cancel_button;
 
@@ -78,19 +80,19 @@ gtk_tape_browse( GtkWidget *widget, gpointer data )
   /* And a scrolled window to pack the CList into */
   scrolled_window = gtk_scrolled_window_new( NULL, NULL );
   gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW( scrolled_window ),
-				  GTK_POLICY_AUTOMATIC,
-				  GTK_POLICY_AUTOMATIC );
+				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC );
   gtk_container_add( GTK_CONTAINER( GTK_DIALOG( dialog )->vbox ),
 		     scrolled_window );
 
   /* And the CList itself */
   clist = gtk_clist_new_with_titles( 2, titles );
   gtk_clist_column_titles_passive( GTK_CLIST( clist ) );
+  for( i = 0; i < 2; i++ )
+    gtk_clist_set_column_auto_resize( GTK_CLIST( clist ), i, TRUE );
+
   for( i=0; i<n; i++ ) {
     gtk_clist_append( GTK_CLIST( clist ), text[i] );
   }
-
-  gtk_clist_set_column_width( GTK_CLIST( clist ), 0, 250 );
 
   gtk_container_add( GTK_CONTAINER( scrolled_window ), clist );
 
@@ -121,12 +123,15 @@ gtk_tape_browse( GtkWidget *widget, gpointer data )
   gtk_signal_connect( GTK_OBJECT( dialog ), "delete_event",
 		      GTK_SIGNAL_FUNC( gtkui_destroy_widget_and_quit ), NULL );
 
+  accel_group = gtk_accel_group_new();
+  gtk_window_add_accel_group(GTK_WINDOW(dialog), accel_group);
+
   /* Allow Esc to cancel */
   gtk_widget_add_accelerator( cancel_button, "clicked",
-			      gtk_accel_group_get_default(), GDK_Escape, 0, 0);
+			      accel_group, GDK_Escape, 0, 0);
 
   /* Make the window big enough to show at least some data */
-  gtk_window_set_default_size( GTK_WINDOW( dialog ), 400, 200 );
+  gtk_window_set_default_size( GTK_WINDOW( dialog ), -1, 200 );
 
   current_block = tape_get_current_block();
   if( current_block != -1 ) {
@@ -155,15 +160,16 @@ gtk_tape_browse( GtkWidget *widget, gpointer data )
 
 /* Called when a row is selected */
 static void
-select_row( GtkWidget *widget, gint row, gint column, GdkEventButton *event,
-	    gpointer data )
+select_row( GtkWidget *widget GCC_UNUSED, gint row, gint column GCC_UNUSED,
+	    GdkEventButton *event GCC_UNUSED, gpointer data )
 {
   *( (gint*)data ) = row;
 }
 
 /* Called when a row is unselected */
 static void
-unselect_row( GtkWidget *widget, gint row, gint column, GdkEventButton *event,
+unselect_row( GtkWidget *widget GCC_UNUSED, gint row GCC_UNUSED,
+	      gint column GCC_UNUSED, GdkEventButton *event GCC_UNUSED,
 	      gpointer data )
 {
   *( (gint*)data ) = -1;
@@ -171,12 +177,12 @@ unselect_row( GtkWidget *widget, gint row, gint column, GdkEventButton *event,
 
 /* Called if the OK button is clicked */
 static void
-browse_done( GtkWidget *widget, gpointer data )
+browse_done( GtkWidget *widget GCC_UNUSED, gpointer data )
 {
   struct browse_data *callback_data = (struct browse_data*)data;
 
   /* Set the tape to the appropriate block */
-  tape_select_block( callback_data->row );
+  if( callback_data->row != -1 ) tape_select_block( callback_data->row );
 
   gtkui_destroy_widget_and_quit( callback_data->dialog, NULL );
 }

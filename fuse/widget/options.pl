@@ -41,10 +41,15 @@ print Fuse::GPL( 'options.c: options dialog boxes',
 
 #include <config.h>
 
+#ifdef USE_WIDGET
+
+#include <stdio.h>
+
 #include "display.h"
 #include "fuse.h"
 #include "options.h"
-#include "ui/uidisplay.h"
+#include "widget_internals.h"
+
 CODE
 
 foreach( @dialogs ) { 
@@ -67,8 +72,7 @@ int widget_$_->{name}_draw( void *data GCC_UNUSED )
   error = widget_$_->{name}_show_all( &widget_options_settings );
   if( error ) { settings_free( &widget_options_settings ); return error; }
 
-  uidisplay_lines( DISPLAY_BORDER_HEIGHT + 16,
-		   DISPLAY_BORDER_HEIGHT + 32 + $count * 8 );
+  widget_display_lines( 2, 2 + $count );
 
   return 0;
 }
@@ -93,12 +97,19 @@ CODE
   if( error ) return error;
 
 CODE
-            $which++;
 	} elsif( $widget->{type} eq "Entry" ) {
-	    # FIXME: Make this work
+
+	    print << "CODE";
+  error = widget_options_print_entry( $which, "$widget->{text}",
+				      show->$widget->{value},
+				      "$widget->{data2}" );
+  if( error ) return error;
+CODE
 	} else {
 	    die "Unknown type `$widget->{type}'";
 	}
+
+        $which++;
     }
         
     print << "CODE";
@@ -109,17 +120,19 @@ void
 widget_$_->{name}_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
 \{
   int error;
+  widget_text_t text_data;
+
+  text_data = text_data;	/* Keep gcc happy */
 
   switch( key ) \{
 
   case KEYBOARD_Resize:		/* Fake keypress used on window resize */
-    widget_dialog_with_border( 1, 2, 30, 9 );
-    widget_general_show_all( &widget_options_settings );
+    widget_dialog_with_border( 1, 2, 30, 2 + $count );
+    widget_$_->{name}_show_all( &widget_options_settings );
     break;
     
   case KEYBOARD_1: /* 1 used as \`Escape\' generates \`Edit\', which is Caps + 1 */
-    if( key2 == KEYBOARD_Caps )
-      widget_return[ widget_level ].finished = WIDGET_FINISHED_CANCEL;
+    if( key2 == KEYBOARD_Caps ) widget_end_widget( WIDGET_FINISHED_CANCEL );
     break;
 
 CODE
@@ -137,16 +150,39 @@ CODE
     break;
 
 CODE
-           $which++;
 	} elsif( $widget->{type} eq "Entry" ) {
-	    # FIXME: Make this work
+
+	    my $title = $widget->{text};
+
+	    $title =~ tr/()//d;
+
+	    print << "CODE";
+  case $widget->{key}:
+    text_data.title = "$title";
+    snprintf( text_data.text, 40, "%d",
+	      widget_options_settings.$widget->{value} );
+    error = widget_do( WIDGET_TYPE_TEXT, &text_data ); if( error ) return;
+    if( widget_text_text ) {
+      widget_options_settings.$widget->{value} = atoi( widget_text_text );
+      error = widget_options_print_entry(
+        $which, "$widget->{text}",
+	widget_options_settings.$widget->{value}, "$widget->{data2}"
+      );
+    }
+	    
+    break;
+
+CODE
 	} else {
 	    die "Unknown type `$widget->{type}'";
 	}
+
+	$which++;
     }
 
     print << "CODE";
   case KEYBOARD_Enter:
+    display_refresh_all();
     widget_end_all( WIDGET_FINISHED_OK );
     break;
 
@@ -158,3 +194,6 @@ CODE
 CODE
 
 }
+
+print "\n#endif				/* #ifdef USE_WIDGET */\n";
+

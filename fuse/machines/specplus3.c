@@ -1,5 +1,5 @@
 /* specplus3.c: Spectrum +2A/+3 specific routines
-   Copyright (c) 1999-2002 Philip Kendall, Darren Salt
+   Copyright (c) 1999-2003 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -45,30 +45,31 @@
 #include <765.h>
 #endif				/* #ifdef HAVE_765_H */
 
+#include <libspectrum.h>
+
 #include "ay.h"
 #include "display.h"
 #include "fuse.h"
 #include "joystick.h"
-#include "keyboard.h"
 #include "machine.h"
 #include "printer.h"
-#include "snapshot.h"
-#include "sound.h"
+#include "settings.h"
 #include "spec128.h"
+#include "specplus2a.h"
 #include "specplus3.h"
 #include "spectrum.h"
 #include "ui/ui.h"
-#include "z80/z80.h"
 
-static DWORD specplus3_contend_delay( void );
+static libspectrum_dword specplus3_contend_delay( void );
 
 #ifdef HAVE_765_H
 static void specplus3_fdc_reset( void );
-static BYTE specplus3_fdc_status( WORD port );
-static BYTE specplus3_fdc_read( WORD port );
-static void specplus3_fdc_write( WORD port, BYTE data );
+static libspectrum_byte specplus3_fdc_status( libspectrum_word port );
+static libspectrum_byte specplus3_fdc_read( libspectrum_word port );
+static void specplus3_fdc_write( libspectrum_word port,
+				 libspectrum_byte data );
 
-void fdc_dprintf( int debug, char *format, ... );
+void specplus3_fdc_error( int debug, char *format, va_list ap );
 #endif			/* #ifdef HAVE_765_H */
 
 static int specplus3_shutdown( void );
@@ -97,94 +98,18 @@ static FDRV_PTR drive_null;	/* A null drive for drives 2 and 3 of the
 				   FDC */
 #endif				/* #ifdef HAVE_765_H */
 
-BYTE
+libspectrum_byte
 specplus3_unattached_port( void )
 {
   return 0xff;
 }
 
-BYTE specplus3_readbyte(WORD address)
-{
-  if(machine_current->ram.special) {
-    switch(machine_current->ram.specialcfg) {
-      case 0: return RAM[   address >> 14       ][ address & 0x3fff ];
-      case 1: return RAM[ ( address >> 14 ) + 4 ][ address & 0x3fff ];
-      case 2: switch( address >> 14 ) {
-	case 0: return RAM[4][ address & 0x3fff ];
-	case 1: return RAM[5][ address & 0x3fff ];
-	case 2: return RAM[6][ address & 0x3fff ];
-	case 3: return RAM[3][ address & 0x3fff ];
-      }
-      case 3: switch( address >> 14 ) {
-	case 0: return RAM[4][ address & 0x3fff ];
-	case 1: return RAM[7][ address & 0x3fff ];
-	case 2: return RAM[6][ address & 0x3fff ];
-	case 3: return RAM[3][ address & 0x3fff ];
-      }
-      default:
-	ui_error( UI_ERROR_ERROR, "Unknown +3 special configuration %d",
-		  machine_current->ram.specialcfg );
-	fuse_abort();
-    }
-  } else {
-    switch( address >> 14 ) {
-    case 0: return ROM[ machine_current->ram.current_rom][ address & 0x3fff ];
-    case 1: return RAM[				       5][ address & 0x3fff ];
-    case 2: return RAM[				       2][ address & 0x3fff ];
-    case 3: return RAM[machine_current->ram.current_page][ address & 0x3fff ];
-    }
-  }
-
-  return 0; /* Keep gcc happy */
-}
-
-BYTE specplus3_read_screen_memory(WORD offset)
+libspectrum_byte specplus3_read_screen_memory( libspectrum_word offset )
 {
   return RAM[machine_current->ram.current_screen][offset];
 }
 
-void specplus3_writebyte(WORD address, BYTE b)
-{
-  int bank = address >> 14;
-
-  if(machine_current->ram.special) {
-    switch(machine_current->ram.specialcfg) {
-      case 0: break;
-      case 1: bank+=4; break;
-      case 2:
-	switch(bank) {
-	  case 0: bank=4; break;
-	  case 1: bank=5; break;
-	  case 2: bank=6; break;
-	  case 3: bank=3; break;
-	}
-	break;
-      case 3: switch(bank) {
-	case 0: bank=4; break;
-	case 1: bank=7; break;
-	case 2: bank=6; break;
-	case 3: bank=3; break;
-      }
-      break;
-    }
-  } else {
-    switch(bank) {
-      case 0: return;
-      case 1: bank=5;				      break;
-      case 2: bank=2;				      break;
-      case 3: bank=machine_current->ram.current_page; break;
-    }
-  }
-
-  if( bank == machine_current->ram.current_screen &&
-      ( address & 0x3fff ) < 0x1b00 &&
-      RAM[ bank ][ address & 0x3fff ] != b )
-    display_dirty( ( address & 0x3fff ) | 0x4000 );
-    
-  RAM[ bank ][ address & 0x3fff ] = b;
-}
-
-DWORD specplus3_contend_memory( WORD address )
+libspectrum_dword specplus3_contend_memory( libspectrum_word address )
 {
   int bank;
 
@@ -221,17 +146,17 @@ DWORD specplus3_contend_memory( WORD address )
   return 0;
 }
 
-DWORD
-specplus3_contend_port( WORD port GCC_UNUSED )
+libspectrum_dword
+specplus3_contend_port( libspectrum_word port GCC_UNUSED )
 {
   /* Contention does not occur for the ULA.
      FIXME: Unknown for other ports, so let's assume it doesn't for now */
   return 0;
 }
 
-static DWORD specplus3_contend_delay( void )
+static libspectrum_dword specplus3_contend_delay( void )
 {
-  WORD tstates_through_line;
+  libspectrum_word tstates_through_line;
   
   /* No contention in the upper border */
   if( tstates < machine_current->line_times[ DISPLAY_BORDER_HEIGHT ] )
@@ -244,16 +169,16 @@ static DWORD specplus3_contend_delay( void )
 
   /* Work out where we are in this line */
   tstates_through_line =
-    ( tstates + machine_current->timings.left_border_cycles ) %
-    machine_current->timings.cycles_per_line;
+    ( tstates + machine_current->timings.left_border ) %
+    machine_current->timings.tstates_per_line;
 
   /* No contention if we're in the left border */
-  if( tstates_through_line < machine_current->timings.left_border_cycles - 3 ) 
+  if( tstates_through_line < machine_current->timings.left_border - 3 ) 
     return 0;
 
   /* Or the right border or retrace */
-  if( tstates_through_line >= machine_current->timings.left_border_cycles +
-                              machine_current->timings.screen_cycles - 3 )
+  if( tstates_through_line >= machine_current->timings.left_border +
+                              machine_current->timings.horizontal_screen - 3 )
     return 0;
 
   /* We now know the ULA is reading the screen, so put in the appropriate
@@ -284,25 +209,21 @@ int specplus3_init( fuse_machine_info *machine )
 
   machine->reset = specplus3_reset;
 
-  machine_set_timings( machine, 3.54690e6, 24, 128, 24, 52, 311, 8865 );
+  error = machine_set_timings( machine ); if( error ) return error;
 
   machine->timex = 0;
-  machine->ram.read_memory    = specplus3_readbyte;
-  machine->ram.read_screen    = specplus3_read_screen_memory;
-  machine->ram.write_memory   = specplus3_writebyte;
-  machine->ram.contend_memory = specplus3_contend_memory;
-  machine->ram.contend_port   = specplus3_contend_port;
+  machine->ram.read_memory	     = specplus3_readbyte;
+  machine->ram.read_memory_internal  = specplus3_readbyte_internal;
+  machine->ram.read_screen	     = specplus3_read_screen_memory;
+  machine->ram.write_memory          = specplus3_writebyte;
+  machine->ram.write_memory_internal = specplus3_writebyte_internal;
+  machine->ram.contend_memory	     = specplus3_contend_memory;
+  machine->ram.contend_port	     = specplus3_contend_port;
 
   error = machine_allocate_roms( machine, 4 );
   if( error ) return error;
-  error = machine_read_rom( machine, 0, "plus3-0.rom" );
-  if( error ) return error;
-  error = machine_read_rom( machine, 1, "plus3-1.rom" );
-  if( error ) return error;
-  error = machine_read_rom( machine, 2, "plus3-2.rom" );
-  if( error ) return error;
-  error = machine_read_rom( machine, 3, "plus3-3.rom" );
-  if( error ) return error;
+  machine->rom_length[0] = machine->rom_length[1] = 
+    machine->rom_length[2] = machine->rom_length[3] = 0x4000;
 
   machine->peripherals=specplus3_peripherals;
   machine->unattached_port = specplus3_unattached_port;
@@ -310,6 +231,9 @@ int specplus3_init( fuse_machine_info *machine )
   machine->ay.present=1;
 
 #ifdef HAVE_765_H
+
+  /* Register lib765 error callback */
+  lib765_register_error_function( specplus3_fdc_error );
 
   /* Create the FDC */
   fdc = fdc_new();
@@ -346,24 +270,44 @@ int specplus3_init( fuse_machine_info *machine )
 
 int specplus3_reset(void)
 {
+  int error;
+
   machine_current->ram.current_page=0; machine_current->ram.current_rom=0;
   machine_current->ram.current_screen=5;
   machine_current->ram.locked=0;
   machine_current->ram.special=0; machine_current->ram.specialcfg=0;
 
-  z80_reset();
-  sound_ay_reset();
-  snapshot_flush_slt();
-
 #ifdef HAVE_765_H
   specplus3_fdc_reset();
 #endif
+
+  error = machine_load_rom( &ROM[0], settings_current.rom_plus3_0,
+			    machine_current->rom_length[0] );
+  if( error ) return error;
+  error = machine_load_rom( &ROM[1], settings_current.rom_plus3_1,
+			    machine_current->rom_length[1] );
+  if( error ) return error;
+  error = machine_load_rom( &ROM[2], settings_current.rom_plus3_2,
+			    machine_current->rom_length[2] );
+  if( error ) return error;
+  error = machine_load_rom( &ROM[3], settings_current.rom_plus3_3,
+			    machine_current->rom_length[3] );
+  if( error ) return error;
+
+#ifdef HAVE_765_H
+  /* We can eject disks only if they are currently present */
+  ui_menu_activate_media_disk_eject( SPECPLUS3_DRIVE_A,
+				     drives[ SPECPLUS3_DRIVE_A ].fd != -1 );
+  ui_menu_activate_media_disk_eject( SPECPLUS3_DRIVE_B,
+				     drives[ SPECPLUS3_DRIVE_B ].fd != -1 );
+#endif				/* #ifdef HAVE_765_H */
 
   return 0;
 }
 
 void
-specplus3_memoryport_write( WORD port GCC_UNUSED, BYTE b )
+specplus3_memoryport_write( libspectrum_word port GCC_UNUSED,
+			    libspectrum_byte b )
 {
   /* Let the parallel printer code know about the strobe bit */
   printer_parallel_strobe_write( b & 0x10 );
@@ -414,38 +358,34 @@ specplus3_fdc_reset( void )
   fdc_setdrive( fdc, 3, drive_null );
 }
 
-static BYTE
-specplus3_fdc_status( WORD port GCC_UNUSED )
+static libspectrum_byte
+specplus3_fdc_status( libspectrum_word port GCC_UNUSED )
 {
   return fdc_read_ctrl( fdc );
 }
 
-static BYTE
-specplus3_fdc_read( WORD port GCC_UNUSED )
+static libspectrum_byte
+specplus3_fdc_read( libspectrum_word port GCC_UNUSED )
 {
   return fdc_read_data( fdc );
 }
 
 static void
-specplus3_fdc_write( WORD port GCC_UNUSED, BYTE data )
+specplus3_fdc_write( libspectrum_word port GCC_UNUSED, libspectrum_byte data )
 {
   fdc_write_data( fdc, data );
 }
 
 /* FDC UI related functions */
 
-/* lib765's `print an error message' callback */
+/* Used as lib765's `print an error message' callback */
 void
-fdc_dprintf( int debug, char *format, ... )
+specplus3_fdc_error( int debug, char *format, va_list ap )
 {
-  va_list ap;
-
   /* Report only serious errors */
   if( debug != 0 ) return;
 
-  va_start( ap, format );
   ui_verror( UI_ERROR_ERROR, format, ap );
-  va_end( ap );
 }
 
 int
@@ -453,6 +393,7 @@ specplus3_disk_insert( specplus3_drive_number which, const char *filename )
 {
   struct stat buf;
   struct flock lock;
+  int readonly;
   size_t i; int error;
 
   if( which > SPECPLUS3_DRIVE_B ) {
@@ -464,12 +405,24 @@ specplus3_disk_insert( specplus3_drive_number which, const char *filename )
   /* Eject any disk already in the drive */
   if( drives[which].fd != -1 ) specplus3_disk_eject( which );
 
+  readonly = 0;
   /* Open the disk file */
-  drives[which].fd = open( filename, O_RDWR );
+  drives[which].fd = open( filename, O_RDWR | O_BINARY );
   if( drives[which].fd == -1 ) {
-    ui_error( UI_ERROR_ERROR, "Couldn't open '%s': %s", filename,
-	      strerror( errno ) );
-    return 1;
+
+    /* If we couldn't open read-write, try read-only */
+    if( errno == EACCES ) {
+      readonly = 1;
+      drives[which].fd = open( filename, O_RDONLY | O_BINARY );
+    }
+
+    /* If we got an error other than EACCES or the read-only open failed,
+       give up */
+    if( drives[which].fd == -1 ) {
+      ui_error( UI_ERROR_ERROR, "Couldn't open '%s': %s", filename,
+		strerror( errno ) );
+      return 1;
+    }
   }
 
   /* We now have to do two sorts of locking:
@@ -517,8 +470,9 @@ specplus3_disk_insert( specplus3_drive_number which, const char *filename )
     }
   }
 
-  /* Exclusively lock the entire file */
-  lock.l_type = F_WRLCK;
+  /* Lock the entire file: exclusively if we opened it read/write, or
+     read lock if we opened it readonly */
+  lock.l_type = readonly ? F_RDLCK : F_WRLCK;
   lock.l_start = 0;
   lock.l_whence = SEEK_SET;
   lock.l_len = 0;		/* Entire file */
@@ -538,6 +492,9 @@ specplus3_disk_insert( specplus3_drive_number which, const char *filename )
 #else				/* #ifdef HAVE_LIBDSK_H */
   fdd_setfilename( drives[which].drive, filename );
 #endif				/* #ifdef HAVE_LIBDSK_H */
+
+  /* And set the `eject' item active */
+  ui_menu_activate_media_disk_eject( which, 1 );
 
   return 0;
 }
@@ -566,6 +523,9 @@ specplus3_disk_eject( specplus3_drive_number which )
     }
     drives[which].fd = -1;
   }
+
+  /* Set the appropriate `eject' item inactive */
+  ui_menu_activate_media_disk_eject( which, 0 );
 
   return 0;
 }

@@ -26,10 +26,12 @@
 
 #include <config.h>
 
+#ifdef USE_WIDGET
+
 #include "display.h"
 #include "keyboard.h"
 #include "ui/uidisplay.h"
-#include "widget.h"
+#include "widget_internals.h"
 
 static widget_picture_data *ptr;
 
@@ -38,6 +40,7 @@ int widget_picture_draw( void* data )
   ptr = (widget_picture_data*)data;
 
   uidisplay_spectrum_screen( ptr->screen, ptr->border );
+  uidisplay_frame_end();
 
   return 0;
 }
@@ -52,8 +55,7 @@ widget_picture_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
     break;
     
   case KEYBOARD_1: /* 1 used as `Escape' generates `Edit', which is Caps + 1 */
-    if( key2 == KEYBOARD_Caps )
-      widget_return[ widget_level ].finished = WIDGET_FINISHED_CANCEL;
+    if( key2 == KEYBOARD_Caps ) widget_end_widget( WIDGET_FINISHED_CANCEL );
     break;
 
   case KEYBOARD_Enter:
@@ -65,3 +67,5 @@ widget_picture_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
 
   }
 }
+
+#endif				/* #ifdef USE_WIDGET */

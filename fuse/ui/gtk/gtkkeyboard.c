@@ -1,5 +1,5 @@
 /* gtkkeyboard.c: GTK+ routines for dealing with the keyboard
-   Copyright (c) 2000-2002 Philip Kendall, Russell Marks
+   Copyright (c) 2000-2003 Philip Kendall, Russell Marks
 
    $Id$
 
@@ -32,11 +32,10 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
-#include "fuse.h"
+#include "compat.h"
 #include "gtkkeyboard.h"
 #include "gtkui.h"
-#include "keyboard.h"
-#include "widget/widget.h"
+#include "keysyms.h"
 
 static guint gtkkeyboard_unshift_keysym(guint keysym);
 
@@ -52,14 +51,10 @@ gtkkeyboard_keypress( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
 
   if(ptr) {
 
-    if( widget_level >= 0 ) {
-      widget_keyhandler( ptr->key1, ptr->key2 );
-    } else {
-      if(ptr->key1 != KEYBOARD_NONE) keyboard_press(ptr->key1);
-      if(ptr->key2 != KEYBOARD_NONE) keyboard_press(ptr->key2);
-    }
+    if( ptr->key1 != KEYBOARD_NONE ) keyboard_press( ptr->key1 );
+    if( ptr->key2 != KEYBOARD_NONE ) keyboard_press( ptr->key2 );
+
     return TRUE;
-    
   }
 
   /* Now deal with the non-Speccy keys. Most are dealt with by

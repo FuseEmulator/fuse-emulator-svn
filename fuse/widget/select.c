@@ -1,5 +1,5 @@
 /* select.c: machine selection widget
-   Copyright (c) 2001,2002 Philip Kendall
+   Copyright (c) 2001-2003 Philip Kendall, Witold Filipczyk
 
    $Id$
 
@@ -26,19 +26,17 @@
 
 #include <config.h>
 
+#ifdef USE_WIDGET
+
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <libspectrum.h>
-
-#include "display.h"
 #include "fuse.h"
 #include "keyboard.h"
 #include "machine.h"
-#include "ui/uidisplay.h"
-#include "widget.h"
+#include "widget_internals.h"
 
 /* Data for drawing the cursor */
 static int highlight_line;
@@ -71,8 +69,7 @@ int widget_select_draw( void* data GCC_UNUSED )
     }
   }
 
-  uidisplay_lines( DISPLAY_BORDER_HEIGHT + 16,
-		   DISPLAY_BORDER_HEIGHT + 16 + (machine_count+2)*8 );
+  widget_display_lines( 2, machine_count + 2 );
 
   return 0;
 }
@@ -80,6 +77,8 @@ int widget_select_draw( void* data GCC_UNUSED )
 void
 widget_select_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
 {
+  int new_highlight_line = 0;
+  int cursor_pressed = 0;
   switch( key ) {
 
   case KEYBOARD_Resize:		/* Fake keypress used on window resize */
@@ -87,21 +86,34 @@ widget_select_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
     break;
 
   case KEYBOARD_1: /* 1 used as `Escape' generates `Edit', which is Caps + 1 */
-    if( key2 == KEYBOARD_Caps )
-      widget_return[ widget_level ].finished = WIDGET_FINISHED_CANCEL;
+    if( key2 == KEYBOARD_Caps ) widget_end_widget( WIDGET_FINISHED_CANCEL );
     return;
 
   case KEYBOARD_Enter:
-    widget_return[ widget_level ].finished = WIDGET_FINISHED_OK;
+    widget_end_widget( WIDGET_FINISHED_OK );
     return;
+
+  case KEYBOARD_7:
+    if ( highlight_line ) {
+      new_highlight_line = highlight_line - 1;
+      cursor_pressed = 1;
+    }
+    break;
+
+  case KEYBOARD_6:
+    if ( highlight_line + 1 < (ptrdiff_t)machine_count ) {
+      new_highlight_line = highlight_line + 1;
+      cursor_pressed = 1;
+    }
+    break;
 
   default:	/* Keep gcc happy */
     break;
 
   }
 
-  if( key >= KEYBOARD_a && key <= KEYBOARD_z &&
-      key - KEYBOARD_a < (ptrdiff_t)machine_count ) {
+  if( cursor_pressed || ( key >= KEYBOARD_a && key <= KEYBOARD_z &&
+      key - KEYBOARD_a < (ptrdiff_t)machine_count )) {
     
     /* Remove the old highlight */
     widget_rectangle( 2*8, (highlight_line+4)*8, 28*8, 1*8,
@@ -110,15 +122,18 @@ widget_select_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
 			descriptions[ highlight_line ] );
 
     /*  draw the new one */
-    highlight_line = key - KEYBOARD_a;
-
+    if (cursor_pressed) {
+      highlight_line = new_highlight_line;
+    } else {
+      highlight_line = key - KEYBOARD_a;
+    }
+    
     widget_rectangle( 2*8, (highlight_line+4)*8, 28*8, 1*8,
 		      WIDGET_COLOUR_FOREGROUND );
     widget_printstring( 2, highlight_line+4, WIDGET_COLOUR_BACKGROUND,
 			descriptions[ highlight_line ] );
-
-    uidisplay_lines( DISPLAY_BORDER_HEIGHT + 16,
-		     DISPLAY_BORDER_HEIGHT + 16 + (machine_count+2)*8 );
+    
+    widget_display_lines( 2, machine_count + 2 );
 
     /* And set this as the new machine type */
     new_machine = machine_types[highlight_line]->machine;
@@ -138,3 +153,4 @@ int widget_select_finish( widget_finish_state finished )
   return 0;
 }
 
+#endif				/* #ifdef USE_WIDGET */

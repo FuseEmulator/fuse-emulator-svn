@@ -26,27 +26,34 @@
 
 #include <config.h>
 
+#ifdef USE_WIDGET
+
 #include <stdlib.h>
 
 #include "rzx.h"
+#include "screenshot.h"
 #include "snapshot.h"
 #include "specplus3.h"
 #include "tape.h"
-#include "widget.h"
+#include "ui/scaler/scaler.h"
+#include "widget_internals.h"
 
 /* FIXME: there must be a better way of initialising all the menu data */
 
 static widget_menu_entry widget_menu_file[];
 static widget_menu_entry widget_menu_file_recording[];
-static widget_menu_entry widget_menu_machine[];
-static widget_menu_entry widget_menu_options[];
-static widget_menu_entry widget_menu_tape[];
+static widget_menu_entry file_aylogging[];
 
-#ifdef HAVE_765_H
+static widget_menu_entry widget_menu_machine[];
+
+static widget_menu_entry widget_menu_options[];
+
+static widget_menu_entry widget_menu_media[];
+static widget_menu_entry widget_menu_tape[];
 static widget_menu_entry widget_menu_disk[];
 static widget_menu_entry widget_menu_disk_a[];
 static widget_menu_entry widget_menu_disk_b[];
-#endif					/* #ifdef HAVE_765_H */
+static widget_menu_entry widget_menu_cart[];
 
 static widget_menu_entry widget_menu_help[];
 
@@ -58,14 +65,8 @@ static widget_menu_widget_t main_options = { WIDGET_TYPE_MENU,
 					     &widget_menu_options };
 static widget_menu_widget_t main_machine = { WIDGET_TYPE_MENU, 
 					     &widget_menu_machine };
-static widget_menu_widget_t main_tape =    { WIDGET_TYPE_MENU,
-					     &widget_menu_tape    };
-
-#ifdef HAVE_765_H
-static widget_menu_widget_t main_disk =    { WIDGET_TYPE_MENU,
-					     &widget_menu_disk    };
-#endif
-
+static widget_menu_widget_t main_media =   { WIDGET_TYPE_MENU, 
+					     &widget_menu_media };
 static widget_menu_widget_t main_help =    { WIDGET_TYPE_MENU,
 					     &widget_menu_help    };
 
@@ -75,11 +76,7 @@ widget_menu_entry widget_menu_main[] = {
   { "(F)ile",    KEYBOARD_f, widget_menu_widget, &main_file    },
   { "(O)ptions", KEYBOARD_o, widget_menu_widget, &main_options },
   { "(M)achine", KEYBOARD_m, widget_menu_widget, &main_machine },
-  { "(T)ape",	 KEYBOARD_t, widget_menu_widget, &main_tape    },
-
-#ifdef HAVE_765_H
-  { "(D)isk",	 KEYBOARD_d, widget_menu_widget, &main_disk    },
-#endif					/* #ifdef HAVE_765_H */
+  { "M(e)dia",   KEYBOARD_e, widget_menu_widget, &main_media   },
 
   { "(H)elp",    KEYBOARD_h, widget_menu_widget, &main_help    },
 
@@ -88,20 +85,26 @@ widget_menu_entry widget_menu_main[] = {
 
 /* File menu */
 
-static widget_menu_widget_t file_recording = { WIDGET_TYPE_MENU,
-					       &widget_menu_file_recording };
+static widget_menu_widget_t
+  file_recording = { WIDGET_TYPE_MENU, &widget_menu_file_recording };
 
 static widget_menu_entry widget_menu_file[] = {
   { "File", 0, 0, NULL },		/* Menu title */
 
-  { "(O)pen snapshot...",       KEYBOARD_o, widget_apply_to_file,
-                                            snapshot_read                   },
+  { "(O)pen...",	        KEYBOARD_o, widget_apply_to_file,
+					    widget_menu_open		    },
   { "(S)ave to 'snapshot.z80'", KEYBOARD_s, widget_menu_save_snapshot, NULL },
   { "(R)ecording",		KEYBOARD_r, widget_menu_widget,
 					    &file_recording                 },
-#ifdef HAVE_PNG_H
+  { "A(Y) Logging",		KEYBOARD_y, widget_menu_widget,
+					    &file_aylogging                 },
+  { "O(p)en SCR screenshot...", KEYBOARD_p, widget_apply_to_file,
+                                            screenshot_scr_read             },
+  { "S(a)ve Screen to 'fuse.scr'", KEYBOARD_a, widget_menu_save_scr,   NULL },
+
+#ifdef USE_LIBPNG
   { "Save S(c)reen to 'fuse.png'",KEYBOARD_c, widget_menu_save_screen, NULL },
-#endif				/* #ifdef HAVE_PNG_H */
+#endif				/* #ifdef USE_LIBPNG */
 
   { "E(x)it",			KEYBOARD_x, widget_menu_exit,          NULL },
 
@@ -121,11 +124,23 @@ static widget_menu_entry widget_menu_file_recording[] = {
   { NULL, 0, 0, NULL }			/* End marker: DO NOT REMOVE */
 };
 
+/* File/AY Logging menu */
+
+static widget_menu_entry file_aylogging[] = {
+  { "AY Logging", 0, 0, NULL },		/* Menu title */
+
+  { "(R)ecord...", KEYBOARD_r, widget_menu_psg_record, NULL },
+  { "(S)top",	   KEYBOARD_s, widget_menu_psg_stop,   NULL },
+
+  { NULL, 0, 0, NULL }			/* End marker: DO NOT REMOVE */
+};
+
 /* Options menu */
 
 static widget_menu_widget_t options_general = { WIDGET_TYPE_GENERAL, NULL };
 static widget_menu_widget_t options_sound   = { WIDGET_TYPE_SOUND,   NULL };
 static widget_menu_widget_t options_rzx     = { WIDGET_TYPE_RZX,     NULL };
+static widget_menu_widget_t options_roms    = { WIDGET_TYPE_ROM,     NULL };
 
 static widget_menu_entry widget_menu_options[] = {
   { "Options", 0, 0, NULL },		/* Menu title */
@@ -133,6 +148,12 @@ static widget_menu_entry widget_menu_options[] = {
   { "(G)eneral...", KEYBOARD_g, widget_menu_widget, &options_general },
   { "(S)ound...",   KEYBOARD_s, widget_menu_widget, &options_sound   },
   { "(R)ZX...",	    KEYBOARD_r, widget_menu_widget, &options_rzx     },
+  { "S(e)lect ROMS...",
+                    KEYBOARD_e, widget_menu_widget, &options_roms    },
+
+#if defined( UI_SDL ) || defined( UI_X )
+  { "(F)ilter...",  KEYBOARD_f, widget_menu_filter, NULL             },
+#endif				/* #if defined( UI_SDL ) || defined( UI_X ) */
 
 #ifdef HAVE_LIB_XML2
   { "S(a)ve",	    KEYBOARD_a, widget_menu_save_options, NULL       },
@@ -150,11 +171,30 @@ static widget_menu_entry widget_menu_machine[] = {
 
   { "(R)eset",     KEYBOARD_r, widget_menu_reset,  NULL         },
   { "(S)elect...", KEYBOARD_s, widget_menu_widget, &machine_sel },
+  { "(D)ebugger...", KEYBOARD_d, widget_menu_break, NULL        },
+  { "(N)MI",       KEYBOARD_n, widget_menu_nmi,    NULL         },
 
   { NULL, 0, 0, NULL }			/* End marker: DO NOT REMOVE */
 };
 
-/* Tape menu */
+static widget_menu_widget_t media_tape = { WIDGET_TYPE_MENU,
+					   &widget_menu_tape };
+static widget_menu_widget_t media_disk = { WIDGET_TYPE_MENU,
+					   &widget_menu_disk };
+static widget_menu_widget_t media_cart = { WIDGET_TYPE_MENU,
+					   &widget_menu_cart };
+
+static widget_menu_entry widget_menu_media[] = {
+  { "Media", 0, 0, NULL },		/* Menu title */
+
+  { "(T)ape",      KEYBOARD_t, widget_menu_widget, &media_tape },
+  { "(D)isk",      KEYBOARD_d, widget_menu_widget, &media_disk },
+  { "(C)artridge", KEYBOARD_c, widget_menu_widget, &media_cart },
+
+  { NULL, 0, 0, NULL }			/* End marker: DO NOT REMOVE */
+};
+
+/* Media/Tape menu */
 
 static widget_menu_widget_t tape_browse = { WIDGET_TYPE_BROWSE, NULL };
 
@@ -162,19 +202,17 @@ static widget_menu_entry widget_menu_tape[] = {
   { "Tape", 0, 0, NULL },		/* Menu title */
 
   { "(O)pen tape...",           KEYBOARD_o, widget_apply_to_file,    
-                                            tape_open                     },
+                                            tape_open_default_autoload    },
   { "(P)lay tape",              KEYBOARD_p, widget_menu_play_tape,   NULL },
   { "(B)rowse tape...",		KEYBOARD_b, widget_menu_widget, &tape_browse },
   { "(R)ewind tape",            KEYBOARD_r, widget_menu_rewind_tape, NULL },
   { "(C)lear tape",             KEYBOARD_c, widget_menu_clear_tape,  NULL },
-  { "Write tape to 'tape.tzx'", KEYBOARD_w, widget_menu_write_tape,  NULL },
+  { "(W)rite tape to 'tape.tzx'", KEYBOARD_w, widget_menu_write_tape,  NULL },
 
   { NULL, 0, 0, NULL }			/* End marker: DO NOT REMOVE */
 };
 
-#ifdef HAVE_765_H
-
-/* Disk menu */
+/* Media/Disk menu */
 
 static widget_menu_widget_t disk_a = { WIDGET_TYPE_MENU, &widget_menu_disk_a };
 static widget_menu_widget_t disk_b = { WIDGET_TYPE_MENU, &widget_menu_disk_b };
@@ -188,9 +226,9 @@ static widget_menu_entry widget_menu_disk[] = {
   { NULL, 0, 0, NULL }			/* End marker: DO NOT REMOVE */
 };
 
-/* Disk/Drive A: menu */
+/* Media/Disk/Drive A: menu */
 
-static specplus3_drive_number disk_a_number = SPECPLUS3_DRIVE_A;
+static int disk_a_number = 0;
 
 static widget_menu_entry widget_menu_disk_a[] = {
   { "Disk/Drive A:", 0, 0, NULL },	/* Menu title */
@@ -201,9 +239,9 @@ static widget_menu_entry widget_menu_disk_a[] = {
   { NULL, 0, 0, NULL }			/* End marker: DO NOT REMOVE */
 };
 
-/* Disk/Drive B: menu */
+/* Media/Disk/Drive B: menu */
 
-static specplus3_drive_number disk_b_number = SPECPLUS3_DRIVE_B;
+static int disk_b_number = 1;
 
 static widget_menu_entry widget_menu_disk_b[] = {
   { "Disk/Drive B:", 0, 0, NULL },	/* Menu title */
@@ -214,7 +252,16 @@ static widget_menu_entry widget_menu_disk_b[] = {
   { NULL, 0, 0, NULL }			/* End marker: DO NOT REMOVE */
 };
 
-#endif					/* #ifdef HAVE_765_H */
+/* Media/Cartridge menu */
+
+static widget_menu_entry widget_menu_cart[] = {
+  { "Cartridge/Timex Dock", 0, 0, NULL },	/* Menu title */
+
+  { "(I)nsert...", KEYBOARD_i, widget_apply_to_file,   widget_insert_dock },
+  { "(E)ject",	   KEYBOARD_e, widget_menu_eject_dock, NULL       },
+
+  { NULL, 0, 0, NULL }			/* End marker: DO NOT REMOVE */
+};
 
 /* Help menu */
 
@@ -227,3 +274,5 @@ static widget_menu_entry widget_menu_help[] = {
 
   { NULL, 0, 0, NULL }			/* End marker: DO NOT REMOVE */
 };
+
+#endif				/* #ifdef USE_WIDGET */

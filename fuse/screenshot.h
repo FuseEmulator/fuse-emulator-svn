@@ -27,13 +27,19 @@
 #ifndef FUSE_SCREENSHOT_H
 #define FUSE_SCREENSHOT_H
 
-#ifdef HAVE_PNG_H
+#ifdef USE_LIBPNG
 
-extern BYTE screenshot_screen[240][640];
+#ifndef SCALER_H
+#include "ui/scaler/scaler.h"
+#endif				/* #ifndef SCALER_H */
 
 int screenshot_save( void );
-int screenshot_write( const char *filename );
+int screenshot_write( const char *filename, scaler_type scaler );
+int screenshot_available_scalers( scaler_type scaler );
 
-#endif				/* #ifdef HAVE_PNG_H */
+#endif				/* #ifdef USE_LIBPNG */
+
+int screenshot_scr_write( const char *filename );
+int screenshot_scr_read( const char *filename );
 
 #endif				/* #ifndef FUSE_SCREENSHOT_H */

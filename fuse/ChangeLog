@@ -1,4 +1,64 @@
-2002-??-??  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+2003-05-31  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+
+	* Fuse 0.6.0.1 released
+
+	* [SECURITY] Fix race conditions in trdos.c which could be used
+	  to overwrite any file owned by the user running Fuse (Philip
+	  Kendall).
+
+	* Fix a off-by-one error in the AdvMame2x scaler (Fredrick
+	  Meunier/ScummVM team).
+
+2003-04-27  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+
+	* Fuse 0.6.0 released.
+
+	* Pentagon 128 support (Fredrick Meunier, with thanks also to
+	  Dmitry Sanarin for Glukalka from which the TR-DOS emulation was
+	  taken).
+
+	* TC2068 support (Witold Filipczyk/Darren Salt/Fredrick Meunier).
+
+	* Graphics filters: essentially arbitrary filters which can be
+	  applied to the Spectrum's screen to give scanlines, smoothing
+	  and all sorts of other possiblities (mostly Fredrick Meunier
+	  and Philip Kendall; based on the same feature in ScummVM).
+
+	* Transparent monitor/debugger (Philip Kendall).
+
+	* A rewrite of the display code to update only those rectangles
+	  which have been changed, rather than entire lines. Performance
+	  improvement, and also allows effects similar to flipping between
+	  the 128K Spectrum's two screens to work much better (Fredrick
+	  Meunier/Philip Kendall).
+
+	* New SDL user interface (Fredrick Meunier).
+
+	* 16K Spectrum support (Fredrick Meunier).
+
+	* Load and save .scr files, including vbSpec's Timex mode
+	  extensions (Fredrick Meunier).
+
+	* Selectable ROMs for each machine type (Philip Kendall).
+
+	* Optionally writable 'ROM's (Philip Kendall).
+
+	* Get the behaviour of the TC2048 video modes correct (Witold
+	  Filipczyk).
+
+	* Optional frame-skipping on output (Fredrick Meunier).
+
+	* New --(no-)aspect-hint option to not give aspect hints to the
+	  window manager under GTK+ or Xlib UIs. Useful for some window
+	  managers which otherwise won't let you resize Fuse's window
+	  (Philip Kendall/Russell Marks).
+
+	* Lots of other minor bug fixes/improvements (everyone mentioned
+	  above).
+
+2002-12-09  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+
+	* Fuse 0.5.1 released
 
 	* Separate out libspectrum (the file format handling) into its own
 	  library; changes occuring solely in libspectrum's code will not
@@ -8,11 +68,14 @@
 	* Also separate the Fuse utilities (tzxlist, etc) into their
 	  own package (Philip Kendall).
 
-	* Add tzxconv utility to do a best-guess conversion of .tzx files
-	  to .tap (Philip Kendall).
-
 	* Add ability to load and save +2, +2A, +3 and TC2048 snapshots;
 	  also load Pentagon snaps as 128K (Philip Kendall).
+
+	* Add ability to automatically start tapes loading when they're
+	  opened (Philip Kendall).
+
+	* If filenames without options are given on the command line,
+	  attempt to load them as the right sort of file (Philip Kendall).
 
 	* Use libspectrum's machine numbering and capabilities facilities
 	  (Philip Kendall).
@@ -30,7 +93,7 @@
 	* Redraw the display only if the data has actually changed; can
 	  give a nice performance improvement (Philip Kendall).
 
-	* Z80 core fixes on SCF, DEC and INC SP (Boris Donko).
+	* Z80 core fixes on SCF, DEC, HALT and INC SP (Boris Donko).
 
 	* Memory pages 1, 3, 5 and 7 (not 4, 5, 6 and 7) are contended
 	  on the 128K/+2 (Philip Kendall, with thanks to Steve Snake and
@@ -58,6 +121,17 @@
 	  UI (Philip Kendall).
 
 	* Changable emulation speed (Philip Kendall).
+
+	* Change to lib765 0.3.0 for Mac OS X compatability
+	  (Frederick Meunier).
+
+	* Reset the Timex's SCLD when loading snapshot (Philip Kendall,
+	  Frederick Meunier).
+
+	* Timex machines have no loading noise (Frederick Meunier).
+
+	* Distribute glibc's getopt so that long options are available
+	  even if the native libc doesn't provide them (Philip Kendall).
 	
 2002-08-22  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 

@@ -1,5 +1,5 @@
 /* sound.c: Sound support
-   Copyright (c) 2000-2002 Russell Marks, Matan Ziv-Av, Philip Kendall
+   Copyright (c) 2000-2003 Russell Marks, Matan Ziv-Av, Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,9 +44,12 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 
+#include <libspectrum.h>
+
 #include "fuse.h"
 #include "machine.h"
 #include "osssound.h"
+#include "sdlsound.h"
 #include "settings.h"
 #include "sound.h"
 #include "spectrum.h"
@@ -66,8 +69,6 @@ int sound_stereo_ay_narrow=0;	/* (AY stereo) true for narrow AY st. sep. */
 static int sound_stereo_ay=0;	/* local copy of settings_current.stereo_ay */
 static int sound_stereo_beeper=0;   /* and settings_current.stereo_beeper */
 
-
-#define AY_CLOCK		1773400
 
 /* assume all three tone channels together match the beeper volume (ish).
  * Must be <=127 for all channels; 50+2+(24*3) = 124.
@@ -106,11 +107,11 @@ static unsigned int ay_tone_period[3],ay_noise_period,ay_env_period;
 static int beeper_last_subpos[2]={0,0};
 
 /* Local copy of the AY registers */
-static BYTE sound_ay_registers[16];
+static libspectrum_byte sound_ay_registers[16];
 
 struct ay_change_tag
   {
-  DWORD tstates;
+  libspectrum_dword tstates;
   unsigned short ofs;
   unsigned char reg,val;
   };
@@ -154,7 +155,7 @@ ay_tone_subcycles=ay_env_subcycles=0;
 for(f=0;f<3;f++)
   ay_tone_tick[f]=ay_tone_high[f]=0,ay_tone_period[f]=1;
 
-ay_tick_incr=(int)(65536.*AY_CLOCK/sound_freq);
+ay_tick_incr=(int)(65536.*libspectrum_timings_ay_speed(machine_current->machine)/sound_freq);
 
 ay_change_count=0;
 }
@@ -166,7 +167,7 @@ static int first_init=1;
 int f,ret;
 
 /* if we don't have any sound I/O code compiled in, don't do sound */
-#if !defined(HAVE_SYS_SOUNDCARD_H) && !defined(HAVE_SYS_AUDIOIO_H)
+#if !defined(HAVE_SYS_SOUNDCARD_H) && !defined(HAVE_SYS_AUDIOIO_H) && !defined(UI_SDL)
 return;
 #endif
 
@@ -185,10 +186,11 @@ sound_stereo_beeper=settings_current.stereo_beeper;
 if(sound_stereo_ay || sound_stereo_beeper)
   sound_stereo=1;
 
-#if defined(HAVE_SYS_SOUNDCARD_H)
+#if defined(UI_SDL)
+ret=sdlsound_init(device,&sound_freq,&sound_stereo);
+#elif defined(HAVE_SYS_SOUNDCARD_H)
 ret=osssound_init(device,&sound_freq,&sound_stereo);
-#endif
-#if defined(HAVE_SYS_AUDIOIO_H)
+#elif defined(HAVE_SYS_AUDIOIO_H)
 ret=sunsound_init(device,&sound_freq,&sound_stereo);
 #endif
 
@@ -241,8 +243,6 @@ if(first_init)
 
   for(f=0;f<2;f++)
     sound_oldval[f]=sound_oldval_orig[f]=128;
-  
-  sound_ay_init();
   }
 
 if(sound_stereo_beeper)
@@ -279,10 +279,11 @@ if(sound_enabled)
   {
   if(sound_buf)
     free(sound_buf);
-#if defined(HAVE_SYS_SOUNDCARD_H)
+#if defined(UI_SDL)
+  sdlsound_end();
+#elif defined(HAVE_SYS_SOUNDCARD_H)
   osssound_end();
-#endif
-#if defined(HAVE_SYS_AUDIOIO_H)
+#elif defined(HAVE_SYS_AUDIOIO_H)
   sunsound_end();
 #endif
   sound_enabled=0;
@@ -401,7 +402,7 @@ if(!machine_current->ay.present) return;
 /* convert change times to sample offsets */
 for(f=0;f<ay_change_count;f++)
   ay_change[f].ofs=(ay_change[f].tstates*sound_freq)/
-                   machine_current->timings.hz;
+                   machine_current->timings.processor_speed;
 
 for(f=0,ptr=sound_buf;f<sound_framesiz;f++)
   {
@@ -620,7 +621,7 @@ for(f=0,ptr=sound_buf;f<sound_framesiz;f++)
 /* don't make the change immediately; record it for later,
  * to be made by sound_frame() (via sound_ay_overlay()).
  */
-void sound_ay_write(int reg,int val,DWORD now)
+void sound_ay_write(int reg,int val,libspectrum_dword now)
 {
 /* have to allow it across pauses for snap-loading to work,
  * so see if sound has *ever* been enabled.
@@ -646,6 +647,9 @@ int f;
 
 /* as above... */
 if(!sound_enabled_ever) return;
+
+/* recalculate timings based on new machines ay clock */
+sound_ay_init();
 
 ay_change_count=0;
 for(f=0;f<16;f++)
@@ -716,10 +720,11 @@ for(f=0;f<sound_framesiz;f++,tptr++)
 /* overlay AY sound */
 sound_ay_overlay();
 
-#if defined(HAVE_SYS_SOUNDCARD_H)
+#if defined(UI_SDL)
+sdlsound_frame(sound_buf,sound_framesiz*sound_channels);
+#elif defined(HAVE_SYS_SOUNDCARD_H)
 osssound_frame(sound_buf,sound_framesiz*sound_channels);
-#endif
-#if defined(HAVE_SYS_AUDIOIO_H)
+#elif defined(HAVE_SYS_AUDIOIO_H)
 sunsound_frame(sound_buf,sound_framesiz*sound_channels);
 #endif
 
@@ -752,10 +757,10 @@ if(val==sound_oldval_orig[bchan]) return;
 /* XXX a lookup table might help here, but would need to regenerate it
  * whenever cycles_per_frame were changed (i.e. when machine type changed).
  */
-newpos=(tstates*sound_framesiz)/machine_current->timings.cycles_per_frame;
+newpos=(tstates*sound_framesiz)/machine_current->timings.tstates_per_frame;
 /* the >>1s are to avoid overflow when int is 32-bit */
 subpos=((tstates>>1)*sound_framesiz*vol)/
-       (machine_current->timings.cycles_per_frame>>1)-vol*newpos;
+       (machine_current->timings.tstates_per_frame>>1)-vol*newpos;
 
 /* if we already wrote here, adjust the level.
  */

@@ -28,8 +28,16 @@ noinst_LIBRARIES = libuigtk.a
 
 INCLUDES = @GTK_CFLAGS@ @LIBSPEC_CFLAGS@
 
-libuigtk_a_SOURCES = browse.c error.c gtkdisplay.c gtkkeyboard.c gtkui.c\
-options.c keysyms.c picture.c
+libuigtk_a_SOURCES = binary.c \
+		     browse.c \
+		     confirm.c \
+	             debugger.c \
+                     error.c \
+		     gtkdisplay.c \
+		     gtkkeyboard.c \
+                     gtkui.c \
+	             options.c keysyms.c picture.c \
+		     roms.c
 
 BUILT_SOURCES = keysyms.c options.c options.h
 
@@ -42,4 +50,5 @@ options.c: options.pl ../options.dat ../../perl/Fuse.pm ../../perl/Fuse/Dialog.p
 options.h: options-header.pl ../options.dat ../../perl/Fuse.pm ../../perl/Fuse/Dialog.pm
 	@PERL@ options-header.pl ../options.dat > options.h
 
-noinst_HEADERS = gtkkeyboard.h gtkui.h options.h options.pl options-header.pl
+noinst_HEADERS = gtkdisplay.h \
+	         gtkkeyboard.h gtkui.h options.h options.pl options-header.pl

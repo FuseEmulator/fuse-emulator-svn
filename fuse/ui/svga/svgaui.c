@@ -1,5 +1,5 @@
 /* svgaui.c: Routines for dealing with the svgalib user interface
-   Copyright (c) 2000-2001 Philip Kendall, Matan Ziv-Av
+   Copyright (c) 2000-2003 Philip Kendall, Matan Ziv-Av, Russell Marks
 
    $Id$
 
@@ -32,22 +32,22 @@
 
 #include <vgakeyboard.h>
 
+#include "display.h"
 #include "fuse.h"
+#include "svgadisplay.h"
 #include "svgakeyboard.h"
 #include "ui/ui.h"
 #include "ui/uidisplay.h"
 
-int ui_init(int *argc, char ***argv, int width, int height)
+int ui_init(int *argc, char ***argv)
 {
   int error;
 
-  error = uidisplay_init(width, height);
+  error = svgadisplay_init();
   if(error) return error;
 
   error = svgakeyboard_init();
   if(error) return error;
-
-  vga_lockvc();
 
   return 0;
 }
@@ -66,7 +66,7 @@ int ui_end(void)
   error = svgakeyboard_end();
   if(error) return error;
 
-  error = uidisplay_end();
+  error = svgadisplay_end();
   if(error) return error;
 
   return 0;

@@ -26,6 +26,9 @@
 
 @TOP@
 
+/* Defined if we're in debugging mode */
+#undef DEBUG_MODE
+
 /* Defined if we've got enough memory to compile z80_ops.c */
 #undef HAVE_ENOUGH_MEMORY
 
@@ -44,11 +47,26 @@
 /* Defined if framebuffer UI in use */
 #undef UI_FB
 
-/* Defined if GTK+ UI in use */
+/* Defined if GGI UI in use */
+#undef UI_GGI
+
+/* Defined if GTK+ UI (either 1.2 or 2.x) is in use */
 #undef UI_GTK
+
+/* Defined if GTK+ 2.0 is in use */
+#undef UI_GTK2
+
+/* Defined if the SDL UI in use */
+#undef UI_SDL
 
 /* Defined if svgalib UI in use */
 #undef UI_SVGA
 
 /* Defined if Xlib UI in use */
 #undef UI_X
+
+/* Defined if we're going to be using the installed libpng */
+#undef USE_LIBPNG
+
+/* Defined if we're using a widget-based UI */
+#undef USE_WIDGET

@@ -1,5 +1,5 @@
 /* fuse.h: Variables exported from the main file
-   Copyright (c) 2000 Philip Kendall
+   Copyright (c) 2000-2003 Philip Kendall
 
    $Id$
 
@@ -27,11 +27,7 @@
 #ifndef FUSE_FUSE_H
 #define FUSE_FUSE_H
 
-#ifdef __GNUC__
-#define GCC_UNUSED __attribute__ ((unused))
-#else				/* #ifdef __GNUC__ */
-#define GCC_UNUSED
-#endif				/* #ifdef __GNUC__ */
+#include <libspectrum.h>
 
 extern char* fuse_progname;		/* argv[0] */
 
@@ -44,5 +40,8 @@ int fuse_emulation_unpause(void);
 int fuse_abort( void );			/* Emergency shutdown */
 
 extern int fuse_sound_in_use;		/* Are we trying to produce sound? */
+
+extern libspectrum_creator *fuse_creator; /* Creator information for file
+					     formats which support this */
 
 #endif			/* #ifndef FUSE_FUSE_H */

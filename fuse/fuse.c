@@ -1,5 +1,5 @@
 /* fuse.c: The Free Unix Spectrum Emulator
-   Copyright (c) 1999-2002 Philip Kendall
+   Copyright (c) 1999-2003 Philip Kendall
 
    $Id$
 
@@ -26,24 +26,42 @@
 
 #include <config.h>
 
+#include <errno.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
 #include <unistd.h>
 
+#ifdef UI_SDL
+#include <SDL.h>		/* Needed on MacOS X and Windows */
+#endif				/* #ifdef UI_SDL */
+
+#include "dck.h"
+#include "debugger/debugger.h"
 #include "display.h"
 #include "event.h"
 #include "fuse.h"
 #include "keyboard.h"
 #include "machine.h"
 #include "printer.h"
+#include "psg.h"
 #include "rzx.h"
 #include "settings.h"
 #include "snapshot.h"
 #include "sound.h"
 #include "spectrum.h"
+#include "specplus3.h"
 #include "tape.h"
 #include "timer.h"
+#include "trdos.h"
 #include "ui/ui.h"
+#include "ui/scaler/scaler.h"
+#include "utils.h"
+
+#ifdef USE_WIDGET
 #include "widget/widget.h"
+#endif                          /* #ifdef USE_WIDGET */
+
 #include "z80/z80.h"
 
 /* What name were we called under? */
@@ -61,15 +79,22 @@ int fuse_emulation_paused;
    stores whether we try to reenable the sound card afterwards */
 int fuse_sound_in_use;
 
+/* The creator information we'll store in file formats that support this */
+libspectrum_creator *fuse_creator;
+
 static int fuse_init(int argc, char **argv);
 
+static int creator_init( void );
 static void fuse_show_copyright(void);
 static void fuse_show_version( void );
 static void fuse_show_help( void );
 
+static int parse_nonoption_args( int argc, char **argv, int first_arg,
+				 int autoload );
+
 static int fuse_end(void);
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
   if(fuse_init(argc,argv)) {
     fprintf(stderr,"%s: error initalising -- giving up!\n", fuse_progname);
@@ -92,12 +117,15 @@ int main(int argc,char **argv)
 
 static int fuse_init(int argc, char **argv)
 {
-  int error;
+  int error, first_arg;
+  int autoload;			/* Should we autoload tapes? */
+  char *start_scaler;
 
   fuse_progname=argv[0];
   libspectrum_error_function = ui_libspectrum_error;
   
-  if( settings_init( argc, argv ) ) return 1;
+  if( settings_init( &first_arg, argc, argv ) ) return 1;
+  autoload = settings_current.auto_load;
 
   if( settings_current.show_version ) {
     fuse_show_version();
@@ -107,47 +135,82 @@ static int fuse_init(int argc, char **argv)
     return 0;
   }
 
+  start_scaler = strdup( settings_current.start_scaler_mode );
+  if( !start_scaler ) {
+    ui_error( UI_ERROR_ERROR, "Out of memory at %s: %d", __FILE__, __LINE__ );
+    return 1;
+  }
+
   fuse_show_copyright();
 
   /* FIXME: order of these initialisation calls. Work out what depends on
      what */
+  /* FIXME FIXME 20030407: really do this soon. This is getting *far* too
+     hairy */
   fuse_keyboard_init();
 
+  if( creator_init() ) return 1;
   if( tape_init() ) return 1;
 
+#ifdef USE_WIDGET
   if( widget_init() ) return 1;
+#endif				/* #ifdef USE_WIDGET */
 
-  if(display_init(&argc,&argv)) return 1;
+  if( event_init() ) return 1;
+  
+  if( display_init(&argc,&argv) ) return 1;
 
   if( libspectrum_init() ) return 1;
 
+#ifdef HAVE_GETEUID
   /* Drop root privs if we have them */
   if( !geteuid() ) { setuid( getuid() ); }
+#endif				/* #ifdef HAVE_GETEUID */
 
-  if(event_init()) return 1;
-  
+  if( debugger_init() ) return 1;
+
   if( printer_init() ) return 1;
   if( rzx_init() ) return 1;
+  if( psg_init() ) return 1;
+  if( trdos_init() ) return 1;
 
   z80_init();
-
-  error = machine_init_machines();
-  if( error ) return error;
-  error = machine_select_id( settings_current.start_machine );
-  if( error ) return error;
 
   fuse_sound_in_use = 0;
   if( settings_current.sound && settings_current.emulation_speed == 100 )
     sound_init( settings_current.sound_device );
 
+  /* Timing: if we're not producing sound, or we're using the SDL sound
+     routines (which don't do timing for us), use the SIGALRM based timer */
+#ifdef UI_SDL
+  if( sound_enabled ) fuse_sound_in_use = 1;
+  if( timer_init() ) return 1;
+#else			/* #ifdef UI_SDL */
   if(sound_enabled) {
     fuse_sound_in_use = 1;
   } else {
+    settings_current.sound = 0;
     if(timer_init()) return 1;
   }
+#endif			/* #ifdef UI_SDL */
 
-  if( settings_current.snapshot ) snapshot_read( settings_current.snapshot );
-  if( settings_current.tape_file ) tape_open( settings_current.tape_file );
+  error = machine_init_machines();
+  if( error ) return error;
+
+  error = machine_select_id( settings_current.start_machine );
+  if( error ) return error;
+
+  error = scaler_select_id( start_scaler ); free( start_scaler );
+  if( error ) return error;
+
+  if( settings_current.snapshot ) {
+    snapshot_read( settings_current.snapshot ); autoload = 0;
+  }
+
+  /* Insert any tape file; if no snapshot file already specified,
+     autoload the tape */
+  if( settings_current.tape_file )
+    tape_open( settings_current.tape_file, autoload );
 
   if( settings_current.playback_file ) {
     rzx_start_playback( settings_current.playback_file, NULL );
@@ -155,10 +218,56 @@ static int fuse_init(int argc, char **argv)
     rzx_start_recording( settings_current.record_file, 1 );
   }
 
+#ifdef HAVE_765_H
+  if( settings_current.plus3disk_file ) {
+    error = machine_select( LIBSPECTRUM_MACHINE_PLUS3 );
+    if( error ) return error;
+
+    specplus3_disk_insert( SPECPLUS3_DRIVE_A, settings_current.plus3disk_file );
+  }
+#endif				/* #ifdef HAVE_765_H */
+
+  if( settings_current.trdosdisk_file ) {
+    error = machine_select( LIBSPECTRUM_MACHINE_PENT );
+    if( error ) return error;
+
+    trdos_disk_insert( TRDOS_DRIVE_A, settings_current.trdosdisk_file );
+  }
+
+  if( parse_nonoption_args( argc, argv, first_arg, autoload ) ) return 1;
+
   fuse_emulation_paused = 0;
 
   return 0;
 
+}
+
+static
+int creator_init( void )
+{
+  size_t i;
+  unsigned int version[4] = { 0, 0, 0, 0 };
+  libspectrum_error error;
+
+  sscanf( VERSION, "%u.%u.%u.%u",
+	  &version[0], &version[1], &version[2], &version[3] );
+
+  for( i=0; i<4; i++ ) if( version[i] > 0xff ) version[i] = 0xff;
+
+  error = libspectrum_creator_alloc( &fuse_creator ); if( error ) return error;
+
+  error = libspectrum_creator_set_program( fuse_creator, "Fuse" );
+  if( error ) { libspectrum_creator_free( fuse_creator ); return error; }
+
+  error = libspectrum_creator_set_major( fuse_creator,
+					 version[0] * 0x100 + version[1] );
+  if( error ) { libspectrum_creator_free( fuse_creator ); return error; }
+
+  error = libspectrum_creator_set_minor( fuse_creator,
+					 version[2] * 0x100 + version[3] );
+  if( error ) { libspectrum_creator_free( fuse_creator ); return error; }
+
+  return 0;
 }
 
 static void fuse_show_copyright(void)
@@ -166,7 +275,7 @@ static void fuse_show_copyright(void)
   printf( "\n" );
   fuse_show_version();
   printf(
-   "Copyright (c) 1999-2002 Philip Kendall <pak21-fuse@srcf.ucam.org> and others;\n"
+   "Copyright (c) 1999-2003 Philip Kendall <pak21-fuse@srcf.ucam.org> and others;\n"
    "See the file `AUTHORS' for more details.\n"
    "\n"
    "This program is distributed in the hope that it will be useful,\n"
@@ -187,13 +296,25 @@ static void fuse_show_help( void )
   printf(
    "\nAvailable command-line options:\n\n"
    "Boolean options (use `--no-<option>' to turn off):\n\n"
+   "--auto-load            Automatically load tape files when opened.\n"
+   "--beeper-stereo        Add fake stereo to beeper emulation.\n"
+   "--compress-rzx         Write RZX files out compressed.\n"
+   "--double-screen        Write screenshots out as double size.\n"
    "--issue2               Emulate an Issue 2 Spectrum.\n"
    "--kempston             Emulate the Kempston joystick on QAOP<space>.\n"
+   "--loading-sound        Emulate the sound of tapes loading.\n"
    "--separation           Use ACB stereo for the AY-3-8912 sound chip.\n"
+   "--sound                Produce sound.\n"
+   "--slt                  Turn SLT traps on.\n"
    "--traps                Turn tape traps on.\n\n"
    "Other options:\n\n"
    "--help                 This information.\n"
+   "--machine <type>       Which machine should be emulated?\n"
+   "--playback <filename>  Play back RZX file <filename>.\n"
+   "--record <filename>    Record to RZX file <filename>.\n"
    "--snapshot <filename>  Load snapshot <filename>.\n"
+   "--speed <percentage>   How fast should emulation run?\n"
+   "--svga-mode <mode>     Which mode should be used for SVGAlib?\n"
    "--tape <filename>      Open tape file <filename>.\n"
    "--version              Print version number and exit.\n\n" );
 }
@@ -222,8 +343,11 @@ int fuse_emulation_unpause(void)
   /* If we now want sound, enable it */
   if( settings_current.sound && settings_current.emulation_speed == 100 ) {
 
-    /* If sound wasn't in use before, remove the old SIGALRM timer */
+    /* If sound has just started providing the timing, remove the old
+       SIGALRM timer (the SDL sound routines do not provide timing) */
+#ifndef UI_SDL
     if( !fuse_sound_in_use ) timer_end();
+#endif				/* #ifndef UI_SDL */
 
     sound_init( settings_current.sound_device );
 
@@ -238,16 +362,49 @@ int fuse_emulation_unpause(void)
       fuse_emulation_paused--;
       settings_current.sound = fuse_sound_in_use = 0;
       /* FIXME: How to deal with error return here? */
+#ifndef UI_SDL
       timer_init();
+#endif				/* #ifndef UI_SDL */
 
     }
+#ifdef UI_SDL
+    timer_init();
+#endif				/* #ifdef UI_SDL */
     fuse_sound_in_use = sound_enabled;
   }
+#ifndef UI_SDL
   /* If we don't want sound any more, put previously did, start the SIGALRM
      timer */
   else if( fuse_sound_in_use ) {
     timer_init();
     fuse_sound_in_use = 0;
+  }
+#endif				/* #ifndef UI_SDL */
+
+  return 0;
+}
+
+/* Make 'best guesses' as to what to do with non-option arguments */
+static int
+parse_nonoption_args( int argc, char **argv, int first_arg, int autoload )
+{
+  libspectrum_id_t type;
+  libspectrum_class_t class;
+  int error;
+
+  while( first_arg < argc ) {
+
+    error = utils_open_file( argv[ first_arg ], autoload, &type );
+    if( error ) return error;
+
+    error = libspectrum_identify_class( &class, type );
+    if( error ) return error;
+
+    /* If we had a snapshot on the command line, don't autoload any tapes
+       specified as well */
+    if( class == LIBSPECTRUM_CLASS_SNAPSHOT ) autoload = 0;
+
+    first_arg++;
   }
 
   return 0;
@@ -262,17 +419,28 @@ static int fuse_end(void)
      set from memory for the text output */
   printer_end();
 
+  psg_end();
   rzx_end();
+  debugger_end();
 
   error = machine_end();
   if( error ) return error;
 
+#ifdef UI_SDL
+  timer_end();
+#else				/* #ifdef UI_SDL */
   if(!sound_enabled) timer_end();
+#endif				/* #ifdef UI_SDL */
+
   sound_end();
   event_end();
   ui_end();
 
+#ifdef USE_WIDGET
   widget_end();
+#endif                          /* #ifdef USE_WIDGET */
+
+  libspectrum_creator_free( fuse_creator );
 
   return 0;
 }

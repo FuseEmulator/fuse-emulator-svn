@@ -1,5 +1,5 @@
 /* event.c: Routines needed for dealing with the event list
-   Copyright (c) 2000,2002 Philip Kendall
+   Copyright (c) 2000-2003 Philip Kendall
 
    $Id$
 
@@ -29,26 +29,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef HAVE_LIB_GLIB		/* If we're using glib */
-#include <glib.h>
-#else				/* #ifdef HAVE_LIB_GLIB */
-#include <libspectrum.h>	/* For the glib replacement routines */
-#endif
+#include <libspectrum.h>
 
 #include "display.h"
 #include "event.h"
 #include "fuse.h"
 #include "machine.h"
+#include "psg.h"
 #include "rzx.h"
 #include "tape.h"
+#include "trdos.h"
 #include "ui/ui.h"
 #include "spectrum.h"
+#include "z80/z80.h"
 
 /* A large value to mean `no events due' */
-const DWORD event_no_events = 0xffffffff;
+const libspectrum_dword event_no_events = 0xffffffff;
 
 /* When will the next event happen? */
-DWORD event_next_event;
+libspectrum_dword event_next_event;
 
 /* The actual list of events */
 static GSList* event_list;
@@ -77,7 +76,8 @@ int event_init(void)
 }
 
 /* Add an event at the correct place in the event list */
-int event_add(DWORD event_time, int type)
+int
+event_add( libspectrum_dword event_time, int type )
 {
   event_t *ptr;
 
@@ -127,6 +127,7 @@ int event_do_events(void)
     case EVENT_TYPE_INTERRUPT:
       if( rzx_playback ) event_force_events();
       rzx_frame();
+      psg_frame();
       spectrum_interrupt();
       ui_event();
       break;
@@ -137,6 +138,18 @@ int event_do_events(void)
 
     case EVENT_TYPE_EDGE:
       tape_next_edge( ptr->tstates );
+      break;
+
+    case EVENT_TYPE_NMI:
+      z80_nmi();
+      break;
+
+    case EVENT_TYPE_TRDOS_CMD_DONE:
+      trdos_event_cmd_done( ptr->tstates );
+      break;
+
+    case EVENT_TYPE_TRDOS_INDEX:
+      trdos_event_index( ptr->tstates );
       break;
 
     default:
@@ -150,7 +163,8 @@ int event_do_events(void)
 }
 
 /* Called on interrupt to reduce T-state count of all entries */
-int event_interrupt( DWORD tstates_per_frame )
+int
+event_interrupt( libspectrum_dword tstates_per_frame )
 {
   g_slist_foreach(event_list, event_reduce_tstates, &tstates_per_frame );
 
@@ -167,7 +181,7 @@ int event_interrupt( DWORD tstates_per_frame )
 void event_reduce_tstates(gpointer data,gpointer user_data)
 {
   event_t *ptr=(event_t*)data;
-  DWORD *tstates_per_frame = (DWORD*)user_data;
+  libspectrum_dword *tstates_per_frame = (libspectrum_dword*)user_data;
 
   ptr->tstates -= (*tstates_per_frame) ;
 }
@@ -212,7 +226,7 @@ event_free_entry( gpointer data, gpointer user_data GCC_UNUSED )
    effect */
 static int event_force_events( void )
 {
-  while( event_next_event < machine_current->timings.cycles_per_frame ) {
+  while( event_next_event < machine_current->timings.tstates_per_frame ) {
 
     /* Jump along to the next event */
     tstates = event_next_event;
@@ -223,7 +237,7 @@ static int event_force_events( void )
   }
 
   /* Finally, jump to the interrupt time */
-  tstates = machine_current->timings.cycles_per_frame;
+  tstates = machine_current->timings.tstates_per_frame;
 
   return 0;
 }

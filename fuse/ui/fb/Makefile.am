@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-## Copyright (c) 2001 Philip Kendall
+## Copyright (c) 2001-2002 Philip Kendall
 
 ## $Id$
 
@@ -26,7 +26,7 @@ AUTOMAKE_OPTIONS = foreign
 
 noinst_LIBRARIES = libuifb.a
 
-INCLUDES = @GLIB_CFLAGS@
+INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 
 libuifb_a_SOURCES = fbdisplay.c fbkeyboard.c fbui.c error.c keysyms.c
 
@@ -35,4 +35,5 @@ BUILT_SOURCES = keysyms.c
 keysyms.c: ../../keysyms.pl ../../keysyms.dat
 	@PERL@ ../../keysyms.pl fb ../../keysyms.dat > $@
 
-noinst_HEADERS = fbkeyboard.h
+noinst_HEADERS = fbdisplay.h \
+	         fbkeyboard.h

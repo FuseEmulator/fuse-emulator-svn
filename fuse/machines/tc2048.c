@@ -1,5 +1,5 @@
 /* tc2048.c: Timex TC2048 specific routines
-   Copyright (c) 1999-2002 Philip Kendall
+   Copyright (c) 1999-2003 Philip Kendall
    Copyright (c) 2002 Fredrick Meunier
 
    $Id$
@@ -29,21 +29,19 @@
 
 #include <stdio.h>
 
+#include <libspectrum.h>
+
 #include "display.h"
 #include "fuse.h"
 #include "joystick.h"
-#include "keyboard.h"
 #include "machine.h"
 #include "printer.h"
-#include "snapshot.h"
-#include "sound.h"
-#include "tc2048.h"
-#include "spectrum.h"
+#include "settings.h"
 #include "scld.h"
-#include "z80/z80.h"
-#include "ui/ui.h"
+#include "spectrum.h"
+#include "tc2048.h"
 
-static DWORD tc2048_contend_delay( void );
+static libspectrum_dword tc2048_contend_delay( void );
 
 spectrum_port_info tc2048_peripherals[] = {
   { 0x00e0, 0x0000, joystick_kempston_read, spectrum_port_nowrite },
@@ -58,54 +56,22 @@ spectrum_port_info tc2048_peripherals[] = {
 };
 
 
-static BYTE tc2048_unattached_port( void )
+static libspectrum_byte
+tc2048_unattached_port( void )
 {
-  /* TC2048 does not have floating ULA values on any port (despite rumours to */
-  /* the contrary), it returns 255 on unattached ports */
-  return 255;
+  /* TC2048 does not have floating ULA values on any port (despite rumours
+     to the contrary), it returns 0xff on unattached ports */
+  return 0xff;
 }
 
-BYTE tc2048_readbyte(WORD address)
-{
-  WORD bank;
-
-  if(address<0x4000) return ROM[0][address];
-  bank=address/0x4000; address-=(bank*0x4000);
-  switch(bank) {
-    case 1: return RAM[5][address]; break;
-    case 2: return RAM[2][address]; break;
-    case 3: return RAM[0][address]; break;
-    default:
-      ui_error( UI_ERROR_ERROR, "access to impossible bank %d at %s:%d\n",
-		bank, __FILE__, __LINE__ );
-      fuse_abort();
-  }
-  return 0; /* Keep gcc happy */
-}
-
-BYTE tc2048_read_screen_memory(WORD offset)
+libspectrum_byte
+tc2048_read_screen_memory( libspectrum_word offset )
 {
   return RAM[5][offset];
 }
 
-void tc2048_writebyte(WORD address, BYTE b)
-{
-  if(address>=0x4000) {		/* 0x4000 = 1st byte of RAM */
-    WORD bank=address/0x4000,offset=address-(bank*0x4000);
-    switch(bank) {
-    case 1: RAM[5][offset]=b; break;
-    case 2: RAM[2][offset]=b; break;
-    case 3: RAM[0][offset]=b; break;
-    default:
-      ui_error( UI_ERROR_ERROR, "access to impossible bank %d at %s:%d\n",
-		bank, __FILE__, __LINE__ );
-      fuse_abort();
-    }
-    display_dirty( address );	/* Replot necessary pixels */
-  }
-}
-
-DWORD tc2048_contend_memory( WORD address )
+libspectrum_dword
+tc2048_contend_memory( libspectrum_word address )
 {
   /* Contention occurs only in the lowest 16Kb of RAM */
   if( address < 0x4000 || address > 0x7fff ) return 0;
@@ -113,10 +79,11 @@ DWORD tc2048_contend_memory( WORD address )
   return tc2048_contend_delay();
 }
 
-DWORD tc2048_contend_port( WORD port )
+libspectrum_dword
+tc2048_contend_port( libspectrum_word port )
 {
   /* Contention occurs for ports FE and F4 (SCLD and HSR) */
-  /* Contention occurs for port FF (SCLD DCE) */
+  /* Contention occurs for port FF (SCLD DEC) */
   if( ( port & 0xff ) == 0xf4 ||
       ( port & 0xff ) == 0xfe ||
       ( port & 0xff ) == 0xff    ) return tc2048_contend_delay();
@@ -124,9 +91,10 @@ DWORD tc2048_contend_port( WORD port )
   return 0;
 }
 
-static DWORD tc2048_contend_delay( void )
+static libspectrum_dword
+tc2048_contend_delay( void )
 {
-  WORD tstates_through_line;
+  libspectrum_word tstates_through_line;
   
   /* No contention in the upper border */
   if( tstates < machine_current->line_times[ DISPLAY_BORDER_HEIGHT ] )
@@ -139,16 +107,16 @@ static DWORD tc2048_contend_delay( void )
 
   /* Work out where we are in this line */
   tstates_through_line =
-    ( tstates + machine_current->timings.left_border_cycles ) %
-    machine_current->timings.cycles_per_line;
+    ( tstates + machine_current->timings.left_border ) %
+    machine_current->timings.tstates_per_line;
 
   /* No contention if we're in the left border */
-  if( tstates_through_line < machine_current->timings.left_border_cycles - 1 ) 
+  if( tstates_through_line < machine_current->timings.left_border - 1 ) 
     return 0;
 
   /* Or the right border or retrace */
-  if( tstates_through_line >= machine_current->timings.left_border_cycles +
-                              machine_current->timings.screen_cycles - 1 )
+  if( tstates_through_line >= machine_current->timings.left_border +
+                              machine_current->timings.horizontal_screen - 1 )
     return 0;
 
   /* We now know the ULA is reading the screen, so put in the appropriate
@@ -176,19 +144,21 @@ int tc2048_init( fuse_machine_info *machine )
 
   machine->reset = tc2048_reset;
 
-  machine_set_timings( machine, 3.5e6, 24, 128, 24, 48, 312, 8936 );
+  error = machine_set_timings( machine ); if( error ) return error;
 
   machine->timex = 1;
-  machine->ram.read_memory    = tc2048_readbyte;
-  machine->ram.read_screen    = tc2048_read_screen_memory;
-  machine->ram.write_memory   = tc2048_writebyte;
-  machine->ram.contend_memory = tc2048_contend_memory;
-  machine->ram.contend_port   = tc2048_contend_port;
+  machine->ram.read_memory	     = tc2048_readbyte;
+  machine->ram.read_memory_internal  = tc2048_readbyte_internal;
+  machine->ram.read_screen	     = tc2048_read_screen_memory;
+  machine->ram.write_memory          = tc2048_writebyte;
+  machine->ram.write_memory_internal = tc2048_writebyte_internal;
+  machine->ram.contend_memory	     = tc2048_contend_memory;
+  machine->ram.contend_port	     = tc2048_contend_port;
+  machine->ram.current_screen = 5;
 
   error = machine_allocate_roms( machine, 1 );
   if( error ) return error;
-  error = machine_read_rom( machine, 0, "tc2048.rom" );
-  if( error ) return error;
+  machine->rom_length[0] = 0x4000;
 
   machine->peripherals = tc2048_peripherals;
   machine->unattached_port = tc2048_unattached_port;
@@ -201,12 +171,14 @@ int tc2048_init( fuse_machine_info *machine )
 
 }
 
-int tc2048_reset(void)
+int
+tc2048_reset( void )
 {
-  z80_reset();
-  sound_ay_reset();	/* should happen for *all* resets */
-  snapshot_flush_slt();
-  printer_zxp_reset();
+  int error;
+
+  error = machine_load_rom( &ROM[0], settings_current.rom_tc2048,
+			    machine_current->rom_length[0] );
+  if( error ) return error;
 
   return 0;
 }

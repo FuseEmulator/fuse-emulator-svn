@@ -1,5 +1,5 @@
 /* menu.c: general menu widget
-   Copyright (c) 2001,2002 Philip Kendall
+   Copyright (c) 2001-2003 Philip Kendall
 
    $Id$
 
@@ -26,24 +26,27 @@
 
 #include <config.h>
 
+#ifdef USE_WIDGET
+
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/mman.h>
 
-#include "display.h"
+#include "dck.h"
+#include "debugger/debugger.h"
+#include "event.h"
 #include "fuse.h"
 #include "machine.h"
+#include "psg.h"
 #include "rzx.h"
 #include "screenshot.h"
 #include "snapshot.h"
 #include "specplus3.h"
 #include "tape.h"
-#include "utils.h"
-#include "widget.h"
-#include "ui/ui.h"
+#include "trdos.h"
 #include "ui/uidisplay.h"
+#include "utils.h"
+#include "widget_internals.h"
 
 widget_menu_entry *menu;
 
@@ -69,8 +72,7 @@ int widget_menu_draw( void *data )
     widget_printstring( 2, i+4, WIDGET_COLOUR_FOREGROUND,
 			menu[i+1].text );
 
-  uidisplay_lines( DISPLAY_BORDER_HEIGHT + 16,
-		   DISPLAY_BORDER_HEIGHT + 16 + (menu_entries+2)*8 );
+  widget_display_lines( 2, menu_entries + 2 );
 
   return 0;
 }
@@ -87,12 +89,11 @@ widget_menu_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
     break;
     
   case KEYBOARD_1: /* 1 used as `Escape' generates `Edit', which is Caps + 1 */
-    if( key2 == KEYBOARD_Caps )
-      widget_return[ widget_level ].finished = WIDGET_FINISHED_CANCEL;
+    if( key2 == KEYBOARD_Caps ) widget_end_widget( WIDGET_FINISHED_CANCEL );
     return;
 
   case KEYBOARD_Enter:
-    widget_return[ widget_level ].finished = WIDGET_FINISHED_OK;
+    widget_end_widget( WIDGET_FINISHED_OK );
     return;
 
   default:	/* Keep gcc happy */
@@ -136,7 +137,14 @@ int widget_apply_to_file( void *data )
 
 /* File menu callbacks */
 
-/* File/Save */
+/* File/Open (called via widget_apply_to_file) */
+int
+widget_menu_open( const char *filename )
+{
+  return utils_open_file( filename, settings_current.auto_load, NULL );
+}
+
+/* File/Save Snapshot*/
 int
 widget_menu_save_snapshot( void *data GCC_UNUSED )
 {
@@ -210,21 +218,68 @@ widget_menu_rzx_stop( void *data GCC_UNUSED )
   return 0;
 }  
 
-#ifdef HAVE_PNG_H
+/* File/AY Logging/Record */
+int
+widget_menu_psg_record( void *data GCC_UNUSED )
+{
+  if( psg_recording ) return 0;
+
+  widget_end_all( WIDGET_FINISHED_OK );
+
+  return psg_start_recording( "ay.psg" );
+}
+
+/* File/AY Logging/Stop */
+int
+widget_menu_psg_stop( void *data GCC_UNUSED )
+{
+  if( !psg_recording ) return 0;
+  
+  return psg_stop_recording();
+}  
+
+#ifdef USE_LIBPNG
 /* File/Save Screenshot */
 int
 widget_menu_save_screen( void *data GCC_UNUSED )
 {
-  widget_end_all( WIDGET_FINISHED_OK );
-  return screenshot_write( "fuse.png" );
+  widget_do( WIDGET_TYPE_SCALER, screenshot_available_scalers );
+  if( widget_scaler == SCALER_NUM ) return 0;
+
+  return screenshot_write( "fuse.png", widget_scaler );
 }
-#endif			/* #ifdef HAVE_PNG_H */
+#endif			/* #ifdef USE_LIBPNG */
+
+/* File/Save Scr */
+int
+widget_menu_save_scr( void *data GCC_UNUSED )
+{
+  widget_end_all( WIDGET_FINISHED_OK );
+  return screenshot_scr_write( "fuse.scr" );
+}
 
 /* File/Exit */
 int widget_menu_exit( void *data GCC_UNUSED )
 {
   fuse_exiting = 1;
   widget_end_all( WIDGET_FINISHED_OK );
+  return 0;
+}
+
+/* Options/Filter */
+int
+widget_menu_filter( void *data GCC_UNUSED )
+{
+  int error;
+
+  error = widget_do( WIDGET_TYPE_SCALER, scaler_is_supported );
+  if( error ) return error;
+
+  if( widget_scaler == SCALER_NUM ) return 0;
+
+  if( widget_scaler != current_scaler )
+    return scaler_select_scaler( widget_scaler );
+
   return 0;
 }
 
@@ -242,7 +297,30 @@ widget_menu_save_options( void *data GCC_UNUSED )
 int widget_menu_reset( void *data GCC_UNUSED )
 {
   widget_end_all( WIDGET_FINISHED_OK );
-  return machine_current->reset();
+  return machine_reset();
+}
+
+/* Machine/Break */
+int
+widget_menu_break( void *data GCC_UNUSED )
+{
+  debugger_mode = DEBUGGER_MODE_HALTED;
+  widget_do( WIDGET_TYPE_DEBUGGER, NULL );
+  return 0;
+}
+
+/* Machine/NMI */
+int
+widget_menu_nmi( void *data GCC_UNUSED )
+{
+  int error;
+
+  widget_end_all( WIDGET_FINISHED_OK );
+
+  error = event_add( 0, EVENT_TYPE_NMI );
+  if( error ) return error;
+
+  return 0;
 }
 
 /* Tape/Play */
@@ -259,31 +337,59 @@ int widget_menu_rewind_tape( void *data GCC_UNUSED )
   return tape_select_block( 0 );
 }
 
-#ifdef HAVE_765_H
-
 /* Disk/Drive A:/Insert (called via widget_apply_to_file) */
 int
 widget_insert_disk_a( const char *filename )
 {
-  return specplus3_disk_insert( SPECPLUS3_DRIVE_A, filename );
+#ifdef HAVE_765_H
+  if( machine_current->machine == LIBSPECTRUM_MACHINE_PLUS3 ) {
+    return specplus3_disk_insert( SPECPLUS3_DRIVE_A, filename );
+  }
+#endif				/* #ifdef HAVE_765_H */
+  return trdos_disk_insert( TRDOS_DRIVE_A, filename );
 }
 
 /* Disk/Drive B:/Insert (called via widget_apply_to_file) */
 int
 widget_insert_disk_b( const char *filename )
 {
-  return specplus3_disk_insert( SPECPLUS3_DRIVE_B, filename );
+#ifdef HAVE_765_H
+  if( machine_current->machine == LIBSPECTRUM_MACHINE_PLUS3 ) {
+    return specplus3_disk_insert( SPECPLUS3_DRIVE_B, filename );
+  }
+#endif				/* #ifdef HAVE_765_H */
+  return trdos_disk_insert( TRDOS_DRIVE_B, filename );
 }
 
 /* Disk/Drive ?:/Eject */
 int
 widget_menu_eject_disk( void *data )
 {
-  specplus3_drive_number which = *(specplus3_drive_number*)data;
-  return specplus3_disk_eject( which );
+  trdos_drive_number which = *(trdos_drive_number*)data;
+
+#ifdef HAVE_765_H
+  if( machine_current->machine == LIBSPECTRUM_MACHINE_PLUS3 )
+    return specplus3_disk_eject( which );
+#endif				/* #ifdef HAVE_765_H */
+
+  return trdos_disk_eject( which );
 }
 
-#endif				/* #ifdef HAVE_765_H */
+/* Cartridge/Timex Dock/Insert (called via widget_apply_to_file) */
+int
+widget_insert_dock( const char *filename )
+{
+  return dck_insert( filename );
+}
+
+/* Cartridge/Timex Dock/Eject */
+int
+widget_menu_eject_dock( void *data )
+{
+  dck_eject();
+
+  return 0;
+}
 
 /* Tape/Clear */
 int widget_menu_clear_tape( void *data GCC_UNUSED )
@@ -305,7 +411,7 @@ int widget_menu_keyboard( void *data )
   widget_picture_data *ptr = (widget_picture_data*)data;
 
   int error, fd;
-  size_t length;
+  utils_file file;
 
   fd = utils_find_lib( ptr->filename );
   if( fd == -1 ) {
@@ -314,22 +420,32 @@ int widget_menu_keyboard( void *data )
     return 1;
   }
   
-  error = utils_read_fd( fd, ptr->filename, &(ptr->screen), &length );
+  error = utils_read_fd( fd, ptr->filename, &file );
   if( error ) return error;
 
-  if( length != 6912 ) {
+  if( file.length != 6912 ) {
     ui_error( UI_ERROR_ERROR, "keyboard picture ('%s') is not 6912 bytes long",
 	      ptr->filename );
+    utils_close_file( &file );
     return 1;
   }
+
+  ptr->screen = file.buffer;
 
   widget_do( WIDGET_TYPE_PICTURE, ptr );
 
-  if( munmap( ptr->screen, length ) == -1 ) {
-    ui_error( UI_ERROR_ERROR, "Couldn't munmap keyboard picture ('%s'): %s",
-	      ptr->filename, strerror( errno ) );
-    return 1;
-  }
+  if( utils_close_file( &file ) ) return 1;
 
   return 0;
 }
+
+/* Functions to (de)activate specific menu items */
+/* TODO: make these work */
+int ui_menu_activate_media_cartridge( int active ) { return 0; }
+int ui_menu_activate_media_cartridge_eject( int active ) { return 0; }
+int ui_menu_activate_media_disk( int active ) { return 0; }
+int ui_menu_activate_media_disk_eject( int which, int active ) { return 0; }
+int ui_menu_activate_recording( int active ) { return 0; }
+int ui_menu_activate_ay_logging( int active ) { return 0; }
+
+#endif				/* #ifdef USE_WIDGET */

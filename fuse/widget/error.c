@@ -26,14 +26,14 @@
 
 #include <config.h>
 
+#ifdef USE_WIDGET
+
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "display.h"
 #include "keyboard.h"
-#include "ui/uidisplay.h"
-#include "widget.h"
+#include "widget_internals.h"
 
 static int split_message( const char *message, char ***lines, size_t *count,
 			  const size_t line_length );
@@ -69,8 +69,7 @@ int widget_error_draw( void *data )
 
   free( lines );
 
-  uidisplay_lines( DISPLAY_BORDER_HEIGHT + 16,
-		   DISPLAY_BORDER_HEIGHT + 31 + count*8 );
+  widget_display_lines( 2, count + 4 );
 
   return 0;
 }
@@ -153,12 +152,11 @@ widget_error_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
     break;
     
   case KEYBOARD_1: /* 1 used as `Escape' generates `Edit', which is Caps + 1 */
-    if( key2 == KEYBOARD_Caps )
-      widget_return[ widget_level ].finished = WIDGET_FINISHED_CANCEL;
+    if( key2 == KEYBOARD_Caps ) widget_end_widget( WIDGET_FINISHED_CANCEL );
     return;
 
   case KEYBOARD_Enter:
-    widget_return[ widget_level ].finished = WIDGET_FINISHED_OK;
+    widget_end_widget( WIDGET_FINISHED_OK );
     return;
 
   default:	/* Keep gcc happy */
@@ -166,3 +164,5 @@ widget_error_keyhandler( keyboard_key_name key, keyboard_key_name key2 )
 
   }
 }
+
+#endif				/* #ifdef USE_WIDGET */

@@ -1,5 +1,5 @@
 /* scld.h: Routines for handling the Timex SCLD
-   Copyright (c) 2002 Fredrick Meunier
+   Copyright (c) 2002-2003 Fredrick Meunier, Witold Filipczyk
 
    $Id$
 
@@ -26,47 +26,119 @@
 #ifndef FUSE_SCLD_H
 #define FUSE_SCLD_H
 
-#ifndef FUSE_TYPES_H
-#include "types.h"
-#endif                  /* #ifndef FUSE_TYPES_H */
-
-#define ALTDFILE        0x01
-#define EXTCOLOUR       0x02
-#define HIRES           0x04
+#define STANDARD        0x00 /* standard Spectrum */
+#define ALTDFILE        0x01 /* the same in nature as above, but using second
+                                display file */
+#define EXTCOLOUR       0x02 /* extended colours (data taken from first screen,
+                                attributes 1x8 taken from second display. */
+#define EXTCOLALTD      0x03 /* similar to above, but data is taken from second
+                                screen */
+#define HIRESATTR       0x04 /* hires mode, data in odd columns is taken from
+                                first screen in standard way, data in even
+                                columns is made from attributes data (8x8) */
+#define HIRESATTRALTD   0x05 /* similar to above, but data taken from second
+                                display */
+#define HIRES           0x06 /* true hires mode, odd columns from first screen,
+                                even columns from second screen.  columns
+                                numbered from 1. */
+#define HIRESDOUBLECOL  0x07 /* data taken only from second screen, columns are
+                                doubled */
 #define HIRESCOLMASK    0x38
-#define INTDISABLE      0x40
-#define ALTMEMBANK      0x80
 
 #define WHITEBLACK      0x00
-#define YELLOWBLUE      0x08
-#define CYANRED         0x10
-#define GREENMAGENTA    0x18
-#define MAGENTAGREEN    0x20
-#define REDCYAN         0x28
-#define BLUEYELLOW      0x30
-#define BLACKWHITE      0x38
+#define YELLOWBLUE      0x01
+#define CYANRED         0x02
+#define GREENMAGENTA    0x03
+#define MAGENTAGREEN    0x04
+#define REDCYAN         0x05
+#define BLUEYELLOW      0x06
+#define BLACKWHITE      0x07
 
 #define ALTDFILE_OFFSET 0x2000
 
-extern BYTE scld_altdfile;
-extern BYTE scld_extcolour;
-extern BYTE scld_hires;
-extern BYTE scld_intdisable;
-extern BYTE scld_altmembank;	     /* 0 = cartridge, 1 = exrom */
+#ifdef WORDS_BIGENDIAN
 
-extern BYTE scld_screenmode;
+typedef struct
+{
+  unsigned altmembank : 1;  /* ALTMEMBANK : 0 = cartridge, 1 = exrom */
+  unsigned intdisable : 1;  /* INTDISABLE */
+  unsigned b5  : 1;  /* */
+  unsigned b4  : 1;  /* */
+  unsigned b3  : 1;  /* */
+  unsigned hires  : 1;  /* SCLD HIRES mode */
+  unsigned b1     : 1;  /* */
+  unsigned altdfile : 1;  /* SCLD use ALTDFILE */
+} scld_names;
 
-extern BYTE scld_last_dec;           /* The last byte sent to Timex DEC port */
+typedef struct
+{
+  unsigned b7  : 1;  /* */
+  unsigned b6  : 1;  /* */
+  unsigned hirescol  : 3;  /* HIRESCOLMASK */
+  unsigned scrnmode  : 3;  /* SCRNMODEMASK */
+} scld_masks;
 
-extern BYTE scld_last_hsr;           /* The last byte sent to Timex HSR port */
+#else				/* #ifdef WORDS_BIGENDIAN */
 
-void scld_reset(void);
-void scld_dec_write(WORD port, BYTE b);
-BYTE scld_dec_read(WORD port);
+typedef struct
+{
+  unsigned altdfile : 1;  /* SCLD use ALTDFILE */
+  unsigned b1     : 1;  /* */
+  unsigned hires  : 1;  /* SCLD HIRES mode */
+  unsigned b3  : 1;  /* */
+  unsigned b4  : 1;  /* */
+  unsigned b5  : 1;  /* */
+  unsigned intdisable : 1;  /* INTDISABLE */
+  unsigned altmembank : 1;  /* ALTMEMBANK : 0 = cartridge, 1 = exrom */
+} scld_names;
 
-void scld_hsr_write (WORD port, BYTE b);
-BYTE scld_hsr_read (WORD port);
+typedef struct
+{
+  unsigned scrnmode  : 3;  /* SCRNMODEMASK */
+  unsigned hirescol  : 3;  /* HIRESCOLMASK */
+  unsigned b6  : 1;  /* */
+  unsigned b7  : 1;  /* */
+} scld_masks;
 
-BYTE hires_get_attr(void);
+#endif				/* #ifdef WORDS_BIGENDIAN */
+
+typedef union
+{
+  libspectrum_byte byte;
+  scld_masks mask;
+  scld_names name;
+} scld; 
+
+extern scld scld_last_dec;           /* The last byte sent to Timex DEC port */
+
+extern libspectrum_byte scld_last_hsr; /* Last byte sent to Timex HSR port */
+
+extern libspectrum_byte timex_fake_bank[ 8192 ];
+
+typedef struct timex_mem {
+  libspectrum_byte *page;
+  libspectrum_byte writeable;	/* 1 - chunk writeable, 0 - chunk read only */
+  libspectrum_byte allocated;	/* Did we malloc this block? */
+} timex_mem;
+
+extern timex_mem timex_exrom_dock[8];
+extern timex_mem timex_exrom[8];
+extern timex_mem timex_dock[8];
+extern timex_mem timex_home[8];
+extern timex_mem timex_memory[8];
+
+void scld_reset( void );
+void scld_dec_write( libspectrum_word port, libspectrum_byte b );
+libspectrum_byte scld_dec_read( libspectrum_word port );
+
+void scld_hsr_write( libspectrum_word port, libspectrum_byte b );
+libspectrum_byte scld_hsr_read( libspectrum_word port );
+
+libspectrum_byte hires_get_attr( void );
+libspectrum_byte hires_convert_dec( libspectrum_byte attr );
+
+void scld_dock_free( void );
+void scld_exrom_free( void );
+void scld_home_free( void );
 
 #endif                  /* #ifndef FUSE_SCLD_H */

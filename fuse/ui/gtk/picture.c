@@ -1,5 +1,5 @@
 /* picture.c: GTK+ routines to draw the keyboard picture
-   Copyright (c) 2002 Philip Kendall
+   Copyright (c) 2002-2003 Philip Kendall
 
    $Id$
 
@@ -32,68 +32,70 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
 
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <libspectrum.h>
 
 #include "display.h"
 #include "fuse.h"
+#include "gtkdisplay.h"
 #include "gtkui.h"
-#include "types.h"
 #include "ui/ui.h"
 #include "utils.h"
 
-static int read_screen( const char *filename, BYTE **screen, size_t *length );
-static void draw_screen( GdkImage *image, BYTE *screen, int border );
+/* An RGB image of the keyboard picture */
+static guchar picture[ DISPLAY_SCREEN_HEIGHT * DISPLAY_ASPECT_WIDTH * 4 ];
+static const gint picture_pitch = DISPLAY_ASPECT_WIDTH * 4;
+
+static int screen_drawn = 0;
+
+static int read_screen( const char *filename, utils_file *screen );
+static void draw_screen( libspectrum_byte *screen, int border );
 static gint
 picture_expose( GtkWidget *widget, GdkEvent *event, gpointer data );
-
-struct picture_data {
-  GtkWidget *drawing_area;
-  GdkImage *image;
-};
 
 int
 gtkui_picture( const char *filename, int border )
 {
-  BYTE *screen; size_t length;
+  utils_file screen;
 
   GtkWidget *dialog;
   GtkWidget *ok_button;
-  struct picture_data *callback_data;
+  GtkAccelGroup *accel_group;
+
+  GtkWidget *drawing_area;
 
   fuse_emulation_pause();
 
-  if( read_screen( filename, &screen, &length ) ) {
-    fuse_emulation_unpause();
-    return 1;
+  if( !screen_drawn ) {
+
+    if( read_screen( filename, &screen ) ) {
+      fuse_emulation_unpause();
+      return 1;
+    }
+
+    draw_screen( screen.buffer, border );
+
+    if( utils_close_file( &screen ) ) {
+      fuse_emulation_unpause();
+      return 1;
+    }
+
+    screen_drawn = 1;
   }
 
   dialog = gtk_dialog_new();
   gtk_window_set_title( GTK_WINDOW( dialog ), "Fuse - Keyboard" );
-  gtk_widget_set_colormap( dialog, gtk_widget_get_colormap( gtkui_window ) );
 
-  callback_data =
-    (struct picture_data*)malloc( sizeof( struct picture_data ) );
-  if( !callback_data ) {
-    ui_error( UI_ERROR_ERROR, "out of memory in gtkui_picture" );
-    fuse_emulation_unpause();
-    return 1;
-  }
-
-  callback_data->drawing_area = gtk_drawing_area_new();
-  gtk_drawing_area_size( GTK_DRAWING_AREA( callback_data->drawing_area ),
+  drawing_area = gtk_drawing_area_new();
+  gtk_drawing_area_size( GTK_DRAWING_AREA( drawing_area ),
 			 DISPLAY_ASPECT_WIDTH, DISPLAY_SCREEN_HEIGHT );
-  gtk_signal_connect( GTK_OBJECT( callback_data->drawing_area ),
+  gtk_signal_connect( GTK_OBJECT( drawing_area ),
 		      "expose_event", GTK_SIGNAL_FUNC( picture_expose ),
-		      callback_data );
+		      NULL );
   gtk_container_add( GTK_CONTAINER( GTK_DIALOG( dialog )->vbox ),
-		     callback_data->drawing_area );
-
-  callback_data->image =
-    gdk_image_new( GDK_IMAGE_FASTEST, gdk_visual_get_system(),
-		   DISPLAY_ASPECT_WIDTH, DISPLAY_SCREEN_HEIGHT );
-  draw_screen( callback_data->image, screen, border );
+		     drawing_area );
 
   ok_button = gtk_button_new_with_label( "OK" );
   gtk_container_add( GTK_CONTAINER( GTK_DIALOG( dialog )->action_area ),
@@ -102,14 +104,15 @@ gtkui_picture( const char *filename, int border )
 			     GTK_SIGNAL_FUNC( gtk_widget_destroy ),
 			     GTK_OBJECT( dialog ) );
 
-  gtk_widget_show_all( dialog );
+  accel_group = gtk_accel_group_new();
+  gtk_window_add_accel_group( GTK_WINDOW( dialog ), accel_group );
+  gtk_widget_add_accelerator( ok_button, "clicked",
+			      accel_group, GDK_Return, 0, 0);
 
-  if( munmap( screen, length ) == -1 ) {
-    ui_error( UI_ERROR_ERROR, "Couldn't munmap keyboard picture ('%s'): %s",
-	      filename, strerror( errno ) );
-    fuse_emulation_unpause();
-    return 1;
-  }
+  /* Stop users resizing this window */
+  gtk_window_set_policy( GTK_WINDOW( dialog ), FALSE, FALSE, TRUE );
+
+  gtk_widget_show_all( dialog );
 
   fuse_emulation_unpause();
 
@@ -117,7 +120,7 @@ gtkui_picture( const char *filename, int border )
 }
 
 static int
-read_screen( const char *filename, BYTE **screen, size_t *length )
+read_screen( const char *filename, utils_file *screen )
 {
   int fd, error;
 
@@ -128,11 +131,11 @@ read_screen( const char *filename, BYTE **screen, size_t *length )
     return 1;
   }
   
-  error = utils_read_fd( fd, filename, screen, length );
+  error = utils_read_fd( fd, filename, screen );
   if( error ) return error;
 
-  if( *length != 6912 ) {
-    munmap( *screen, *length );
+  if( screen->length != 6912 ) {
+    utils_close_file( screen );
     ui_error( UI_ERROR_ERROR, "keyboard picture ('%s') is not 6912 bytes long",
 	      filename );
     return 1;
@@ -142,29 +145,34 @@ read_screen( const char *filename, BYTE **screen, size_t *length )
 }
 
 static void
-draw_screen( GdkImage *image, BYTE *screen, int border )
+draw_screen( libspectrum_byte *screen, int border )
 {
   int i, x, y, ink, paper;
-  BYTE attr, data; 
+  libspectrum_byte attr, data; 
 
   for( y=0; y < DISPLAY_BORDER_HEIGHT; y++ ) {
-    for( x=0; x < DISPLAY_ASPECT_WIDTH; x ++ ) {
-      gdk_image_put_pixel( image, x, y, gtkdisplay_colours[ border ] );
-      gdk_image_put_pixel( image, 
-			   x, y + DISPLAY_BORDER_HEIGHT + DISPLAY_HEIGHT,
-			   gtkdisplay_colours[ border ] );
+    for( x=0; x < DISPLAY_ASPECT_WIDTH; x++ ) {
+      *(libspectrum_dword*)( picture + y * picture_pitch + 4 * x ) =
+	gtkdisplay_colours[border];
+      *(libspectrum_dword*)(
+          picture +
+	  ( y + DISPLAY_BORDER_HEIGHT + DISPLAY_HEIGHT ) * picture_pitch +
+	  4 * x
+	) = gtkdisplay_colours[ border ];
     }
   }
 
   for( y=0; y<DISPLAY_HEIGHT; y++ ) {
 
-    for( x=0; x < DISPLAY_BORDER_WIDTH; x+=2 ) {
-      gdk_image_put_pixel( image, x >> 1, y + DISPLAY_BORDER_HEIGHT,
-			   gtkdisplay_colours[ border ] );
-      gdk_image_put_pixel(
-        image, ( x + DISPLAY_BORDER_WIDTH + DISPLAY_WIDTH ) >> 1,
-	y + DISPLAY_BORDER_HEIGHT, gtkdisplay_colours[ border ]
-      );
+    for( x=0; x < DISPLAY_BORDER_ASPECT_WIDTH; x++ ) {
+      *(libspectrum_dword*)
+	(picture + ( y + DISPLAY_BORDER_HEIGHT) * picture_pitch + 4 * x) =
+	gtkdisplay_colours[ border ];
+      *(libspectrum_dword*)(
+          picture +
+	  ( y + DISPLAY_BORDER_HEIGHT ) * picture_pitch +
+	  4 * ( x+DISPLAY_ASPECT_WIDTH-DISPLAY_BORDER_ASPECT_WIDTH )
+	) = gtkdisplay_colours[ border ];
     }
 
     for( x=0; x < DISPLAY_WIDTH_COLS; x++ ) {
@@ -177,11 +185,12 @@ draw_screen( GdkImage *image, BYTE *screen, int border )
       data = screen[ display_line_start[y]+x ];
 
       for( i=0; i<8; i++ ) {
-	gdk_image_put_pixel( image,
-			     ( DISPLAY_BORDER_WIDTH >> 1 ) + ( 8 * x ) + i,
-			     y + DISPLAY_BORDER_HEIGHT,
-			     ( data & 0x80 ) ? gtkdisplay_colours[ ink ]
-                                             : gtkdisplay_colours[ paper ] );
+	*(libspectrum_dword*)(
+	    picture +
+	    ( y + DISPLAY_BORDER_HEIGHT ) * picture_pitch +
+	    4 * ( 8 * x + DISPLAY_BORDER_ASPECT_WIDTH + i )
+	  ) = ( data & 0x80 ) ? gtkdisplay_colours[ ink ]
+	                      : gtkdisplay_colours[ paper ];
 	data <<= 1;
       }
     }
@@ -190,17 +199,16 @@ draw_screen( GdkImage *image, BYTE *screen, int border )
 }
 
 static gint
-picture_expose( GtkWidget *widget, GdkEvent *event, gpointer data )
+picture_expose( GtkWidget *widget, GdkEvent *event, gpointer data GCC_UNUSED )
 {
-  struct picture_data *ptr = (struct picture_data*)data;
+  int x = event->expose.area.x, y = event->expose.area.y;
 
-  gint x = event->expose.area.x,
-    y = event->expose.area.y,
-    width = event->expose.area.width,
-    height = event->expose.area.height;
-
-  gdk_draw_image( ptr->drawing_area->window, gtkdisplay_gc, ptr->image, x, y,
-		  x, y, width, height );
+  gdk_draw_rgb_32_image( widget->window,
+			 widget->style->fg_gc[ GTK_STATE_NORMAL ],
+			 x, y,
+			 event->expose.area.width, event->expose.area.height,
+			 GDK_RGB_DITHER_NONE,
+			 picture + y * picture_pitch + 4 * x, picture_pitch );
 
   return TRUE;
 }

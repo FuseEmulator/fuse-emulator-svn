@@ -1,5 +1,5 @@
 /* printer.c: Printer support
-   Copyright (c) 2001,2002 Ian Collier, Russell Marks, Philip Kendall
+   Copyright (c) 2001-2003 Ian Collier, Russell Marks, Philip Kendall
 
    $Id$
 
@@ -38,14 +38,9 @@
 #include "fuse.h"
 #include "machine.h"
 #include "printer.h"
+#include "settings.h"
 #include "spectrum.h"
 #include "ui/ui.h"
-
-/* XXX presumably want these selectable eventually, but these
- * should be ok for now.
- */
-static const char *printer_graphics_filename="printout.pbm";
-static const char *printer_text_filename="printout.txt";
 
 static int printer_graphics_enabled=0;
 static int printer_text_enabled=0;
@@ -54,7 +49,7 @@ static FILE *printer_text_file=NULL;
 
 /* for the ZX Printer */
 static int zxpframes,zxpspeed,zxpnewspeed;
-static DWORD zxpcycles;
+static libspectrum_dword zxpcycles;
 static int zxpheight,zxppixel,zxpstylus;
 static unsigned char zxpline[256];
 static unsigned int frames=0;
@@ -93,11 +88,11 @@ static const char *pbmstart="P4\n256 ";
 FILE *tmpf;
 int overwrite=1;
 
-if(!printer_graphics_enabled || !printer_graphics_filename)
+if(!printer_graphics_enabled || !settings_current.printer_graphics_filename)
   return(0);
 
 /* first, see if there's an existing file we can add to. */
-if((tmpf=fopen(printer_graphics_filename,"rb"))!=NULL)
+if((tmpf=fopen(settings_current.printer_graphics_filename,"rb"))!=NULL)
   {
   char buf[7+10+1];		/* 7 being length of pbmstart */
 
@@ -140,11 +135,11 @@ if((tmpf=fopen(printer_graphics_filename,"rb"))!=NULL)
   fclose(tmpf);
   }
 
-if((printer_graphics_file=fopen(printer_graphics_filename,
+if((printer_graphics_file=fopen(settings_current.printer_graphics_filename,
                                 overwrite?"wb":"r+b"))==NULL)
   {
   ui_error(UI_ERROR_ERROR,"Couldn't open '%s', graphics printout disabled",
-	   printer_graphics_filename);
+	   settings_current.printer_graphics_filename);
   printer_graphics_enabled=0;
   return(0);
   }
@@ -176,14 +171,14 @@ return(1);
 
 static int printer_text_open_file(void)
 {
-if(!printer_text_enabled || !printer_text_filename)
+if(!printer_text_enabled || !settings_current.printer_text_filename)
   return(0);
 
 /* append to any existing file... */
-if((printer_text_file=fopen(printer_text_filename,"a"))==NULL)
+if((printer_text_file=fopen(settings_current.printer_text_filename,"a"))==NULL)
   {
   ui_error(UI_ERROR_ERROR,"Couldn't open '%s', text printout disabled",
-	   printer_text_filename);
+	   settings_current.printer_text_filename);
   printer_text_enabled=0;
   return(0);
   }
@@ -284,8 +279,8 @@ int x,y,f,c,chars;
 
 #define SYSV_CHARS	0x5c36
 
-chars=readbyte(SYSV_CHARS);
-chars+=256*readbyte(SYSV_CHARS+1);
+chars=readbyte_internal(SYSV_CHARS);
+chars+=256*readbyte_internal(SYSV_CHARS+1);
 
 memset(charset,0,sizeof(charset));
 ptr=charset+32*8;
@@ -378,7 +373,7 @@ frames++;
  * very little brain. :-) Or at least, I don't grok it that well.
  * It works wonderfully though.
  */
-BYTE printer_zxp_read(WORD port GCC_UNUSED)
+libspectrum_byte printer_zxp_read(libspectrum_word port GCC_UNUSED)
 {
 if(!printer_graphics_enabled)
   return(0xff);
@@ -396,7 +391,7 @@ else
       
   if(frame>400)
     frame=400;
-  cycles+=frame*machine_current->timings.cycles_per_frame;
+  cycles+=frame*machine_current->timings.tstates_per_frame;
   x=cycles/cpp-64;        /* x-coordinate reached */
       
   while(x>320)
@@ -422,7 +417,7 @@ else
 }
 
 
-void printer_zxp_write(WORD port GCC_UNUSED,BYTE b)
+void printer_zxp_write(libspectrum_word port GCC_UNUSED,libspectrum_byte b)
 {
 if(!zxpspeed)
   {
@@ -445,7 +440,7 @@ else
       
   if(frame>400)
     frame=400; /* limit height of blank paper */
-  cycles+=frame*machine_current->timings.cycles_per_frame;
+  cycles+=frame*machine_current->timings.tstates_per_frame;
   x=cycles/cpp-64;        /* x-coordinate reached */
   for(i=zxppixel;i<x && i<256;i++)
     if(i>=0)		/* should be, but just in case */
@@ -456,8 +451,8 @@ else
   while(x>=320)
     {          /* move to next line */
     zxpcycles+=cpp*384;
-    if(zxpcycles>=machine_current->timings.cycles_per_frame)
-      zxpcycles-=machine_current->timings.cycles_per_frame,zxpframes++;
+    if(zxpcycles>=machine_current->timings.tstates_per_frame)
+      zxpcycles-=machine_current->timings.tstates_per_frame,zxpframes++;
     x-=384;
     if(zxpnewspeed)
       {
@@ -523,7 +518,7 @@ zxplineofchar=0;
  * likely; certainly the ROMs do it) means we can use a
  * bps-independent approach.
  */
-void printer_serial_write(BYTE b)
+void printer_serial_write(libspectrum_byte b)
 {
 static int reading=0,bits_to_get=0,ser_byte=0;
 int high=(b&8);
@@ -571,9 +566,9 @@ void printer_parallel_strobe_write(int on)
 static int old_on=0;
 static int second_edge=0;
 static unsigned int last_frames=0;
-static DWORD last_tstates=0;
+static libspectrum_dword last_tstates=0;
 static unsigned char last_data=0;
-DWORD diff;
+libspectrum_dword diff;
 
 if((old_on && !on) || (!old_on && on))
   {
@@ -593,7 +588,7 @@ if((old_on && !on) || (!old_on && on))
     second_edge=0;
     diff=tstates;
     if(frames!=last_frames)
-      diff+=machine_current->timings.cycles_per_frame;
+      diff+=machine_current->timings.tstates_per_frame;
     diff-=last_tstates;
 
     if(diff<=PARALLEL_STROBE_MAX_CYCLES)
@@ -614,7 +609,7 @@ old_on=on;
 }
 
 
-BYTE printer_parallel_read(WORD port GCC_UNUSED)
+libspectrum_byte printer_parallel_read(libspectrum_word port GCC_UNUSED)
 {
 /* bit 0 = busy. other bits high? */
 
@@ -622,7 +617,8 @@ return(0xfe);	/* never busy */
 }
 
 
-void printer_parallel_write(WORD port GCC_UNUSED,BYTE b)
+void printer_parallel_write(libspectrum_word port GCC_UNUSED,
+			    libspectrum_byte b)
 {
 parallel_data=b;
 }

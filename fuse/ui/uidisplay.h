@@ -1,5 +1,5 @@
 /* uidisplay.h: Low-level display routines
-   Copyright (c) 2000-2002 Philip Kendall
+   Copyright (c) 2000-2003 Philip Kendall
 
    $Id$
 
@@ -27,23 +27,20 @@
 #ifndef FUSE_UIDISPLAY_H
 #define FUSE_UIDISPLAY_H
 
-#ifndef FUSE_TYPES_H
-#include "types.h"
-#endif			/* #ifndef FUSE_TYPES_H */
+#include <libspectrum.h>
 
 /* User interface specific functions */
 
-int uidisplay_init(int width, int height);
+int uidisplay_init( int width, int height );
 
-void uidisplay_putpixel(int x,int y,int colour);
-void uidisplay_lines( int start, int end );
-void uidisplay_set_border(int line, int pixel_from, int pixel_to,
-			  int colour);
+void uidisplay_area( int x, int y, int w, int h );
+void uidisplay_frame_end( void );
+void uidisplay_hotswap_gfx_mode( void );
 
 int uidisplay_end(void);
 
 /* General functions */
 
-void uidisplay_spectrum_screen( const BYTE *screen, int border );
+void uidisplay_spectrum_screen( const libspectrum_byte *screen, int border );
 
 #endif			/* #ifndef FUSE_UIDISPLAY_H */

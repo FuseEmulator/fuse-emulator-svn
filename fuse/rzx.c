@@ -1,5 +1,5 @@
 /* rzx.c: .rzx files
-   Copyright (c) 2002 Philip Kendall
+   Copyright (c) 2002-2003 Philip Kendall
 
    $Id$
 
@@ -30,8 +30,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/mman.h>
 
 #include "event.h"
 #include "fuse.h"
@@ -40,7 +38,6 @@
 #include "rzx.h"
 #include "settings.h"
 #include "snapshot.h"
-#include "types.h"
 #include "ui/ui.h"
 #include "utils.h"
 #include "z80/z80.h"
@@ -48,7 +45,7 @@
 
 /* The offset used to get the count of instructions from the R register;
    (instruction count) = R + rzx_instructions_offset */
-size_t rzx_instructions_offset;
+int rzx_instructions_offset;
 
 /* The number of bytes read via IN during the current frame */
 size_t rzx_in_count;
@@ -65,25 +62,17 @@ int rzx_recording;
 /* The filename we'll save this recording into */
 static char *rzx_filename;
 
-/* The .z80 format snapshot taken when we started the recording */
-static libspectrum_byte *rzx_snap;
-static size_t rzx_snap_length;
+/* The snapshot taken when we started the recording */
+static libspectrum_snap *rzx_snap;
 
 /* Are we currently playing back a .rzx file? */
 int rzx_playback;
 
-/* The .rzx frame we're currently playing */
-size_t rzx_current_frame;
-
-/* And the RZX frame we're getting IN data from */
-size_t rzx_data_frame;
+/* The number of instructions in the current .rzx playback frame */
+size_t rzx_instruction_count;
 
 /* The current RZX data */
 libspectrum_rzx *rzx;
-
-/* The information to be used as the creator in the RZX file */
-static const char *rzx_creator = "Fuse";
-static libspectrum_word rzx_major_version, rzx_minor_version;
 
 /* Fuse's DSA key */
 libspectrum_rzx_dsa_key rzx_key = {
@@ -94,77 +83,31 @@ libspectrum_rzx_dsa_key rzx_key = {
   "9A4E53CC249750C3194A38A3BE3EDEED28B171A9"	       /* x */
 };
 
+static int start_playback( libspectrum_rzx *rzx, libspectrum_snap *snap );
 static int recording_frame( void );
 static int playback_frame( void );
 static int counter_reset( void );
 
 int rzx_init( void )
 {
-  unsigned version[4] = { 0, 0, 0, 0 };
-  int i;
   libspectrum_error error;
 
-  error = libspectrum_rzx_alloc( &rzx );
-  if( error ) return 1;
+  error = libspectrum_rzx_alloc( &rzx ); if( error ) return error;
 
   rzx_recording = rzx_playback = 0;
 
   rzx_in_bytes = NULL;
   rzx_in_allocated = 0;
-  rzx_snap = 0;
-
-  sscanf( VERSION, "%u.%u.%u.%u",
-	  &version[0], &version[1], &version[2], &version[3] );
-
-  for( i=0; i<4; i++ ) if( version[i] > 0xff ) version[i] = 0xff;
-
-  rzx_major_version = version[0] * 0x100 + version[1];
-  rzx_minor_version = version[2] * 0x100 + version[3];
+  rzx_snap = NULL;
 
   return 0;
 }
 
 int rzx_start_recording( const char *filename, int embed_snapshot )
 {
+  int error; libspectrum_error libspec_error;
+
   if( rzx_playback ) return 1;
-
-  /* Note that we're recording */
-  rzx_recording = 1;
-
-  if( rzx_snap ) free( rzx_snap ); rzx_snap = 0;
-
-  /* If we're embedding a snapshot, create it now */
-  if( embed_snapshot ) {
-    
-    libspectrum_snap *snap;
-    int error;
-    libspectrum_error libspec_error;
-
-    libspec_error = libspectrum_snap_alloc( &snap );
-    if( libspec_error != LIBSPECTRUM_ERROR_NONE ) return 1;
-
-    error = snapshot_copy_to( snap ); if( error ) return 1;
-
-    libspec_error = libspectrum_z80_write( &rzx_snap, &rzx_snap_length, snap );
-    if( libspec_error != LIBSPECTRUM_ERROR_NONE ) {
-      ui_error( UI_ERROR_ERROR, "Error creating RZX embedded snapshot: %s",
-		libspectrum_error_message( libspec_error ) );
-      libspectrum_snap_free( snap ); rzx_snap = 0;
-      return 1;
-    }
-    
-    libspec_error = libspectrum_snap_free( snap );
-    if( libspec_error != LIBSPECTRUM_ERROR_NONE ) {
-      ui_error( UI_ERROR_ERROR, "Error from libspectrum_snap_destroy: %s",
-		libspectrum_error_message( libspec_error ) );
-      free( rzx_snap ); rzx_snap = 0;
-      return 1;
-    }
-  }
-
-  /* Start the count of instruction fetches here */
-  counter_reset();
-  rzx->tstates = tstates;
 
   /* Store the filename */
   rzx_filename = strdup( filename );
@@ -172,6 +115,28 @@ int rzx_start_recording( const char *filename, int embed_snapshot )
     ui_error( UI_ERROR_ERROR, "out of memory in rzx_start_recording" );
     return 1;
   }
+
+  /* If we're embedding a snapshot, create it now */
+  if( embed_snapshot ) {
+    
+    libspec_error = libspectrum_snap_alloc( &rzx_snap );
+    if( libspec_error != LIBSPECTRUM_ERROR_NONE ) return 1;
+
+    error = snapshot_copy_to( rzx_snap );
+    if( error ) {
+      libspectrum_snap_free( rzx_snap ); rzx_snap = NULL;
+      return 1;
+    }
+  }
+
+  /* Start the count of instruction fetches here */
+  counter_reset(); rzx_in_count = 0;
+
+  libspectrum_rzx_set_tstates( rzx, tstates );
+
+  /* Note that we're recording */
+  rzx_recording = 1;
+  ui_menu_activate_recording( 1 );
 
   return 0;
 }
@@ -184,18 +149,20 @@ int rzx_stop_recording( void )
   /* Stop recording data */
   rzx_recording = 0;
 
+  ui_menu_activate_recording( 0 );
+
   length = 0;
-  libspec_error = libspectrum_rzx_write(
-    rzx, &buffer, &length, rzx_snap, rzx_snap_length, rzx_creator,
-    rzx_major_version, rzx_minor_version, settings_current.rzx_compression,
-    &rzx_key
-  );
+  libspec_error = libspectrum_rzx_write( &buffer, &length,
+					 rzx, rzx_snap, fuse_creator,
+					 settings_current.rzx_compression,
+					 &rzx_key );
   if( libspec_error != LIBSPECTRUM_ERROR_NONE ) {
-    ui_error( UI_ERROR_ERROR, "error during libspectrum_rzx_write: %s",
-	      libspectrum_error_message( libspec_error ) );
     libspectrum_rzx_free( rzx );
+    if( rzx_snap ) libspectrum_snap_free( rzx_snap );
     return libspec_error;
   }
+
+  if( rzx_snap ) libspectrum_snap_free( rzx_snap );
 
   error = utils_write_file( rzx_filename, buffer, length );
   free( rzx_filename );
@@ -204,79 +171,101 @@ int rzx_stop_recording( void )
   free( buffer );
 
   libspec_error = libspectrum_rzx_free( rzx );
-  if( libspec_error != LIBSPECTRUM_ERROR_NONE ) {
-    ui_error( UI_ERROR_ERROR, "error during libspectrum_rzx_free: %s",
-	      libspectrum_error_message( libspec_error ) );
-    return libspec_error;
-  }
+  if( libspec_error != LIBSPECTRUM_ERROR_NONE ) return libspec_error;
 
   return 0;
 }
 
 int rzx_start_playback( const char *filename, int (*load_snap)(void) )
 {
-  libspectrum_byte *buffer; size_t length;
+  utils_file file;
   libspectrum_error libspec_error; int error;
   libspectrum_snap *snap = 0;
 
   if( rzx_recording) return 1;
 
-  error = utils_read_file( filename, &buffer, &length );
+  error = utils_read_file( filename, &file );
   if( error ) return error;
 
-  libspec_error = libspectrum_rzx_read( rzx, buffer, length, &snap, &rzx_key );
+  libspec_error = libspectrum_rzx_read( rzx, &snap, file.buffer, file.length,
+					&rzx_key );
   if( libspec_error != LIBSPECTRUM_ERROR_NONE ) {
-    ui_error( UI_ERROR_ERROR, "error during libspectrum_rzx_read: %s",
-	      libspectrum_error_message( libspec_error ) );
-    munmap( buffer, length );
+    utils_close_file( &file );
     return libspec_error;
   }
 
-  if( munmap( buffer, length ) == -1 ) {
-    ui_error( UI_ERROR_ERROR, "Couldn't munmap '%s': %s", filename,
-	      strerror( errno ) );
+  if( utils_close_file( &file ) ) {
     libspectrum_rzx_free( rzx );
     if( snap ) libspectrum_snap_free( snap );
     return 1;
   }
 
-  if( snap ) {			/* The RZX file contained a snapshot */
-    error = snapshot_copy_from( snap );
-    if( error ) {
-      libspectrum_rzx_free( rzx );
-      libspectrum_snap_free( snap );
-      return error;
-    }
-
-    error = libspectrum_snap_free( snap );
-    if( error != LIBSPECTRUM_ERROR_NONE ) {
-      ui_error( UI_ERROR_ERROR, "Error from libspectrum_snap_destroy: %s",
-		libspectrum_error_message( error ) );
-      free( snap );
-      return 1;
-    }
-  } else {			/* The RZX file had no snapshot */
-
-    if( load_snap ) {
-      error = load_snap();
-      if( error ) {
-	ui_error( UI_ERROR_ERROR, "Error reading snapshot: %s",
-		  libspectrum_error_message( error ) );
-	libspectrum_rzx_free( rzx );
-	return 1;
-      }
-    }
+  error = start_playback( rzx, snap );
+  if( error ) {
+    if( snap ) libspectrum_snap_free( snap );
+    libspectrum_rzx_free( rzx );
+    return error;
   }
 
+  if( snap ) {
+    error = libspectrum_snap_free( snap );
+    if( error ) { libspectrum_rzx_free( rzx ); return error; }
+  } else if( load_snap ) {
+    error = load_snap();
+    if( error ) { libspectrum_rzx_free( rzx ); return 1; }
+  }
+
+  return 0;
+}
+
+int
+rzx_start_playback_from_buffer( const unsigned char *buffer, size_t length )
+{
+  libspectrum_snap *snap;
+  int error;
+
+  if( rzx_recording ) return 0;
+
+  error = libspectrum_rzx_read( rzx, &snap, buffer, length, &rzx_key );
+  if( error ) return error;
+
+  error = start_playback( rzx, snap );
+  if( error ) {
+    if( snap ) libspectrum_snap_free( snap );
+    libspectrum_rzx_free( rzx );
+    return error;
+  }
+
+  if( snap ) {
+    error = libspectrum_snap_free( snap );
+    if( error ) { libspectrum_rzx_free( rzx ); return error; }
+  }
+
+  return 0;
+}
+
+static int
+start_playback( libspectrum_rzx *rzx, libspectrum_snap *snap )
+{
+  int error;
+
+  if( snap ) {
+    error = snapshot_copy_from( snap ); if( error ) return error;
+  }
+  
   /* Interrupts will now be generated by the RZX code */
   error = event_remove_type( EVENT_TYPE_INTERRUPT );
-  if( error ) { libspectrum_rzx_free( rzx ); return error; }
+  if( error ) return error;
 
   /* We're now playing this RZX file */
-  tstates = rzx->tstates;
+  if( libspectrum_rzx_start_playback( rzx ) ) return 1;
+
+  tstates = libspectrum_rzx_tstates( rzx );
+  rzx_instruction_count = libspectrum_rzx_instructions( rzx );
   rzx_playback = 1;
-  rzx_current_frame = rzx_data_frame = 0;
   counter_reset();
+
+  ui_menu_activate_recording( 1 );
 
   return 0;
 }
@@ -287,22 +276,20 @@ int rzx_stop_playback( int add_interrupt )
 
   rzx_playback = 0;
 
+  ui_menu_activate_recording( 0 );
+
   /* We've now finished with the RZX file, so add an interrupt event
      back in if we've been requested to do so; we don't if we just run
      out of frames, as this occurs just before a normal interrupt will
      do this for us */
   if( add_interrupt ) {
-    error = event_add( machine_current->timings.cycles_per_frame,
+    error = event_add( machine_current->timings.tstates_per_frame,
 		       EVENT_TYPE_INTERRUPT );
     if( error ) return error;
   }
 
   libspec_error = libspectrum_rzx_free( rzx );
-  if( libspec_error != LIBSPECTRUM_ERROR_NONE ) {
-    ui_error( UI_ERROR_ERROR, "libspec_error during libspectrum_rzx_free: %s",
-	      libspectrum_error_message( libspec_error ) );
-    return libspec_error;
-  }
+  if( libspec_error != LIBSPECTRUM_ERROR_NONE ) return libspec_error;
 
   return 0;
 }  
@@ -318,52 +305,42 @@ static int recording_frame( void )
 {
   libspectrum_error error;
 
-  error = libspectrum_rzx_frame( rzx, R + rzx_instructions_offset,
-				 rzx_in_count, rzx_in_bytes );
+  error = libspectrum_rzx_store_frame( rzx, R + rzx_instructions_offset,
+				       rzx_in_count, rzx_in_bytes );
   if( error ) return error;
 
   /* Reset the instruction counter */
-  counter_reset();
+  rzx_in_count = 0; counter_reset();
 
   return 0;
 }
 
 static int playback_frame( void )
 {
-  /* Check we read the correct number of INs during this frame */
-  if( rzx_in_count != rzx->frames[ rzx_data_frame ].count ) {
-    ui_error( UI_ERROR_ERROR,
-	      "Not enough INs during frame %d: expected %d, got %d",
-	      rzx_current_frame, rzx->frames[ rzx_data_frame ].count,
-	      rzx_in_count );
-    return rzx_stop_playback( 0 );
-  }
+  int error, finished;
 
-  /* Increment the frame count and see if we've finished with this file */
-  if( ++rzx_current_frame >= rzx->count ) {
+  error = libspectrum_rzx_playback_frame( rzx, &finished );
+  if( error ) return rzx_stop_playback( 0 );
+
+  if( finished ) {
     ui_error( UI_ERROR_INFO, "Finished RZX playback" );
     return rzx_stop_playback( 0 );
   }
 
-  /* Move the data frame pointer along, unless we're supposed to be
-     repeating the last frame */
-  if( !rzx->frames[ rzx_current_frame ].repeat_last )
-    rzx_data_frame = rzx_current_frame;
-
-  /* If we've got more frame to do, just reset the count and continue */
+  /* If we've got another frame to do, fetch the new instruction count and
+     continue */
+  rzx_instruction_count = libspectrum_rzx_instructions( rzx );
   counter_reset();
 
   return 0;
 }
 
-/* Reset the RZX counters; also, take this opportunity to normalise the
+/* Reset the RZX counter; also, take this opportunity to normalise the
    R register */
 static int counter_reset( void )
 {
   R &= 0x7f;		/* Clear all but the 7 lowest bits of the R register */
   rzx_instructions_offset = -R; /* Gives us a zero count */
-
-  rzx_in_count = 0;
 
   return 0;
 }
@@ -399,5 +376,8 @@ int rzx_end( void )
 {
   if( rzx_recording ) return rzx_stop_recording();
   if( rzx_playback  ) return rzx_stop_playback( 0 );
+
+  libspectrum_rzx_free( rzx );
+
   return 0;
 }

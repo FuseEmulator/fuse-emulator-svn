@@ -1,5 +1,6 @@
 /* fbdisplay.c: Routines for dealing with the linux fbdev display
-   Copyright (c) 2000-2002 Philip Kendall, Matan Ziv-Av, Darren Salt
+   Copyright (c) 2000-2003 Philip Kendall, Matan Ziv-Av, Darren Salt,
+			   Witold Filipczyk
 
    $Id$
 
@@ -42,13 +43,31 @@
 #include "fuse.h"
 #include "display.h"
 #include "screenshot.h"
+#include "ui/ui.h"
 #include "ui/uidisplay.h"
 #include "settings.h"
+
+/* The size of a 1x1 image in units of
+   DISPLAY_ASPECT WIDTH x DISPLAY_SCREEN_HEIGHT */
+int image_scale;
+
+/* The height and width of a 1x1 image in pixels */
+int image_width, image_height;
+
+/* A scaled copy of the image displayed on the Spectrum's screen */
+static WORD scaled_image[2*DISPLAY_SCREEN_HEIGHT][2*DISPLAY_SCREEN_WIDTH];
+static const ptrdiff_t scaled_pitch =
+                                     2 * DISPLAY_SCREEN_WIDTH * sizeof( WORD );
+
+/* Are we in a Timex display mode? */
+static int hires;
+
+static int register_scalers( void );
 
 /* rrrrrggggggbbbbb */
 static const short colours[] = {
   0x0000, 0x0018, 0xC000, 0xC018, 0x0600, 0x0618, 0xC600, 0xC618,
-  0x4208, 0x001F, 0xF800, 0xF81F, 0x07E0, 0x07FF, 0xFFE0, 0xFFFF
+  0x0000, 0x001F, 0xF800, 0xF81F, 0x07E0, 0x07FF, 0xFFE0, 0xFFFF
 };
 
 static int fb_fd = -1;		/* The framebuffer's file descriptor */
@@ -79,7 +98,33 @@ static const struct {
 
 static int fb_set_mode( void );
 
-int uidisplay_init(int width, int height)
+int uidisplay_init( int width, int height )
+{
+  int error;
+
+  hires = ( width == 640 ? 1 : 0 );
+
+  scaler_register_clear();
+  
+  image_width = width; image_height = height;
+  image_scale = width / DISPLAY_ASPECT_WIDTH;
+
+  error = register_scalers(); if( error ) return error;
+
+  display_ui_initialised = 1;
+
+  display_refresh_all();
+
+  return 0;
+}
+
+static int
+register_scalers( void )
+{
+  return 0;
+}
+
+int fbdisplay_init(void)
 {
   fb_fd = open( "/dev/fb0", O_RDWR );
   if( fb_fd == -1 ) {
@@ -195,92 +240,101 @@ fb_set_mode( void )
   return 1;
 }
 
-void uidisplay_putpixel(int x,int y,int colour)
+void
+uidisplay_hotswap_gfx_mode( void )
 {
-#ifdef HAVE_PNG_H
-  screenshot_screen[y][x] = colour;
-#endif			/* #ifdef HAVE_PNG_H */
-
-  if( IF_FB_WIDTH( 320 ) ) {
-    if( ( x & 1 ) == 0 )
-      *( image + 320 * y + (x >> 1) ) = colours[colour];
-  } else {
-    *( image + 640 * y + x ) = colours[colour];
-  }
+  return;
 }
 
 void
-uidisplay_line( int y )
+uidisplay_frame_end( void ) 
 {
-  switch( fb_resolution )
-  {
-  case FB_RES( 640, 480 ):
-    memcpy( gm +  2 * y      * display.xres_virtual, image + y * 640,
-	    640 * 2                                                   );
-    memcpy( gm + (2 * y + 1) * display.xres_virtual, image + y * 640,
-	    640 * 2                                                   );
-    break;
-  case FB_RES( 640, 240 ):
-    memcpy( gm +      y      * display.xres_virtual, image + y * 640,
-	    640 * 2                                                   );
-    break;
-  case FB_RES( 320, 240 ):
-    memcpy( gm +      y      * display.xres_virtual, image + y * 320,
-	    320 * 2                                                   );
-    break;
-  default:;		/* Shut gcc up */
-  }
+  return;
 }
 
 void
-uidisplay_lines( int start, int end )
+uidisplay_area( int x, int start, int width, int height)
 {
   int y;
+  
   switch( fb_resolution ) {
   case FB_RES( 640, 480 ):
-    for( y = start; y <= end; y++ )
+    for( y = start; y < start + height; y++ )
     {
-      memcpy( gm +   2 * y       * display.xres_virtual, image + y * 640,
-	      640 * 2                                                     );
-      memcpy( gm + ( 2 * y + 1 ) * display.xres_virtual, image + y * 640,
-	      640 * 2                                                     );
+      int i;
+      WORD *point;
+
+      if( hires ) {
+
+	for( i = 0, point = gm + y * display.xres_virtual + x;
+	     i < width;
+	     i++, point++ )
+	  *point = colours[display_image[y][x+i]];
+
+      } else {
+
+	for( i = 0, point = gm + 2 * y * display.xres_virtual + x * 2;
+	     i < width;
+	     i++, point += 2 )
+	  *  point       = *( point +     display.xres_virtual ) =
+	  *( point + 1 ) = *( point + 1 + display.xres_virtual ) = 
+	    colours[display_image[y][x+i]];
+
+      }
     }
     break;
+
   case FB_RES( 640, 240 ):
-    for( y = start; y <= end; y++ )
-      memcpy( gm +       y       * display.xres_virtual, image + y * 640,
-	      640 * 2                                                     );
+    for( y = start; y < start + height; y++ )
+    {
+      int i;
+      WORD *point;
+
+      if( hires ) {
+
+	for ( i = 0, point = gm + y * display.xres_virtual + x;
+	      i < width;
+	      i++, point++ )
+	  *point = colours[display_image[y*2][x+i]];
+
+      } else {
+
+	for( i = 0, point = gm + 2 * y * display.xres_virtual + x * 2;
+	     i < width;
+	     i++, point+=2 )
+	  *point = *(point+1) = colours[display_image[y][x+i]];
+
+      }
+    }
     break;
+
   case FB_RES( 320, 240 ):
-    for( y = start; y <= end; y++ )
-      memcpy( gm +       y       * display.xres_virtual, image + y * 320,
-	      320 * 2                                                     );
+    for( y = start; y < start + height; y++ )
+    {
+      int i;
+      WORD *point;
+
+      for( i = 0, point = gm + y * display.xres_virtual + x;
+	   i < width;
+	   i++, point++ )
+        *point = colours[display_image[y][x+i]];
+
+    }
     break;
+
   default:;		/* Shut gcc up */
   }
 }
 
-void uidisplay_set_border(int line, int pixel_from, int pixel_to, int colour)
+int
+uidisplay_end( void )
 {
-  int i;
-  WORD *ptr;
-  colour = colours[colour];
-
-  switch( fb_resolution ) {
-  case FB_RES( 640, 480 ):
-  case FB_RES( 640, 240 ):
-    ptr = image + line * 640 + pixel_from;
-    for( i = pixel_from; i < pixel_to; i++ ) *ptr++ = colour;
-    break;
-  case FB_RES( 320, 240 ):
-    ptr = image + line * 320 + pixel_from / 2;
-    for( i = pixel_from / 2; i < pixel_to / 2; i++ ) *ptr++ = colour;
-    break;
-  default:;		/* Shut gcc up */
-  }
+  display_ui_initialised = 0;
+  return 0;
 }
 
-int uidisplay_end(void)
+int
+fbdisplay_end( void )
 {
   if( fb_fd != -1 ) {
     if( got_orig_display ) ioctl( fb_fd, FBIOPUT_VSCREENINFO, &orig_display );

@@ -3,6 +3,8 @@
 # options.pl: generate options dialog boxes
 # $Id$
 
+# Copyright (c) 2002-2003 Philip Kendall
+
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -49,6 +51,7 @@ print Fuse::GPL( 'options.c: options dialog boxes',
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#include "compat.h"
 #include "fuse.h"
 #include "settings.h"
 #include "gtkui.h"
@@ -64,11 +67,12 @@ void
 gtkoptions_$_->{name}( GtkWidget *widget GCC_UNUSED, gpointer data GCC_UNUSED )
 {
   gtkoptions_$_->{name}_t dialog;
-  GtkWidget *ok_button, *cancel_button, *hbox, *text;
-  gchar buffer[4];
+  GtkWidget *ok_button, *cancel_button, *hbox, *text, *text2;
+  GtkAccelGroup *accel_group;
+  gchar buffer[80];
 
-  hbox = NULL; text = NULL;
-  buffer[0] = '\0';		/* Shut gcc up */
+  hbox = text = text2 = NULL;
+  buffer[0] = '\\0';		/* Shut gcc up */
   
   /* Firstly, stop emulation */
   fuse_emulation_pause();
@@ -99,17 +103,24 @@ CODE
 CODE
             } elsif( $type eq "Entry" ) {
 
+                # FIXME: Make the entry widget resize sensibly
+
 		print << "CODE";
-  dialog.$widget->{value} = gtk_entry_new_with_max_length( 3 );
-  snprintf( buffer, 4, "%d", settings_current.emulation_speed );
+  dialog.$widget->{value} = gtk_entry_new();
+  gtk_entry_set_max_length( GTK_ENTRY( dialog.$widget->{value} ),
+	   		    $widget->{data1} );
+  snprintf( buffer, $widget->{data1} + 1, "%d",
+	    settings_current.$widget->{value} );
   gtk_entry_set_text( GTK_ENTRY( dialog.$widget->{value} ), buffer );
 
   text = gtk_label_new( "$text" );
+  text2 = gtk_label_new( "$widget->{data2}" );
 
   hbox = gtk_hbox_new( FALSE, 5 );
   gtk_box_pack_start_defaults( GTK_BOX( hbox ), text );
   gtk_box_pack_start_defaults( GTK_BOX( hbox ), dialog.$widget->{value} );
-  
+  gtk_box_pack_start_defaults( GTK_BOX( hbox ), text2 );
+
   gtk_container_add( GTK_CONTAINER( GTK_DIALOG( dialog.dialog )->vbox ),
 		     hbox );
 CODE
@@ -141,9 +152,11 @@ CODE
 		      (gpointer) NULL );
 
   /* Allow Esc to cancel */
+  accel_group = gtk_accel_group_new();
+  gtk_window_add_accel_group( GTK_WINDOW( dialog.dialog ), accel_group );
+
   gtk_widget_add_accelerator( cancel_button, "clicked",
-                              gtk_accel_group_get_default(),
-                              GDK_Escape, 0, 0 );
+			      accel_group, GDK_Escape, 0, 0);
 
   /* Set the window to be modal and display it */
   gtk_window_set_modal( GTK_WINDOW( dialog.dialog ), TRUE );

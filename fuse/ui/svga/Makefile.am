@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-## Copyright (c) 2001 Philip Kendall
+## Copyright (c) 2001-2003 Philip Kendall
 
 ## $Id$
 
@@ -26,6 +26,8 @@ AUTOMAKE_OPTIONS = foreign
 
 noinst_LIBRARIES = libuisvga.a
 
+INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
+
 libuisvga_a_SOURCES = error.c svgadisplay.c svgakeyboard.c svgaui.c keysyms.c
 
 BUILT_SOURCES = keysyms.c
@@ -33,4 +35,4 @@ BUILT_SOURCES = keysyms.c
 keysyms.c: ../../keysyms.pl ../../keysyms.dat
 	@PERL@ ../../keysyms.pl svga ../../keysyms.dat > $@
 
-noinst_HEADERS = svgakeyboard.h
+noinst_HEADERS = svgadisplay.h svgakeyboard.h

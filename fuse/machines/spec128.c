@@ -1,5 +1,5 @@
 /* spec128.c: Spectrum 128K specific routines
-   Copyright (c) 1999-2002 Philip Kendall
+   Copyright (c) 1999-2003 Philip Kendall
 
    $Id$
 
@@ -28,19 +28,18 @@
 
 #include <stdio.h>
 
+#include <libspectrum.h>
+
 #include "ay.h"
+#include "compat.h"
 #include "display.h"
-#include "fuse.h"
 #include "joystick.h"
-#include "keyboard.h"
 #include "machine.h"
-#include "snapshot.h"
-#include "sound.h"
+#include "settings.h"
 #include "spec128.h"
 #include "spectrum.h"
-#include "z80/z80.h"
 
-static DWORD spec128_contend_delay( void );
+static libspectrum_dword spec128_contend_delay( void );
 
 spectrum_port_info spec128_peripherals[] = {
   { 0x0001, 0x0000, spectrum_ula_read, spectrum_ula_write },
@@ -51,47 +50,20 @@ spectrum_port_info spec128_peripherals[] = {
   { 0, 0, NULL, NULL } /* End marker. DO NOT REMOVE */
 };
 
-BYTE spec128_unattached_port( void )
+libspectrum_byte
+spec128_unattached_port( void )
 {
   return spectrum_unattached_port( 3 );
 }
 
-BYTE spec128_readbyte(WORD address)
-{
-  switch( address >> 14 ) {
-  case 0: return ROM[ machine_current->ram.current_rom][ address & 0x3fff ];
-  case 1: return RAM[                                5][ address & 0x3fff ];
-  case 2: return RAM[                                2][ address & 0x3fff ];
-  case 3: return RAM[machine_current->ram.current_page][ address & 0x3fff ];
-  }
-  return 0; /* Keep gcc happy */
-}
-
-BYTE spec128_read_screen_memory(WORD offset)
+libspectrum_byte
+spec128_read_screen_memory( libspectrum_word offset )
 {
   return RAM[machine_current->ram.current_screen][offset];
 }
 
-void spec128_writebyte(WORD address, BYTE b)
-{
-  int bank = address >> 14;
-
-  switch( bank ) {
-  case 0: return;
-  case 1: bank = 5;				    break;
-  case 2: bank = 2;				    break;
-  case 3: bank = machine_current->ram.current_page; break;
-  }
-
-  if( bank == machine_current->ram.current_screen &&
-      ( address & 0x3fff ) < 0x1b00 &&
-      RAM[ bank ][ address & 0x3fff ] != b )
-    display_dirty( ( address & 0x3fff ) | 0x4000 );
-    
-  RAM[ bank ][ address & 0x3fff ] = b;
-}
-
-DWORD spec128_contend_memory( WORD address )
+libspectrum_dword
+spec128_contend_memory( libspectrum_word address )
 {
   /* Contention occurs in pages 1,3, 5 and 7. 0x4000 to 0x7fff is always page
      5, whilst 0xc000 to 0xffff could have one of the contended pages in */
@@ -103,18 +75,20 @@ DWORD spec128_contend_memory( WORD address )
   return 0;
 }
 
-DWORD spec128_contend_port( WORD port )
+libspectrum_dword
+spec128_contend_port( libspectrum_word port )
 {
   /* Contention occurs for the ULA, or for the memory paging port */
   if( ( port & 0x0001 ) == 0x0000 ||
-      ( port & 0xc002 ) == 0x4000    ) return spec128_contend_delay();
+      ( port & 0x8002 ) == 0x0000    ) return spec128_contend_delay();
 
   return 0;
 }
 
-static DWORD spec128_contend_delay( void )
+static libspectrum_dword
+spec128_contend_delay( void )
 {
-  WORD tstates_through_line;
+  libspectrum_word tstates_through_line;
   
   /* No contention in the upper border */
   if( tstates < machine_current->line_times[ DISPLAY_BORDER_HEIGHT ] )
@@ -127,16 +101,16 @@ static DWORD spec128_contend_delay( void )
 
   /* Work out where we are in this line */
   tstates_through_line =
-    ( tstates + machine_current->timings.left_border_cycles ) %
-    machine_current->timings.cycles_per_line;
+    ( tstates + machine_current->timings.left_border ) %
+    machine_current->timings.tstates_per_line;
 
   /* No contention if we're in the left border */
-  if( tstates_through_line < machine_current->timings.left_border_cycles - 3 ) 
+  if( tstates_through_line < machine_current->timings.left_border - 3 ) 
     return 0;
 
   /* Or the right border or retrace */
-  if( tstates_through_line >= machine_current->timings.left_border_cycles +
-                              machine_current->timings.screen_cycles - 3 )
+  if( tstates_through_line >= machine_current->timings.left_border +
+                              machine_current->timings.horizontal_screen - 3 )
     return 0;
 
   /* We now know the ULA is reading the screen, so put in the appropriate
@@ -164,21 +138,20 @@ int spec128_init( fuse_machine_info *machine )
 
   machine->reset = spec128_reset;
 
-  machine_set_timings( machine, 3.54690e6, 24, 128, 24, 52, 311, 8865);
+  error = machine_set_timings( machine ); if( error ) return error;
 
   machine->timex = 0;
-  machine->ram.read_memory    = spec128_readbyte;
-  machine->ram.read_screen    = spec128_read_screen_memory;
-  machine->ram.write_memory   = spec128_writebyte;
-  machine->ram.contend_memory = spec128_contend_memory;
-  machine->ram.contend_port   = spec128_contend_port;
+  machine->ram.read_memory	     = spec128_readbyte;
+  machine->ram.read_memory_internal  = spec128_readbyte_internal;
+  machine->ram.read_screen	     = spec128_read_screen_memory;
+  machine->ram.write_memory          = spec128_writebyte;
+  machine->ram.write_memory_internal = spec128_writebyte_internal;
+  machine->ram.contend_memory	     = spec128_contend_memory;
+  machine->ram.contend_port	     = spec128_contend_port;
 
   error = machine_allocate_roms( machine, 2 );
   if( error ) return error;
-  error = machine_read_rom( machine, 0, "128-0.rom" );
-  if( error ) return error;
-  error = machine_read_rom( machine, 1, "128-1.rom" );
-  if( error ) return error;
+  machine->rom_length[0] = machine->rom_length[1] = 0x4000;
 
   machine->peripherals = spec128_peripherals;
   machine->unattached_port = spec128_unattached_port;
@@ -193,20 +166,26 @@ int spec128_init( fuse_machine_info *machine )
 
 int spec128_reset(void)
 {
+  int error;
+
   machine_current->ram.locked=0;
   machine_current->ram.current_page=0;
   machine_current->ram.current_rom=0;
   machine_current->ram.current_screen=5;
 
-  z80_reset();
-  sound_ay_reset();
-  snapshot_flush_slt();
+  error = machine_load_rom( &ROM[0], settings_current.rom_128_0,
+			    machine_current->rom_length[0] );
+  if( error ) return error;
+  error = machine_load_rom( &ROM[1], settings_current.rom_128_1,
+			    machine_current->rom_length[1] );
+  if( error ) return error;
 
   return 0;
 }
 
 void
-spec128_memoryport_write( WORD port GCC_UNUSED, BYTE b )
+spec128_memoryport_write( libspectrum_word port GCC_UNUSED,
+			  libspectrum_byte b )
 {
   int old_screen;
 

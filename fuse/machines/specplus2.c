@@ -30,9 +30,9 @@
 
 #include <libspectrum.h>
 
+#include "settings.h"
 #include "spec128.h"
 #include "specplus2.h"
-#include "spectrum.h"
 
 /* The +2 emulation just uses the 128K routines */
 
@@ -43,23 +43,22 @@ int specplus2_init( fuse_machine_info *machine )
   machine->machine = LIBSPECTRUM_MACHINE_PLUS2;
   machine->id = "plus2";
 
-  machine->reset = spec128_reset;
+  machine->reset = specplus2_reset;
 
-  machine_set_timings( machine, 3.54690e6, 24, 128, 24, 52, 311, 8865);
+  error = machine_set_timings( machine ); if( error ) return error;
 
   machine->timex = 0;
-  machine->ram.read_memory    = spec128_readbyte;
-  machine->ram.read_screen    = spec128_read_screen_memory;
-  machine->ram.write_memory   = spec128_writebyte;
-  machine->ram.contend_memory = spec128_contend_memory;
-  machine->ram.contend_port   = spec128_contend_port;
+  machine->ram.read_memory	     = spec128_readbyte;
+  machine->ram.read_memory_internal  = spec128_readbyte_internal;
+  machine->ram.read_screen	     = spec128_read_screen_memory;
+  machine->ram.write_memory          = spec128_writebyte;
+  machine->ram.write_memory_internal = spec128_writebyte_internal;
+  machine->ram.contend_memory	     = spec128_contend_memory;
+  machine->ram.contend_port	     = spec128_contend_port;
 
   error = machine_allocate_roms( machine, 2 );
   if( error ) return error;
-  error = machine_read_rom( machine, 0, "plus2-0.rom" );
-  if( error ) return error;
-  error = machine_read_rom( machine, 1, "plus2-1.rom" );
-  if( error ) return error;
+  machine->rom_length[0] = machine->rom_length[1] = 0x4000;
 
   machine->peripherals = spec128_peripherals;
   machine->unattached_port = spec128_unattached_port;
@@ -70,4 +69,24 @@ int specplus2_init( fuse_machine_info *machine )
 
   return 0;
 
+}
+
+int
+specplus2_reset( void )
+{
+  int error;
+
+  machine_current->ram.locked=0;
+  machine_current->ram.current_page=0;
+  machine_current->ram.current_rom=0;
+  machine_current->ram.current_screen=5;
+
+  error = machine_load_rom( &ROM[0], settings_current.rom_plus2_0,
+			    machine_current->rom_length[0] );
+  if( error ) return error;
+  error = machine_load_rom( &ROM[1], settings_current.rom_plus2_1,
+			    machine_current->rom_length[1] );
+  if( error ) return error;
+
+  return 0;
 }

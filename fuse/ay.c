@@ -1,5 +1,5 @@
 /* ay.c: AY-8-3912 routines
-   Copyright (c) 1999-2001 Philip Kendall
+   Copyright (c) 1999-2003 Philip Kendall
 
    $Id$
 
@@ -26,17 +26,18 @@
 
 #include <config.h>
 
-#include "fuse.h"
+#include "compat.h"
 #include "machine.h"
 #include "printer.h"
+#include "psg.h"
 #include "sound.h"
 
 /* What happens when the AY register port (traditionally 0xfffd on the 128K
    machines) is read from */
-BYTE
-ay_registerport_read( WORD port GCC_UNUSED )
+libspectrum_byte
+ay_registerport_read( libspectrum_word port GCC_UNUSED )
 {
-  static BYTE port_input = 0xbf;	/* always allow serial output */
+  static libspectrum_byte port_input = 0xbf; /* always allow serial output */
 
   /* The AY I/O ports return input directly from the port when in
      input mode; but in output mode, they return an AND between the
@@ -62,7 +63,7 @@ ay_registerport_read( WORD port GCC_UNUSED )
 
 /* And when it's written to */
 void
-ay_registerport_write( WORD port GCC_UNUSED, BYTE b )
+ay_registerport_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 {
   machine_current->ay.current_register = (b & 15);
 }
@@ -71,10 +72,12 @@ ay_registerport_write( WORD port GCC_UNUSED, BYTE b )
    machines) is written to; no corresponding read function as this
    always returns 0xff */
 void
-ay_dataport_write( WORD port GCC_UNUSED, BYTE b )
+ay_dataport_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 {
   machine_current->ay.registers[ machine_current->ay.current_register ] = b;
   sound_ay_write( machine_current->ay.current_register, b, tstates );
+  if( psg_recording )
+    psg_write_register( machine_current->ay.current_register, b );
 
   if(machine_current->ay.current_register==14)
     printer_serial_write( b );

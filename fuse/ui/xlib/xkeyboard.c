@@ -1,5 +1,5 @@
 /* xkeyboard.c: X routines for dealing with the keyboard
-   Copyright (c) 2000-2002 Philip Kendall
+   Copyright (c) 2000-2003 Philip Kendall
 
    $Id$
 
@@ -41,7 +41,9 @@
 #include "snapshot.h"
 #include "spectrum.h"
 #include "tape.h"
+#ifdef USE_WIDGET
 #include "widget/widget.h"
+#endif				/* #ifdef USE_WIDGET */
 #include "xkeyboard.h"
 
 void xkeyboard_keypress(XKeyEvent *event)
@@ -92,7 +94,7 @@ void xkeyboard_keypress(XKeyEvent *event)
     fuse_emulation_unpause();
     break;
   case XK_F5:
-    machine_current->reset();
+    machine_reset();
     break;
   case XK_F6:
     fuse_emulation_pause();
@@ -101,8 +103,7 @@ void xkeyboard_keypress(XKeyEvent *event)
     break;
   case XK_F7:
     fuse_emulation_pause();
-    widget_do( WIDGET_TYPE_FILESELECTOR, NULL );
-    if( widget_filesel_name ) tape_open( widget_filesel_name );
+    widget_apply_to_file( tape_open_default_autoload );
     fuse_emulation_unpause();
     break;
   case XK_F8:

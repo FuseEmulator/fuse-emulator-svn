@@ -19,7 +19,7 @@
 
 #include <config.h>
 
-#if defined(HAVE_SYS_SOUNDCARD_H)	/* OSS sound */
+#if !defined(UI_SDL) && defined(HAVE_SYS_SOUNDCARD_H)	/* OSS sound */
 
 #include <stdio.h>
 #include <string.h>
@@ -31,12 +31,9 @@
 #include <fcntl.h>
 #include <sys/soundcard.h>
 
-#include "types.h"
+#include "osssound.h"
 #include "sound.h"
 #include "spectrum.h"
-
-#include "osssound.h"
-
 
 /* using (8) 64 byte frags for 8kHz, scale up for higher */
 #define BASE_SOUND_FRAG_PWR	6
@@ -162,4 +159,4 @@ while(len)
   }
 }
 
-#endif	/* HAVE_SYS_SOUNDCARD_H */
+#endif	/* #if !defined(UI_SDL) && defined(HAVE_SYS_SOUNDCARD_H) */

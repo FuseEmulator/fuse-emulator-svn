@@ -41,7 +41,9 @@
 #include "snapshot.h"
 #include "spectrum.h"
 #include "tape.h"
+#ifdef USE_WIDGET
 #include "widget/widget.h"
+#endif				/* #ifdef USE_WIDGET */
 
 static void svgakeyboard_keystroke(int scancode, int press);
 static void svgakeyboard_keypress(int keysym);
@@ -64,14 +66,14 @@ static void svgakeyboard_keystroke(int scancode, int press)  {
 
 static void svgakeyboard_keypress(int keysym)
 {
-  keysyms_key_info *ptr;
+  const keysyms_key_info *ptr;
 
   ptr=keysyms_get_data(keysym);
 
   if( ptr ) {
 
     if( widget_level >= 0 ) {
-      widget_keyhandler( ptr->key1, ptr2->key2 );
+      widget_keyhandler( ptr->key1, ptr->key2 );
     } else {
       if(ptr->key1 != KEYBOARD_NONE) keyboard_press(ptr->key1);
       if(ptr->key2 != KEYBOARD_NONE) keyboard_press(ptr->key2);
@@ -104,7 +106,7 @@ static void svgakeyboard_keypress(int keysym)
     fuse_emulation_unpause();
     break;
   case SCANCODE_F5:
-    machine_current->reset();
+    machine_reset();
     break;
   case SCANCODE_F6:
     fuse_emulation_pause();
@@ -113,7 +115,7 @@ static void svgakeyboard_keypress(int keysym)
     break;
   case SCANCODE_F7:
     fuse_emulation_pause();
-    widget_apply_to_file( tape_open );
+    widget_apply_to_file( tape_open_default_autoload );
     fuse_emulation_unpause();
     break;
   case SCANCODE_F8:
@@ -134,7 +136,7 @@ static void svgakeyboard_keypress(int keysym)
 
 static void svgakeyboard_keyrelease(int keysym)
 {
-  keysyms_key_info *ptr;
+  const keysyms_key_info *ptr;
 
   ptr=keysyms_get_data(keysym);
 

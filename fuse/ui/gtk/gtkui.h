@@ -1,5 +1,5 @@
 /* gtkui.h: GTK+ routines for dealing with the user interface
-   Copyright (c) 2000-2002 Philip Kendall, Russell Marks
+   Copyright (c) 2000-2003 Philip Kendall, Russell Marks
 
    $Id$
 
@@ -38,11 +38,14 @@
 extern GtkWidget* gtkui_window;
 extern GtkWidget* gtkui_drawing_area;
 
-extern GdkGC *gtkdisplay_gc;
-extern unsigned long gtkdisplay_colours[];
-
 void gtkui_destroy_widget_and_quit( GtkWidget *widget, gpointer data );
+char* gtkui_fileselector_get_filename( const char *title );
+
+void gtkui_load_binary_data( GtkWidget *widget, gpointer data );
+void gtkui_save_binary_data( GtkWidget *widget, gpointer data );
+int gtkui_confirm( const char *string );
 void gtk_tape_browse( GtkWidget *widget, gpointer data );
+void gtkui_roms( GtkWidget *widget, gpointer data );
 
 int gtkui_picture( const char *filename, int border );
 

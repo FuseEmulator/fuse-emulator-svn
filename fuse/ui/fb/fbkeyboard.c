@@ -45,7 +45,9 @@
 #include "snapshot.h"
 #include "spectrum.h"
 #include "tape.h"
+#ifdef USE_WIDGET
 #include "widget/widget.h"
+#endif				/* #ifdef USE_WIDGET */
 
 static struct termios old_ts;
 static int got_old_ts = 0;
@@ -153,7 +155,7 @@ fbkeyboard_keypress( int keysym )
     fuse_emulation_unpause();
     break;
   case 0x3F:			/* F5 */
-    machine_current->reset();
+    machine_reset();
     break;
   case 0x40:			/* F6 */
     fuse_emulation_pause();
@@ -162,7 +164,7 @@ fbkeyboard_keypress( int keysym )
     break;
   case 0x41:			/* F7 */
     fuse_emulation_pause();
-    widget_apply_to_file( tape_open );
+    widget_apply_to_file( tape_open_default_autoload );
     fuse_emulation_unpause();
     break;
   case 0x42:			/* F8 */

@@ -26,8 +26,9 @@ AUTOMAKE_OPTIONS = foreign
 
 noinst_LIBRARIES = libwidget.a
 
-libwidget_a_SOURCES = browse.c error.c filesel.c menu_data.c\
-picture.c widget.c menu.c options.c select.c
+libwidget_a_SOURCES = browse.c debugger.c error.c filesel.c menu_data.c \
+picture.c widget.c menu.c options.c select.c text.c \
+	roms.c scaler.c
 
 INCLUDES = @GTK_CFLAGS@ @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
 
@@ -39,4 +40,5 @@ options.c: options.pl ../ui/options.dat ../perl/Fuse.pm ../perl/Fuse/Dialog.pm
 options.h: options-header.pl ../ui/options.dat ../perl/Fuse.pm ../perl/Fuse/Dialog.pm
 	@PERL@ options-header.pl ../ui/options.dat > options.h
 
-noinst_HEADERS = widget.h options.h options.pl options-header.pl
+noinst_HEADERS = widget.h widget_internals.h \
+		 options.h options.pl options-header.pl

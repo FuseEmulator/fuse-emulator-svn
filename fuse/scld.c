@@ -1,5 +1,5 @@
 /* scld.c: Routines for handling the Timex SCLD
-   Copyright (c) 2002 Fredrick Meunier, Philip Kendall
+   Copyright (c) 2002-2003 Fredrick Meunier, Philip Kendall, Witold Filipczyk
 
    $Id$
 
@@ -26,111 +26,158 @@
 #include <config.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "scld.h"
+#include "compat.h"
 #include "display.h"
-#include "fuse.h"
+#include "scld.h"
 
-BYTE scld_altdfile   = 0;
-BYTE scld_extcolour  = 0;
-BYTE scld_hires      = 0;
-BYTE scld_intdisable = 0;
-BYTE scld_altmembank = 0;
+scld scld_last_dec;                 /* The last byte sent to Timex DEC port */
 
-BYTE scld_screenmode = 0;
+libspectrum_byte scld_last_hsr = 0; /* The last byte sent to Timex HSR port */
 
-BYTE scld_last_dec   = 0;           /* The last byte sent to Timex DEC port */
+libspectrum_byte timex_fake_bank[0x2000];
 
-BYTE scld_last_hsr   = 0;           /* The last byte sent to Timex HSR port */
+timex_mem timex_exrom_dock[8];
+timex_mem timex_exrom[8];
+timex_mem timex_dock[8];
+timex_mem timex_home[8];
+timex_mem timex_memory[8];
 
-BYTE
-scld_dec_read( WORD port GCC_UNUSED )
+libspectrum_byte
+scld_dec_read( libspectrum_word port GCC_UNUSED )
 {
-  return scld_last_dec;
+  return scld_last_dec.byte;
 }
 
 void
-scld_dec_write( WORD port GCC_UNUSED, BYTE b )
+scld_dec_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 {
-  int old_dec       = scld_last_dec;
-  BYTE old_hirescol = hires_get_attr();
-  BYTE ink,paper;
+  scld old_dec = scld_last_dec;
+  libspectrum_byte ink,paper;
 
-  old_dec        &= (ALTDFILE|EXTCOLOUR|HIRES);
-
-  scld_last_dec   = b;
-
-  scld_altdfile   = scld_last_dec & ALTDFILE;
-  scld_extcolour  = scld_last_dec & EXTCOLOUR;
-  scld_hires      = scld_last_dec & HIRES;
-  scld_intdisable = scld_last_dec & INTDISABLE;
-  scld_altmembank = scld_last_dec & ALTMEMBANK;
-
-  scld_screenmode = scld_last_dec & (ALTDFILE|EXTCOLOUR|HIRES);
+  scld_last_dec.byte = b;
 
   /* If we changed the active screen, or change the colour in hires
    * mode mark the entire display file as dirty so we redraw it on
    * the next pass */
-  if((scld_screenmode != old_dec)
-       || (scld_hires && (old_hirescol != hires_get_attr()))) {
+  if((scld_last_dec.mask.scrnmode != old_dec.mask.scrnmode)
+       || (scld_last_dec.name.hires &&
+           (scld_last_dec.mask.hirescol != old_dec.mask.hirescol))) {
     display_refresh_all();
   }
 
-  display_parse_attr(hires_get_attr(),&ink,&paper);
-  display_set_hires_border(paper);
-}
+  if( scld_last_dec.name.altmembank != old_dec.name.altmembank ) {
+    int i;
+    
+    if( scld_last_dec.name.altmembank ) {
+      for( i = 0; i < 8; i++ ) {
+        timex_exrom_dock[i] = timex_exrom[i];
+      }
+    } else {
+      for( i = 0; i < 8; i++ ) {
+        timex_exrom_dock[i] = timex_dock[i];
+      }
+    }
+    scld_hsr_write( 0xf4, scld_last_hsr );
+  }
 
-void scld_reset(void)
-{
-  scld_altdfile   = 0;
-  scld_extcolour  = 0;
-  scld_hires      = 0;
-  scld_intdisable = 0;
-  scld_altmembank = 0;
-
-  scld_screenmode = 0;
-
-  scld_last_dec   = 0;
+  display_parse_attr( hires_get_attr(), &ink, &paper );
+  display_set_hires_border( paper );
 }
 
 void
-scld_hsr_write( WORD port GCC_UNUSED, BYTE b )
+scld_reset(void)
 {
-  scld_last_hsr = b;
+  scld_last_dec.byte = 0;
 }
 
-BYTE
-scld_hsr_read( WORD port GCC_UNUSED )
+void
+scld_hsr_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
+{
+  int i;
+  
+  scld_last_hsr = b;
+
+  for( i = 0; i < 8; i++ ) {
+    if( b & (1<<i) ) {
+      timex_memory[i] = timex_exrom_dock[i];
+    } else {
+      timex_memory[i] = timex_home[i];
+    }
+  }
+}
+
+libspectrum_byte
+scld_hsr_read( libspectrum_word port GCC_UNUSED )
 {
   return scld_last_hsr;
 }
 
-BYTE hires_get_attr(void)
+libspectrum_byte
+hires_get_attr( void )
 {
-  switch (scld_last_dec & HIRESCOLMASK)
+  return( hires_convert_dec( scld_last_dec.byte ) );
+}
+
+libspectrum_byte
+hires_convert_dec( libspectrum_byte attr )
+{
+  scld colour;
+
+  colour.byte = attr;
+
+  switch ( colour.mask.hirescol )
   {
-    case YELLOWBLUE:
-      return (BYTE) 0x71;
-      break;
-    case CYANRED:
-      return (BYTE) 0x6A;
-      break;
-    case GREENMAGENTA:
-      return (BYTE) 0x63;
-      break;
-    case MAGENTAGREEN:
-      return (BYTE) 0x5C;
-      break;
-    case REDCYAN:
-      return (BYTE) 0x55;
-      break;
-    case BLUEYELLOW:
-      return (BYTE) 0x4E;
-      break;
-    case BLACKWHITE:
-      return (BYTE) 0x47;
-      break;
-    default:  /* WHITEBLACK */
-      return (BYTE) 0x78;
+    case BLACKWHITE:   return 0x47;
+    case BLUEYELLOW:   return 0x4e;
+    case REDCYAN:      return 0x55;
+    case MAGENTAGREEN: return 0x5c;
+    case GREENMAGENTA: return 0x63;
+    case CYANRED:      return 0x6a;
+    case YELLOWBLUE:   return 0x71;
+    default:	       return 0x78; /* WHITEBLACK */
+  }
+}
+
+void
+scld_dock_free( void )
+{
+  size_t i;
+
+  for( i = 0; i < 8; i++ ) {
+    if( timex_dock[i].allocated ) {
+      free( timex_dock[i].page );
+      timex_dock[i].page = 0;
+      timex_dock[i].allocated = 0;
+    }
+  }
+}
+
+void
+scld_exrom_free( void )
+{
+  size_t i;
+
+  for( i = 0; i < 8; i++ ) {
+    if( timex_exrom[i].allocated ) {
+      free( timex_exrom[i].page );
+      timex_exrom[i].page = 0;
+      timex_exrom[i].allocated = 0;
+    }
+  }
+}
+
+void
+scld_home_free( void )
+{
+  size_t i;
+
+  for( i = 0; i < 8; i++ ) {
+    if( timex_home[i].allocated ) {
+      free( timex_home[i].page );
+      timex_home[i].page = 0;
+      timex_home[i].allocated = 0;
+    }
   }
 }
