@@ -119,3 +119,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 in libspectrum.h; makes it easy to include from other projects.
 20031017 rzx.c: write RZX version number as 0.12 (as opposed to 0.13) if
 	 we're not signing the data.
+20031019 Transparent reading of gzipped files.

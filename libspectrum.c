@@ -293,8 +293,49 @@ libspectrum_machine_capabilities( libspectrum_machine type )
 /* Given a buffer and optionally a filename, make a best guess as to
    what sort of file this is */
 libspectrum_error
+libspectrum_identify_file_with_class(
+  libspectrum_id_t *type, libspectrum_class_t *class,
+  const char *filename, const unsigned char *buffer, size_t length )
+{
+  libspectrum_error error;
+  char *new_filename; unsigned char *new_buffer; size_t new_length;
+
+  error = libspectrum_identify_file_raw( type, filename, buffer, length );
+  if( error ) return error;
+
+  error = libspectrum_identify_class( class, *type );
+  if( error ) return error;
+
+  if( *class != LIBSPECTRUM_CLASS_COMPRESSED ) return LIBSPECTRUM_ERROR_NONE;
+
+  error = libspectrum_uncompress_file( &new_buffer, &new_length, &new_filename,
+				       *type, buffer, length, filename );
+  if( error ) return error;
+
+  error = libspectrum_identify_file_with_class( type, class, new_filename,
+						new_buffer, new_length );
+  if( error ) return error;
+
+  free( new_filename ); free( new_buffer );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+/* Identify a file, but without worrying about its class */
+libspectrum_error
 libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 			   const unsigned char *buffer, size_t length )
+{
+  libspectrum_class_t class;
+
+  return libspectrum_identify_file_with_class( type, &class, filename,
+					       buffer, length );
+}
+
+/* Identify a file without attempting to decompress it */
+libspectrum_error
+libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
+			       const unsigned char *buffer, size_t length )
 {
   struct type {
 
@@ -328,6 +369,8 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_DISK_DSK,      "dsk", 3, NULL,		    0, 0, 0 },
       { LIBSPECTRUM_ID_DISK_SCL,      "scl", 3, "SINCLAIR",         0, 8, 4 },
       { LIBSPECTRUM_ID_DISK_TRD,      "trd", 3, NULL,		    0, 0, 0 },
+
+      { LIBSPECTRUM_ID_COMPRESSED_GZ, "gz",  3, "\x1f\x8b",	    0, 2, 4 },
 
       { -1 }, /* End marker */
 
@@ -386,6 +429,9 @@ libspectrum_identify_class( libspectrum_class_t *class, libspectrum_id_t type )
   case LIBSPECTRUM_ID_CARTRIDGE_DCK:
     *class = LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX; return 0;
 
+  case LIBSPECTRUM_ID_COMPRESSED_GZ:
+    *class = LIBSPECTRUM_CLASS_COMPRESSED; return 0;
+
   case LIBSPECTRUM_ID_DISK_DSK:
     *class = LIBSPECTRUM_CLASS_DISK_PLUS3; return 0;
 
@@ -415,6 +461,61 @@ libspectrum_identify_class( libspectrum_class_t *class, libspectrum_id_t type )
   libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			   "Unknown file type %d", type );
   return LIBSPECTRUM_ERROR_UNKNOWN;
+}
+
+libspectrum_error
+libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
+			     char **new_filename, libspectrum_id_t type,
+			     const unsigned char *old_buffer,
+			     size_t old_length, const char *old_filename )
+{
+  libspectrum_class_t class;
+  libspectrum_error error;
+
+  error = libspectrum_identify_class( &class, type );
+  if( error ) return error;
+
+  if( class != LIBSPECTRUM_CLASS_COMPRESSED ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "file type %d is not a compressed type", type );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  if( new_filename && old_filename ) {
+    *new_filename = strdup( old_filename );
+    if( !*new_filename ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			       "out of memory at %s:%d", __FILE__, __LINE__ );
+      return LIBSPECTRUM_ERROR_MEMORY;
+    }
+  }
+
+  /* Tells the inflation routines to allocate memory for us */
+  *new_length = 0;
+  
+  switch( type ) {
+
+  case LIBSPECTRUM_ID_COMPRESSED_GZ:
+    if( new_filename ) {
+      if( strlen( *new_filename ) >= 3 &&
+	  !strcasecmp( &(*new_filename)[ strlen( *new_filename ) - 3 ],
+		       ".gz" ) )
+	(*new_filename)[ strlen( *new_filename ) - 3 ] = '\0';
+    }
+      
+    error = libspectrum_gzip_inflate( old_buffer, old_length,
+				      new_buffer, new_length );
+    if( error ) { free( new_filename ); return error; }
+    break;
+
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "unknown compressed type %d", type );
+    free( new_filename );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
 }
 
 /* Ensure there is room for `requested' characters after the current
