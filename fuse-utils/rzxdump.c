@@ -146,30 +146,11 @@ do_file( const char *filename )
 
     switch( id ) {
 
-    case 0x10:
-      error = read_creator_block( &ptr, end );
-      if( error ) { munmap( buffer, length ); return 1; }
-      break;
-
-    case 0x30:
-      error = read_snapshot_block( &ptr, end );
-      if( error ) { munmap( buffer, length ); return 1; }
-      break;
-
-    case 0x80:
-      error = read_input_block( &ptr, end );
-      if( error ) { munmap( buffer, length ); return 1; }
-      break;
-
-    case 0xfe:
-      error = read_sign_start_block( &ptr, end );
-      if( error ) { munmap( buffer, length ); return 1; }
-      break;
-
-    case 0xff:
-      error = read_sign_end_block( &ptr, end );
-      if( error ) { munmap( buffer, length ); return 1; }
-      break;
+    case 0x10: error = read_creator_block( &ptr, end ); break; 
+    case 0x20: error = read_sign_start_block( &ptr, end ); break;
+    case 0x21: error = read_sign_end_block( &ptr, end ); break;
+    case 0x30: error = read_snapshot_block( &ptr, end ); break;
+    case 0x80: error = read_input_block( &ptr, end ); break;
 
     default:
       fprintf( stderr, "%s: Unknown block type 0x%02x\n", progname, id );
@@ -178,6 +159,7 @@ do_file( const char *filename )
 
     }
 
+    if( error ) { munmap( buffer, length ); return 1; }
   }
 
   if( munmap( buffer, length ) == -1 ) {
