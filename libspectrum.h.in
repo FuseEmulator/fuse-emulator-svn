@@ -237,6 +237,7 @@ libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
 
 /* The flags that may be returned from libspectrum_snap_write() */
 extern const int LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+extern const int LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
 
 /* Accessor functions */
 LIBSPECTRUM_SNAP_ACCESSORS
