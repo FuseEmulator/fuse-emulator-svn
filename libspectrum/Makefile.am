@@ -54,32 +54,37 @@ libspectrum_la_SOURCES = bzip2.c \
 			 zlib.c \
 			 zxs.c
 
-libspectrum_la_LDFLAGS = -version-info 4:0:2
+libspectrum_la_LDFLAGS = -version-info 4:0:2 -no-undefined
 
 libspectrum_la_LIBADD = myglib/libmyglib.la
 
 BUILT_SOURCES = libspectrum.h snap_accessors.c tape_accessors.c tape_set.c
 
-include_HEADERS = libspectrum.h
+nodist_include_HEADERS = libspectrum.h
 noinst_HEADERS = internals.h
 
 noinst_PROGRAMS = make-perl
 
-libspectrum.h: libspectrum.h.in generate.pl snap_accessors.txt tape_accessors.txt
-	@PERL@ -p generate.pl libspectrum.h.in > libspectrum.h
+AM_CFLAGS = -DLIBSPECTRUM_EXPORTS
 
-generate.pl: make-perl generate.pl.in
-	./make-perl > generate.pl
-	cat generate.pl.in >> generate.pl
+make-perl$(EXEEXT): make-perl.c
+	$(CC_FOR_BUILD) -I. -o $@ $<
+
+libspectrum.h: libspectrum.h.in generate.pl snap_accessors.txt tape_accessors.txt config.h
+	@PERL@ -p generate.pl libspectrum.h.in > $@
+
+generate.pl: make-perl$(EXEEXT) generate.pl.in
+	./make-perl$(EXEEXT) > $@
+	cat generate.pl.in >> $@
 
 snap_accessors.c: accessor.pl snap_accessors.txt
-	@PERL@ accessor.pl snap_accessors.txt > snap_accessors.c
+	@PERL@ accessor.pl snap_accessors.txt > $@
 
 tape_accessors.c: tape_accessors.pl tape_accessors.txt
-	@PERL@ tape_accessors.pl tape_accessors.txt > tape_accessors.c
+	@PERL@ tape_accessors.pl tape_accessors.txt > $@
 
 tape_set.c: tape_set.pl tape_accessors.txt
-	@PERL@ tape_set.pl tape_accessors.txt > tape_set.c
+	@PERL@ tape_set.pl tape_accessors.txt > $@
 
 INCLUDES = @GLIB_CFLAGS@
 

@@ -302,3 +302,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (Fred).
 20050204 szx.c,rzx.c: More compilation fixes when zlib not present (Fred).
 20050204 libspectrum.h.in: More Win32 compilation fixes (Fred).
+20050204 configure.in,Makefile.am: More Win32 compilation fixes (Fred).
+20050204 configure.in,Makefile.am: Mark libspectrum.h as a nodist file instead
+	 of deleting it when configure is run, remember to make distribution
+	 tarballs with 'make dist-gzip' (Fred).
