@@ -790,17 +790,18 @@ rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
   { 
     int error; size_t mpi_length;
 
-    mpi_length = length;
-    error = gcry_mpi_scan( &signature->r, GCRYMPI_FMT_PGP, *ptr, &mpi_length );
+    error = gcry_mpi_scan( &signature->r, GCRYMPI_FMT_PGP, *ptr, length,
+			   &mpi_length );
     if( error ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			       "error reading 'r': %s",
 			       gcry_strerror( error ) );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
-    (*ptr) += mpi_length; length -= mpi_length; mpi_length = length;
+    (*ptr) += mpi_length; length -= mpi_length;
 
-    error = gcry_mpi_scan( &signature->s, GCRYMPI_FMT_PGP, *ptr, &mpi_length );
+    error = gcry_mpi_scan( &signature->s, GCRYMPI_FMT_PGP, *ptr, length,
+			   &mpi_length );
     if( error ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			       "error reading 's': %s",

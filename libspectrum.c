@@ -1,5 +1,5 @@
 /* libspectrum.c: Some general routines
-   Copyright (c) 2001-2002 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2003 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -34,7 +34,7 @@
 #include <gcrypt.h>
 
 /* The version of libgcrypt that we need */
-static const char *MIN_GCRYPT_VERSION = "1.1.0";
+static const char *MIN_GCRYPT_VERSION = "1.1.42";
 
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
