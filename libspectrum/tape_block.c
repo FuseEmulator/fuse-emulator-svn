@@ -220,8 +220,8 @@ static libspectrum_error
 rom_init( libspectrum_tape_rom_block *block )
 {
   /* Initialise the number of pilot pulses */
-  block->edge_count = block->data[0] & 0x80         ?
-                      LIBSPECTRUM_TAPE_PILOTS_DATA  :
+  block->edge_count = block->length && block->data[0] & 0x80 ?
+                      LIBSPECTRUM_TAPE_PILOTS_DATA           :
                       LIBSPECTRUM_TAPE_PILOTS_HEADER;
 
   /* And that we're just before the start of the data */
