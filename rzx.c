@@ -32,6 +32,15 @@
 
 #include "internals.h"
 
+/* The block types which can appear in RZX files */
+typedef enum libspectrum_rzx_block_t {
+
+  LIBSPECTRUM_RZX_CREATOR_BLOCK = 0x10,
+  LIBSPECTRUM_RZX_SNAPSHOT_BLOCK = 0x30,
+  LIBSPECTRUM_RZX_INPUT_BLOCK = 0x80,
+
+} libspectrum_rzx_block_t;
+
 typedef struct libspectrum_rzx_frame_t {
 
   size_t instructions;
