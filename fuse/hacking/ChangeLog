@@ -484,3 +484,5 @@
 20040114 ChangeLog: bring up to date (Release-0_6_2-branch).
 20040115 ui/uijoystick.c, ui/svga/svgajoystick.c: ui_joystick_end returns
 	 void (Release-0_6_2-branch) (Witold).
+20040115 screenshot.c: make .png screenshots save in black and white if
+	 colour TV mode disabled (Release-0_6_2-branch).
