@@ -810,7 +810,7 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
 
   /* .z80 format doesn't store the 'halted' state */
   if( libspectrum_snap_halted( snap ) )
-    *out_flags |= LIBSPECTRUM_FLAG_MINOR_INFO_LOSS;
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
 
   error = write_header( buffer, &ptr, length, snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
