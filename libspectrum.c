@@ -250,6 +250,44 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+/* What generic 'class' of file is this file */
+libspectrum_error
+libspectrum_identify_class( libspectrum_class_t *class, libspectrum_id_t type )
+{
+  switch( type ) {
+
+  case LIBSPECTRUM_ID_UNKNOWN:
+    *class = LIBSPECTRUM_CLASS_UNKNOWN; return 0;
+  
+  case LIBSPECTRUM_ID_CARTRIDGE_DCK:
+    *class = LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX; return 0;
+
+  case LIBSPECTRUM_ID_DISK_DSK:
+    *class = LIBSPECTRUM_CLASS_DISK_PLUS3; return 0;
+
+  case LIBSPECTRUM_ID_DISK_SCL:
+  case LIBSPECTRUM_ID_DISK_TRD:
+    *class = LIBSPECTRUM_CLASS_DISK_TRDOS; return 0;
+
+  case LIBSPECTRUM_ID_RECORDING_RZX:
+    *class = LIBSPECTRUM_CLASS_RECORDING; return 0;
+
+  case LIBSPECTRUM_ID_SNAPSHOT_SNA:
+  case LIBSPECTRUM_ID_SNAPSHOT_Z80:
+    *class = LIBSPECTRUM_CLASS_SNAPSHOT; return 0;
+
+  case LIBSPECTRUM_ID_TAPE_TAP:
+  case LIBSPECTRUM_ID_TAPE_TZX:
+  case LIBSPECTRUM_ID_TAPE_WARAJEVO:
+    *class = LIBSPECTRUM_CLASS_TAPE; return 0;
+
+  }
+
+  libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			   "Unknown file type %d", type );
+  return LIBSPECTRUM_ERROR_UNKNOWN;
+}
+
 /* Ensure there is room for `requested' characters after the current
    position `ptr' in `buffer'. If not, realloc() and update the
    pointers as necessary */

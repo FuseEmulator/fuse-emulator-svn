@@ -109,9 +109,27 @@ typedef enum libspectrum_id_t {
 
 } libspectrum_id_t;
 
+/* And 'classes' of file */
+typedef enum libspectrum_class_t {
+
+  LIBSPECTRUM_CLASS_UNKNOWN,
+
+  LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX,	/* Timex cartridges */
+  LIBSPECTRUM_CLASS_DISK_PLUS3,		/* +3 disk */
+  LIBSPECTRUM_CLASS_DISK_TRDOS,		/* TR-DOS disk */
+  LIBSPECTRUM_CLASS_RECORDING,		/* Input recording */
+  LIBSPECTRUM_CLASS_SNAPSHOT,		/* Snapshot */
+  LIBSPECTRUM_CLASS_TAPE,		/* Tape */
+
+} libspectrum_class_t;
+
 libspectrum_error
 libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
                            const unsigned char *buffer, size_t length );
+
+libspectrum_error
+libspectrum_identify_class( libspectrum_class_t *class,
+                            libspectrum_id_t type );
 
 /* Different Spectrum variants and their capabilities */
 
