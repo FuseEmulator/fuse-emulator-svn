@@ -1,5 +1,5 @@
 /* specplus3.h: Spectrum +2A/+3 specific routines
-   Copyright (c) 1999-2001 Philip Kendall
+   Copyright (c) 1999-2002 Philip Kendall
 
    $Id$
 
@@ -30,6 +30,8 @@
 #ifndef FUSE_TYPES_H
 #include "types.h"
 #endif			/* #ifndef FUSE_TYPES_H */
+
+BYTE specplus3_unattached_port( void );
 
 BYTE specplus3_readbyte(WORD address);
 BYTE specplus3_read_screen_memory(WORD offset);
