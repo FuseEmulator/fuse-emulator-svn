@@ -153,3 +153,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 #884355) (libspectrum_0_2_1-branch) (Fred).
 20040127 configure.in: use glib 2.x if available
 	 (libspectrum_0_2_1-branch).
+20040129 libspectrum.c: prevent the 'Secure memory is not locked into
+	 core' message appearing (libspectrum_0_2_1-branch).
