@@ -152,10 +152,11 @@ int rzx_stop_recording( void )
   ui_menu_activate_recording( 0 );
 
   length = 0;
-  libspec_error = libspectrum_rzx_write( &buffer, &length,
-					 rzx, rzx_snap, fuse_creator,
-					 settings_current.rzx_compression,
-					 &rzx_key );
+  libspec_error =
+    libspectrum_rzx_write( &buffer, &length, rzx, rzx_snap, fuse_creator,
+			   settings_current.rzx_compression,
+			   settings_current.competition_mode ? &rzx_key : NULL
+			 );
   if( libspec_error != LIBSPECTRUM_ERROR_NONE ) {
     libspectrum_rzx_free( rzx );
     if( rzx_snap ) libspectrum_snap_free( rzx_snap );
