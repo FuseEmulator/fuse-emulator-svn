@@ -101,6 +101,8 @@ END_SECTION
 #<!-- ======================================================= -->
 
 fuse_section (NULL, "Development", <<<END_SECTION
+  <p>17 January 2004: A beta version of the upcoming libspectrum 0.2.1 is now available. See the <a href="http://sourceforge.net/forum/forum.php?forum_id=345729">announcement</a> for more details.</p>
+
   <p>If you're interested in working on libspectrum, subscribe to the <a href="http://lists.sourceforge.net/lists/listinfo/fuse-emulator-devel">fuse-emulator-devel</a> mailing list and/or see the <a href="http://sourceforge.net/projects/fuse-emulator/">project page</a> on SourceForge. If you just want news of new versions, you probably want the (low volume) <a href="http://lists.sourceforge.net/lists/listinfo/fuse-emulator-announce">fuse-emulator-announce</a> list instead.</p>
 
   <p>Finally, the <a href="libspectrum-cvs.tar.gz">latest development version</a> should always be available. Don't expect any support for this, or even that it can be compiled...</p>
