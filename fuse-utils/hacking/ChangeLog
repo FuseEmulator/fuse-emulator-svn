@@ -58,3 +58,4 @@
 	 strncasecmp on QNX6 (thanks, Mike Gorchak).
 20031015 Makefile.am, configure.in: no longer need to explicitly link
 	 against libgcrypt (except rzxdump) or zlib.
+20031015 Makefile.am: no need to explicitly link against glib either.
