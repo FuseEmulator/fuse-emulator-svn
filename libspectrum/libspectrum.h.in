@@ -595,22 +595,13 @@ libspectrum_error WIN32_DLL
 libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
 		      size_t length );
 
-libspectrum_error WIN32_DLL
-libspectrum_rzx_write2( libspectrum_byte **buffer, size_t *length,
-			libspectrum_rzx *rzx, libspectrum_snap *snap,
-			libspectrum_id_t snap_format,
-			libspectrum_creator *creator, int compress,
-			libspectrum_rzx_dsa_key *key );
-
-libspectrum_error WIN32_DLL libspectrum_rzx_alloc( libspectrum_rzx **rzx );
-
-/* Deprecated */
-
-libspectrum_error WIN32_DLL
+libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_rzx *rzx, libspectrum_snap *snap,
+		       libspectrum_rzx *rzx, libspectrum_id_t snap_format,
 		       libspectrum_creator *creator, int compress,
 		       libspectrum_rzx_dsa_key *key );
+
+libspectrum_error WIN32_DLL libspectrum_rzx_alloc( libspectrum_rzx **rzx );
 
 /*
  * Timex DOCK/EXROM handling routines

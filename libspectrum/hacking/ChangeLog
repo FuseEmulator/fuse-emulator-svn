@@ -273,3 +273,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040906 crypto.c,libspectrum.h.in,rzx.c: re-add support for creator and
 	 signature blocks in RZX files.
 20040909 rzx.c: fix RZX digital signatures.
+20040909 libspectrum.h.in,rzx.c: update libspectrum_rzx_write API for
+	 multiple IRB files.
+
