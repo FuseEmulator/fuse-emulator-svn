@@ -111,3 +111,5 @@
 20040806 snapconv.c,man/snapconv.1: Add -c and -n options to snapconv that
          allow the writing of uncompressed and completely compressed snapshots.
 20040906 rzxcheck.c: use new RZX signature API.
+20040909 rzxtool.c: fix up so it at least compiles and has some
+	 functionality.
