@@ -1,7 +1,7 @@
 <?php
 
 /* fuse.php: the main Fuse homepage
-   Copyright (c) 1999-2003 Darren Salt, Philip Kendall
+   Copyright (c) 1999-2004 Darren Salt, Philip Kendall
 
    $Id$
 
@@ -115,12 +115,12 @@ fuse_section ("Download", "Where can I get it from?", <<<END_SECTION
   <h3>Source</h3>
   $img
   <ul>
-   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.6.2.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.6.2.tar.gz.sig?download">PGP signature</a>).</li>
+   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.6.2.1.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.6.2.1.tar.gz.sig?download">PGP signature</a>).</li>
    <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.6.2.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.6.2.tar.gz.sig?download">PGP signature</a>). Note that
 you'll still need <a href="libspectrum.php">libspectrum</a> installed to run these.</li>
    <li>The above are also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.2.tar.gz">Fuse source</a> (<a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.2.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.2.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.2.tar.gz.sig">signature</a>).</li>
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.2.1.tar.gz">Fuse source</a> (<a
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.2.1.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.2.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.6.2.tar.gz.sig">signature</a>).</li>
    <li>The source code releases above are signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.6.0(.1) releases as I forgot the passphrase for that key <tt>:-(</tt>.</li>
   </ul>
 
@@ -147,6 +147,12 @@ END_SECTION
 #<!-- ======================================================= -->
 
 fuse_section (NULL, "What's new?", <<<END_SECTION
+  <h3>0.6.2.1</h3>
+  <ul>
+   <li>Compilation and other bugfixes for 0.6.2.</li>
+  </ul>
+  <p>Full details are available in the <a href="https://sourceforge.net/forum/forum.php?forum_id=353610">release announcement</a>.</p>
+
   <h3>0.6.2</h3>
   <ul>
    <li>Support for using real joysticks.</li>
@@ -156,7 +162,7 @@ fuse_section (NULL, "What's new?", <<<END_SECTION
    <li>Improved interrupt handling in the Z80 core.</li>
    <li>(fuse-utils) New snap2tzx utility for converting snapshots to .tzx files.</li>
   </ul>
-  <p>See the <a href="https://sourceforge.net/forum/forum.php?forum_id=351904">release announcement</a> for more details.
+  <p>See the <a href="https://sourceforge.net/forum/forum.php?forum_id=351904">release announcement</a> for more details.</p>
 
   <h3>1 January 2004</h3>
   <p>An alpha version of a port of Fuse to Win32 is now <a href="fuse-win32.zip">available</a>. See the <a href="http://sourceforge.net/forum/forum.php?forum_id=341379">announcement</a> for more details.</p>
