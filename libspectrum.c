@@ -1,5 +1,5 @@
 /* libspectrum.c: Some general routines
-   Copyright (c) 2001-2003 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2004 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -240,7 +240,6 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   /* +3 Spectrum-style 0x1ffd memory paging */
   switch( type ) {
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
-  case LIBSPECTRUM_MACHINE_SCORP:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY; break;
   default:
     break;

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # accessor.pl: generate accessor functions
-# Copyright (c) 2003 Philip Kendall
+# Copyright (c) 2003-2004 Philip Kendall
 
 # $Id$
 
@@ -28,7 +28,7 @@ use strict;
 
 print << "CODE";
 /* snap_accessors.c: simple accessor functions for libspectrum_snap
-   Copyright (c) 2003 Philip Kendall
+   Copyright (c) 2003-2004 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -96,6 +96,7 @@ struct libspectrum_snap {
 
   libspectrum_byte out_ay_registerport, ay_registers[16];
 
+  /* Used for both the +3\'s and the Scorpion\'s 0x1ffd port */
   libspectrum_byte out_plus3_memoryport;
 
   /* Timex-specific bits */

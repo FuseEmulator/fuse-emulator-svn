@@ -1,5 +1,5 @@
 /* z80.c: Routines for handling .z80 snapshots
-   Copyright (c) 2001-2002 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2004 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -339,9 +339,12 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
       }
     }
 
-    if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) &&
-	( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH )                    )
-      libspectrum_snap_set_out_plus3_memoryport( snap, extra_header[54] );
+    if( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH ) {
+      if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) ||
+	  ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY )    ) {
+	libspectrum_snap_set_out_plus3_memoryport( snap, extra_header[54] );
+      }
+    }
 
     (*data) = buffer + LIBSPECTRUM_Z80_HEADER_LENGTH + 2 + extra_length;
 
@@ -894,7 +897,7 @@ static libspectrum_error
 write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		       size_t *length, libspectrum_snap *snap )
 {
-  int i; libspectrum_error error;
+  int i, bottom_16kb_ram; libspectrum_error error;
 
   libspectrum_dword quarter_states;
 
@@ -979,10 +982,22 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   /* Spectator, MGT and Multiface disabled */
   *(*ptr)++ = '\0'; *(*ptr)++ = '\0'; *(*ptr)++ = '\0';
 
-  /* Is 0x0000 to 0x7fff RAM? Currently iff we're in a +3 special
-     configuration */
-  if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) &&
-      ( libspectrum_snap_out_plus3_memoryport( snap ) & 0x01 )		) {
+  /* Is 0x0000 to 0x3fff RAM? True if we're in a +3 64Kb RAM
+     configuration, or a Scorpion configuration with page 0 mapped in */
+  bottom_16kb_ram = 0;
+
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) {
+
+    if( libspectrum_snap_out_plus3_memoryport( snap ) & 0x01 )
+      bottom_16kb_ram = 1;
+
+  } else if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY ) {
+
+    if( libspectrum_snap_out_plus3_memoryport( snap ) & 0x01 )
+      bottom_16kb_ram = 1;
+  }
+
+  if( bottom_16kb_ram ) {
     *(*ptr)++ = 0xff; *(*ptr)++ = 0xff;
   } else {
     *(*ptr)++ = 0x00; *(*ptr)++ = 0x00;
