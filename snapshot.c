@@ -94,6 +94,7 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
   libspectrum_snap_set_out_scld_dec( *snap, 0x00 );
 
   libspectrum_snap_set_zxcf_active( *snap, 0 );
+  libspectrum_snap_set_zxcf_upload( *snap, 0 );
   libspectrum_snap_set_zxcf_memctl( *snap, 0x00 );
   libspectrum_snap_set_zxcf_pages( *snap, 0 );
   for( i = 0; i < SNAPSHOT_ZXCF_PAGES; i++ )
