@@ -516,3 +516,5 @@
 	 (Release-0_6_2-branch).
 20040130 ui/gtk/{browse.c,gtkinternals.h,pixmaps.c}: add simple pixmap
 	 to mark the current tape location (Release-0_6_2-branch).
+20040131 ui/gtk/gtkui.c: stop RZX competition mode recording if the
+	 GTK+ pause function is used (Release-0_6_2-branch).
