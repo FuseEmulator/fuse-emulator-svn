@@ -50,10 +50,6 @@ static void TV2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
                BYTE *dstPtr, DWORD dstPitch, int width, int height);
 static void TimexTV(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
                DWORD dstPitch, int width, int height);
-static void Normal32( BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
-		      DWORD dstPitch, int width, int height );
-static void Double32( BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
-		      DWORD dstPitch, int width, int height );
 
 static int scaler_supported[GFX_NUM] = {0};
 
@@ -82,10 +78,6 @@ static struct scaler_info available_scalers[] = {
   { "AdvMAME 2x",      "advmame2x",  SCALER_EXPAND_1_PIXEL,    AdvMame2x  },
   { "TV 2x",	       "tv2x",	     SCALER_EXPAND_1_PIXEL,    TV2x       },
   { "Timex TV",	       "timextv",    SCALER_EXPAND_2_Y_PIXELS, TimexTV    },
-
-  { "24-bit normal",   "normal24",   SCALER_FLAGS_NONE,	       Normal32   },
-  { "24-bit double",   "double24",   SCALER_FLAGS_NONE,	       Double32   },
-
 };
 
 scaler_type current_scaler;
@@ -172,6 +164,29 @@ scaler_get_flags( scaler_type scaler )
 {
   return available_scalers[scaler].flags;
 }
+
+/* The actual code for the scalers starts here */
+
+/* FIXME: do this in a more maintainable fashion */
+#ifdef UI_GTK
+#define SCALER_DATA_SIZE 4
+#endif				/* #ifdef UI_GTK */
+
+#ifdef UI_SDL
+#define SCALER_DATA_SIZE 2
+#endif				/* #ifdef UI_SDL */
+
+#ifndef SCALER_DATA_SIZE
+#error Unknown scaler data size for this user interface
+#endif				/* #ifndef UI_SCALER_DATA_SIZE */
+
+#if SCALER_DATA_SIZE == 2
+typedef WORD scaler_data_type;
+#elif SCALER_DATA_SIZE == 4	/* #if SCALER_DATA_SIZE == 2 */
+typedef DWORD scaler_data_type;
+#else				/* #if SCALER_DATA_SIZE == 2 or 4 */
+#error Unknown scaler data size
+#endif				/* #if SCALER_DATA_SIZE == 2 or 4 */
 
 /********** 2XSAI Filter *****************/
 static DWORD colorMask = 0xF7DEF7DE;
@@ -922,41 +937,48 @@ Half(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
 }
 
 static void 
-Normal1x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
-	 int width, int height)
+Normal1x( BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
+	  DWORD dstPitch, int width, int height )
 {
-  WORD *r;
+  scaler_data_type i, *s, *d;
 
-  while (height--) {
-    int i;
-    r = (WORD *) dstPtr;
-    for (i = 0; i < width; ++i, ++r) {
-      WORD color = *(((WORD *) srcPtr) + i);
+  while( height-- ) {
 
-      *r = color;
-    }
+    /* FIXME: should we use memcpy(3) here? For 32-bit data, this loop
+       is as efficient as it's going to get, so we probably want to
+       avoid the overhead of the function call. For 16-bit data, we'd
+       really like to copy it in 32-bit chunks (and 1 16-bit chunk at
+       the end if necessary), which memcpy will get right for us.
+
+       Currently, this code is going to be at least as efficient as the
+       old version, so I'll leave this for now
+    */
+    for( i = 0, s = (scaler_data_type*)srcPtr, d = (scaler_data_type*)dstPtr;
+	 i < width;
+	 i++ )
+      *d++ = *s++;
+
     srcPtr += srcPitch;
     dstPtr += dstPitch;
   }
 }
 
 static void 
-Normal2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
-	 int width, int height)
+Normal2x( BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
+	  DWORD dstPitch, int width, int height )
 {
-  BYTE *r;
+  scaler_data_type i, *s, *d, *d2;
 
-  while (height--) {
-    int i;
-    r = dstPtr;
-    for (i = 0; i < width; ++i, r += 4) {
-      WORD color = *(((WORD *) srcPtr) + i);
+  while( height-- ) {
 
-      *(WORD *) (r + 0) = color;
-      *(WORD *) (r + 2) = color;
-      *(WORD *) (r + 0 + dstPitch) = color;
-      *(WORD *) (r + 2 + dstPitch) = color;
+    for( i = 0, s = (scaler_data_type*)srcPtr,
+	   d = (scaler_data_type*)dstPtr,
+	   d2 = (scaler_data_type*)(dstPtr + dstPitch);
+	 i < width;
+	 i++ ) {
+      *d++ = *d2++ = *s; *d++ = *d2++ = *s++;
     }
+
     srcPtr += srcPitch;
     dstPtr += dstPitch << 1;
   }
@@ -1044,35 +1066,3 @@ TimexTV(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr, DWORD dstPitch,
     p += nextlineSrc;
   }
 }
-
-static void 
-Normal32( BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
-	  DWORD dstPitch, int width, int height )
-{
-  while( height-- ) {
-    memcpy( dstPtr, srcPtr, 4 * width );
-    srcPtr += srcPitch;
-    dstPtr += dstPitch;
-  }
-}
-
-static void 
-Double32( BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
-	  DWORD dstPitch, int width, int height )
-{
-  DWORD i, *s, *d, *d2;
-
-  while( height-- ) {
-
-    for( i = 0, s = (DWORD*)srcPtr,
-	   d = (DWORD*)dstPtr, d2 = (DWORD*)(dstPtr + dstPitch);
-	 i < width;
-	 i++ ) {
-      *d++ = *d2++ = *s; *d++ = *d2++ = *s++;
-    }
-
-    srcPtr += srcPitch;
-    dstPtr += dstPitch << 1;
-  }
-}
-
