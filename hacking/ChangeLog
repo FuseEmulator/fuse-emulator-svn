@@ -75,3 +75,5 @@
 20031218 COPYING: add a copy of the GPL to the distribution.
 20040117 rzxtool.c, scl2trd.c: stop recognised options producing two
 	 error messages.
+20040117 TAG: fuse-utils_0_6_2-trunk
+	 BRANCH: fuse-utils_0_6_2-branch
