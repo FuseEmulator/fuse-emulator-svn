@@ -62,6 +62,6 @@ struct rzx_key known_keys[] = {
     }
   },
 
-  { 0 }				/* End marker */
+  { 0, NULL, { NULL, NULL, NULL, NULL, NULL } }	/* End marker */
   
 };
