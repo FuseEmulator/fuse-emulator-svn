@@ -31,6 +31,7 @@ bin_PROGRAMS = listbasic \
 	       rzxdump \
 	       rzxtool \
 	       scl2trd \
+	       snap2tzx \
 	       snapconv \
 	       tapeconv \
 	       tzxlist
@@ -52,6 +53,8 @@ rzxtool_SOURCES = rzxtool.c utils.c
 rzxtool_LDADD = @LIBSPEC_LIBS@
 
 scl2trd_SOURCES = scl2trd.c
+
+snap2tzx_SOURCES = snap2tzx.c
 
 snapconv_SOURCES = snapconv.c utils.c
 snapconv_LDADD = @LIBSPEC_LIBS@
