@@ -551,6 +551,9 @@ libspectrum_error WIN32_DLL
 libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap );
 libspectrum_error WIN32_DLL
 libspectrum_rzx_rollback( libspectrum_rzx *rzx, libspectrum_snap **snap );
+libspectrum_error WIN32_DLL
+libspectrum_rzx_rollback_to( libspectrum_rzx *rzx, libspectrum_snap **snap,
+			     size_t which );
 
 libspectrum_error WIN32_DLL
 libspectrum_rzx_store_frame( libspectrum_rzx *rzx, size_t instructions, 
@@ -604,6 +607,33 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_rzx_dsa_key *key );
 
 libspectrum_error WIN32_DLL libspectrum_rzx_alloc( libspectrum_rzx **rzx );
+
+/* Something to step through all the blocks in a tape */
+typedef struct _GSList *libspectrum_rzx_iterator;
+
+/* The block types which can appear in RZX files */
+typedef enum libspectrum_rzx_block_id {
+
+  LIBSPECTRUM_RZX_CREATOR_BLOCK = 0x10,
+
+  LIBSPECTRUM_RZX_SIGN_START_BLOCK = 0x20,
+  LIBSPECTRUM_RZX_SIGN_END_BLOCK = 0x21,
+
+  LIBSPECTRUM_RZX_SNAPSHOT_BLOCK = 0x30,
+
+  LIBSPECTRUM_RZX_INPUT_BLOCK = 0x80,
+
+} libspectrum_rzx_block_id;
+
+libspectrum_rzx_iterator
+libspectrum_rzx_iterator_begin( libspectrum_rzx *rzx );
+libspectrum_rzx_iterator
+libspectrum_rzx_iterator_next( libspectrum_rzx_iterator it );
+
+libspectrum_rzx_block_id
+libspectrum_rzx_iterator_get_type( libspectrum_rzx_iterator it );
+size_t
+libspectrum_rzx_iterator_get_frames( libspectrum_rzx_iterator it );
 
 /*
  * Timex DOCK/EXROM handling routines
