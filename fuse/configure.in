@@ -297,6 +297,17 @@ AC_CHECK_LIB( png, png_write_png,
 )
 AC_SUBST(PNG_LIBS)
 
+dnl Are we supplying the ROMs or relying on another package?
+AC_MSG_CHECKING(where to find the Spectrum ROM images)
+AC_ARG_WITH(roms-dir,
+  [  --with-roms-dir=DIR     location of the Spectrum ROM images])
+if test "$withval" = ""; then
+  echo 'we supply them'
+else
+  echo "$withval"
+  AC_DEFINE_UNQUOTED(ROMSDIR, "$withval", [Location of the ROM images])
+fi
+
 AC_MSG_CHECKING(whether hardware joystick support requested)
   AC_ARG_WITH(joystick,
   [  --with-joystick         use a real joystick for Kempston emulation etc.],

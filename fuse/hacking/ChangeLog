@@ -561,3 +561,6 @@
 	 sdl_blit_icon() (thanks, Simon Tatham) (Release-0_6_2-branch).
 20040216 configure.in: use glib 2.0 if available (Release-0_6_2-branch)
 	 (Darren).
+20040216 configure.in, utils.c: compilation fix if ROMSDIR defined (and
+	 configure.in option to define it) (Release-0_6_2-branch)
+	 (Darren).

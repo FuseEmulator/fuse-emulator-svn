@@ -271,30 +271,26 @@ get_next_path( path_context *ctx )
 
     if( fuse_progname[0] == '/' ) {
       strncpy( buffer, fuse_progname, PATH_MAX );
+      buffer[ PATH_MAX - 1 ] = '\0';
     } else {
-      strncpy( buffer, fuse_directory, PATH_MAX );
-      strncat( buffer, fuse_progname, PATH_MAX );
+      snprintf( buffer, PATH_MAX, "%s%s", fuse_directory, fuse_progname );
     }
     path2 = dirname( buffer );
     snprintf( ctx->path, PATH_MAX, "%s/%s", path2, path_segment );
     return 1;
 
     /* Then where we may have installed the data files */
-  case 2: strncpy( ctx->path, FUSEDATADIR, PATH_MAX ); return 1;
+  case 2:
 
-    /* And finally (for ROM files only) in the system-specified ROM
-       directory */
-  case 3:
 #ifndef ROMSDIR
-    return 0;
+    path2 = FUSEDATADIR;
 #else				/* #ifndef ROMSDIR */
-    if( type != UTILS_AUXILIARY_ROM ) return 0;
-
-    snprintf( ctx->path, PATH_MAX, "%s", ROMSDIR, filename );
-    return 1;
+    path2 = ctx->type == UTILS_AUXILIARY_ROM ? ROMSDIR : FUSEDATADIR;
 #endif				/* #ifndef ROMSDIR */
+    strncpy( ctx->path, path2, PATH_MAX ); buffer[ PATH_MAX - 1 ] = '\0';
+    return 1;
 
-  case 4: return 0;
+  case 3: return 0;
   }
 
   ui_error( UI_ERROR_ERROR, "unknown path_context state %d", ctx->state );
