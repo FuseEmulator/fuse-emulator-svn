@@ -36,9 +36,11 @@
 
 #include <libspectrum.h>
 
+#include "utils.h"
+
 #define DESCRIPTION_LENGTH 80
 
-static const char *progname;
+const char *progname;
 
 static const char*
 hardware_desc( int type, int id )
@@ -75,61 +77,31 @@ hardware_desc( int type, int id )
 static int
 process_tzx( char *filename )
 {
-  int fd;
-  struct stat file_info;
-
   int error;
 
-  unsigned char *buffer;
+  unsigned char *buffer; size_t length;
   libspectrum_tape *tape;
 
   GSList *ptr;
 
   size_t i;
 
-  fd = open( filename, O_RDONLY );
-  if( fd == -1 ) {
-    fprintf( stderr, "%s: couldn't open `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    return 1;
-  }
-
-  if( fstat( fd, &file_info) ) {
-    fprintf( stderr, "%s: couldn't stat `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  buffer = mmap( 0, file_info.st_size, PROT_READ, MAP_SHARED, fd, 0 );
-  if( buffer == (void*)-1 ) {
-    fprintf( stderr, "%s: couldn't mmap `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  if( close(fd) ) {
-    fprintf( stderr, "%s: couldn't close `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    munmap( buffer, file_info.st_size );
-    return 1;
-  }
+  error = mmap_file( filename, &buffer, &length ); if( error ) return error;
 
   error = libspectrum_tape_alloc( &tape );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    munmap( buffer, file_info.st_size );
+    munmap( buffer, length );
     return 1;
   }
 
-  error = libspectrum_tzx_read( tape, buffer, file_info.st_size );
+  error = libspectrum_tzx_read( tape, buffer, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    munmap( buffer, file_info.st_size );
+    munmap( buffer, length );
     libspectrum_tape_free( tape );
     return error;
   }
 
-  if( munmap( buffer, file_info.st_size ) == -1 ) {
+  if( munmap( buffer, length ) == -1 ) {
     fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, filename,
 	     strerror( errno ) );
     return 1;
@@ -315,7 +287,7 @@ process_tzx( char *filename )
 
   error = libspectrum_tape_free( tape );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    munmap( buffer, file_info.st_size );
+    munmap( buffer, length );
     return error;
   }
 

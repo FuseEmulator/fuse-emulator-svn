@@ -36,7 +36,9 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "libspectrum.h"
+#include <libspectrum.h>
+
+#include "utils.h"
 
 char *progname;
 
@@ -96,42 +98,14 @@ int main( int argc, char **argv )
 static int
 do_file( const char *filename )
 {
-  int fd; struct stat file_info;
-
-  unsigned char *buffer, *ptr, *end;
+  unsigned char *buffer, *ptr, *end; size_t length;
+  int error;
 
   printf( "Examining file %s\n", filename );
 
-  fd = open( filename, O_RDONLY );
-  if( fd == -1 ) {
-    fprintf( stderr, "%s: couldn't open `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    return 1;
-  }
+  error = mmap_file( filename, &buffer, &length ); if( error ) return error;
 
-  if( fstat( fd, &file_info) ) {
-    fprintf( stderr, "%s: couldn't stat `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  buffer = mmap( 0, file_info.st_size, PROT_READ, MAP_SHARED, fd, 0 );
-  if( buffer == (void*)-1 ) {
-    fprintf( stderr, "%s: couldn't mmap `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    close(fd);
-    return 1;
-  }
-
-  if( close(fd) ) {
-    fprintf( stderr, "%s: couldn't close `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    munmap( buffer, file_info.st_size );
-    return 1;
-  }
-
-  ptr = buffer; end = buffer + file_info.st_size;
+  ptr = buffer; end = buffer + length;
 
   /* Read the RZX header */
 
@@ -139,14 +113,14 @@ do_file( const char *filename )
     fprintf( stderr,
 	     "%s: Not enough bytes for RZX header (%ld bytes)\n",
 	     progname, (unsigned long)strlen( rzx_signature ) + 6 );
-    munmap( buffer, file_info.st_size );
+    munmap( buffer, length );
     return 1;
   }
 
   if( memcmp( ptr, rzx_signature, strlen( rzx_signature ) ) ) {
     fprintf( stderr, "%s: Wrong signature: expected `%s'\n", progname,
 	     rzx_signature );
-    munmap( buffer, file_info.st_size );
+    munmap( buffer, length );
     return 1;
   }
 
@@ -168,29 +142,29 @@ do_file( const char *filename )
 
     case 0x10:
       error = read_creator_block( &ptr, end );
-      if( error ) { munmap( buffer, file_info.st_size ); return 1; }
+      if( error ) { munmap( buffer, length ); return 1; }
       break;
 
     case 0x30:
       error = read_snapshot_block( &ptr, end );
-      if( error ) { munmap( buffer, file_info.st_size ); return 1; }
+      if( error ) { munmap( buffer, length ); return 1; }
       break;
 
     case 0x80:
       error = read_input_block( &ptr, end );
-      if( error ) { munmap( buffer, file_info.st_size ); return 1; }
+      if( error ) { munmap( buffer, length ); return 1; }
       break;
 
     default:
       fprintf( stderr, "%s: Unknown block type 0x%02x\n", progname, id );
-      munmap( buffer, file_info.st_size );
+      munmap( buffer, length );
       return 1;
 
     }
 
   }
 
-  if( munmap( buffer, file_info.st_size ) == -1 ) {
+  if( munmap( buffer, length ) == -1 ) {
     fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, filename,
 	     strerror( errno ) );
     return 1;
