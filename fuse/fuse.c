@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
+#include "debugger/debugger.h"
 #include "display.h"
 #include "event.h"
 #include "fuse.h"
@@ -130,6 +131,8 @@ static int fuse_init(int argc, char **argv)
 
   /* Drop root privs if we have them */
   if( !geteuid() ) { setuid( getuid() ); }
+
+  if( debugger_init() ) return 1;
 
   if(event_init()) return 1;
   
@@ -338,6 +341,7 @@ static int fuse_end(void)
   printer_end();
 
   rzx_end();
+  debugger_end();
 
   error = machine_end();
   if( error ) return error;

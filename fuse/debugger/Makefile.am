@@ -24,26 +24,10 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-lib_LTLIBRARIES = libspectrum.la
+INCLUDES = @GLIB_CFLAGS@ @GTK_CFLAGS@
 
-libspectrum_la_SOURCES = libspectrum.c rzx.c sna.c snapshot.c tap.c tape.c\
-tzx_read.c tzx_write.c z80.c zlib.c myglib.c
+noinst_LIBRARIES = libdebugger.a
 
-libspectrum_la_LDFLAGS = -version-info 0:0:0
+libdebugger_a_SOURCES = debugger.c
 
-BUILT_SOURCES = libspectrum.h
-
-include_HEADERS = libspectrum.h
-noinst_HEADERS = internals.h
-
-noinst_PROGRAMS = make-sed
-
-libspectrum.h: libspectrum.h.in generate.sed
-	@SED@ -f generate.sed libspectrum.h.in > libspectrum.h
-
-generate.sed: make-sed
-	./make-sed > generate.sed
-
-INCLUDES = @GLIB_CFLAGS@
-
-EXTRA_DIST = libspectrum.h.in doc/api.txt
+noinst_HEADERS = debugger.h
