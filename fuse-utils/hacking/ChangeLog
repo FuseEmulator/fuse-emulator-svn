@@ -88,3 +88,4 @@
 	 (fuse-utils_0_6_2-branch).
 20040211 tzxlist.c: fix double-free bug on failed tape open
 	 (fuse-utils_0_6_2-branch).
+20040212 TAG: fuse-utils_0_6_2 (fuse-utils_0_6_2-branch).
