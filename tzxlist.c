@@ -1,5 +1,5 @@
 /* tzxlist.c: Produce a listing of the blocks in a .tzx file
-   Copyright (c) 2001-2002 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2003 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -81,6 +81,8 @@ process_tzx( char *filename )
 
   unsigned char *buffer; size_t length;
   libspectrum_tape *tape;
+  libspectrum_tape_iterator iterator;
+  libspectrum_tape_block *block;
 
   GSList *ptr;
 
@@ -109,10 +111,9 @@ process_tzx( char *filename )
 
   printf("Listing of `%s':\n\n", filename );
 
-  ptr = tape->blocks;
+  block = libspectrum_tape_iterator_init( &iterator, tape );
 
-  while( ptr ) {
-    libspectrum_tape_block *block = (libspectrum_tape_block*)ptr->data;
+  while( block ) {
     char description[ DESCRIPTION_LENGTH ];
 
     error =
