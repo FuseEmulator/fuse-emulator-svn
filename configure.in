@@ -57,10 +57,10 @@ if test "$prefix" != "NONE"; then
 fi)
 
 dnl Check for zlib
-AC_CHECK_HEADERS(zlib.h)
+AC_CHECK_HEADERS(zlib.h,LIBS="$LIBS -lz")
 
 dnl Check for libgcrypt
-AC_CHECK_HEADERS(gcrypt.h)
+AC_CHECK_HEADERS(gcrypt.h,LIBS="$LIBS -lgcrypt")
 
 dnl Either find glib or use the replacement
 AC_MSG_CHECKING(whether to use glib)
@@ -70,7 +70,9 @@ if test "$withval" = no; then glib=no; else glib=yes; fi,
 glib=yes)
 AC_MSG_RESULT($glib)
 if test "$glib" = yes; then
-  AM_PATH_GLIB(1.2.0,AC_DEFINE(HAVE_LIB_GLIB),
+  AM_PATH_GLIB(1.2.0,
+	       AC_DEFINE(HAVE_LIB_GLIB)
+	       LIBS="$LIBS `glib-config --libs`",
                AC_MSG_WARN(glib not found - using internal replacement))
 fi
 
