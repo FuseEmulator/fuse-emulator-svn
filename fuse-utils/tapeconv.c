@@ -36,8 +36,10 @@
 
 #include "utils.h"
 
+static int get_type_from_string( libspectrum_id_t *type, const char *string );
 static int read_tape( char *filename, libspectrum_id_t type,
 		      libspectrum_tape **tape );
+static int write_tape( libspectrum_id_t type, libspectrum_tape *tape );
 
 char *progname;
 
@@ -46,7 +48,7 @@ main( int argc, char **argv )
 {
   int c;
   char *input_type_string = NULL; libspectrum_id_t input_type;
-  libspectrum_byte *buffer; size_t length;
+  char *output_type_string = NULL; libspectrum_id_t output_type;
   libspectrum_tape *tzx;
 
   progname = argv[0];
@@ -58,27 +60,23 @@ main( int argc, char **argv )
     return 1;
   }
 
-  while( ( c = getopt( argc, argv, "i:" ) ) != -1 ) {
+  while( ( c = getopt( argc, argv, "i:o:" ) ) != -1 ) {
 
     switch( c ) {
 
     case 'i': input_type_string = optarg; break;
+    case 'o': output_type_string = optarg; break;
 
     }
   }
 
   input_type = LIBSPECTRUM_ID_UNKNOWN;
-  if( input_type_string ) {
-    if( !strcmp( input_type_string, "tap" ) ) {
-      input_type = LIBSPECTRUM_ID_TAPE_TAP;
-    } else if( !strcmp( input_type_string, "tzx" ) ) {
-      input_type = LIBSPECTRUM_ID_TAPE_TZX;
-    } else {
-      fprintf( stderr, "%s: unknown format `%s'\n", progname,
-	       input_type_string );
-      return 1;
-    }
-  }
+  if( input_type_string &&
+      get_type_from_string( &input_type, input_type_string ) ) return 1;
+
+  output_type = LIBSPECTRUM_ID_TAPE_TZX;
+  if( output_type_string &&
+      get_type_from_string( &output_type, output_type_string ) ) return 1;
 
   if( argv[optind] == NULL ) {
     fprintf( stderr, "%s: no tape file given\n", progname );
@@ -87,22 +85,31 @@ main( int argc, char **argv )
 
   if( read_tape( argv[optind], input_type, &tzx ) ) return 1;
 
-  length = 0;
-  if( libspectrum_tap_write( &buffer, &length, tzx ) ) {
+  if( write_tape( output_type, tzx ) ) {
     libspectrum_tape_free( tzx );
     return 1;
   }
 
-  if( fwrite( buffer, 1, length, stdout ) != length ) {
-    free( buffer ); libspectrum_tape_free( tzx );
-    return 1;
-  }
-
-  free( buffer ); libspectrum_tape_free( tzx );
+  libspectrum_tape_free( tzx );
 
   return 0;
 }
 
+static int
+get_type_from_string( libspectrum_id_t *type, const char *string )
+{
+  if( !strcmp( string, "tap" ) ) {
+    *type = LIBSPECTRUM_ID_TAPE_TAP;
+  } else if( !strcmp( string, "tzx" ) ) {
+    *type = LIBSPECTRUM_ID_TAPE_TZX;
+  } else {
+    fprintf( stderr, "%s: unknown format `%s'\n", progname, string );
+    return 1;
+  }
+  
+  return 0;
+}
+  
 static int
 read_tape( char *filename, libspectrum_id_t type, libspectrum_tape **tape )
 {
@@ -159,6 +166,39 @@ read_tape( char *filename, libspectrum_id_t type, libspectrum_tape **tape )
     libspectrum_tape_free( *tape );
     return 1;
   }
+
+  return 0;
+}
+
+static int
+write_tape( libspectrum_id_t type, libspectrum_tape *tape )
+{
+  libspectrum_byte *buffer; size_t length;
+
+  length = 0;
+
+  switch( type ) {
+
+  case LIBSPECTRUM_ID_TAPE_TAP:
+    if( libspectrum_tap_write( &buffer, &length, tape ) ) return 1;
+    break;
+
+  case LIBSPECTRUM_ID_TAPE_TZX:
+    if( libspectrum_tzx_write( &buffer, &length, tape ) ) return 1;
+    break;
+    
+  default:
+    fprintf( stderr, "%s: unknown output format %d\n", progname, type );
+    return 1;
+
+  }
+
+  if( fwrite( buffer, 1, length, stdout ) != length ) {
+    free( buffer );
+    return 1;
+  }
+
+  free( buffer );
 
   return 0;
 }
