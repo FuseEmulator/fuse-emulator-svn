@@ -399,6 +399,7 @@ widget_t widget_data[] = {
 
 };
 
+#ifndef UI_SDL
 /* The statusbar handling functions */
 /* TODO: make these do something useful */
 int
@@ -407,7 +408,6 @@ ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
   return 0;
 }
 
-#ifndef UI_SDL
 int
 ui_statusbar_update_speed( float speed )
 {

@@ -473,3 +473,54 @@
 	 a simple memory browser.
 20040110 machine.c: remove pointless free( NULL ) (patch #874507)
 	 (Stuart Brady).
+20040111 ui/gtk/{memory,pokefinder}.c: use capital letters in hex
+	 constants (fixes bug #867286) (Release-0_6_2-branch).
+20040111 configure.in: bump version number to 0.6.2pre1
+	 (Release-0_6_2-branch).
+20040112 fuse.c: change copyright date in startup message to 2004, and
+	 reformat slightly (Release-0_6_2-branch).
+20040114 memory.h, z80/{Makefile.am,coretest.c,z80_macros.h}: get the
+	 core tester working again (Release-0_6_2-branch).
+20040114 ChangeLog: bring up to date (Release-0_6_2-branch).
+20040115 ui/uijoystick.c, ui/svga/svgajoystick.c: ui_joystick_end returns
+	 void (Release-0_6_2-branch) (Witold).
+20040115 screenshot.c: make .png screenshots save in black and white if
+	 colour TV mode disabled (Release-0_6_2-branch).
+20040115 pokefinder/Makefile.am: add @LIBSPEC_FLAGS@ to INCLUDES (more of
+	 patch #871182) (Release-0_6_2-branch) (Fred).
+20040115 ui/uijoystick.h: add #include <libspectrum.h> (more of patch
+	 #871182) (Release-0_6_2-branch) (Fred).
+20040115 Add optional tape and disk icons for the SDL UI (slightly
+	 modified version of the rest of patch #871182)
+	 (Release-0_6_2-branch) (Fred/Phil).
+20040117 TAG: Release-0_6_2pre1 (Release-0_6_2-branch).
+20040119 ui/Makefile.am: distribute uijoystick.[ch] (and move the
+	 Release-0_6_2pre1 tag to this version) (Release-0_6_2-branch).
+20040120 configure.in, ui/Makefile.am, ui/win32/Makefile.am: put the win32
+	 UI code in the distribution tarball (Release-0_6_2-branch).
+20040120 configure.in, z80/Makefile.am, z80/test/Makefile.am: put the z80
+	 core tests in the distribution tarball (Release-0_6_2-branch).
+20040120 ui/gtk: use Fred's tape and disk icons on the GTK+ statusbar
+	 (Release-0_6_2-branch).
+20040122 settings.dat, ui/gtk: make the 'view statusbar' option be
+	 effective under GTK+ (Release-0_6_2-branch).
+20040126 tc2068.c: return the correct value when both joystick ports are
+	 read from simultaneously (patch #883637) (Release-0_6_2-branch)
+         (Fred).
+20040126 dck.c: use libspectrum_dck_read2 instead of libspectrum_dck_read
+	 to aid with identifying compressed files (patch #884355)
+	 (Release-0_6_2-branch) (Fred).
+20040127 ui/gtk/statusbar.c, timer.c: visual improvements to the GTK+
+	 statusbar (Release-0_6_2-branch).
+20040129 ui/gtk/{gtkinternals.h,pixmaps.c,statusbar.c}: add pause icon
+	 (Release-0_6_2-branch).
+20040130 ui/gtk/{browse.c,gtkinternals.h,pixmaps.c}: add simple pixmap
+	 to mark the current tape location (Release-0_6_2-branch).
+20040131 ui/gtk/gtkui.c: stop RZX competition mode recording if the
+	 GTK+ pause function is used (Release-0_6_2-branch).
+20040202 debugger/debuggery.y: Update comment for <stdio.h> include
+	 (patch #883358) (Release-0_6_2-branch) (Fred).
+20040204 man/fuse.1: update (Release-0_6_2-branch).
+20040205 configure.in: bump version number to 0.6.2pre2
+	 (Release-0_6_2-branch).
+20040205 TAG: Release-0_6_2pre2 (Release-0_6_2-branch).

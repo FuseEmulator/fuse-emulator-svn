@@ -1,5 +1,5 @@
 # settings.dat: configuration options for Fuse
-# Copyright (c) 2002-2003 Philip Kendall
+# Copyright (c) 2002-2004 Philip Kendall
 
 # $Id$
 
@@ -46,6 +46,7 @@ autosave_settings, boolean, 0
 colour_tv, boolean, 1
 confirm_dangerous, boolean, 1
 printer, boolean, 0
+statusbar, boolean, 1
 
 sound_device, string, NULL, 'd'
 sound, boolean, 1
