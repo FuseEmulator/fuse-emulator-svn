@@ -1,3 +1,6 @@
+<?php
+  header ('Content-Type: text/css');
+?>
 /* general.css: the main stylesheet for the Fuse web pages
    Copyright (c) 2003 Darren Salt
 
@@ -94,7 +97,12 @@ hr {
 div.footer { text-align: center; }
 
 .header {
-	position: fixed;
+<?php
+  if (preg_match ("/^Mozilla\/4\.0 \(compatible; MSIE 5\.0;/", $HTTP_USER_AGENT))
+    print "	position: relative;\n";
+  else
+    print "	position: fixed;\n";
+?>
 	top: 0px;
 	left: 0px;
 	font-family: Helvetica, Nimbus Sans L, Arial, sans-serif;
@@ -103,6 +111,7 @@ div.footer { text-align: center; }
 	margin: 0px;
 	border: none;
 	width: 17.5%;
+	min-width: 160px;
 	max-width: 17.5%;
 	background: black;
 	color: white;

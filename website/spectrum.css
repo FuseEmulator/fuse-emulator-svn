@@ -1,3 +1,6 @@
+<?php
+  header ('Content-Type: text/css');
+?>
 /* spectrum.css: the spectrum-specific stylesheet for the Fuse web pages
    Copyright (c) 2003 Darren Salt
 
