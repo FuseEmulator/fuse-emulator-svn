@@ -554,3 +554,6 @@
 	 (Release-0_6_2-branch).
 20040213 ui/sdl/Makefile.am: distribute sdljoystick.h (thanks, Owen Dunn)
 	 (Release-0_6_2-branch).
+20040214 specplus3.c: reverse map mapping for 0xc000 - 0xffff was
+	 incorrectly always set to 0 in normal_memory_map()
+	 (Release-0_6_2-branch).
