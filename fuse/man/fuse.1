@@ -1768,6 +1768,10 @@ Not many peripherals are supported.
 Selecting a startup filter doesn't work properly with user interfaces
 other than SDL.
 .br
+Under some circumstances, sound may not be enabled on startup when
+using the SVGAlib UI. Disabling and re-enabling sound has been
+observed to work.
+.br
 Attempting to replay an RZX file without an embedded snapshot from the
 command-line doesn't work if you do `./fuse
 .IR "rzxfile snapshot" '.
