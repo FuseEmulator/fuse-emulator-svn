@@ -238,3 +238,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040612 szx.c: remove duplicated literal constants from the code.
 20040620 README,autogen.sh: add script to do the autotools invocation.
 20040620 hacking/cvs-tags: remove (use doc/cvs-tags instead).
+20040621 z80.c: remove literal machine constants.
