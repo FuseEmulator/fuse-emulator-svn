@@ -127,3 +127,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20031030 zlib.c: merge duplicated code from libspectrum_zlib_inflate and
 	 libspectrum_gzip_inflate.
 20031103 tape.c: don't explicitly include <glib.h> (thanks, Erik Kunze).
+20031103 README: small change to the installation instructions.

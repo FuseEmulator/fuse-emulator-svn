@@ -22,9 +22,10 @@ $ make
 and then `make install' should install it in `/usr/local' ready for
 use on your system. If you want to install it somewhere other than
 `/usr/local', give the `--prefix=DIR' option to `configure' to install
-it under `DIR'. If you do this, you may then have to play about with
-`ldconfig' and/or `LD_LIBRARY_PATH' to get things to find it. Ask your
-local guru.
+it under `DIR'. Once installed, some work will probably be necessary
+to ensure that the linker can find libspectrum. Either read the
+instructions printed when you do `make install' or ask your local
+guru.
 
 For details on the functions available, see `doc/libspectrum.txt'.
 
