@@ -1,3 +1,19 @@
+2004-07-16  Philip Kendall  <pak21-spectrum@srcf.ucam.org>
+
+	* libspectrum 0.2.2 released.
+
+	* Support for Scorpion ZS 256 (Stuart Brady), Spectrum +3e (Philip
+	  Kendall) and Spectrum SE (Darren Salt, Fredrick Meunier).
+
+	* Support for .hdf hard disk images (Garry Lancaster).
+
+	* Support for the ZXATASP and ZXCF interfaces (Philip Kendall).
+
+	* Support for saving the Timex DOCK and EXROM in .szx snapshots
+	  (Fredrick Meunier).
+
+	* Support for saving the Interface II state (Fredrick Meunier).
+
 2004-02-11  Philip Kendall  <pak21-spectrum@srcf.ucam.org>
 
 	* libspectrum 0.2.1 released.
