@@ -26,6 +26,8 @@
 
 #include <config.h>
 
+#include <string.h>
+
 #include "internals.h"
 
 static const int SP_HEADER_LENGTH = 37;
