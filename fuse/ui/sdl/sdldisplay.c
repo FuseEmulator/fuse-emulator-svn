@@ -395,13 +395,6 @@ uidisplay_area( int x, int y, int width, int height )
     return;
   }
 
-  if( timex ) {
-    y <<= 1;
-    height <<= 1;
-    x <<= 1;
-    width <<= 1;
-  }
-
   /* Extend the dirty region by 1 pixel for scalers
      that "smear" the screen, e.g. 2xSAI */
   if (scaler_mode_flags & UPDATE_EXPAND_1_PIXEL) {
