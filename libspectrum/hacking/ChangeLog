@@ -189,3 +189,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 128 block of the .szx format.
 20040320 libspectrum.c,libspectrum.h.in: add an 'Even M1' capability.
 20040401 libspectrum.h.in,sna.c,szx.c,z80.c: minimalistic +3e support.
+20040402 libspectrum.c,timings.c: enough to make the +3e support actually
+	 usable by Fuse.
