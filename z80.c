@@ -73,13 +73,13 @@ read_v2_block( const libspectrum_byte *buffer, libspectrum_byte **block,
 
 static libspectrum_error
 write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
-	      size_t *length, libspectrum_snap *snap );
+	      size_t *length, int *flags, libspectrum_snap *snap );
 static libspectrum_error
 write_base_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		   size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		       size_t *length, libspectrum_snap *snap );
+		       size_t *length, int *flags, libspectrum_snap *snap );
 static libspectrum_error
 write_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
 	     size_t *length, libspectrum_snap *snap, int compress );
@@ -831,7 +831,7 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
   if( libspectrum_snap_halted( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
 
-  error = write_header( buffer, &ptr, length, snap );
+  error = write_header( buffer, &ptr, length, out_flags, snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   error = write_pages(
@@ -847,14 +847,14 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
 
 static libspectrum_error
 write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
-	      size_t *length, libspectrum_snap *snap )
+	      size_t *length, int *flags, libspectrum_snap *snap )
 {
   libspectrum_error error;
 
   error = write_base_header( buffer, ptr, length, snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-  error = write_extended_header( buffer, ptr, length, snap );
+  error = write_extended_header( buffer, ptr, length, flags, snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -902,7 +902,7 @@ write_base_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 static libspectrum_error
 write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		       size_t *length, libspectrum_snap *snap )
+		       size_t *length, int *flags, libspectrum_snap *snap )
 {
   int i, bottom_16kb_ram; libspectrum_error error;
 
@@ -926,6 +926,9 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = 0; break;
   case LIBSPECTRUM_MACHINE_128:
     *(*ptr)++ = 4; break;
+  case LIBSPECTRUM_MACHINE_PLUS3E:
+    *flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+    /* fall through */
   case LIBSPECTRUM_MACHINE_PLUS3:
     *(*ptr)++ = 7; break;
   case LIBSPECTRUM_MACHINE_PENT:
