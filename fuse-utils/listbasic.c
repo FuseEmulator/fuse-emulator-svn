@@ -55,7 +55,7 @@ int parse_tape_file( const unsigned char *buffer, size_t length,
 		     libspectrum_id_t type );
 libspectrum_byte read_tape_block( libspectrum_word offset, void *data );
 
-int extract_basic( libspectrum_word offset,
+int extract_basic( libspectrum_word offset, libspectrum_word end,
 		   memory_read_fn get_byte, void *data );
 int detokenize( libspectrum_word offset, int length,
 		memory_read_fn get_byte, void *data );
@@ -140,7 +140,7 @@ parse_snapshot_file( const unsigned char *buffer, size_t length,
     return 1;
   }
 
-  error = extract_basic( program_address, read_snap_memory, snap );
+  error = extract_basic( program_address, 0, read_snap_memory, snap );
   if( error ) { libspectrum_snap_free( snap ); return error; }
 
   error = libspectrum_snap_free( snap ); if( error ) return error;
@@ -236,7 +236,7 @@ parse_tape_file( const unsigned char *buffer, size_t length,
     if( rom_block->data[0] != 0xff ) continue;
 
     /* Now, just read the BASIC out */
-    error = extract_basic( 1, read_tape_block, rom_block );
+    error = extract_basic( 1, program_length + 1, read_tape_block, rom_block );
     if( error ) { libspectrum_tape_free( tape ); return error; }
 
     /* Don't parse this block again */
@@ -262,12 +262,13 @@ read_tape_block( libspectrum_word offset, void *data )
 }
   
 int
-extract_basic( libspectrum_word offset, memory_read_fn get_byte, void *data )
+extract_basic( libspectrum_word offset, libspectrum_word end,
+	       memory_read_fn get_byte, void *data )
 {
   int line_number, line_length;
   int error;
 
-  while( 1 ) {
+  while( !end || offset < end ) {
 
     line_number = get_byte( offset, data ) << 8 | get_byte( offset + 1, data );
     offset += 2;
