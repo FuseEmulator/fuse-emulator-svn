@@ -74,3 +74,8 @@ libspectrum_byte* slt 1
 size_t slt_length 1
 libspectrum_byte* slt_screen
 int slt_screen_level
+
+int zxcf_active
+libspectrum_byte zxcf_memctl
+size_t zxcf_pages
+libspectrum_byte* zxcf_ram 1

@@ -112,6 +112,12 @@ struct libspectrum_snap {
   libspectrum_byte beta_system, beta_track, beta_sector, beta_data,
     beta_status;
 
+  /* ZXCF status */
+  int zxcf_active;
+  libspectrum_byte zxcf_memctl;
+  size_t zxcf_pages;
+  libspectrum_byte *zxcf_ram[ 64 ];
+
 };
 
 /* Initialise a libspectrum_snap structure */
@@ -172,6 +178,11 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
 
   libspectrum_snap_set_out_scld_hsr( *snap, 0x00 );
   libspectrum_snap_set_out_scld_dec( *snap, 0x00 );
+
+  libspectrum_snap_set_zxcf_active( *snap, 0 );
+  libspectrum_snap_set_zxcf_memctl( *snap, 0x00 );
+  libspectrum_snap_set_zxcf_pages( *snap, 0 );
+  for( i = 0; i < 64; i++ ) libspectrum_snap_set_zxcf_ram( *snap, i, NULL );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
