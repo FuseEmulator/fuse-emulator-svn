@@ -227,7 +227,8 @@ block_free( gpointer data, gpointer user_data GCC_UNUSED )
 }
 
 /* Does this tape structure actually contain a tape? */
-int libspectrum_tape_present( libspectrum_tape *tape )
+int
+libspectrum_tape_present( const libspectrum_tape *tape )
 {
   return tape->blocks != NULL;
 }
@@ -981,5 +982,78 @@ libspectrum_tape_block_description( char *buffer, size_t length,
   }
 
   buffer[ length-1 ] = '\0';
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_tape_guess_hardware( libspectrum_machine *machine,
+				 const libspectrum_tape *tape )
+{
+  GSList *ptr; int score, current_score; size_t i;
+
+  *machine = LIBSPECTRUM_MACHINE_UNKNOWN; current_score = 0;
+
+  if( !libspectrum_tape_present( tape ) ) return LIBSPECTRUM_ERROR_NONE;
+
+  for( ptr = tape->blocks; ptr; ptr = ptr->next ) {
+
+    libspectrum_tape_block *block = (libspectrum_tape_block*)ptr->data;
+    libspectrum_tape_hardware_block *hardware;
+
+    if( block->type != LIBSPECTRUM_TAPE_BLOCK_HARDWARE ) continue;
+
+    hardware = &( block->types.hardware );
+
+    for( i=0; i<hardware->count; i++ ) {
+
+      /* Only interested in which computer types this tape runs on */
+      if( hardware->types[i] != 0 ) continue;
+
+      /* Skip if the tape doesn't run on this hardware */
+      if( hardware->values[i] == 3 ) continue;
+
+      /* If the tape uses the special hardware, choose that preferentially.
+	 If it doesn't (or is unknown), it's a possibility */
+      if( hardware->values[i] == 1 ) { score = 2; } else { score = 1; }
+
+      switch( hardware->ids[i] ) {
+
+      case 0: /* 16K Spectrum */
+      case 1: /* 48K Spectrum */
+      case 2: /* 48K Issue 1 Spectrum */
+	if( score > current_score ) {
+	  *machine = LIBSPECTRUM_MACHINE_48; current_score = score;
+	}
+	break;
+
+      case 3: /* 128K Spectrum */
+	if( score > current_score ) {
+	  *machine = LIBSPECTRUM_MACHINE_128; current_score = score;
+	}
+	break;
+
+      case 4: /* +2 */
+	if( score > current_score ) {
+	  *machine = LIBSPECTRUM_MACHINE_PLUS2; current_score = score;
+	}
+	break;
+
+      case 5: /* +2A and +3. Gee, thanks to whoever designed the TZX format
+		 for distinguishing those :-( */
+	if( score > current_score ) {
+	  *machine = LIBSPECTRUM_MACHINE_PLUS3; current_score = score;
+	}
+	break;
+
+      case 6: /* TC2048 */
+	if( score > current_score ) {
+	  *machine = LIBSPECTRUM_MACHINE_TC2048; current_score = score;
+	}
+	break;
+
+      }
+    }
+  }
+  
   return LIBSPECTRUM_ERROR_NONE;
 }
