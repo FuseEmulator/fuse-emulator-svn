@@ -590,11 +590,6 @@ libspectrum_error
 libspectrum_tape_append_block( libspectrum_tape *tape,
 			       libspectrum_tape_block *block );
 
-/* Make a guess at which hardware this tape should run on */
-libspectrum_error
-libspectrum_tape_guess_hardware( libspectrum_machine *machine,
-				 const libspectrum_tape *tape );
-
 /*** Routines for .tap format files ***/
 
 libspectrum_error

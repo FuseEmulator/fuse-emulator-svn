@@ -1024,6 +1024,12 @@ libspectrum_tape_block_description( char *buffer, size_t length,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+/* Given a tape file, attempt to guess which sort of hardware it should run
+   on by looking for a hardware block (0x33).
+
+   Deliberately not mentioned in libspectrum.h(.in) as I'm really not
+   sure this function is actually useful.
+*/
 libspectrum_error
 libspectrum_tape_guess_hardware( libspectrum_machine *machine,
 				 const libspectrum_tape *tape )
