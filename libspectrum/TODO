@@ -1,0 +1,9 @@
+libspectrum TODO
+================
+
+For the 0.2.1 release
+---------------------
+
+* Stop the "Secure memory is not locked into core" message appearing.
+
+$Id$
