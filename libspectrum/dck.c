@@ -19,13 +19,19 @@
 
    Author contact information:
 
-   E-mail: linux@youmustbejoking.demon.co.uk
+   E-mail: pak21-fuse@srcf.ucam.org
+     Post: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
+
+   Darren: linux@youmustbejoking.demon.co.uk
 
 */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "internals.h"
+
+static const int DCK_PAGE_SIZE = 0x2000;
 
 /* Initialise a libspectrum_dck_block structure */
 libspectrum_error
@@ -151,7 +157,7 @@ libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
         return LIBSPECTRUM_ERROR_UNKNOWN;
       }
 
-    if( buffer + 9 + 8192 * pages > end ) {
+    if( buffer + 9 + DCK_PAGE_SIZE * pages > end ) {
       libspectrum_print_error(
         LIBSPECTRUM_ERROR_CORRUPT,
         "libspectrum_dck_read: not enough data in buffer"
@@ -174,24 +180,25 @@ libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
       case LIBSPECTRUM_DCK_PAGE_NULL:
         break;
       case LIBSPECTRUM_DCK_PAGE_RAM_EMPTY:
-        dck->dck[num_dck_block]->pages[i] = malloc( 8192 );
+        dck->dck[num_dck_block]->pages[i] =
+                        calloc( DCK_PAGE_SIZE, sizeof( libspectrum_byte ) );
         if( !dck->dck[num_dck_block]->pages[i] ) {
           libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
                                    "libspectrum_dck_read: out of memory" );
           return LIBSPECTRUM_ERROR_MEMORY;
         }
-        memset( dck->dck[num_dck_block]->pages[i], 0, 8192 );
         break;
       case LIBSPECTRUM_DCK_PAGE_ROM:
       case LIBSPECTRUM_DCK_PAGE_RAM:
-        dck->dck[num_dck_block]->pages[i] = malloc( 8192 );
+        dck->dck[num_dck_block]->pages[i] =
+	  malloc( DCK_PAGE_SIZE * sizeof( libspectrum_byte ) );
         if( !dck->dck[num_dck_block]->pages[i] ) {
           libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
                                    "libspectrum_dck_read: out of memory" );
           return LIBSPECTRUM_ERROR_MEMORY;
         }
-        memcpy( dck->dck[num_dck_block]->pages[i], buffer, 8192 );
-        buffer += 8192;
+        memcpy( dck->dck[num_dck_block]->pages[i], buffer, DCK_PAGE_SIZE );
+        buffer += DCK_PAGE_SIZE;
         break;
       }
     }
