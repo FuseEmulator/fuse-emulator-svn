@@ -1,0 +1,8 @@
+2002-??-??  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+
+	* Version 0.5.1 released.
+
+	* Split the utilities from Fuse itself.
+
+	* Add `tzxconv' utility to do a best-guess conversion of
+	  .tzx files to .tap files.
