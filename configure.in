@@ -50,18 +50,6 @@ AC_CHECK_LIB(gcrypt,gcry_check_version,
 AC_SUBST(GCRYPT_LIBS)
 AC_SUBST(RZXCHECK)
 
-# Either find glib or use the replacement (as supplied by libspectrum)
-AC_MSG_CHECKING(whether to use glib)
-AC_ARG_WITH(glib,
-[  --without-glib          don't use glib],
-if test "$withval" = no; then glib=no; else glib=yes; fi,
-glib=yes)
-AC_MSG_RESULT($glib)
-if test "$glib" = yes; then
-  AM_PATH_GLIB(1.2.0,AC_DEFINE(HAVE_LIB_GLIB),
- 	       AC_MSG_WARN(glib not found - using libspectrum's replacement))
-fi
-
 dnl Check that libspectrum is available
 AC_ARG_WITH(libspectrum-prefix,
 [  --with-libspectrum-prefix=PFX where libspectrum is installed (optional)],
