@@ -119,6 +119,9 @@ dnl built
 dnl FIXME: is there a better way to do this?
 rm -rf libspectrum.h
 
-AC_OUTPUT(Makefile \
-doc/Makefile \
-libspectrum.qpg)
+AC_OUTPUT(
+  Makefile
+  doc/Makefile
+  libspectrum.qpg
+  myglib/Makefile
+)
