@@ -30,6 +30,10 @@
 
 int main(void)
 {
+  /*
+   * Define the integer types
+   */
+
   printf( "if( /LIBSPECTRUM_DEFINE_TYPES/ ) {\n\n  $_ = << \"CODE\";\n" );
 
 #ifdef HAVE_STDINT_H
@@ -96,7 +100,70 @@ int main(void)
 
 #endif				/* #ifdef HAVE_STDINT_H */
 
-  printf( "CODE\n}\n" );
+  printf( "CODE\n}\n\n" );
+
+  /*
+   * Get glib or our replacement for it
+   */
+   
+  printf( "if( /LIBSPECTRUM_GLIB_REPLACEMENT/ ) {\n\n" );
+
+#ifdef HAVE_LIB_GLIB		/* #ifdef HAVE_LIB_GLIB */
+
+  printf( "  $_ = \"#include <glib.h>\\n\"\n\n" );
+
+#else				/* #ifdef HAVE_LIB_GLIB */
+
+  printf( "  $_ = << \"CODE\";\n"
+"typedef int gint;\n"
+"typedef unsigned int guint;\n"
+"typedef const void * gconstpointer;\n"
+"typedef void * gpointer;\n"
+"\n"
+"typedef struct _GSList GSList;\n"
+"\n"
+"struct _GSList {\n"
+"    gpointer data;\n"
+"    GSList *next;\n"
+"};\n"
+"\n"
+"typedef void		(*GFunc)		(gpointer	data,\n"
+"						 gpointer	user_data);\n"
+"\n"
+"typedef gint		(*GCompareFunc)		(gconstpointer	a,\n"
+"						 gconstpointer	b);\n"
+"\n"
+"\n"
+"GSList* g_slist_insert_sorted	(GSList		*list,\n"
+"				 gpointer	 data,\n"
+"				 GCompareFunc	 func);\n"
+"\n"
+"GSList* g_slist_append		(GSList		*list,\n"
+"				 gpointer	 data);\n"
+"\n"
+"GSList* g_slist_remove		(GSList		*list,\n"
+"				 gpointer	 data);\n"
+"\n"
+"void	g_slist_foreach		(GSList		*list,\n"
+"				 GFunc		 func,\n"
+"				 gpointer	 user_data);\n"
+"\n"
+"void	g_slist_free		(GSList		*list);\n"
+"\n"
+"GSList* g_slist_nth		(GSList		*list,\n"
+"				 guint		n);\n"
+"\n"
+"GSList* g_slist_find_custom	(GSList		*list,\n"
+"				 gpointer	data,\n"
+"				 GCompareFunc	func );\n"
+"\n"
+"gint	g_slist_position	(GSList		*list,\n"
+"				 GSList		*llink);\n"
+"CODE\n" );
+
+#endif				/* #ifdef HAVE_LIB_GLIB */
+
+  printf( "}\n\n" );
 
   return 0;
 }

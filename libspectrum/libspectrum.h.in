@@ -40,6 +40,7 @@ extern "C" {
 /* Standard typedefs */
 LIBSPECTRUM_DEFINE_TYPES
 
+/* glib or its replacement */
 LIBSPECTRUM_GLIB_REPLACEMENT
 
 /*
