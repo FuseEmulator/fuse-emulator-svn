@@ -61,6 +61,13 @@ cartridge images are supported when emulating a TC2068.
 .PP
 There is also support for reading and writing the RZX input recording
 format.
+.PP
+See the
+.B COMPRESSED FILES
+section for details on reading files compressed with
+.IR bzip2 "(3)"
+or
+.IR gzip "(3)."
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -998,7 +1005,7 @@ written to any tape file until you choose this option!
 .RS
 Virtual disk images are only accessible when emulating a +3 or
 Pentagon. If any of the disk options are selected while emulating a
-+3, they refer to the +3's disk drives, which are both of the 3" type
++3, they refer to the +3's disk drives, which are both of the 3\" type
 (in effect, the internal drive plus an external FD-1). With the usual
 +3 format, these have a capacity of 173K. If any other machine is
 being emulated, these options refer to the Pentagon's disk drives,
@@ -1744,6 +1751,23 @@ use.
 .\"
 .\"------------------------------------------------------------------
 .\"
+.SH COMPRESSED FILES
+.PP
+Assuming the appropriate libraries were available when
+.IR libspectrum (3)
+was compiled, snapshots, tape images, dock cartridges and input
+recording files can be read from files compressed with
+.IR bzip2 (3)
+or
+.IR gzip (3)
+just as if they were uncompressed.
+.I libdsk
+provides an equivalent functionality for +3 disk images if available,
+but there is currently no support for reading compressed TR-DOS disk
+images.
+.\"
+.\"------------------------------------------------------------------
+.\"
 .SH BUGS
 Not many peripherals are supported.
 .br
@@ -1765,7 +1789,9 @@ does work though, so use that instead.
 .\"------------------------------------------------------------------
 .\"
 .SH SEE ALSO
+.IR bzip2 "(3),"
 .IR fuse-utils "(1),"
+.IR gzip "(3),"
 .IR libspectrum "(3),"
 .IR xspect "(1),"
 .IR xzx "(1)"
@@ -1803,7 +1829,7 @@ and RZX embedded snapshots and compression.
 Alexander Yurchenko wrote the OpenBSD/Solaris-specific sound code.
 .PP
 Fredrick Meunier wrote the TC2048 and Pentagon support as well as
-maintaing the OS X port and importing the graphics filter code.
+maintaining the OS X port and importing the graphics filter code.
 .PP
 Ludvig Strigeus and The ScummVM project wrote the original graphics
 filter code.
