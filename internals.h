@@ -44,10 +44,19 @@
 #define GCC_PRINTF( fmtstring, args )
 #endif				/* #ifdef __GNUC__ */
 
-/* Win32 systems have _strcmpi, but not strcasecmp */
-#if !defined(HAVE_STRCASECMP) && defined(HAVE__STRCMPI)
-#define strcasecmp _strcmpi
-#endif		/* #if !defined(HAVE_STRCASECMP) && defined(HAVE__STRCMPI) */
+/* On Win32 systems, map snprintf -> _snprintf, strcasecmp -> _stricmp and
+   strncasecmp -> _strnicmp */
+#if !defined(HAVE_SNPRINTF) && defined(HAVE__SNPRINTF)
+#define snprintf _snprintf
+#endif		/* #if !defined(HAVE_SNPRINTF) && defined(HAVE__SNPRINTF) */
+
+#if !defined(HAVE_STRCASECMP) && defined(HAVE__STRICMP)
+#define strcasecmp _stricmp
+#endif		/* #if !defined(HAVE_STRCASECMP) && defined(HAVE__STRICMP) */
+
+#if !defined(HAVE_STRNCASECMP) && defined(HAVE__STRNICMP)
+#define strncasecmp _strnicmp
+#endif		/* #if !defined(HAVE_STRNCASECMP) && defined(HAVE__STRNICMP) */
 
 /* Print using the user-provided error function */
 libspectrum_error
