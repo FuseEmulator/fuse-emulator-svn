@@ -261,6 +261,9 @@ libspectrum_rzx_free( libspectrum_rzx *rzx )
   
   free( rzx->frames ); rzx->frames = NULL;
   rzx->count = rzx->allocated = 0;
+
+  free( rzx );
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 
@@ -603,6 +606,8 @@ rzx_read_input( libspectrum_rzx *rzx,
       libspectrum_rzx_free( rzx ); free( data );
       return error;
     }
+
+    free( data );
 
 #else				/* #ifdef HAVE_ZLIB_H */
 
