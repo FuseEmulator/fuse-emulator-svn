@@ -35,6 +35,9 @@
 #include "gtkinternals.h"
 #include "ui/ui.h"
 
+GdkPixmap *pixmap_tape_inactive, *pixmap_tape_active,
+  *pixmap_disk_inactive, *pixmap_disk_active;
+
 GtkWidget *disk_status,	/* Is the disk motor running? */
   *pause_status,	/* Is emulation paused (via the menu option)? */
   *tape_status,		/* Is the tape running? */
@@ -46,15 +49,29 @@ gtkstatusbar_create( GtkBox *parent )
   GtkWidget *status_bar;
 
   status_bar = gtk_hbox_new( FALSE, 3 );
-  gtk_box_pack_start( parent, status_bar, FALSE, FALSE, 0 );
+  gtk_box_pack_start( parent, status_bar, FALSE, FALSE, 3 );
 
-  disk_status = gtk_label_new( "Disk: N/A" );
+  pixmap_tape_inactive = 
+    gdk_pixmap_colormap_create_from_xpm_d( NULL, gdk_rgb_get_cmap(), NULL,
+					   NULL, gtkpixmap_tape_inactive );
+  pixmap_tape_active = 
+    gdk_pixmap_colormap_create_from_xpm_d( NULL, gdk_rgb_get_cmap(), NULL,
+					   NULL, gtkpixmap_tape_active );
+
+  pixmap_disk_inactive = 
+    gdk_pixmap_colormap_create_from_xpm_d( NULL, gdk_rgb_get_cmap(), NULL,
+					   NULL, gtkpixmap_disk_inactive );
+  pixmap_disk_active = 
+    gdk_pixmap_colormap_create_from_xpm_d( NULL, gdk_rgb_get_cmap(), NULL,
+					   NULL, gtkpixmap_disk_active );
+
+  disk_status = gtk_pixmap_new( pixmap_disk_inactive, NULL );
   gtk_box_pack_start_defaults( GTK_BOX( status_bar ), disk_status );
 
   pause_status = gtk_label_new( "Paused: 0" );
   gtk_box_pack_start_defaults( GTK_BOX( status_bar ), pause_status );
 
-  tape_status = gtk_label_new( "Tape: 0" );
+  tape_status = gtk_pixmap_new( pixmap_tape_inactive, NULL );
   gtk_box_pack_start_defaults( GTK_BOX( status_bar ), tape_status );
 
   speed_status = gtk_label_new( "100%" );
@@ -66,16 +83,22 @@ gtkstatusbar_create( GtkBox *parent )
 int
 ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
 {
+  GdkPixmap *which;
+
   switch( item ) {
 
   case UI_STATUSBAR_ITEM_DISK:
     switch( state ) {
     case UI_STATUSBAR_STATE_NOT_AVAILABLE:
-      gtk_label_set( GTK_LABEL( disk_status ), "Disk: N/A" ); break;
+      gtk_widget_hide( disk_status ); break;
     case UI_STATUSBAR_STATE_ACTIVE:
-      gtk_label_set( GTK_LABEL( disk_status ), "Disk: 1" ); break;
+      gtk_widget_show( disk_status );
+      gtk_pixmap_set( GTK_PIXMAP( disk_status ), pixmap_disk_active, NULL );
+      break;
     default:
-      gtk_label_set( GTK_LABEL( disk_status ), "Disk: 0" ); break;
+      gtk_widget_show( disk_status );
+      gtk_pixmap_set( GTK_PIXMAP( disk_status ), pixmap_disk_inactive, NULL );
+      break;
     }      
     return 0;
 
@@ -87,9 +110,9 @@ ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
     return 0;
 
   case UI_STATUSBAR_ITEM_TAPE:
-    gtk_label_set( GTK_LABEL( tape_status ),
-		   state == UI_STATUSBAR_STATE_ACTIVE ? "Tape: 1" : "Tape: 0"
-		 );
+    which = ( state == UI_STATUSBAR_STATE_ACTIVE ?
+	      pixmap_tape_active : pixmap_tape_inactive );
+    gtk_pixmap_set( GTK_PIXMAP( tape_status ), which, NULL  );
     return 0;
 
   }

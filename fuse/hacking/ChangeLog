@@ -500,3 +500,5 @@
 	 UI code in the distribution tarball (Release-0_6_2-branch).
 20040120 configure.in, z80/Makefile.am, z80/test/Makefile.am: put the z80
 	 core tests in the distribution tarball (Release-0_6_2-branch).
+20040120 ui/gtk: use Fred's tape and disk icons on the GTK+ statusbar
+	 (Release-0_6_2-branch).

@@ -58,6 +58,14 @@ int gtkkeyboard_release_all( GtkWidget *widget, GdkEvent *event,
 int gtkstatusbar_create( GtkBox *parent );
 
 /*
+ * The icon pixmaps (pixmaps.c)
+ */
+extern char *gtkpixmap_tape_inactive[];
+extern char *gtkpixmap_tape_active[];
+extern char *gtkpixmap_disk_inactive[];
+extern char *gtkpixmap_disk_active[];
+
+/*
  * Poke finder routines (pokefinder.c)
  */
 
