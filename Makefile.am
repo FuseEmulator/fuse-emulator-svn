@@ -40,6 +40,7 @@ libspectrum_la_SOURCES = creator.c \
 			 szx.c \
 			 tap.c \
 			 tape.c \
+			 tape_accessors.c \
 		 	 timings.c \
 			 tzx_read.c \
 			 tzx_write.c \
@@ -50,7 +51,7 @@ libspectrum_la_SOURCES = creator.c \
 
 libspectrum_la_LDFLAGS = -version-info 1:0:1
 
-BUILT_SOURCES = libspectrum.h snap_accessors.c
+BUILT_SOURCES = libspectrum.h snap_accessors.c tape_accessors.c
 
 include_HEADERS = libspectrum.h
 noinst_HEADERS = internals.h
@@ -66,9 +67,13 @@ generate.pl: make-perl
 snap_accessors.c: accessor.pl snap_accessors.txt
 	@PERL@ accessor.pl snap_accessors.txt > snap_accessors.c
 
+tape_accessors.c: tape_accessors.pl tape_accessors.txt
+	@PERL@ tape_accessors.pl tape_accessors.txt > tape_accessors.c
+
 INCLUDES = @GLIB_CFLAGS@
 
 EXTRA_DIST = accessor.pl \
 	     doc/libspectrum.txt \
              libspectrum.h.in \
-             snap_accessors.txt
+             snap_accessors.txt \
+	     tape_accessors.txt
