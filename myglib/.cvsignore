@@ -1,3 +1,6 @@
+*.lo
 .deps
+.libs
 Makefile
 Makefile.in
+libmyglib.la
