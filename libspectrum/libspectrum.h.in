@@ -527,6 +527,9 @@ libspectrum_error
 libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
 	                        libspectrum_tape *tape );
 
+/* Get the position on the tape of the current block */
+libspectrum_error libspectrum_tape_position( int *n, libspectrum_tape *tape );
+
 /* Select the nth block on the tape */
 libspectrum_error
 libspectrum_tape_nth_block( libspectrum_tape *tape, int n );
