@@ -185,4 +185,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 specification.
 20040320 libspectrum.c,libspectrum.h.in: add identification of .hdf hard
 	 disk images.
-
+20040320 accessor.pl,snap_accessors.txt,szx.c: add support for the Beta
+	 128 block of the .szx format.

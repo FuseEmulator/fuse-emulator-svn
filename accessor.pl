@@ -104,6 +104,14 @@ struct libspectrum_snap {
   /* Timex-specific bits */
   libspectrum_byte out_scld_hsr, out_scld_dec;
 
+  /* Betadisk status */
+  int beta_paged;
+  int beta_direction;	/* FDC seek direction:
+			      zero => towards lower cylinders (hubwards)
+			  non-zero => towards higher cylinders (rimwards) */
+  libspectrum_byte beta_system, beta_track, beta_sector, beta_data,
+    beta_status;
+
 };
 
 /* Initialise a libspectrum_snap structure */

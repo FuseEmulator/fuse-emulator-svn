@@ -97,6 +97,9 @@ write_ay_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 static libspectrum_error
 write_scld_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, libspectrum_snap *snap );
+static libspectrum_error
+write_b128_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap );
 
 static libspectrum_error
 write_chunk_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -128,6 +131,37 @@ read_ay_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+static libspectrum_error
+read_b128_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
+{
+  libspectrum_dword flags;
+
+  if( data_length < 10 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "szx_read_b128_chunk: length %lu too short",
+			     (unsigned long)data_length );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  flags = libspectrum_read_dword( buffer );
+  libspectrum_snap_set_beta_paged( snap, flags & 0x04 );
+  libspectrum_snap_set_beta_direction( snap, !( flags & 0x20 ) );
+
+  (*buffer)++;		/* Skip the number of drives */
+  libspectrum_snap_set_beta_system( snap, **buffer ); (*buffer)++;
+  libspectrum_snap_set_beta_track ( snap, **buffer ); (*buffer)++;
+  libspectrum_snap_set_beta_sector( snap, **buffer ); (*buffer)++;
+  libspectrum_snap_set_beta_data  ( snap, **buffer ); (*buffer)++;
+  libspectrum_snap_set_beta_status( snap, **buffer ); (*buffer)++;
+
+  /* Skip any extra data (most likely a custom ROM) */
+  *buffer += data_length - 10;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+     
 static libspectrum_error
 read_ramp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 		 const libspectrum_byte **buffer,
@@ -320,6 +354,7 @@ static struct read_chunk_t read_chunks[] = {
 
   { "AMXM",   skip_chunk      },
   { "AY\0\0", read_ay_chunk   },
+  { "B128",   read_b128_chunk },
   { "CRTR",   skip_chunk      },
   { "DRUM",   skip_chunk      },
   { "DSK\0",  skip_chunk      },
@@ -551,6 +586,11 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
 
   if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY ) {
     error = write_scld_chunk( buffer, &ptr, length, snap );
+    if( error ) return error;
+  }
+
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK ) {
+    error = write_b128_chunk( buffer, &ptr, length, snap );
     if( error ) return error;
   }
 
@@ -862,6 +902,31 @@ write_scld_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   *(*ptr)++ = libspectrum_snap_out_scld_hsr( snap );
   *(*ptr)++ = libspectrum_snap_out_scld_dec( snap );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_b128_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+  libspectrum_dword flags;
+
+  error = write_chunk_header( buffer, ptr, length, "B128", 10 );
+  if( error ) return error;
+
+  flags = 0x01;		/* Betadisk interface connected */
+  if( libspectrum_snap_beta_paged( snap ) ) flags |= 0x04;
+  if( !libspectrum_snap_beta_direction( snap ) ) flags |= 0x20;
+  libspectrum_write_dword( ptr, flags );
+
+  *(*ptr)++ = 2;	/* 2 drives connected */
+  *(*ptr)++ = libspectrum_snap_beta_system( snap );
+  *(*ptr)++ = libspectrum_snap_beta_track ( snap );
+  *(*ptr)++ = libspectrum_snap_beta_sector( snap );
+  *(*ptr)++ = libspectrum_snap_beta_data  ( snap );
+  *(*ptr)++ = libspectrum_snap_beta_status( snap );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
