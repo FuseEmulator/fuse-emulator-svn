@@ -190,3 +190,4 @@
 20030912 man/fuse.1: fix typo in BUGS section (for -> from). Mention 16K
 	 Spectrum as being available when changing machine.
 	 (Release-0_6_1-branch)
+20030913 Makefile.am: distribute compat.h (Release-0_6_1-branch)
