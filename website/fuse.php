@@ -177,8 +177,8 @@ fuse_section (NULL, "Development", <<<END_SECTION
   <p>A couple of patches which aren't in the SourceForge tracking system:</p>
 
   <ul>
-   <li>David Gardner has produce a patch to give <a href="http://www.srcf.ucam.org/~pak21/spectrum/fuse-xvideo.patch.bz2">XVideo support</a> for the Xlib UI, allowing arbitrary sized windows.</li>
-   <li>Catalin Mihaila has sent some code to give Fuse <a href="http://www.srcf.ucam.org/~pak21/spectrum/fuse-allegro.tar.gz">Allegro</a> and <a href="http://www.srcf.ucam.org/~pak21/spectrum/fuse-opengl.tar.gz">OpenGL</a> user interfaces.</li>
+   <li>David Gardner has produce a patch to give <a href="fuse-xvideo.patch.bz2">XVideo support</a> for the Xlib UI, allowing arbitrary sized windows.</li>
+   <li>Catalin Mihaila has sent some code to give Fuse <a href="fuse-allegro.tar.gz">Allegro</a> and <a href="fuse-opengl.tar.gz">OpenGL</a> user interfaces.</li>
   </ul>
 
 END_SECTION
