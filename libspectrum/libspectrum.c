@@ -496,6 +496,9 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
   switch( type ) {
 
   case LIBSPECTRUM_ID_COMPRESSED_GZ:
+
+#ifdef HAVE_ZLIB_H
+
     if( new_filename ) {
       if( strlen( *new_filename ) >= 3 &&
 	  !strcasecmp( &(*new_filename)[ strlen( *new_filename ) - 3 ],
@@ -506,6 +509,16 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
     error = libspectrum_gzip_inflate( old_buffer, old_length,
 				      new_buffer, new_length );
     if( error ) { free( new_filename ); return error; }
+
+#else				/* #ifdef HAVE_ZLIB_H */
+
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "zlib not available to decompress gzipped file" );
+    free( new_filename );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+
+#endif				/* #ifdef HAVE_ZLIB_H */
+
     break;
 
   default:
