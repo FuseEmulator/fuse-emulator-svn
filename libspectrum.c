@@ -38,19 +38,27 @@ libspectrum_error_function_t libspectrum_error_function =
   libspectrum_default_error_function;
 
 /* Initialise a libspectrum_snap structure (constructor!) */
-int libspectrum_snap_initalise( libspectrum_snap *snap )
+libspectrum_error
+libspectrum_snap_alloc( libspectrum_snap **snap )
 {
   int i;
 
-  for( i=0; i<8; i++ ) snap->pages[i]=NULL;
-  for( i=0; i<256; i++ ) { snap->slt[i]=NULL; snap->slt_length[i]=0; }
-  snap->slt_screen = NULL;
+  (*snap) = (libspectrum_snap*)malloc( sizeof( libspectrum_snap ) );
+  if( !(*snap) ) {
+    libspectrum_print_error( "libspectrum_snap_alloc: out of memory" );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  for( i=0; i<8; i++ ) (*snap)->pages[i]=NULL;
+  for( i=0; i<256; i++ ) { (*snap)->slt[i]=NULL; (*snap)->slt_length[i]=0; }
+  (*snap)->slt_screen = NULL;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 /* Free all memory used by a libspectrum_snap structure (destructor...) */
-int libspectrum_snap_destroy( libspectrum_snap *snap )
+libspectrum_error
+libspectrum_snap_free( libspectrum_snap *snap )
 {
   int i;
 
@@ -62,6 +70,8 @@ int libspectrum_snap_destroy( libspectrum_snap *snap )
     }
   }
   if( snap->slt_screen ) { free( snap->slt_screen ); }
+
+  free( snap );
 
   return LIBSPECTRUM_ERROR_NONE;
 }

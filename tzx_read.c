@@ -106,8 +106,8 @@ tzx_read_string( const libspectrum_byte **ptr, const libspectrum_byte *end,
 /* The main load function */
 
 libspectrum_error
-libspectrum_tzx_create( libspectrum_tape *tape, const libspectrum_byte *buffer,
-			const size_t length )
+libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		      const size_t length )
 {
 
   libspectrum_error error;

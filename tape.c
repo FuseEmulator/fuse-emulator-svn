@@ -104,13 +104,42 @@ jump_blocks( libspectrum_tape *tape, int offset );
 
 /*** Function definitions ****/
 
+/* Allocate a list of blocks */
+libspectrum_error
+libspectrum_tape_alloc( libspectrum_tape **tape )
+{
+  (*tape) = (libspectrum_tape*)malloc( sizeof( libspectrum_tape ) );
+  if( !(*tape) ) {
+    libspectrum_print_error( "libspectrum_tape_alloc: out of memory" );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  (*tape)->current_block = (*tape)->blocks = NULL;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+/* Free the memory used by a list of blocks, but not the object itself */
+libspectrum_error
+libspectrum_tape_clear( libspectrum_tape *tape )
+{
+  g_slist_foreach( tape->blocks, block_free, NULL );
+  g_slist_free( tape->blocks );
+  tape->current_block = tape->blocks = NULL;  
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
 /* Free up a list of blocks */
 libspectrum_error
 libspectrum_tape_free( libspectrum_tape *tape )
 {
-  g_slist_foreach( tape->blocks, block_free, NULL );
-  g_slist_free( tape->blocks );
-  tape->blocks = tape->current_block = NULL;
+  libspectrum_error error;
+
+  error = libspectrum_tape_clear( tape );
+  if( error ) return error;
+
+  free( tape );
   
   return LIBSPECTRUM_ERROR_NONE;
 }
