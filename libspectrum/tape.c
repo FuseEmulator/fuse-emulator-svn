@@ -1066,6 +1066,9 @@ libspectrum_tape_guess_hardware( libspectrum_machine *machine,
       switch( hardware->ids[i] ) {
 
       case 0: /* 16K Spectrum */
+	*machine = LIBSPECTRUM_MACHINE_16; current_score = score;
+	break;
+
       case 1: /* 48K Spectrum */
       case 2: /* 48K Issue 1 Spectrum */
 	*machine = LIBSPECTRUM_MACHINE_48; current_score = score;
