@@ -24,6 +24,8 @@
 
 */
 
+#include <config.h>
+
 #include <stdio.h>
 
 int main(void)
@@ -60,6 +62,63 @@ int main(void)
     return 1;
   }
   printf( " libspectrum_dword;/\n" );
+
+  printf( "s/LIBSPECTRUM_GLIB_REPLACEMENT/"
+
+  /* Text to be inserted starts here */
+
+#ifdef HAVE_LIB_GLIB
+
+"#include <glib.h>"
+
+#else				/* #ifdef HAVE_LIB_GLIB */
+
+"typedef int gint;\\\n"
+"typedef unsigned int guint;\\\n"
+"typedef const void * gconstpointer;\\\n"
+"typedef void * gpointer;\\\n"
+"\\\n"
+"typedef struct _GSList GSList;\\\n"
+"\\\n"
+"struct _GSList {\\\n"
+"    gpointer data;\\\n"
+"    GSList *next;\\\n"
+"};\\\n"
+"\\\n"
+"typedef void		(*GFunc)		(gpointer	data,\\\n"
+"						 gpointer	user_data);\\\n"
+"\\\n"
+"typedef gint		(*GCompareFunc)		(gconstpointer	a,\\\n"
+"						 gconstpointer	b);\\\n"
+"\\\n"
+"\\\n"
+"GSList* g_slist_insert_sorted	(GSList		*list,\\\n"
+"				 gpointer	 data,\\\n"
+"				 GCompareFunc	 func);\\\n"
+"\\\n"
+"GSList* g_slist_append		(GSList		*list,\\\n"
+"				 gpointer	 data);\\\n"
+"\\\n"
+"GSList* g_slist_remove		(GSList		*list,\\\n"
+"				 gpointer	 data);\\\n"
+"\\\n"
+"void	g_slist_foreach		(GSList		*list,\\\n"
+"				 GFunc		 func,\\\n"
+"				 gpointer	 user_data);\\\n"
+"\\\n"
+"void	g_slist_free		(GSList		*list);\\\n"
+"\\\n"
+"GSList* g_slist_nth		(GSList		*list,\\\n"
+"				 guint		n);\\\n"
+"\\\n"
+"gint	g_slist_position	(GSList		*list,\\\n"
+"				 GSList		*llink);"
+
+#endif				/* #ifdef HAVE_LIB_GLIB */
+
+  /* Generated sed command continues here */
+
+  "/\n" );
 
   return 0;
 }

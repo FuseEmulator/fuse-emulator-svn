@@ -40,7 +40,10 @@ AC_HEADER_STDC
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 
-# Test for glib
+dnl Check for zlib
+AC_CHECK_HEADERS(zlib.h)
+
+dnl Either find glib or use the replacement
 AC_MSG_CHECKING(whether to use glib)
 AC_ARG_WITH(glib,
 [  --without-glib          don't use glib],
@@ -48,12 +51,9 @@ if test "$withval" = no; then glib=no; else glib=yes; fi,
 glib=yes)
 AC_MSG_RESULT($glib)
 if test "$glib" = yes; then
-  AM_PATH_GLIB(1.2.0, AC_DEFINE(HAVE_LIB_GLIB),
-  	       AC_MSG_WARN(glib not found - using internal replacement))
+  AM_PATH_GLIB(1.2.0,AC_DEFINE(HAVE_LIB_GLIB),
+               AC_MSG_WARN(glib not found - using internal replacement))
 fi
-
-dnl Check for zlib
-AC_CHECK_HEADERS(zlib.h)
 
 dnl If it appears we're using gcc as our compiler, turn on warnings
 if test "$ac_cv_prog_gcc" = yes; then

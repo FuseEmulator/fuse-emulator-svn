@@ -28,7 +28,9 @@
 #ifndef LIBSPECTRUM_INTERNALS_H
 #define LIBSPECTRUM_INTERNALS_H
 
+#ifdef HAVE_LIB_GLIB		/* Only if we've got the real glib */
 #include <glib.h>
+#endif				/* #ifdef HAVE_LIB_GLIB */
 
 #ifndef LIBSPECTRUM_LIBSPECTRUM_H
 #include "libspectrum.h"
