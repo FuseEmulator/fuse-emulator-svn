@@ -1,4 +1,21 @@
-2002-??-??  Philip Kendall  <pak21-spectrum@srcf.ucam.org>
+2003-??-??  Philip Kendall  <pak21-spectrum@srcf.ucam.org>
+
+	* Version 0.1.1 released
+
+	* Support reading .z80 snapshots with Spectaculator's 16K, +2 and
+	  +2A extensions (Fredrick Meunier).
+
+	* Add routines to get timing information for the various machines
+	  (Philip Kendall).
+
+	* TC2068 support, including .z80 snapshots using hardware type 15.
+	  (Witold Filipczyk/Fredrick Meunier).
+
+	* Support for Warajevo's .dck files (Darren Salt/Fredrick Meunier).
+
+2002-12-09  Philip Kendall  <pak21-spectrum@srcf.ucam.org>
+
+	* Version 0.1.0 released
 
 	* Major code reorganisation: API changes to allow future binary
 	  compatability, logical organisation of header files improved
