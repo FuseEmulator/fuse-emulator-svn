@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\"
 .\" tapeconv.1: tapeconv man page
-.\" Copyright (c) 2002 Philip Kendall
+.\" Copyright (c) 2002-2003 Philip Kendall
 .\"
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 .\" Postal address: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
 .\"
 .\"
-.TH tapeconv 1 "4th December, 2002" "Version 0.5.1" "Emulators"
+.TH tapeconv 1 "16th April, 2003" "Version 0.6.0" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -35,24 +35,37 @@ tapeconv \- Sinclair ZX Spectrum tape file convertor
 .SH SYNOPSIS
 .PD 0
 .B tapeconv
-.I tzxfile
-.P
+.RI [ "-i format" ]
+.RI [ "-o format" ]
+.I tapefile
 .PD 1
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH DESCRIPTION
-Tapeconv converts a .tzx tape file to a .tap tape file. The .tzx format
-is a superset of the .tap format, so not all information can be
-preserved; warnings will be given if any information may be lost.
-.PP
-The converted .tap file will be written to standard output.
+Tapeconv converts between .tzx and .tap tape files. It reads in one
+tape file and writes the converted file to standard output.
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH OPTIONS
 .TP
-.I tzxfile
+.I -i format
+specifies the format of the input tape file. Generally, this will be
+autodetcted, but you can use
+.RI ` tzx '
+or
+.RI ` tap '
+to force .tzx or .tap format respectively.
+.TP
+.I -o format
+specifies the format of the output tape file in the same way as the
+.I -i
+option. This will default to .tzx format if it is not specified. Note
+that .tap format is a subset of .tzx format, and hence the conversion
+may not succeed. Warning messages will be given in this case.
+.TP
+.I tapefile
 specifies a tape file to be converted.
 .\"
 .\"------------------------------------------------------------------
@@ -73,7 +86,7 @@ None known.
 .PP
 The comp.sys.sinclair Spectrum FAQ, at
 .br
-.IR "http://www.srcf.ucam.org/~pak21/cssfaq/index.html" .
+.IR "http://www.sinclairfaq.com/cssfaq/index.html" .
 .\"
 .\"------------------------------------------------------------------
 .\"

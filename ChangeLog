@@ -1,4 +1,17 @@
-2002-??-??  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+2003-??-??  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+
+	* Version 0.6.0 released.
+
+	* Add functionality to `tzxconv' to read and write both .tzx and
+	  .tap; hence rename it to `tapeconv'.
+
+	* Stop `rzxtool' accessing unallocated memory when adding a
+	  snapshot to an RZX file.
+
+	* Add `scl2trd' utility to convert .scl files to .trd files
+	  (Fredrick Meunier).
+
+2002-12-09  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 
 	* Version 0.5.1 released.
 
