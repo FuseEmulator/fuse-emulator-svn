@@ -1,4 +1,4 @@
-The Fuse utilities version 0.6.1
+The Fuse utilities version 0.6.2
 ================================
 
 The Fuse utilities are a few tools which may be of occasional use when
@@ -14,6 +14,7 @@ The available utilities are:
 * rzxtool: add, extract or remove the embedded snapshot from an RZX file,
 	   or compress or uncompress the file.
 * scl2trd: convert .scl disk images to .trd disk images.
+* snap2tzx: convert snapshots to TZX tape images.
 * snapconv: convert between snapshot formats.
 * tapeconv: convert between .tzx and .tap files.
 * tzxlist: list the contents of a TZX file.
@@ -42,11 +43,11 @@ this, give the `--prefix=DIR' option to `configure' to install them
 under `DIR'.
 
 The latest version of the utilities should always be available from
-http://www.srcf.ucam.org/~pak21/spectrum/fuse.html
+http://fuse-emulator.sourceforge.net/fuse.php
 
 Please send any bug reports, comments, etc to me.
 
 Philip Kendall <pak21-fuse@srcf.ucam.org>
-13 September 2003
+11 February 2004
 
 $Id$
