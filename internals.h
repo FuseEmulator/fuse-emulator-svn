@@ -107,6 +107,7 @@ int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 #define SNAPSHOT_ZXATASP_PAGES 32
 #define SNAPSHOT_ZXCF_PAGES 64
 #define SNAPSHOT_DOCK_EXROM_PAGES 8
+#define SNAPSHOT_JOYSTICKS 7
 
 /* Get memory for a snap */
 

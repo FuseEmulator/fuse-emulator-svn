@@ -126,6 +126,12 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
 
   libspectrum_snap_set_issue2( *snap, 0 );
 
+  libspectrum_snap_set_joystick_active_count( *snap, 0 );
+  for( i = 0; i < SNAPSHOT_JOYSTICKS; i++ ) {
+    libspectrum_snap_set_joystick_list( *snap, i, LIBSPECTRUM_JOYSTICK_NONE );
+    libspectrum_snap_set_joystick_inputs( *snap, i, 0 );
+  }
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 

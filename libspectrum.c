@@ -45,6 +45,12 @@ static const char *gcrypt_version;
 
 #include "internals.h"
 
+/* The various real devices that can be attached to a virtual joystick */
+const int LIBSPECTRUM_JOYSTICK_INPUT_NONE             = 0;
+const int LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD         = 1 << 0;
+const int LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1       = 1 << 1;
+const int LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2       = 1 << 2;
+
 /* The function to call on errors */
 libspectrum_error_function_t libspectrum_error_function =
   libspectrum_default_error_function;
@@ -166,6 +172,25 @@ libspectrum_default_error_function( libspectrum_error error,
   if( error == LIBSPECTRUM_ERROR_LOGIC ) abort();
 
   return LIBSPECTRUM_ERROR_NONE;
+}
+
+/* Get the name of a specific joystick type */
+const char *
+libspectrum_joystick_name( libspectrum_joystick type )
+{
+  switch( type ) {
+  case LIBSPECTRUM_JOYSTICK_CURSOR:     return "Cursor";
+  case LIBSPECTRUM_JOYSTICK_KEMPSTON:   return "Kempston";
+  case LIBSPECTRUM_JOYSTICK_SINCLAIR_1: return "Sinclair 1";
+  case LIBSPECTRUM_JOYSTICK_SINCLAIR_2: return "Sinclair 2";
+  case LIBSPECTRUM_JOYSTICK_TIMEX_1:    return "Timex 1";
+  case LIBSPECTRUM_JOYSTICK_TIMEX_2:    return "Timex 2";
+  case LIBSPECTRUM_JOYSTICK_FULLER:     return "Fuller";
+
+  case LIBSPECTRUM_JOYSTICK_NONE:       return "(None)";
+  }
+
+  return "(unknown type)";
 }
 
 /* Get the name of a specific machine type */

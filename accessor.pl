@@ -142,6 +142,11 @@ struct libspectrum_snap {
 
   /* Keyboard emulation */
   int issue2;
+
+  /* Joystick emulation */
+  size_t joystick_active_count;
+  libspectrum_joystick joystick_list[ SNAPSHOT_JOYSTICKS ];
+  int joystick_inputs[ SNAPSHOT_JOYSTICKS ];
 };
 
 /* Initialise a libspectrum_snap structure */
