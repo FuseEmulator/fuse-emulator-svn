@@ -145,3 +145,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040113 Makefile.am, configure.in: bump version number to 0.2.1pre1 and
 	 update the library soname (libspectrum_0_2_1-branch).
 20040114 ChangeLog: bring up to date.
+20040117 TAG: libspectrum_0_2_1pre1 (libspectrum_0_2_1-branch).
