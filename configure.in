@@ -29,6 +29,17 @@ AM_INIT_AUTOMAKE(fuse-utils, 0.5.2pre2)
 dnl Checks for programs.
 AC_PROG_CC
 
+dnl Check for big endianness
+AC_C_BIGENDIAN
+
+dnl Check sizes of various types; second parameter is a `default' for
+dnl cross-compiling. Will obviously break everything if this is wrong...
+AC_CHECK_SIZEOF(char, 1)
+AC_CHECK_SIZEOF(short, 2)
+AC_CHECK_SIZEOF(int, 4)
+AC_CHECK_SIZEOF(long, 4)
+AC_CHECK_SIZEOF(long long, 8)
+
 dnl Check that zlib is available
 AC_CHECK_LIB(z,zlibVersion)
 
