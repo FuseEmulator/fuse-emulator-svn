@@ -204,6 +204,7 @@ main( int argc, char **argv )
   }
 
   libspectrum_rzx_free( rzx );
+  if( snap ) libspectrum_snap_free( snap );
 
   return 0;
 }
