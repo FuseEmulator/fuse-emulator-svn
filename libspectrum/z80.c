@@ -253,18 +253,23 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     }
 
-/* I don't like this any more than you do but here is support for the
-   Spectaculator extensions:
-   Support for 16k/+2/+2A snapshots
-   If bit 7 of byte 37 is set, this modifies the value of the hardware field
-   (for both v2 and v3 snapshots) such that:
-     a.. Any valid 48k identifier should be taken as 16k
-     b.. Any valid 128k identifier should be taken as +2
-     c.. Any valid +3 identifier (7 or 8) should be taken as +2A
-   Support for Fuller Box / AY sound in 48k mode
-   Spectaculator recognises xzx's extension of setting bit 2 of byte 37 to
-   specify AY sound in 48k mode. In addition, if this and also bit 6 is set,
-   this specifies Fuller Box emulation. */
+    /* I don't like this any more than you do but here is support for the
+       Spectaculator extensions:
+
+       Support for 16k/+2/+2A snapshots
+
+       If bit 7 of byte 37 is set, this modifies the value of the hardware
+       field (for both v2 and v3 snapshots) such that:
+         a.. Any valid 48k identifier should be taken as 16k
+         b.. Any valid 128k identifier should be taken as +2
+         c.. Any valid +3 identifier (7 or 8) should be taken as +2A
+
+       Support for Fuller Box / AY sound in 48k mode
+       
+       Spectaculator recognises xzx's extension of setting bit 2 of byte 37 to
+       specify AY sound in 48k mode. In addition, if this and also bit 6 is
+       set, this specifies Fuller Box emulation.
+    */
     if( snap->machine == LIBSPECTRUM_MACHINE_128 && extra_header[5] & 0x80 )
       snap->machine = LIBSPECTRUM_MACHINE_PLUS2;
 
