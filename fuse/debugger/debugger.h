@@ -1,0 +1,51 @@
+/* debugger.h: Fuse's monitor/debugger
+   Copyright (c) 2002 Darren Salt, Philip Kendall
+
+   $Id$
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+   Author contact information:
+
+   Darren: linux@youmustbejoking.demon.co.uk
+
+   Philip: pak21-fuse@srcf.ucam.org
+   Postal address: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
+
+*/
+
+#ifndef FUSE_DEBUGGER_H
+#define FUSE_DEBUGGER_H
+
+/* The current state of the debugger */
+enum debugger_mode_t
+{
+  DEBUGGER_MODE_INACTIVE,	/* No breakpoint set */
+
+  DEBUGGER_MODE_ACTIVE,		/* Breakpoint set, but emulator running */
+  DEBUGGER_MODE_STEP,		/* Single step execution */
+};
+
+extern enum debugger_mode_t debugger_mode;
+
+int debugger_init( void );
+int debugger_reset( void );
+
+int debugger_end( void );
+
+int debugger_check( void );	/* See if the debugger should become active */
+int debugger_trap( void );	/* Activate the debugger */
+
+#endif FUSE_DEBUGGER_H		/* #ifndef FUSE_DEBUGGER_H */
