@@ -1096,17 +1096,20 @@ tzx_read_data( const libspectrum_byte **ptr, const libspectrum_byte *end,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  /* Allocate memory for the data */
-  (*data) =
-    (libspectrum_byte*)malloc( (*length+padding) * sizeof(libspectrum_byte) );
-  if( (*data) == NULL ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "tzx_read_data: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  /* Allocate memory for the data; the check for *length is to avoid
+     the implementation-defined of malloc( 0 ) */
+  if( *length ) {
 
-  /* Copy the block data across, and move along */
-  memcpy( (*data), (*ptr), (*length) ); (*ptr) += (*length);
+    *data = malloc( ( *length + padding ) * sizeof( libspectrum_byte ) );
+    if( !*data ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			       "tzx_read_data: out of memory" );
+      return LIBSPECTRUM_ERROR_MEMORY;
+    }
+
+    /* Copy the block data across, and move along */
+    memcpy( *data, *ptr, *length ); *ptr += *length;
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 
