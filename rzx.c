@@ -1142,7 +1142,8 @@ rzx_read_sign_end( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
 
   signature = &( block->types.signature );
 
-  signature->length = *ptr - rzx->signed_start;
+  /* - 5 as we don't sign the block ID and length of this block */
+  signature->length = ( *ptr - rzx->signed_start ) - 5;
 
 #ifdef HAVE_GCRYPT_H
   { 
