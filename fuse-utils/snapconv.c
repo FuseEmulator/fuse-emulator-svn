@@ -86,7 +86,7 @@ main( int argc, char **argv )
   }
 
   error = libspectrum_snap_read( snap, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
-				 argv[1] );
+				 argv[0] );
   if( error ) {
     libspectrum_snap_free( snap ); munmap( buffer, length );
     return error;
@@ -104,7 +104,7 @@ main( int argc, char **argv )
   if( error ) { libspectrum_snap_free( snap ); return error; }
 
   if( class != LIBSPECTRUM_CLASS_SNAPSHOT ) {
-    fprintf( stderr, "%s: '%s' is not a snapshot file\n", progname, argv[1] );
+    fprintf( stderr, "%s: '%s' is not a snapshot file\n", progname, argv[0] );
     libspectrum_snap_free( snap );
     return 1;
   }
