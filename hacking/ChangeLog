@@ -223,3 +223,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 alloc/free routines.
 20040527 timings.c: small timing tweak for 128K machines; we now match
 	 the timines for (at least some!) 48K/128K machines.
+20040527 szx.c: Write scld block when machine has SE memory capability.
