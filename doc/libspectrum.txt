@@ -172,10 +172,64 @@ files with the wrong extension), but it should work in most cases.
 Machine timings
 ---------------
 
-The `libspectrum_machine_timings' function will give information about
+The `libspectrum_machine_timings_*' functions give information about
 the speed and various timings constants used by the machines. Some of
 these timings are almost certainly wrong; if you have any corrections,
-please send them in.
+please send them in. Each of the functions takes one of the
+LIBSPECTRUM_MACHINE_* constants listed above and returns a timing for
+that machine.
+
+libspectrum_dword
+libspectrum_timings_processor_speed( libspectrum_machine machine )
+libspectrum_dword
+libspectrum_timings_ay_speed( libspectrum_machine machine )
+
+The speed in Hz of the main processor and of the AY clock.
+
+libspectrum_word
+libspectrum_timings_left_border( libspectrum_machine machine )
+libspectrum_word
+libspectrum_timings_horizontal_screen( libspectrum_machine machine )
+libspectrum_word
+libspectrum_timings_right_border( libspectrum_machine machine )
+libspectrum_word
+libspectrum_timings_horizontal_retrace( libspectrum_machine machine )
+
+The length in tstates of the the different parts of one scanline.
+
+libspectrum_word
+libspectrum_timings_tstates_per_line( libspectrum_machine machine )
+
+The sum of the previous four numbers.
+
+libspectrum_word
+libspectrum_timings_top_border( libspectrum_machine machine )
+libspectrum_word
+libspectrum_timings_vertical_screen( libspectrum_machine machine )
+libspectrum_word
+libspectrum_timings_bottom_border( libspectrum_machine machine )
+libspectrum_word
+libspectrum_timings_vertical_retrace( libspectrum_machine machine )
+
+The number of scanlines in the different parts of the screen.
+
+libspectrum_word
+libspectrum_timings_lines_per_frame( libspectrum_machine machine )
+
+The sum of the previous four numbers.
+
+libspectrum_dword
+libspectrum_timings_tstates_per_frame( libspectrum_machine machine )
+
+tstates_per_line * lines_per_frame.
+
+libspectrum_word
+libspectrum_timings_top_left_pixel( libspectrum_machine machine )
+
+How many tstates after interrupt is the top-left pixel of the screen
+displayed.
+
+
 
 libspectrum_error
 libspectrum_machine_timings( libspectrum_timings *timings,
