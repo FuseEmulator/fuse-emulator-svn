@@ -838,66 +838,66 @@ libspectrum_tape_block_description( libspectrum_tape_block *block,
 {
   switch( block->type ) {
   case LIBSPECTRUM_TAPE_BLOCK_ROM:
-    strncpy( buffer, "Standard Speed Data Block", length );
+    strncpy( buffer, "Standard Speed Data", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_TURBO:
-    strncpy( buffer, "Turbo Speed Data Block", length );
+    strncpy( buffer, "Turbo Speed Data", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
-    strncpy( buffer, "Pure Tone Block", length );
+    strncpy( buffer, "Pure Tone", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PULSES:
     strncpy( buffer, "List of Pulses", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
-    strncpy( buffer, "Pure Data Block", length );
+    strncpy( buffer, "Pure Data", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
-    strncpy( buffer, "Raw Data Block", length );
+    strncpy( buffer, "Raw Data", length );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
-    strncpy( buffer, "Pause Block", length );
+    strncpy( buffer, "Pause", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
-    strncpy( buffer, "Group Start Block", length );
+    strncpy( buffer, "Group Start", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
-    strncpy( buffer, "Group End Block", length );
+    strncpy( buffer, "Group End", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_JUMP:
-    strncpy( buffer, "Jump Block", length );
+    strncpy( buffer, "Jump", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
     strncpy( buffer, "Loop Start Block", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
-    strncpy( buffer, "Loop End Block", length );
+    strncpy( buffer, "Loop End", length );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_SELECT:
-    strncpy( buffer, "Select Block", length );
+    strncpy( buffer, "Select", length );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_STOP48:
-    strncpy( buffer, "Stop Tape If In 48K Mode Block", length );
+    strncpy( buffer, "Stop Tape If In 48K Mode", length );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
-    strncpy( buffer, "Comment Block", length );
+    strncpy( buffer, "Comment", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
-    strncpy( buffer, "Message Block", length );
+    strncpy( buffer, "Message", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
-    strncpy( buffer, "Archive Info Block", length );
+    strncpy( buffer, "Archive Info", length );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
-    strncpy( buffer, "Hardware Information Block", length );
+    strncpy( buffer, "Hardware Information", length );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
-    strncpy( buffer, "Custom Info Block", length );
+    strncpy( buffer, "Custom Info", length );
     break;
 
   default:
