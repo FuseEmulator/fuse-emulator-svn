@@ -1,9 +1,15 @@
 libspectrum is brought to you by:
 
-* Darren Salt: SLT support, TZX raw data blocks, RZX embedded snapshots,
-               RZX compression.
+* Stuart Brady: Scorpion ZS 256 support.
 
-* Matan Ziv-Av: The glib emulation code.
+* Garry Lancaster: IDE hard disk image support.
+
+* Fredrick Meunier: Spectrum SE support and more.
+
+* Darren Salt: SLT support, TZX raw data blocks, RZX embedded snapshots,
+               RZX compression, Spectrum SE support.
+
+* Matan Ziv-Av: The singly-linked list code.
 
 * Philip Kendall: everything else.
 
