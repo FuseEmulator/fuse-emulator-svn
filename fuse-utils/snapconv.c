@@ -1,5 +1,5 @@
 /* snapconv.c: Convert snapshot formats
-   Copyright (c) 2003 Philip Kendall
+   Copyright (c) 2003-2005 Philip Kendall
 
    $Id$
 
@@ -104,7 +104,7 @@ main( int argc, char **argv )
   if( error ) { libspectrum_snap_free( snap ); return error; }
 
   if( class != LIBSPECTRUM_CLASS_SNAPSHOT ) {
-    fprintf( stderr, "%s: '%s' is not a snapshot file\n", progname, argv[0] );
+    fprintf( stderr, "%s: '%s' is not a snapshot file\n", progname, argv[1] );
     libspectrum_snap_free( snap );
     return 1;
   }
