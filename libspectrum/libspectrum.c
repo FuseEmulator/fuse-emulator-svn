@@ -143,6 +143,8 @@ const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK   = 1 << 7;
                                            /* T[SC]2068-style cartridge port */
 const int LIBSPECTRUM_MACHINE_CAPABILITY_SINCLAIR_JOYSTICK = 1 << 8;
                                             /* Sinclair-style joystick ports */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK = 1 << 9;
+                                            /* Kempston-style joystick ports */
 
 /* Given a machine type, what features does it have? */
 int
@@ -226,6 +228,14 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_PLUS2: case LIBSPECTRUM_MACHINE_PLUS2A:
   case LIBSPECTRUM_MACHINE_PLUS3:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_SINCLAIR_JOYSTICK; break;
+  default:
+    break;
+  }
+
+  /* Kempston-style joystick ports */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_TC2048:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK; break;
   default:
     break;
   }

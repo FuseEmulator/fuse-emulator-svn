@@ -182,6 +182,8 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK;
                                            /* T[SC]2068-style cartridge port */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_SINCLAIR_JOYSTICK;
                                             /* Sinclair-style joystick ports */
+extern const int LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK;
+                                            /* Kempston-style joystick ports */
 
 /* Get the capabilities of a machine */
 int libspectrum_machine_capabilities( libspectrum_machine type );
