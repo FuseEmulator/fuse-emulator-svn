@@ -104,6 +104,9 @@ typedef enum libspectrum_id_t {
   /* Timex DOCK/EXROM files */
   LIBSPECTRUM_ID_CARTRIDGE_DCK,
 
+  /* Tape files */
+  LIBSPECTRUM_ID_TAPE_WARAJEVO,
+
 } libspectrum_id_t;
 
 libspectrum_error
@@ -605,6 +608,16 @@ libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 libspectrum_error
 libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_tape *tape );
+
+/*** Routines for Warajevo .tap format files ***/
+
+libspectrum_error
+libspectrum_warajevo_read( libspectrum_tape *tape,
+			   const libspectrum_byte *buffer, size_t length );
+
+/*
+ * Input recording routines
+ */
 
 typedef struct libspectrum_rzx libspectrum_rzx;
 

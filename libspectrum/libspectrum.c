@@ -199,6 +199,7 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 
       { LIBSPECTRUM_ID_TAPE_TAP,      "tap", "\x13\0\0", 0, 3, 1 },
       { LIBSPECTRUM_ID_TAPE_TZX,      "tzx", "ZXTape!",  0, 7, 3 },
+      { LIBSPECTRUM_ID_TAPE_WARAJEVO, "tap", "\xff\xff\xff\xff", 8, 4, 1 },
 
       { LIBSPECTRUM_ID_DISK_DSK,      "dsk", NULL,       0, 0, 0 },
       { LIBSPECTRUM_ID_DISK_SCL,      "scl", NULL,       0, 0, 0 },
