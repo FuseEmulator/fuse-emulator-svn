@@ -69,3 +69,6 @@
 20031212 snap2tzx.c: C89 and coding style fixups.
 20031216 snap2tzx.c: finish libspectrumification of snap2tzx.
 20031216 ChangeLog: bring up to date.
+20031218 snap2tzx.c: slow 6000 bps loader down slightly so it works with
+	 (more) emulators; this is the only signficant change made between
+	 z802tzx 1.0 and z802tzx 1.1.
