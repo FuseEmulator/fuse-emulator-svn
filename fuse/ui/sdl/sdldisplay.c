@@ -47,7 +47,6 @@
 static SDL_Surface *gc=NULL;    /* Hardware screen */
 static SDL_Surface *tmp_screen=NULL; /* Temporary screen for scalers */
 
-static ScalerProc *scaler_proc;
 static int tmp_screen_width;
 
 static DWORD scaler_mode_flags;
@@ -169,54 +168,43 @@ sdldisplay_load_gfx_mode( void )
   switch( current_scaler ) {
   case GFX_2XSAI:
     sdldisplay_current_size = 2;
-    scaler_proc = _2xSaI;
     scaler_mode_flags = UPDATE_EXPAND_1_PIXEL;
     break;
   case GFX_SUPER2XSAI:
     sdldisplay_current_size = 2;
-    scaler_proc = Super2xSaI;
     scaler_mode_flags = UPDATE_EXPAND_1_PIXEL;
     break;
   case GFX_SUPEREAGLE:
     sdldisplay_current_size = 2;
-    scaler_proc = SuperEagle;
     scaler_mode_flags = UPDATE_EXPAND_1_PIXEL;
     break;
   case GFX_ADVMAME2X:
     sdldisplay_current_size = 2;
-    scaler_proc = AdvMame2x;
     scaler_mode_flags = UPDATE_EXPAND_1_PIXEL;
     break;
   case GFX_TV2X:
     sdldisplay_current_size = 2;
-    scaler_proc = TV2x;
     scaler_mode_flags = UPDATE_EXPAND_1_PIXEL;
     break;
   case GFX_TIMEXTV:
     sdldisplay_current_size = 1;
-    scaler_proc = TimexTV;
     scaler_mode_flags = UPDATE_EXPAND_2_Y_PIXELS;
     break;
   case GFX_DOUBLESIZE:
     sdldisplay_current_size = 2;
-    scaler_proc = Normal2x;
     break;
   case GFX_TRIPLESIZE:
     sdldisplay_current_size = 3;
-    scaler_proc = Normal3x;
     break;
   case GFX_NORMAL:
     sdldisplay_current_size = 1;
-    scaler_proc = Normal1x;
     break;
   case GFX_HALF:
     sdldisplay_current_size = 0.5;
-    scaler_proc = Half;
     break;
   default:
     fprintf( stderr, "%s: unknown gfx mode defaulting to normal\n", fuse_progname);
     sdldisplay_current_size = 1;
-    scaler_proc = Normal1x;
   }
 
   /* Create the surface that contains the scaled graphics in 16 bit mode */
@@ -282,7 +270,7 @@ uidisplay_hotswap_gfx_mode( void )
   SDL_UpdateRect(tmp_screen, 0,  0, 0, 0);
 
   /* Free the old surfaces */
-  free(oldtmp_screen->pixels);
+  if( oldtmp_screen ) free( oldtmp_screen->pixels );
   SDL_FreeSurface(oldtmp_screen);
 
   /* Mac OS X resets the state of the cursor after a switch to full screen mode */

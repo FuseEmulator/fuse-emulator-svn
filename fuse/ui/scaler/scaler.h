@@ -1,5 +1,6 @@
 /* ScummVM - Scumm Interpreter
- * Copyright (C) 2002-2003 The ScummVM project and Fredrick Meunier
+ * Copyright (C) 2002-2003 The ScummVM project, Fredrick Meunier and
+ *			   Philip Kendall
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,7 +36,11 @@ typedef enum scaler_type {
   GFX_NUM
 } scaler_type;
 
+typedef void ScalerProc(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
+	                BYTE *dstPtr, DWORD dstPitch, int width, int height);
+
 extern scaler_type current_scaler;
+extern ScalerProc *scaler_proc;
 extern int scalers_registered;
 
 int scaler_select_id( const char *scaler_mode );
@@ -44,30 +49,8 @@ int scaler_select_scaler( scaler_type scaler );
 void scaler_register( scaler_type scaler );
 int scaler_is_supported( scaler_type scaler );
 const char *scaler_name( scaler_type scaler );
-
-typedef void ScalerProc(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
-	                BYTE *dstPtr, DWORD dstPitch, int width, int height);
+ScalerProc *scaler_get_proc( scaler_type scaler );
 
 extern int Init_2xSaI(DWORD BitFormat);
-extern void _2xSaI(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr, BYTE *dstPtr,
-                   DWORD dstPitch, int width, int height);
-extern void Super2xSaI(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
-	               BYTE *dstPtr, DWORD dstPitch, int width, int height);
-extern void SuperEagle(BYTE *srcPtr, DWORD srcPitch, BYTE *deltaPtr,
-	               BYTE *dstPtr, DWORD dstPitch, int width, int height);
-extern void AdvMame2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
-	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
-extern void Half(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
-	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
-extern void Normal1x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
-	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
-extern void Normal2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
-	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
-extern void Normal3x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
-	             BYTE *dstPtr, DWORD dstPitch, int width, int height);
-extern void TV2x(BYTE *srcPtr, DWORD srcPitch, BYTE *null,
-               BYTE *dstPtr, DWORD dstPitch, int width, int height);
-extern void TimexTV(BYTE *srcPtr, DWORD srcPitch, BYTE *null, BYTE *dstPtr,
-               DWORD dstPitch, int width, int height);
 
 #endif

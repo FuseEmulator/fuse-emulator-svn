@@ -59,8 +59,6 @@ static const ptrdiff_t scaled_pitch =
 /* The current size of the window (in units of DISPLAY_SCREEN_*) */
 static int gtkdisplay_current_size=1;
 
-static ScalerProc *scaler_proc;
-
 static int gtkdisplay_allocate_colours( unsigned long *pixel_values );
 static void gtkdisplay_area(int x, int y, int width, int height);
 static int gtkdisplay_configure_notify( int width );
@@ -95,9 +93,6 @@ gtkdisplay_init( void )
 
   if( gtkdisplay_allocate_colours( gtkdisplay_colours ) ) return 1;
 
-  gtkdisplay_current_size = 1;
-  scaler_proc = Normal1x;
-
   return 0;
 }
 
@@ -106,17 +101,12 @@ uidisplay_init_scalers( void )
 {
   scaler_register_clear();
 
-  scaler_register( GFX_NORMAL );
-  scaler_register( GFX_DOUBLESIZE );
-  scaler_register( GFX_2XSAI );
-  scaler_register( GFX_SUPER2XSAI );
-  scaler_register( GFX_SUPEREAGLE );
-  scaler_register( GFX_ADVMAME2X );
   if( machine_current->timex ) {
     scaler_register( GFX_HALF );
-    scaler_register( GFX_TIMEXTV );
+    scaler_register( GFX_NORMAL );
   } else {
-    scaler_register( GFX_TV2X );
+    scaler_register( GFX_NORMAL );
+    scaler_register( GFX_DOUBLESIZE );
   }
 }
 
@@ -128,6 +118,7 @@ uidisplay_init( int width, int height )
   image_width = width;
   image_height = height;
 
+  uidisplay_init_scalers();
   error = select_sensible_scaler(); if( error ) return error;
 
   display_refresh_all();
@@ -229,16 +220,16 @@ select_sensible_scaler( void )
 
   case 1:
     if( machine_current->timex ) {
-      scaler_proc = Half;
+      scaler_select_scaler( GFX_HALF );
     } else {
-      scaler_proc = Normal1x;
+      scaler_select_scaler( GFX_NORMAL );
     }
     break;
   case 2:
     if( machine_current->timex ) {
-      scaler_proc = Normal1x;
+      scaler_select_scaler( GFX_NORMAL );
     } else {
-      scaler_proc = Normal2x;
+      scaler_select_scaler( GFX_DOUBLESIZE );
     }
     break;
   default:
