@@ -548,7 +548,7 @@ typedef struct libspectrum_tape_hardware_block {
 typedef struct libspectrum_tape_custom_block {
 
   /* Description of this block */
-  char description[17];
+  libspectrum_byte *description;
 
   /* And the data for it; currently, no attempt is made to interpret
      this data */

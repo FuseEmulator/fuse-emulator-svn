@@ -217,6 +217,7 @@ block_free( gpointer data, gpointer user_data GCC_UNUSED )
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
+    free( block->types.custom.description );
     free( block->types.custom.data );
     break;
 
