@@ -221,6 +221,18 @@ libspectrum_error libspectrum_snap_free( libspectrum_snap *snap )
 
 Release a structure allocated with `libspectrum_snap_alloc'.
 
+libspectrum_error
+libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
+                       size_t length, libspectrum_id_t type,
+                       const char *filename )
+
+Take the snapshot of type `type' of `length' bytes starting at
+`buffer' and convert it to a `libspectrum_snap' structure. If `type'
+is `LIBSPECTRUM_ID_UNKNOWN', guess the file format via
+`libspectrum_identify_file'; `filename' is used only to help with the
+identification process and can be set to NULL (or anything else) if
+`type' is not `LIBSPECTRUM_ID_UNKNOWN'.
+
 libspectrum_error libspectrum_sna_read( libspectrum_snap *snap,
 		                        const libspectrum_byte *buffer,
 				        size_t buffer_length )
@@ -247,16 +259,70 @@ Note that there is (currently) no function to serialise to a .sna
 snapshot.
 
 Tape functions
---------------
+==============
+
+In libspectrum, a tape is represented by a singly linked list of tape
+blocks, `libspectrum_tape':
+
+typedef struct libspectrum_tape {
+
+  /* All the blocks */
+  GSList* blocks;
+
+  /* The current block */
+  GSList* current_block;
+
+} libspectrum_tape;
+
+For more details on the `GSList' type, see the `glib' documentation;
+libspectrum will provide a (minimally functional) replacement if
+`glib' was not available when it was compiled.
+
+Each of the entries in the list should be of `libspectrum_tape_block'
+type:
+
+typedef struct libspectrum_tape_block {
+
+  libspectrum_tape_type type;
+
+  union { < ... lots of types ... > } types;
+
+} libspectrum_tape_block;
+
+Details on the available block types are in `tape_blocks.txt'.
+
+The actual routines for dealing with tapes are:
 
 libspectrum_error libspectrum_tape_alloc( libspectrum_tape **tape )
+
+Allocate a new libspectrum_tape object.
+
 libspectrum_error libspectrum_tape_free( libspectrum_tape *tape )
 
+Free the memory used by a libspectrum_tape objects;
+
 libspectrum_error libspectrum_tape_clear( libspectrum_tape *tape )
-/* Remove all blocks from the current tape */
+
+Free the memory used by the blocks in a libspectrum_tape object, but
+not the objects itself; useful if you're about to read a new tape into
+a current object.
+
+libspectrum_error
+libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+                       size_t length, libspectrum_id_t type,
+                       const char *filename )
+
+Take the tape image of type `type' of `length' bytes starting at
+`buffer' and convert it to a `libspectrum_tape' structure. If `type'
+is `LIBSPECTRUM_ID_UNKNOWN', guess the file format via
+`libspectrum_identify_file'; `filename' is used only to help with the
+identification process and can be set to NULL (or anything else) if
+`type' is not `LIBSPECTRUM_ID_UNKNOWN'.
 
 int libspectrum_tape_present( libspectrum_tape *tape )
-/* Does this tape structure actually contain a tape? */
+
+Returns non-zero if `tape' currently contains a tape image and zero
+otherwise.
 
 libspectrum_error libspectrum_tape_init_block( libspectrum_tape_block *block )
 /* Initialise a block so it can be used for playback */
