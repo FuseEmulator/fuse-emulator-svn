@@ -142,3 +142,28 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040113 hacking/cvs-tags: Add documentation of libspectrum's CVS tags.
 20040113 TAG: libspectrum_0_2_1-trunk
 	 BRANCH: libspectrum_0_2_1-branch
+20040113 Makefile.am, configure.in: bump version number to 0.2.1pre1 and
+	 update the library soname (libspectrum_0_2_1-branch).
+20040114 ChangeLog: bring up to date.
+20040117 TAG: libspectrum_0_2_1pre1 (libspectrum_0_2_1-branch).
+20040126 libspectrum.c: replace HAVE_BZLIB_H with HAVE_LIBBZ2 as used
+	 since the 20040109 change (patch #884231)
+	 (libspectrum_0_2_1-branch) (Fred).
+20040126 dck.c, libspectrum.h.in: support compressed .dck files (patch
+	 #884355) (libspectrum_0_2_1-branch) (Fred).
+20040127 configure.in: use glib 2.x if available
+	 (libspectrum_0_2_1-branch).
+20040129 libspectrum.c: prevent the 'Secure memory is not locked into
+	 core' message appearing (libspectrum_0_2_1-branch).
+20040205 Makefile.am, README, configure.in, doc/: doc updates
+	 (libspectrum_0_2_1-branch).
+20040205 configure.in: bump version number to 0.2.1pre2
+	 (libspectrum_0_2_1-branch).
+20040205 TAG: libspectrum_0_2_1pre2 (libspectrum_0_2_1-branch)
+20040211 configure.in: bump version number to 0.2.1
+	 (libspectrum_0_2_1-branch).
+20040211 tzx_read.c: don't double step over count when reading select
+	 blocks (libspectrum_0_2_1-branch).
+20040212 TAG: libspectrum_0_2_1 (libspectrum_0_2_1-branch).
+20040223 Merge changes from libspectrum_0_2_1 to HEAD.
+20040223 TAG: libspectrum-0_2_1-merge-1

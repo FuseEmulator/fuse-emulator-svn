@@ -1,4 +1,4 @@
-libspectrum 0.2.0
+libspectrum 0.2.1
 =================
 
 libspectrum is a fairly simple library designed to make the handling
@@ -43,14 +43,33 @@ libspectrum_signed_dword	A signed 32-bit integer
 libspectrum_qword		An unsigned 64-bit integer
 libspectrum_signed_qword	A signed 64-bit integer
 
-Initialisation routine
-======================
+Initialisation etc
+==================
 
 libspectrum_error libspectrum_init( void )
 
-This routine must be called before any other libspectrum routines in
-order to initialise the library. If it isn't called, undefined
-behaviour may result.
+This routine must be called before any other libspectrum routines,
+other than `libspectrum_version' and `libspectrum_check_version' to
+initialise the library. If it isn't called, undefined behaviour may
+result.
+
+const char *libspectrum_version( void )
+
+This routine returns the version of libspectrum in use, in a "x.y.z.a"
+format.
+
+const char *libspectrum_gcrypt_version( void )
+
+This routine returns the version of libgcrypt being used by
+libspectrum, or NULL if an appropriate version of libgcrypt is not
+available.
+
+int libspectrum_check_version( const char *version )
+
+This routine checks whether the version of libspectrum is at least
+`version', which should be specified in an "x.y.z.a" format. It
+returns non-zero if the libspectrum version in use is at least
+`version' or zero if it is not.
 
 Error handling
 ==============
@@ -164,13 +183,13 @@ LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK
 File identification
 -------------------
 
-The `libspectrum_identify_file' function will, if given a file's
+The `libspectrum_identify_file_raw' function will, if given a file's
 contents and optionally its filename, will make a `best guess' as to
 what sort of file it is:
 
 libspectrum_error
-libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
-                           const unsigned char *buffer, size_t length )
+libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
+			       const unsigned char *buffer, size_t length )
 
 `filename' should be the name of the file to be identified, or NULL if
 it is unknown. `buffer' and `length' are the contents and length of the
@@ -182,6 +201,9 @@ the following values:
 LIBSPECTRUM_ID_UNKNOWN		Couldn't identify this file
 
 LIBSPECTRUM_ID_CARTRIDGE_DCK	A .dck Timex dock image
+
+LIBSPECTRUM_ID_COMPRESSED_BZ2	A bzip2 compressed file
+LIBSPECTRUM_ID_COMPRESSED_GZ	A gzip compressed file
 
 LIBSPECTRUM_ID_DISK_DSK		A .dsk +3 disk file
 LIBSPECTRUM_ID_DISK_SCL		A .scl TRDOS disk file
@@ -201,10 +223,21 @@ LIBSPECTRUM_ID_TAPE_TAP		A `normal' (Z80-style) .tap tape image
 LIBSPECTRUM_ID_TAPE_TZX		A .tzx tape image
 LIBSPECTRUM_ID_TAPE_WARAJEVO	A Warajevo-style .tap tape image
 
-`libspectrum_identify_file' looks for defined signatures in the file as
-well as the extension of the filename and a couple of heuristics in its
-attempts to identify the file.  It's not perfect (especially when given
-files with the wrong extension), but it should work in most cases.
+`libspectrum_identify_file_raw' looks for defined signatures in the
+file as well as the extension of the filename and a couple of
+heuristics in its attempts to identify the file. It's not perfect
+(especially when given files with the wrong extension), but it should
+work in most cases.
+
+When dealing with compressed files, you are probably interested in the
+data after it has been decompressed rather the original file. This can
+be accomplished with the `libspectrum_identify_file' function:
+
+libspectrum_error
+libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
+			   const unsigned char *buffer, size_t length )
+
+The parameters are the same as for `libspectrum_identify_file_raw'. 
 
 What in many cases may be more useful than the specific type of the
 file is whether the file is a snapshot, a tape image or whatever. This
@@ -224,6 +257,17 @@ LIBSPECTRUM_CLASS_DISK_TRDOS		A TRDOS disk image
 LIBSPECTRUM_CLASS_RECORDING		An input recording
 LIBSPECTRUM_CLASS_SNAPSHOT		A snapshot
 LIBSPECTRUM_CLASS_TAPE			A tape image
+
+One final routine, `libspectrum_identify_file_with_class',
+
+libspectrum_error
+libspectrum_identify_file_with_class(
+  libspectrum_id_t *type, libspectrum_class_t *libspectrum_class,
+  const char *filename, const unsigned char *buffer, size_t length )
+
+simply combines the calls to `libspectrum_identify_file' and
+`libspectrum_identify_class', returning the file type in `*type' and
+the file class in `*class'.
 
 Machine timings
 ---------------
@@ -401,6 +445,7 @@ The available properties (along with their types) are:
 * libspectrum_dword tstates
 
 * int halted
+* int last_instruction_ei
 
 * libspectrum_byte out_ula
 
@@ -420,11 +465,14 @@ The available properties (along with their types) are:
 * libspectrum_byte* slt_screen
 * int slt_screen_level
 
-Most of those should be fairly self-explanatory; the a_, f_, bc_, de_
-and hl_ members represent the A', F', BC', DE' and HL' registers. For
-48K snaps, 0x4000 to 0x7fff is stored in `pages[5]', 0x8000 to 0xbfff
-in `pages[2]' and 0xc000 to 0xffff in `pages[0]' (This is equivalent
-to the default mapping on the 128K machines).
+Most of those should be fairly self-explanatory; the `a_', `f_',
+`bc_', `de_' and `hl_' functions represent the A', F', BC', DE' and
+HL' registers. For 48K snaps, 0x4000 to 0x7fff is stored in
+`pages[5]', 0x8000 to 0xbfff in `pages[2]' and 0xc000 to 0xffff in
+`pages[0]' (This is equivalent to the default mapping on the 128K
+machines). `last_instruction_ei' being non-zero signals that the
+opcode previously executed was an EI and thus interrupts should not be
+accepted at this point, but will be after the next opcode.
 
 With all those housekeeping routines out of the way, there are two
 main workhorses of the snapshot routines:
@@ -439,7 +487,8 @@ Take the snapshot of type `type' of `length' bytes starting at
 is `LIBSPECTRUM_ID_UNKNOWN', guess the file format via
 `libspectrum_identify_file'; `filename' is used only to help with the
 identification process and can be set to NULL (or anything else) if
-`type' is not `LIBSPECTRUM_ID_UNKNOWN'.
+`type' is not `LIBSPECTRUM_ID_UNKNOWN'. Snapshots compressed with
+bzip2 or gzip will be automatically and transparently decompressed.
 
 libspectrum_error
 libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
@@ -472,6 +521,9 @@ format will make any use of this information.
 
 The only formats for which serialisation is supported are .sna, .szx
 and .z80.
+
+Deprecated snapshot routines
+----------------------------
 
 There are also three format-specific functions. However, *these
 functions are deprecated and should not be used in new code*:
@@ -531,7 +583,8 @@ Take the tape image of type `type' of `length' bytes starting at
 is `LIBSPECTRUM_ID_UNKNOWN', guess the file format via
 `libspectrum_identify_file'; `filename' is used only to help with the
 identification process and can be set to NULL (or anything else) if
-`type' is not `LIBSPECTRUM_ID_UNKNOWN'.
+`type' is not `LIBSPECTRUM_ID_UNKNOWN'. Tape images compressed with
+bzip2 or gzip will be automatically and transparently decompressed.
 
 libspectrum_error
 libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
@@ -915,7 +968,8 @@ input recording data into `rzx' and the embedded snapshot into
 `*snap'. If there is no embedded snapshot, `*snap' will be NULL after
 the call. If the RZX file contains a digital signature, `*signature'
 will contain the information from that signature; see below for
-information on this.
+information on this. Files compressed with bzip2 or gzip will be
+automatically and transparently decompressed.
 
 libspectrum_error
 libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
@@ -1073,6 +1127,8 @@ libspectrum_error
 libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
                       size_t length );
 
-Read in a dock structure from the `length' byte long `buffer'.
+Read in a dock structure from the `length' byte long `buffer'. Images
+compressed with bzip2 or gzip will be automatically and transparently
+decompressed.
 
 $Id$

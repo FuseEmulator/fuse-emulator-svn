@@ -49,6 +49,9 @@ static const char *gcrypt_version;
 libspectrum_error_function_t libspectrum_error_function =
   libspectrum_default_error_function;
 
+static void
+gcrypt_log_handler( void *opaque, int level, const char *format, va_list ap );
+
 /* Initialise the library */
 libspectrum_error
 libspectrum_init( void )
@@ -67,12 +70,17 @@ libspectrum_init( void )
       return LIBSPECTRUM_ERROR_LOGIC;	/* FIXME: better error code */
     }
 
-    /* Give me some 'secure' memory */
+    /* Ugly hack to prevent the 'Secure memory is not locked into
+       core' message appearing */
+    gcry_set_log_handler( gcrypt_log_handler, NULL );
+
+    /* Initialise the 'secure' memory (which probably won't actually
+       be scure, but that doesn't matter as libspectrum's 'security'
+       is bogus anyway) */
     gcry_control( GCRYCTL_INIT_SECMEM, 16384 );
 
-    /* But it's not very secure as we're not setuid root. However, this
-       isn't critical here, so don't warn about it */
-    gcry_control( GCRYCTL_SUSPEND_SECMEM_WARN );
+    /* Restore the default log handler */
+    gcry_set_log_handler( NULL, NULL );
 
     gcry_control( GCRYCTL_INITIALIZATION_FINISHED );
   }
@@ -84,6 +92,12 @@ libspectrum_init( void )
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
   return LIBSPECTRUM_ERROR_NONE;
+}
+
+static void
+gcrypt_log_handler( void *opaque, int level, const char *format, va_list ap )
+{
+  /* Do nothing */
 }
 
 int
@@ -502,7 +516,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 
   case LIBSPECTRUM_ID_COMPRESSED_BZ2:
 
-#ifdef HAVE_BZLIB_H
+#ifdef HAVE_LIBBZ2
 
     if( new_filename ) {
       if( strlen( *new_filename ) >= 4 &&
@@ -515,7 +529,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 				       new_buffer, new_length );
     if( error ) { free( new_filename ); return error; }
 
-#else				/* #ifdef HAVE_BZLIB_H */
+#else				/* #ifdef HAVE_LIBBZ2 */
 
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_UNKNOWN,
@@ -524,7 +538,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
     free( new_filename );
     return LIBSPECTRUM_ERROR_UNKNOWN;
 
-#endif				/* #ifdef HAVE_BZLIB_H */
+#endif				/* #ifdef HAVE_LIBBZ2 */
 
     break;
 

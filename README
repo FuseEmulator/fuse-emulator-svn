@@ -1,5 +1,5 @@
-libspectrum 0.2.0.1
-===================
+libspectrum 0.2.1
+=================
 
 libspectrum is a library which is designed to make the input and
 output of ZX Spectrum emulator files slightly easier than it would be
@@ -37,7 +37,7 @@ the full license.
 
 For updates for libspectrum, its homepage is at:
 
-http://www.srcf.ucam.org/~pak21/spectrum/libspectrum.html
+http://fuse-emulator.sourceforge.net/libspectrum.php
 
 Philip Kendall <pak21-fuse@srcf.ucam.org>
-30 September 2003
+11 February 2004

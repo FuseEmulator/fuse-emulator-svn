@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-## Copyright (c) 2001-2003 Philip Kendall
+## Copyright (c) 2001-2004 Philip Kendall
 
 ## $Id$
 
@@ -53,7 +53,7 @@ libspectrum_la_SOURCES = bzip2.c \
 			 zlib.c \
 			 zxs.c
 
-libspectrum_la_LDFLAGS = -version-info 2:1:0
+libspectrum_la_LDFLAGS = -version-info 3:0:1
 
 BUILT_SOURCES = libspectrum.h snap_accessors.c tape_accessors.c tape_set.c
 
@@ -81,7 +81,6 @@ tape_set.c: tape_set.pl tape_accessors.txt
 INCLUDES = @GLIB_CFLAGS@
 
 EXTRA_DIST = accessor.pl \
-	     doc/libspectrum.txt \
 	     generate.pl.in \
              libspectrum.h.in \
              snap_accessors.txt \
@@ -90,3 +89,4 @@ EXTRA_DIST = accessor.pl \
 	     tape_set.pl \
 	     tape_block.h
 
+SUBDIRS = doc
