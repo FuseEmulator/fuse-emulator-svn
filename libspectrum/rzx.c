@@ -50,7 +50,8 @@ rzx_read_sign_start( const libspectrum_byte **ptr, const libspectrum_byte *end,
 		     const libspectrum_byte **sign_start );
 static libspectrum_error
 rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
-		   const libspectrum_byte *sign_start );
+		   const libspectrum_byte *sign_start,
+		   libspectrum_rzx_dsa_key *key );
 
 static libspectrum_error
 rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -71,7 +72,8 @@ rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
 			size_t *length, ptrdiff_t *sign_offset );
 static libspectrum_error
 rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		      size_t *length, ptrdiff_t sign_offset );
+		      size_t *length, ptrdiff_t sign_offset,
+		      libspectrum_rzx_dsa_key *key );
 
 /* The signature used to identify .rzx files */
 const libspectrum_byte *signature = "RZX!";
@@ -160,7 +162,8 @@ libspectrum_rzx_free( libspectrum_rzx *rzx )
 
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
-		      const size_t length, libspectrum_snap **snap )
+		      const size_t length, libspectrum_snap **snap,
+		      libspectrum_rzx_dsa_key *key )
 {
   libspectrum_error error;
   const libspectrum_byte *ptr, *end, *sign_start = NULL;
@@ -199,7 +202,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
       break;
 
     case LIBSPECTRUM_RZX_SIGN_END_BLOCK:
-      error = rzx_read_sign_end( &ptr, end, sign_start );
+      error = rzx_read_sign_end( &ptr, end, sign_start, key );
       if( error != LIBSPECTRUM_ERROR_NONE ) return error;
       break;
 
@@ -552,7 +555,8 @@ rzx_read_sign_start( const libspectrum_byte **ptr, const libspectrum_byte *end,
 
 static libspectrum_error
 rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
-		   const libspectrum_byte *sign_start )
+		   const libspectrum_byte *sign_start,
+		   libspectrum_rzx_dsa_key *key )
 {
   size_t length; libspectrum_error error;
 
@@ -580,16 +584,20 @@ rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
   }
 
 #ifdef HAVE_GCRYPT_H
-  error = libspectrum_verify_signature( *ptr, length, sign_start,
-					(*ptr) - sign_start - 5 );
-  if( error ) {
-    if( error == LIBSPECTRUM_ERROR_SIGNATURE ) {
-      libspectrum_print_error(
-        "libspectrum warning: signature does NOT verify"
-      );
-    } else {
-      return error;
+  if( key ) {
+    error = libspectrum_verify_signature( *ptr, length, sign_start,
+					  (*ptr) - sign_start - 5, key );
+    if( error ) {
+      if( error == LIBSPECTRUM_ERROR_SIGNATURE ) {
+	libspectrum_print_error(
+          "libspectrum warning: signature does NOT verify"
+	);
+      } else {
+	return error;
+      }
     }
+  } else {
+    libspectrum_print_error( "couldn't verify signature: key not available" );
   }
 #else				/* #ifdef HAVE_GCRYPT_H */
   libspectrum_print_error(
@@ -608,7 +616,8 @@ libspectrum_rzx_write( libspectrum_rzx *rzx,
 		       libspectrum_byte **buffer, size_t *length,
 		       libspectrum_byte *snap, size_t snap_length,
 		       const char *program, libspectrum_word major,
-		       libspectrum_word minor, int compress, int sign )
+		       libspectrum_word minor, int compress,
+		       libspectrum_rzx_dsa_key *key )
 {
   libspectrum_error error;
   libspectrum_byte *ptr = *buffer;
@@ -617,7 +626,7 @@ libspectrum_rzx_write( libspectrum_rzx *rzx,
   error = rzx_write_header( buffer, &ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-  if( sign ) {
+  if( key ) {
     error = rzx_write_signed_start( buffer, &ptr, length, &sign_offset );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
@@ -634,8 +643,8 @@ libspectrum_rzx_write( libspectrum_rzx *rzx,
   error = rzx_write_input( rzx, buffer, &ptr, length, compress );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   
-  if( sign ) {
-    error = rzx_write_signed_end( buffer, &ptr, length, sign_offset );
+  if( key ) {
+    error = rzx_write_signed_end( buffer, &ptr, length, sign_offset, key );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
 
@@ -882,7 +891,8 @@ rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 static libspectrum_error
 rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		      size_t *length, ptrdiff_t sign_offset )
+		      size_t *length, ptrdiff_t sign_offset,
+		      libspectrum_rzx_dsa_key *key )
 {
 #ifdef HAVE_GCRYPT_H
   libspectrum_error error;
@@ -891,7 +901,7 @@ rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
   /* Get the actual signature */
   error = libspectrum_sign_data( &signature, &sig_length,
 				 ( *buffer + sign_offset ),
-				 (*ptr) - ( *buffer + sign_offset ) );
+				 (*ptr) - ( *buffer + sign_offset ), key );
   if( error ) return error;
 
   error = libspectrum_make_room( buffer, sig_length + 5, ptr, length );

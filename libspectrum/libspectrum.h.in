@@ -583,6 +583,15 @@ typedef struct libspectrum_rzx {
 
 } libspectrum_rzx;
 
+typedef struct libspectrum_rzx_dsa_key {
+
+  /* The standard DSA parameters, represented as hex strings with MSB first.
+     Set x = NULL for a public key */
+  const char *p, *q, *g, *y, *x;
+
+} libspectrum_rzx_dsa_key;
+
+
 libspectrum_error libspectrum_rzx_alloc( libspectrum_rzx **rzx );
 
 libspectrum_error libspectrum_rzx_frame( libspectrum_rzx *rzx,
@@ -594,14 +603,16 @@ libspectrum_error libspectrum_rzx_free( libspectrum_rzx *rzx );
 
 libspectrum_error
 libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
-		      const size_t length, libspectrum_snap **snap );
+		      const size_t length, libspectrum_snap **snap,
+		      libspectrum_rzx_dsa_key *key );
 
 libspectrum_error
 libspectrum_rzx_write( libspectrum_rzx *rzx,
 		       libspectrum_byte **buffer, size_t *length,
 		       libspectrum_byte *snap, size_t snap_length,
 		       const char *program, libspectrum_word major,
-		       libspectrum_word minor, int compress, int sign );
+		       libspectrum_word minor, int compress,
+		       libspectrum_rzx_dsa_key *key );
 
 #ifdef __cplusplus
 };

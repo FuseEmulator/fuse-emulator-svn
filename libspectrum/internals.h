@@ -77,10 +77,12 @@ int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 
 libspectrum_error
 libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
-		       libspectrum_byte *data, size_t data_length );
+		       libspectrum_byte *data, size_t data_length,
+		       libspectrum_rzx_dsa_key *key );
 libspectrum_error
 libspectrum_verify_signature( const libspectrum_byte *signature,
 			      size_t signature_length,
-			      const libspectrum_byte *data, size_t length );
+			      const libspectrum_byte *data, size_t length,
+			      libspectrum_rzx_dsa_key *key );
 
 #endif				/* #ifndef LIBSPECTRUM_INTERNALS_H */

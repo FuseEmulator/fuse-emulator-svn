@@ -32,12 +32,6 @@
 
 #include "internals.h"
 
-static const char *key_p = "9E140C4CEA9CA011AA8AD17443CB5DC18DC634908474992D38AB7D4A27038CBB209420BA2CAB8508CED35ADF8CBD31A0A034FC082A168A0E190FFC4CCD21706F",
-  *key_q = "C52E9CA1804BD021FFAD30E8FB89A94437C2E4CB",
-  *key_g = "90E56D9493DE80E1A35F922007357888A1A47805FD365AD27BC5F184601EBC74E44F576AA4BF8C5244D202BBAE697C4F9132DFB7AD0A56892A414C96756BD21A",
-  *key_y = "7810A35AC94EA5750934FB9C922351EE597C71E2B83913C121C6655EA25CE7CBE2C259FA3168F8475B2510AA29C5FEB50ACAB25F34366C2FFC93B3870A522232",
-  *key_x = "9A4E53CC249750C3194A38A3BE3EDEED28B171A9";
-
 static const char *private_key_format =
   "(key-data (private-key (dsa (p %m) (q %m) (g %m) (y %m) (x %m))))";
 static const char *public_key_format =
@@ -49,7 +43,8 @@ static const char *signature_format = "(sig-val (dsa (r %m) (s %m)))";
 
 static libspectrum_error
 get_hash( GcrySexp *hash, const libspectrum_byte *data, size_t data_length );
-static libspectrum_error create_private_key( GcrySexp *key );
+static libspectrum_error create_private_key( GcrySexp *s_key,
+					     libspectrum_rzx_dsa_key *key );
 static void free_mpis( GcryMPI *mpis, size_t n );
 static libspectrum_error get_mpi( GcryMPI *mpi, GcrySexp signature,
 				  const char *token );
@@ -57,33 +52,35 @@ static libspectrum_error
 serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 		GcryMPI r, GcryMPI s );
 
-static libspectrum_error create_public_key( GcrySexp *key );
+static libspectrum_error create_public_key( GcrySexp *s_key,
+					    libspectrum_rzx_dsa_key *key );
 static libspectrum_error
 restore_mpis( GcryMPI *r, GcryMPI *s, const libspectrum_byte *signature,
 	      size_t signature_length );
 
 libspectrum_error
 libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
-		       libspectrum_byte *data, size_t data_length )
+		       libspectrum_byte *data, size_t data_length,
+		       libspectrum_rzx_dsa_key *key )
 {
   int error;
-  GcrySexp hash, key, s_signature;
+  GcrySexp hash, s_key, s_signature;
   GcryMPI r, s;
 
   error = get_hash( &hash, data, data_length ); if( error ) return error;
 
-  error = create_private_key( &key );
+  error = create_private_key( &s_key, key );
   if( error ) { gcry_sexp_release( hash ); return error; }
 
-  error = gcry_pk_sign( &s_signature, hash, key );
+  error = gcry_pk_sign( &s_signature, hash, s_key );
   if( error ) {
     libspectrum_print_error( "libspectrum_sign_data: error signing data: %s",
 			     gcry_strerror( error ) );
-    gcry_sexp_release( key ); gcry_sexp_release( hash );
+    gcry_sexp_release( s_key ); gcry_sexp_release( hash );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
-  gcry_sexp_release( key ); gcry_sexp_release( hash );
+  gcry_sexp_release( s_key ); gcry_sexp_release( hash );
 
   error = get_mpi( &r, s_signature, "r" );
   if( error ) { gcry_sexp_release( s_signature ); return error; }
@@ -145,7 +142,7 @@ get_hash( GcrySexp *hash, const libspectrum_byte *data, size_t data_length )
 }
 
 static libspectrum_error
-create_private_key( GcrySexp *key )
+create_private_key( GcrySexp *s_key, libspectrum_rzx_dsa_key *key )
 {
   int error;
   size_t i;
@@ -153,11 +150,11 @@ create_private_key( GcrySexp *key )
 
   for( i=0; i<MPI_COUNT; i++ ) mpis[i] = NULL;
 
-               error = gcry_mpi_scan( &mpis[0], GCRYMPI_FMT_HEX, key_p, NULL );
-  if( !error ) error = gcry_mpi_scan( &mpis[1], GCRYMPI_FMT_HEX, key_q, NULL );
-  if( !error ) error = gcry_mpi_scan( &mpis[2], GCRYMPI_FMT_HEX, key_g, NULL );
-  if( !error ) error = gcry_mpi_scan( &mpis[3], GCRYMPI_FMT_HEX, key_y, NULL );
-  if( !error ) error = gcry_mpi_scan( &mpis[4], GCRYMPI_FMT_HEX, key_x, NULL );
+               error = gcry_mpi_scan( &mpis[0], GCRYMPI_FMT_HEX, key->p, NULL);
+  if( !error ) error = gcry_mpi_scan( &mpis[1], GCRYMPI_FMT_HEX, key->q, NULL);
+  if( !error ) error = gcry_mpi_scan( &mpis[2], GCRYMPI_FMT_HEX, key->g, NULL);
+  if( !error ) error = gcry_mpi_scan( &mpis[3], GCRYMPI_FMT_HEX, key->y, NULL);
+  if( !error ) error = gcry_mpi_scan( &mpis[4], GCRYMPI_FMT_HEX, key->x, NULL);
 
   if( error ) {
     libspectrum_print_error( "create_private_key: error creating MPIs: %s",
@@ -166,7 +163,7 @@ create_private_key( GcrySexp *key )
     return LIBSPECTRUM_ERROR_LOGIC;
   }
   
-  error = gcry_sexp_build( key, NULL, private_key_format,
+  error = gcry_sexp_build( s_key, NULL, private_key_format,
 			   mpis[0], mpis[1], mpis[2], mpis[3], mpis[4] );
   if( error ) {
     libspectrum_print_error( "create_private_key: error creating key: %s",
@@ -177,11 +174,11 @@ create_private_key( GcrySexp *key )
 
   free_mpis( mpis, MPI_COUNT );
 
-  error = gcry_pk_testkey( *key );
+  error = gcry_pk_testkey( *s_key );
   if( error ) {
     libspectrum_print_error( "create_private_key: key is invalid: %s",
 			     gcry_strerror( error ) );
-    gcry_sexp_release( *key );
+    gcry_sexp_release( *s_key );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -272,20 +269,21 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 libspectrum_error
 libspectrum_verify_signature( const libspectrum_byte *signature,
 			      size_t signature_length,
-			      const libspectrum_byte *data, size_t length )
+			      const libspectrum_byte *data, size_t length,
+			      libspectrum_rzx_dsa_key *key )
 {
   libspectrum_error error;
-  GcrySexp hash, key, s_signature;
+  GcrySexp hash, s_key, s_signature;
   GcryMPI r, s;
 
   error = get_hash( &hash, data, length ); if( error ) return error;
 
-  error = create_public_key( &key );
+  error = create_public_key( &s_key, key );
   if( error ) { gcry_sexp_release( hash ); return error; }
 
   error = restore_mpis( &r, &s, signature, signature_length );
   if( error ) {
-    gcry_sexp_release( key ); gcry_sexp_release( hash );
+    gcry_sexp_release( s_key ); gcry_sexp_release( hash );
     return error;
   }
 
@@ -296,16 +294,16 @@ libspectrum_verify_signature( const libspectrum_byte *signature,
       gcry_strerror( error )
     );
     gcry_mpi_release( r ); gcry_mpi_release( s );
-    gcry_sexp_release( key ); gcry_sexp_release( hash );
+    gcry_sexp_release( s_key ); gcry_sexp_release( hash );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
   gcry_mpi_release( r ); gcry_mpi_release( s );
 
-  error = gcry_pk_verify( s_signature, hash, key );
+  error = gcry_pk_verify( s_signature, hash, s_key );
 
   gcry_sexp_release( s_signature );
-  gcry_sexp_release( key ); gcry_sexp_release( hash );
+  gcry_sexp_release( s_key ); gcry_sexp_release( hash );
 
   if( error ) {
     if( error == GCRYERR_BAD_SIGNATURE ) {
@@ -323,7 +321,7 @@ libspectrum_verify_signature( const libspectrum_byte *signature,
 }
 
 static libspectrum_error
-create_public_key( GcrySexp *key )
+create_public_key( GcrySexp *s_key, libspectrum_rzx_dsa_key *key )
 {
   int error;
   size_t i;
@@ -331,10 +329,10 @@ create_public_key( GcrySexp *key )
 
   for( i=0; i<MPI_COUNT; i++ ) mpis[i] = NULL;
 
-               error = gcry_mpi_scan( &mpis[0], GCRYMPI_FMT_HEX, key_p, NULL );
-  if( !error ) error = gcry_mpi_scan( &mpis[1], GCRYMPI_FMT_HEX, key_q, NULL );
-  if( !error ) error = gcry_mpi_scan( &mpis[2], GCRYMPI_FMT_HEX, key_g, NULL );
-  if( !error ) error = gcry_mpi_scan( &mpis[3], GCRYMPI_FMT_HEX, key_y, NULL );
+               error = gcry_mpi_scan( &mpis[0], GCRYMPI_FMT_HEX, key->p, NULL);
+  if( !error ) error = gcry_mpi_scan( &mpis[1], GCRYMPI_FMT_HEX, key->q, NULL);
+  if( !error ) error = gcry_mpi_scan( &mpis[2], GCRYMPI_FMT_HEX, key->g, NULL);
+  if( !error ) error = gcry_mpi_scan( &mpis[3], GCRYMPI_FMT_HEX, key->y, NULL);
 
   if( error ) {
     libspectrum_print_error( "create_public_key: error creating MPIs: %s",
@@ -343,7 +341,7 @@ create_public_key( GcrySexp *key )
     return LIBSPECTRUM_ERROR_LOGIC;
   }
   
-  error = gcry_sexp_build( key, NULL, public_key_format,
+  error = gcry_sexp_build( s_key, NULL, public_key_format,
 			   mpis[0], mpis[1], mpis[2], mpis[3] );
   if( error ) {
     libspectrum_print_error( "create_public_key: error creating key: %s",
