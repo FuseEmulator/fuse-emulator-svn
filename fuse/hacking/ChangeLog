@@ -536,3 +536,5 @@
 	 extra clarity (Release-0_6_2-branch).
 20040209 screenshot.c: final rename of the colour_tv member of settings
 	 to bw_tv (Release-0_6_2-branch).
+20040209 ui/gtk/pixmaps.c: change grayscale pixmaps to colour or they
+	 don't work under GTK+ 1.2 (Release-0_6_2-branch).
