@@ -124,6 +124,7 @@ typedef enum libspectrum_machine {
   LIBSPECTRUM_MACHINE_UNKNOWN,
 
   LIBSPECTRUM_MACHINE_16,
+  LIBSPECTRUM_MACHINE_TC2068,
 
 } libspectrum_machine;
 
