@@ -1,4 +1,4 @@
-2004-??-??  Philip Kendall  <pak21-fuse@srcf.ucam.org>
+2004-02-09  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 
 	* Fuse 0.6.2 released.
 
@@ -12,7 +12,8 @@
 	  + A simple memory browser (Philip Kendall).
 	  + Writes to disk will not affect the underlying file unless
 	    explicitly requested by the user (Philip Kendall).
-	  + Status bar for the GTK+ UI (Philip Kendall).
+	  + Status bar for the GTK+ UI, and status icons for the
+	    SDL UI (Philip Kendall/Fredrick Meunier).
 	  + Options to disable the GTK+ confirmation dialogs and the
 	    printer emulation (Philip Kendall).
 
@@ -65,6 +66,8 @@
 	* Minor bugfixes:
 	  + Make writes to the screen work when it is paged in other than
 	    at 0x4000 (Philip Kendall).
+	  + Make reading from both Timex joysticks simultaneously work
+	    correctly (Fredrick Meunier).
 	  + Remove a possible segfault caused by the tape initialisation
             code trying to access the tape beeper before the beeper code
 	    has been fully initialised (Witold Filipczyk, Fredrick Meunier).
