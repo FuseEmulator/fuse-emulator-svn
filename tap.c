@@ -128,9 +128,7 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   tape->current_block = tape->blocks;
 
   /* Which we should then initialise */
-  error = libspectrum_tape_init_block(
-            (libspectrum_tape_block*)tape->current_block->data
-          );
+  error = libspectrum_tape_init_block( tape->current_block );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
