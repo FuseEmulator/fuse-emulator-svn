@@ -106,4 +106,11 @@ libspectrum_error
 libspectrum_zxs_read( libspectrum_snap *snap,
 		      const libspectrum_byte *buffer, size_t buffer_length );
 
+/* Crypto functions */
+
+libspectrum_error
+libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
+		       libspectrum_byte *data, size_t data_length,
+		       libspectrum_rzx_dsa_key *key );
+
 #endif				/* #ifndef LIBSPECTRUM_INTERNALS_H */

@@ -27,6 +27,7 @@ AUTOMAKE_OPTIONS = foreign
 lib_LTLIBRARIES = libspectrum.la
 
 libspectrum_la_SOURCES = creator.c \
+			 crypto.c \
 			 dck.c \
 			 libspectrum.c \
 			 myglib.c \

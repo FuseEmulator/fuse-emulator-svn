@@ -48,8 +48,19 @@ AC_C_BIGENDIAN
 dnl Check for functions
 AC_CHECK_FUNCS(strcasecmp _strcmpi)
 
+dnl Allow the user to say that various libraries are in one place
+AC_ARG_WITH(local-prefix,
+[  --with-local-prefix=PFX local libraries installed in PFX (optional)],
+CPPFLAGS="$CPPFLAGS -I$withval/include"; LDFLAGS="$LDFLAGS -L$withval/lib",
+if test "$prefix" != "NONE"; then
+  CPPFLAGS="$CPPFLAGS -I$prefix/include"; LDFLAGS="$LDFLAGS -L$prefix/lib"
+fi)
+
 dnl Check for zlib
 AC_CHECK_HEADERS(zlib.h)
+
+dnl Check for libgcrypt
+AC_CHECK_HEADERS(gcrypt.h)
 
 dnl Either find glib or use the replacement
 AC_MSG_CHECKING(whether to use glib)
