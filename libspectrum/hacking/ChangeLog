@@ -264,3 +264,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040806 libspectrum.h.in,snapshot.c,szx.c,z80.c,doc/libspectrum.txt: Add new
          LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS flag for use with
          libspectrum_snap_write
+20040814 configure.in,dll.c,internals.h,zlib.c: small Visual C++
+	 compatability fixes.

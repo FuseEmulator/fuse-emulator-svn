@@ -37,7 +37,7 @@ AC_SUBST(PERL)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(stdint.h strings.h)
+AC_CHECK_HEADERS(stdint.h strings.h unistd.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -46,7 +46,7 @@ dnl Check for big endianness
 AC_C_BIGENDIAN
 
 dnl Check for functions
-AC_CHECK_FUNCS(strcasecmp _strcmpi)
+AC_CHECK_FUNCS(_snprintf _stricmp _strnicmp snprintf strcasecmp strncasecmp)
 
 dnl Allow the user to say that various libraries are in one place
 AC_ARG_WITH(local-prefix,
