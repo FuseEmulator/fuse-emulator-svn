@@ -248,7 +248,7 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
 
   /* For deflated snapshot data: */
   int compressed;
-  libspectrum_byte *gzsnap; size_t uncompressed_length = 0;
+  libspectrum_byte *gzsnap = NULL; size_t uncompressed_length = 0;
 
   if( end - (*ptr) < 16 ) {
     libspectrum_print_error( "rzx_read_snapshot: not enough data in buffer" );
@@ -273,6 +273,9 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
 
   /* If compressed, uncompress the data */
   if( compressed ) {
+
+#ifdef HAVE_ZLIB_H
+
     error = libspectrum_zlib_inflate( (*ptr) + 8, blocklength - 17,
 				      &gzsnap, &uncompressed_length );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
@@ -285,6 +288,15 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
       return LIBSPECTRUM_ERROR_CORRUPT;
     }   
     snap_ptr = gzsnap;
+
+#else			/* #ifdef HAVE_ZLIB_H */
+
+    libspectrum_print_error(
+      "rzx_read_snapshot: zlib needed for decompression\n"
+    );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+
+#endif			/* #ifdef HAVE_ZLIB_H */
 
   } else {
 
