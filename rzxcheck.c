@@ -50,9 +50,9 @@ main( int argc, char **argv )
 
   libspectrum_rzx *rzx;
 
-  libspectrum_snap *snap = NULL;
-  libspectrum_rzx_signature signature;
   libspectrum_error error;
+  libspectrum_dword keyid = 0;
+  libspectrum_signature signature;
   struct rzx_key *key;
 
   progname = argv[0];
@@ -69,39 +69,49 @@ main( int argc, char **argv )
 
   if( mmap_file( rzxfile, &buffer, &length ) ) return 16;
 
-  if( libspectrum_rzx_read( rzx, &snap, buffer, length, &signature ) ) {
+  if( libspectrum_rzx_read( rzx, buffer, length ) ) {
     munmap( buffer, length );
     return 16;
   }
 
-  if( snap ) libspectrum_snap_free( snap );
-
-  if( !signature.start ) {
-    printf( "%s: no signature found in '%s'\n", progname, rzxfile );
+  keyid = libspectrum_rzx_get_keyid( rzx );
+  if( !keyid ) {
+    printf( "%s: no key ID found in '%s'\n", progname, rzxfile );
     libspectrum_rzx_free( rzx );
     munmap( buffer, length );
-    return 1;
+    return 16;
   }
 
   for( key = known_keys; key->id; key++ )
-    if( signature.key_id == key->id ) break;
+    if( keyid == key->id ) break;
 
   if( !key->id ) {
     printf( "%s: don't know anything about key ID %08x\n", progname,
-	    signature.key_id );
+	    keyid );
     libspectrum_rzx_free( rzx );
     munmap( buffer, length );
-    return 1;
+    return 16;
+  }
+
+  error = libspectrum_rzx_get_signature( rzx, &signature );
+  if( error ) {
+    libspectrum_rzx_free( rzx );
+    munmap( buffer, length );
+    return 16;
   }
 
   error = libspectrum_verify_signature( &signature, &( key->key ) );
   if( error && error != LIBSPECTRUM_ERROR_SIGNATURE ) {
-    libspectrum_rzx_free( rzx ); return 16;
+    libspectrum_signature_free( &signature );
+    libspectrum_rzx_free( rzx );
+    munmap( buffer, length );
+    return 16;
   }
 
   if( munmap( buffer, length ) == -1 ) {
     fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, rzxfile,
 	     strerror( errno ) );
+    libspectrum_signature_free( &signature );
     libspectrum_rzx_free( rzx );
     return 16;
   }
