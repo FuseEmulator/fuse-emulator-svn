@@ -67,11 +67,9 @@ int
 main( int argc, char **argv )
 {
   unsigned char *buffer; size_t length;
-  unsigned char *snap_buffer; size_t snap_length;
   int error;
 
   libspectrum_rzx *rzx;
-  libspectrum_snap *snap = NULL;
   libspectrum_creator *creator;
 
   struct options options;
@@ -94,7 +92,7 @@ main( int argc, char **argv )
 
   if( mmap_file( options.rzxfile, &buffer, &length ) ) return 1;
 
-  if( libspectrum_rzx_read( rzx, &snap, buffer, length, NULL ) ) {
+  if( libspectrum_rzx_read( rzx, buffer, length ) ) {
     munmap( buffer, length );
     return 1;
   }
@@ -102,11 +100,15 @@ main( int argc, char **argv )
   if( munmap( buffer, length ) == -1 ) {
     fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname,
 	     options.rzxfile, strerror( errno ) );
-    if( snap ) libspectrum_snap_free( snap );
     return 1;
   }
 
   if( options.extract ) {
+
+    libspectrum_snap *snap;
+
+    error = libspectrum_rzx_start_playback( rzx, 0, &snap );
+    if( error ) { libspectrum_rzx_free( rzx ); return error; }
 
     if( !snap ) {
       fprintf( stderr, "%s: no snapshot in `%s' to extract\n", progname,
@@ -123,71 +125,22 @@ main( int argc, char **argv )
   } else {
 
     if( options.remove ) {
-      if( !snap ) {
-	fprintf( stderr, "%s: warning: no snapshot to remove\n", progname );
-      } else {
-	libspectrum_snap_free( snap ); snap = NULL;
-      }
+      /* FIXME: do something here */
     }
 
     if( options.add ) {
-      
-      /* Don't want the old snap anymore */
-      if( snap ) { libspectrum_snap_free( snap ); snap = NULL; }
-
-      if( libspectrum_snap_alloc( &snap ) ) {
-	libspectrum_rzx_free( rzx );
-	return 1;
-      }
-
-      /* Get the new snap */
-      if( mmap_file( options.add, &snap_buffer, &snap_length ) ) {
-	libspectrum_rzx_free( rzx );
-	return 1;
-      }
-      
-      /* If the file has a ".sna" extension, assume it's an .sna file. If not,
-	 assume it's a .z80 file */
-      if(    strlen( options.add ) < 4
-	  || strncasecmp( &options.add[ strlen(options.add) - 4 ], ".sna", 4 )
-	) {
-	
-	if( libspectrum_z80_read( snap, snap_buffer, snap_length ) ) {
-	  munmap( snap_buffer, snap_length );
-	  libspectrum_rzx_free( rzx );
-	  return 1;
-	}
-	
-      } else {
-
-	if( libspectrum_sna_read( snap, snap_buffer, snap_length ) ) {
-	  munmap( snap_buffer, snap_length );
-	  libspectrum_rzx_free( rzx );
-	  return 1;
-	}
-
-      }
-
-      /* Now done with this buffer */
-      if( munmap( snap_buffer, snap_length ) ) {
-	libspectrum_snap_free( snap );
-	libspectrum_rzx_free( rzx );
-	return 1;
-      }
-
-    }      
+      /* FIXME: do something here */
+    }
 
     if( get_creator( &creator, "rzxtool" ) ) {
-      if( snap ) libspectrum_snap_free( snap );
       libspectrum_rzx_free( rzx );
       return 1;
     }
 
     length = 0;
-    if( libspectrum_rzx_write( &buffer, &length, rzx, snap, creator,
-			       !options.uncompress, NULL ) ) {
+    if( libspectrum_rzx_write( &buffer, &length, rzx, LIBSPECTRUM_ID_UNKNOWN,
+			       creator, !options.uncompress, NULL ) ) {
       libspectrum_creator_free( creator );
-      if( snap ) libspectrum_snap_free( snap );
       libspectrum_rzx_free( rzx );
       return 1;
     }
@@ -198,7 +151,6 @@ main( int argc, char **argv )
     if( fwrite( buffer, 1, length, stdout ) != length ) {
       free( buffer );
       libspectrum_rzx_free( rzx );
-      if( snap ) libspectrum_snap_free( snap );
       return 1;
     }
 
@@ -207,7 +159,6 @@ main( int argc, char **argv )
   }
 
   libspectrum_rzx_free( rzx );
-  if( snap ) libspectrum_snap_free( snap );
 
   return 0;
 }
