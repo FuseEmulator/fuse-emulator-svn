@@ -43,6 +43,9 @@ static const char *signature_format = "(sig-val (dsa (r %m) (s %m)))";
 #define MPI_COUNT 5
 
 static libspectrum_error
+get_signature( GcryMPI *r, GcryMPI *s, libspectrum_byte *data,
+	       size_t data_length, libspectrum_rzx_dsa_key *key );
+static libspectrum_error
 get_hash( GcrySexp *hash, const libspectrum_byte *data, size_t data_length );
 static libspectrum_error
 create_key( GcrySexp *s_key, libspectrum_rzx_dsa_key *key, const char *format);
@@ -59,8 +62,25 @@ libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
 		       libspectrum_rzx_dsa_key *key )
 {
   int error;
-  GcrySexp hash, s_key, s_signature;
   GcryMPI r, s;
+
+  error = get_signature( &r, &s, data, data_length, key );
+  if( error ) return error;
+
+  error = serialise_mpis( signature, signature_length, r, s );
+  if( error ) { gcry_mpi_release( r ); gcry_mpi_release( s ); return error; }
+
+  gcry_mpi_release( r ); gcry_mpi_release( s );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+get_signature( GcryMPI *r, GcryMPI *s, libspectrum_byte *data,
+	       size_t data_length, libspectrum_rzx_dsa_key *key )
+{
+  int error;
+  GcrySexp hash, s_key, s_signature;
 
   error = get_hash( &hash, data, data_length ); if( error ) return error;
 
@@ -70,7 +90,7 @@ libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
   error = gcry_pk_sign( &s_signature, hash, s_key );
   if( error ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
-			     "libspectrum_sign_data: error signing data: %s",
+			     "get_signature: error signing data: %s",
 			     gcry_strerror( error ) );
     gcry_sexp_release( s_key ); gcry_sexp_release( hash );
     return LIBSPECTRUM_ERROR_LOGIC;
@@ -78,20 +98,15 @@ libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
 
   gcry_sexp_release( s_key ); gcry_sexp_release( hash );
 
-  error = get_mpi( &r, s_signature, "r" );
+  error = get_mpi( r, s_signature, "r" );
   if( error ) { gcry_sexp_release( s_signature ); return error; }
-  error = get_mpi( &s, s_signature, "s" );
+  error = get_mpi( s, s_signature, "s" );
   if( error ) {
-    gcry_sexp_release( s_signature ); gcry_mpi_release( r );
+    gcry_sexp_release( s_signature ); gcry_mpi_release( *r );
     return error;
   }
 
   gcry_sexp_release( s_signature );
-
-  error = serialise_mpis( signature, signature_length, r, s );
-  if( error ) { gcry_mpi_release( r ); gcry_mpi_release( s ); return error; }
-
-  gcry_mpi_release( r ); gcry_mpi_release( s );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
