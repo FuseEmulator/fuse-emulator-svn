@@ -159,7 +159,7 @@ widget_display_lines( int y, int h )
   int scale = machine_current->timex ? 2 : 1;
 
   uidisplay_area( 0, scale * ( DISPLAY_BORDER_HEIGHT + 8 * y ),
-		  scale * DISPLAY_ASPECT_WIDTH, scale * 8 * ( h + 7 ) );
+		  scale * DISPLAY_ASPECT_WIDTH, scale * 8 * h );
   uidisplay_frame_end();
 }
 
