@@ -202,7 +202,7 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_TAPE_WARAJEVO, "tap", 2, "\xff\xff\xff\xff", 8, 4, 2 },
 
       { LIBSPECTRUM_ID_DISK_DSK,      "dsk", 3, NULL,		    0, 0, 0 },
-      { LIBSPECTRUM_ID_DISK_SCL,      "scl", 3, NULL,		    0, 0, 0 },
+      { LIBSPECTRUM_ID_DISK_SCL,      "scl", 3, "SINCLAIR",         0, 8, 4 },
       { LIBSPECTRUM_ID_DISK_TRD,      "trd", 3, NULL,		    0, 0, 0 },
 
       { -1 }, /* End marker */
