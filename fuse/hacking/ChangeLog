@@ -543,4 +543,5 @@
 	 (Release-0_6_2-branch).
 20040209 ui/options.dat: stop two options having 'b' as their hotkey
 	 (Release-0_6_2-branch).
-
+20040209 settings.dat, man/fuse.1, ui/options.dat, ui/gtk/confirm.c:
+	 rename options to fit properly in widgets (Release-0_6_2-branch).

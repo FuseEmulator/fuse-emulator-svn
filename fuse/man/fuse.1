@@ -107,7 +107,7 @@ Specify whether tape and disk files should be automatically loaded
 when they are opened. (Enabled by default, but you can use
 .RI ` --no-auto-load '
 to disable). Same as the General Options dialog's
-.I "Auto-load tapes/disks"
+.I "Auto-load media"
 option.
 .RE
 .PP
@@ -155,15 +155,15 @@ to disable). Same as the RZX Options dialog's
 option.
 .RE
 .PP
-.I "--confirm-dangerous"
+.I "--confirm-actions"
 .RS
 Specify whether `dangerous' actions (those which could cause data
 loss, for example resetting the Spectrum) require confirmation before
 occuring. (Enabled by default, but you can use
-.RI ` --no-confirm-dangerous '
+.RI ` --no-confirm-actions'
 to disable). This option is effective only under the GTK+ UI, and is
 the same as the General Options dialog's
-.I "Confirm dangerous actions"
+.I "Confirm actions"
 option.
 .RE
 .PP
@@ -483,12 +483,12 @@ for those items which have them:
 .RS
 Open a Spectrum file. Snapshots will be loaded into memory; tape
 images will be inserted into the emulated tape deck, and if the
-.I "Auto-load tapes/disks"
+.I "Auto-load media"
 option is set will being loading. Opening a disk image or a Timex dock
 image will cause the appropriate machine type (+3, Pentagon or TC2068)
 to be selected with the image inserted, and disks will automatically
 load if the
-.I "Auto-load tapes/disks"
+.I "Auto-load media"
 option is set. See the
 .B "FILE SELECTION"
 section below for details on how to choose the file. Note that this
@@ -670,7 +670,7 @@ or choosing the
 menu item.
 .RE
 .PP
-.I "Auto-load tapes/disks"
+.I "Auto-load media"
 .RS
 On many occasions when you open a tape or disk file, it's because it's
 got a program in you want to load and run. If this option is selected,
@@ -715,7 +715,7 @@ and white television. This is effective only under the GTK+ and SDL
 user interfaces: the others will always simulate a colour TV.
 .RE
 .PP
-.I "Confirm dangerous actions"
+.I "Confirm actions"
 .RS
 Specify whether `dangerous' actions (those which could cause data
 loss, for example resetting the Spectrum) require confirmation before
@@ -917,7 +917,7 @@ available which make use of this feature.
 Choose a TAP or TZX virtual-tape file to load from. See the
 .B "FILE SELECTION"
 section below for details on how to choose the file. If
-.I "Auto-load tapes/disks"
+.I "Auto-load media"
 is set in the General Options dialog (as it is by default), the tape
 will begin loading. Otherwise, you have to start the load in the
 emulated machine (with LOAD "" or the 128's Tape Loader option, though
