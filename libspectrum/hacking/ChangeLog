@@ -178,3 +178,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 changes (patch #916186) (Garry Lancaster).
 20040318 ide.c: open .hdf files in binary mode.
 20040319 ide.c: ftell and fseek are not the same thing...
+20040319 ide.c,libspectrum.h.in: implement a write cache for the IDE
+	 drives.
