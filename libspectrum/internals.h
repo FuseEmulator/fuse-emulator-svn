@@ -83,6 +83,10 @@ libspectrum_error
 libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
 			  libspectrum_byte **outptr, size_t *outlength );
 
+libspectrum_error
+libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
+			   libspectrum_byte **outptr, size_t *outlength );
+
 /* Convert a 48K memory dump into separate RAM pages */
 
 int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
