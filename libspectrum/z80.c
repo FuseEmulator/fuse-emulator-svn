@@ -308,9 +308,12 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
       memcpy( snap->ay_registers, &extra_header[ 7], 16 );
     }
 
-    if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) &&
-	( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH                 )    ) {
-      snap->out_plus3_memoryport = extra_header[54];
+    if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) {
+      if( extra_length == LIBSPECTRUM_Z80_V3X_LENGTH ) {
+	snap->out_plus3_memoryport = extra_header[54];
+      } else {
+	snap->out_plus3_memoryport = 0;
+      }
     }
 
     (*data) = buffer + LIBSPECTRUM_Z80_HEADER_LENGTH + 2 + extra_length;
