@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libspectrum.h"
+#include "internals.h"
 
 /* Set non-zero to give messages on errors from libspectrum routines */
 int libspectrum_show_errors = 0;

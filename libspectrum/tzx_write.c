@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "tape.h"
+#include "internals.h"
 
 /* The .tzx file signature (first 8 bytes) */
 static const libspectrum_byte *signature = "ZXTape!\x1a";
