@@ -50,7 +50,7 @@ Please send any bug reports, comments, etc to me.
 Compiling from CVS
 ------------------
 
-If you're using version of libspectrum from CVS rather than one of the
+If you're using version of fuse-utils from CVS rather than one of the
 released tarballs, you'll need to run `autogen.sh' before running
 'configure' for the first time.
 
