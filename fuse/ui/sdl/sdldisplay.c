@@ -45,7 +45,6 @@
 #include "machine.h"
 
 static SDL_Surface *gc=NULL;    /* Hardware screen */
-static SDL_Surface *image=NULL; /* For composing a spectrum screen */
 static SDL_Surface *tmp_screen=NULL; /* Temporary screen for scalers */
 
 static ScalerProc *scaler_proc;
@@ -148,10 +147,8 @@ sdldisplay_allocate_colours( int numColours, Uint32 *colour_values )
 {
   int i;
 
-  SDL_SetColors( image, colour_palette, 0, numColours );
-
   for( i = 0; i < numColours; i++ ) {
-    colour_values[i] = SDL_MapRGB( image->format,colour_palette[i].r,
+    colour_values[i] = SDL_MapRGB( tmp_screen->format, colour_palette[i].r,
                               colour_palette[i].g, colour_palette[i].b );
   }
 
@@ -222,19 +219,6 @@ sdldisplay_load_gfx_mode( void )
     scaler_proc = Normal1x;
   }
 
-  /* Create the surface that contains the 8 bit emulator data */
-  image = SDL_CreateRGBSurface( SDL_SWSURFACE,
-                                image_width,
-                                image_height,
-                                8, 0, 0, 0, 0
-                              );
-  if( !image ) {
-    fprintf( stderr, "%s: couldn't create image\n", fuse_progname );
-    return 1;
-  }
-
-  sdldisplay_allocate_colours( 16, colour_values );
-
   /* Create the surface that contains the scaled graphics in 16 bit mode */
   gc = SDL_SetVideoMode( image_width * sdldisplay_current_size,
                          image_height * sdldisplay_current_size,
@@ -270,10 +254,10 @@ sdldisplay_load_gfx_mode( void )
     return 1;
   }
 
+  sdldisplay_allocate_colours( 16, colour_values );
+
   /* Redraw the entire screen... */
   display_refresh_all();
-
-  if( SDL_MUSTLOCK( image ) ) SDL_LockSurface( image );
 
   return 0;
 }
@@ -283,12 +267,9 @@ uidisplay_hotswap_gfx_mode( void )
 {
   /* Keep around the old image & tmp_screen so we can restore the screen data
      after the mode switch. */
-  SDL_Surface *old_image = image;
   SDL_Surface *oldtmp_screen = tmp_screen;
 
   fuse_emulation_pause();
-
-  if( SDL_MUSTLOCK( image ) ) SDL_UnlockSurface( image );
 
   /* Setup the new GFX mode */
   sdldisplay_load_gfx_mode();
@@ -297,13 +278,10 @@ uidisplay_hotswap_gfx_mode( void )
   SDL_SetColors( gc, colour_palette, 0, 16 );
 
   /* Restore old screen content */
-  SDL_BlitSurface(old_image, NULL, image, NULL);
   SDL_BlitSurface(oldtmp_screen, NULL, tmp_screen, NULL);
-  SDL_UpdateRect(image, 0,  0, 0, 0);
   SDL_UpdateRect(tmp_screen, 0,  0, 0, 0);
 
   /* Free the old surfaces */
-  SDL_FreeSurface(old_image);
   free(oldtmp_screen->pixels);
   SDL_FreeSurface(oldtmp_screen);
 
@@ -322,33 +300,15 @@ uidisplay_hotswap_gfx_mode( void )
 void
 uidisplay_putpixel( int x, int y, int colour )
 {
-  Uint8 *p;
-
-#ifdef HAVE_PNG_H
-  screenshot_screen[y][x] = colour;
-#endif                 /* #ifdef HAVE_PNG_H */
-
-  colour = colour_values[colour];
-
-  if( timex ) {
-    p = (Uint8 *)image->pixels + (y<<1) * image->pitch + x;
-    *p = colour;
-    p += image->pitch;
-    *p = colour;
-  } else {
-    if( x & 1 ) return;
-    p = (Uint8 *)image->pixels + y * image->pitch + (x>>1);
-    *p = colour;
-  }
+  /* FIXME: Do something here */
 }
 
 void
 uidisplay_frame_end( void )
 {
   SDL_Rect *r;
-  Uint32 srcPitch, dstPitch;
+  Uint32 tmp_screen_pitch, dstPitch;
   SDL_Rect *last_rect;
-  SDL_Rect dst;
 
   /* We check for a switch to fullscreen here to give systems with a
      windowed-only UI a chance to free menu etc. resources before
@@ -374,36 +334,42 @@ uidisplay_frame_end( void )
   if ( num_rects == 0 ) return;
 #endif                  /* #ifdef USE_WIDGET */
 
+  if( SDL_MUSTLOCK( tmp_screen ) ) SDL_LockSurface( tmp_screen );
+
+  tmp_screen_pitch = tmp_screen->pitch;
+
   last_rect = updated_rects + num_rects;
 
-  if( SDL_MUSTLOCK( image ) ) SDL_UnlockSurface( image );
-
   for( r = updated_rects; r != last_rect; r++ ) {
-    dst.x = r->x;
-    dst.y = r->y;
-    dst.w = r->w;
-    dst.h = r->h;
 
-    dst.x++;  /* Shift rect by one since 2xSai needs to acces the data around */
-    dst.y++;  /* any pixel to scale it, and we want to avoid mem access crashes. */
+    WORD *dest_base, *dest;
+    size_t xx,yy;
 
-    /* Convert appropriate parts of the 8bpp image into 16bpp */
-    if ( SDL_BlitSurface( image, r, tmp_screen, &dst ) != 0 )
-      fprintf( stderr, "%s: SDL_BlitSurface failed: %s\n", fuse_progname, SDL_GetError() );
+    dest_base =
+      (WORD*)( (BYTE*)tmp_screen->pixels + (r->x*2+2) +
+	       (r->y+1)*tmp_screen_pitch );
+
+    for( yy = r->y; yy < r->y + r->h; yy++ ) {
+
+      for( xx = r->x, dest = dest_base; xx < r->x + r->w; xx++, dest++ )
+	*dest = colour_values[ display_image[yy][xx] ];
+
+      dest_base = (WORD*)( (BYTE*)dest_base + tmp_screen_pitch );
+    }
+	  
   }
 
-  if( SDL_MUSTLOCK( tmp_screen ) ) SDL_LockSurface( tmp_screen );
   if( SDL_MUSTLOCK( gc ) ) SDL_LockSurface( gc );
 
-  srcPitch = tmp_screen->pitch;
   dstPitch = gc->pitch;
 
   for( r = updated_rects; r != last_rect; ++r ) {
     register int dst_y = r->y * sdldisplay_current_size;
     register int dst_h = r->h;
 
-    scaler_proc( (BYTE*)tmp_screen->pixels + (r->x*2+2) + (r->y+1)*srcPitch,
-     srcPitch, NULL,
+    scaler_proc(
+     (BYTE*)tmp_screen->pixels + (r->x*2+2) + (r->y+1)*tmp_screen_pitch,
+     tmp_screen_pitch, NULL,
      (BYTE*)gc->pixels + r->x*(BYTE)(2*sdldisplay_current_size) +
      dst_y*dstPitch, dstPitch, r->w, dst_h );
 
@@ -422,8 +388,6 @@ uidisplay_frame_end( void )
 
   num_rects = 0;
   sdldisplay_force_full_refresh = 0;
-
-  if( SDL_MUSTLOCK( image ) ) SDL_LockSurface( image );
 }
 
 void
@@ -479,9 +443,6 @@ uidisplay_end( void )
   if ( tmp_screen ) {
     free(tmp_screen->pixels);
     SDL_FreeSurface(tmp_screen);
-  }
-  if ( image ) {
-    SDL_FreeSurface( image );
   }
   return 0;
 }
