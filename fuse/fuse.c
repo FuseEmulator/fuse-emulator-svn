@@ -152,15 +152,6 @@ static int fuse_init(int argc, char **argv)
 
   z80_init();
 
-  error = scaler_select_id( settings_current.start_scaler_mode );
-  if( error ) return error;
-
-  error = machine_init_machines();
-  if( error ) return error;
-
-  error = machine_select_id( settings_current.start_machine );
-  if( error ) return error;
-
   fuse_sound_in_use = 0;
   if( settings_current.sound && settings_current.emulation_speed == 100 )
     sound_init( settings_current.sound_device );
@@ -178,6 +169,15 @@ static int fuse_init(int argc, char **argv)
     if(timer_init()) return 1;
   }
 #endif			/* #ifdef UI_SDL */
+
+  error = scaler_select_id( settings_current.start_scaler_mode );
+  if( error ) return error;
+
+  error = machine_init_machines();
+  if( error ) return error;
+
+  error = machine_select_id( settings_current.start_machine );
+  if( error ) return error;
 
   if( settings_current.snapshot ) {
     snapshot_read( settings_current.snapshot ); autoload = 0;
