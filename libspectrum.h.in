@@ -658,6 +658,45 @@ size_t
 libspectrum_rzx_iterator_get_frames( libspectrum_rzx_iterator it );
 
 /*
+ * Microdrive image handling routines
+ */
+
+typedef struct libspectrum_microdrive libspectrum_microdrive;
+
+#define LIBSPECTRUM_MICRODRIVE_DATA_LENGTH 137922
+
+/* Constructor/destructor */
+
+libspectrum_error WIN32_DLL
+libspectrum_microdrive_alloc( libspectrum_microdrive **microdrive );
+libspectrum_error WIN32_DLL
+libspectrum_microdrive_free( libspectrum_microdrive *microdrive );
+
+/* Accessors */
+
+libspectrum_byte WIN32_DLL
+libspectrum_microdrive_data( const libspectrum_microdrive *microdrive,
+			     size_t which );
+void WIN32_DLL
+libspectrum_microdrive_set_data( libspectrum_microdrive *microdrive,
+				 size_t which, libspectrum_byte data );
+
+int WIN32_DLL
+libspectrum_microdrive_write_protect( const libspectrum_microdrive *microdrive );
+void WIN32_DLL
+libspectrum_microdrive_set_write_protect( libspectrum_microdrive *microdrive,
+					  int write_protect );
+
+/* .mdr format routines */
+
+libspectrum_error WIN32_DLL
+libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
+				 libspectrum_byte *buffer, size_t length );
+libspectrum_error WIN32_DLL
+libspectrum_microdrive_mdr_write( const libspectrum_microdrive *microdrive,
+				  libspectrum_byte **buffer, size_t *length );
+
+/*
  * Timex DOCK/EXROM handling routines
  */
 
