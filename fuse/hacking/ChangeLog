@@ -564,3 +564,5 @@
 20040216 configure.in, utils.c: compilation fix if ROMSDIR defined (and
 	 configure.in option to define it) (Release-0_6_2-branch)
 	 (Darren).
+20040217 settings.dat, ui/uijoystick.c: allow selectable joystick devices
+	 (Release-0_6_2-branch) (Darren).
