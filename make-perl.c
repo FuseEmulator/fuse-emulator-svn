@@ -237,5 +237,16 @@ int main(void)
 
   printf( "}\n\n" );
 
+  printf( "if( /LIBSPECTRUM_CAPABILITIES/ ) {\n\n  $_ = << \"CODE\";\n" );
+
+#ifdef HAVE_ZLIB_H
+
+  printf( "\n/* we support snapshots etc. requiring zlib (e.g. compressed szx) */\n" );
+  printf( "#define	LIBSPECTRUM_SUPPORTS_ZLIB_COMPRESSION	(1)\n" );
+
+#endif				/* #ifdef HAVE_ZLIB_H */
+
+  printf( "CODE\n}\n\n" );
+
   return 0;
 }

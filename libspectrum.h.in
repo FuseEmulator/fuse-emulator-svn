@@ -71,6 +71,9 @@ LIBSPECTRUM_DEFINE_TYPES
 /* glib replacement (if necessary) */
 LIBSPECTRUM_GLIB_REPLACEMENT
 
+/* Library capabilities */
+LIBSPECTRUM_CAPABILITIES
+
 /*
  * General libspectrum routines
  */
