@@ -28,6 +28,8 @@
 #ifndef LIBSPECTRUM_INTERNALS_H
 #define LIBSPECTRUM_INTERNALS_H
 
+#include <glib.h>
+
 #ifndef LIBSPECTRUM_LIBSPECTRUM_H
 #include "libspectrum.h"
 #endif				/* #ifndef LIBSPECTRUM_LIBSPECTRUM_H */

@@ -10,6 +10,7 @@ config.h.in
 config.log
 config.status
 configure
+libspectrum.h
 libspectrum.la
 libtool
 make-sed
