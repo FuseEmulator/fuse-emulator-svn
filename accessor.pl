@@ -71,6 +71,8 @@ struct libspectrum_snap {
 
   libspectrum_byte iff1, iff2, im;
 
+  int halted;			/* Is the Z80 currently HALTed? */
+
   /* RAM */
 
   libspectrum_byte *pages[8];

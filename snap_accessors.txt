@@ -46,6 +46,8 @@ libspectrum_byte im
 
 libspectrum_dword tstates
 
+int halted
+
 libspectrum_byte out_ula
 
 libspectrum_byte out_128_memoryport
