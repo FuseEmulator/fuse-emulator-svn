@@ -50,7 +50,9 @@ static GtkWidget
 int
 gtkstatusbar_create( GtkBox *parent )
 {
-  status_bar = gtk_hbox_new( FALSE, 3 );
+  GtkWidget *separator;
+
+  status_bar = gtk_hbox_new( FALSE, 5 );
   gtk_box_pack_start( parent, status_bar, FALSE, FALSE, 3 );
 
   pixmap_tape_inactive = 
@@ -67,17 +69,23 @@ gtkstatusbar_create( GtkBox *parent )
     gdk_pixmap_colormap_create_from_xpm_d( NULL, gdk_rgb_get_cmap(), NULL,
 					   NULL, gtkpixmap_disk_active );
 
-  disk_status = gtk_pixmap_new( pixmap_disk_inactive, NULL );
-  gtk_box_pack_start_defaults( GTK_BOX( status_bar ), disk_status );
+  speed_status = gtk_label_new( "100%" );
+  gtk_box_pack_end( GTK_BOX( status_bar ), speed_status, FALSE, FALSE, 0 );
 
-  pause_status = gtk_label_new( "Paused: 0" );
-  gtk_box_pack_start_defaults( GTK_BOX( status_bar ), pause_status );
+  separator = gtk_vseparator_new();
+  gtk_box_pack_end( GTK_BOX( status_bar ), separator, FALSE, FALSE, 0 );
 
   tape_status = gtk_pixmap_new( pixmap_tape_inactive, NULL );
-  gtk_box_pack_start_defaults( GTK_BOX( status_bar ), tape_status );
+  gtk_box_pack_end( GTK_BOX( status_bar ), tape_status, FALSE, FALSE, 0 );
 
-  speed_status = gtk_label_new( "100%" );
-  gtk_box_pack_start_defaults( GTK_BOX( status_bar ), speed_status );
+  disk_status = gtk_pixmap_new( pixmap_disk_inactive, NULL );
+  gtk_box_pack_end( GTK_BOX( status_bar ), disk_status, FALSE, FALSE, 0 );
+
+  pause_status = gtk_label_new( "Paused: 0" );
+  gtk_box_pack_end( GTK_BOX( status_bar ), pause_status, FALSE, FALSE, 0 );
+
+  separator = gtk_vseparator_new();
+  gtk_box_pack_end( GTK_BOX( status_bar ), separator, FALSE, FALSE, 0 );
 
   return 0;
 }

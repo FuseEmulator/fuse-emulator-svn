@@ -510,3 +510,5 @@
 20040126 dck.c: use libspectrum_dck_read2 instead of libspectrum_dck_read
 	 to aid with identifying compressed files (patch #884355)
 	 (Release-0_6_2-branch) (Fred).
+20040127 ui/gtk/statusbar.c, timer.c: visual improvements to the GTK+
+	 statusbar (Release-0_6_2-branch).
