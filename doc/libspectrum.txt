@@ -278,18 +278,8 @@ For more details on the `GSList' type, see the `glib' documentation;
 libspectrum will provide a (minimally functional) replacement if
 `glib' was not available when it was compiled.
 
-Each of the entries in the list should be of `libspectrum_tape_block'
-type:
-
-typedef struct libspectrum_tape_block {
-
-  libspectrum_tape_type type;
-
-  union { < ... lots of types ... > } types;
-
-} libspectrum_tape_block;
-
-Details on the available block types are in `tape_blocks.txt'.
+Each of the entries in the `blocks' list should be of
+`libspectrum_tape_block' type; details on this are in `tape_blocks.txt'.
 
 The actual routines for dealing with tapes are:
 
@@ -324,38 +314,80 @@ int libspectrum_tape_present( libspectrum_tape *tape )
 Returns non-zero if `tape' currently contains a tape image and zero
 otherwise.
 
-libspectrum_error libspectrum_tape_init_block( libspectrum_tape_block *block )
-/* Initialise a block so it can be used for playback */
+libspectrum_error libspectrum_tape_init_block( GSList *current_block )
+
+Initialise the block pointed to by `current_block' so that it can be
+used for playback.
 
 libspectrum_error libspectrum_tape_get_next_edge( libspectrum_dword *tstates,
 						  int *flags,
 						  libspectrum_tape *tape )
-/* How long will it be until the next edge from this tape? */
+
+Return in `tstates' the number of tstates until the next edge should
+occur from `tape'. `flags' will be set to the bitwise or of the
+following:
+
+LIBSPECTRUM_TAPE_FLAGS_BLOCK	The current block ends with this edge
+LIBSPECTRUM_TAPE_FLAGS_STOP	User code should stop playing the tape
+				after this edge
+LIBSPECTRUM_TAPE_FLAGS_STOP48   User code should stop playing the tape
+				after this edge if it was emulating a
+				48K machine. The desired behaviour for
+				things like the TC2048 is undefined in
+				the .tzx format :-(
 
 libspectrum_error libspectrum_tape_position( int *n, libspectrum_tape *tape )
-/* Get the position on the tape of the current block */
+
+Return in `n' the position of the current block on the tape. The first
+block is block 0, the second block 1, etc.
 
 libspectrum_error libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
-/* Select the nth block on the tape */
+
+Set the current block on the tape to be the `n'th block and initialise
+it. Again, the first block on the tape is block 0.
 
 libspectrum_error
 libspectrum_tape_block_description( char *buffer, size_t length,
 				    libspectrum_tape_block *block )
-/* Give a textual representation of the type of `block' */
+
+Copy into `buffer' (which has been allocated at least `length' bytes by
+the user code) a text description of the type of `block'.
+
+libspectrum_error
+libspectrum_tape_append_block( libspectrum_tape *tape,
+                               libspectrum_tape_block *block )
+
+Append `block' to `tape'.
 
 libspectrum_error
 libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 	              const size_t length )
+
+Form a tape object in `tape' from the .tap file of `length' bytes
+starting at `buffer'.
+
 libspectrum_error
 libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_tape *tape )
 
+Attempt to convert the tape in `tape' to a .tap file in `*buffer', which
+has previously been allocated `*length' bytes by user code.  The .tap
+format can handle only standard speed loading blocks; a best guess
+attempt will be made to convert other blocks, but the resultant .tap
+file probably won't work.
+
 libspectrum_error
 libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 		      const size_t length )
+
+Just as `libspectrum_tap_read', but for .tzx format files.
+
 libspectrum_error
 libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_tape *tape )
+
+Just as `libspectrum_tap_write', but for .tzx files. The conversion to
+.tzx format is not lossy as it is with converting to .tap.
 
 RZX functions
 -------------
