@@ -1,4 +1,6 @@
-2003-??-??  Philip Kendall  <pak21-spectrum@srcf.ucam.org>
+2003-09-13  Philip Kendall  <pak21-spectrum@srcf.ucam.org>
+
+	* libspectrum 0.2.0 released.
 
 	* Various data structures (snapshots, tapes, tape blocks) which
 	  were previously directly accessible are now accessible only via
