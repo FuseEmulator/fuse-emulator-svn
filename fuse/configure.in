@@ -55,9 +55,6 @@ AC_CHECK_SIZEOF(long, 4)
 dnl Check that zlib is available
 AC_CHECK_LIB(z,zlibVersion)
 
-dnl Check that libgcrypt is available
-AC_CHECK_LIB(gcrypt,gcry_check_version)
-
 dnl Allow the user to say that various libraries are in one place
 AC_ARG_WITH(local-prefix,
 [  --with-local-prefix=PFX local libraries installed in PFX (optional)],
@@ -65,6 +62,9 @@ CFLAGS="$CFLAGS -I$withval/include"; LDFLAGS="$LDFLAGS -L$withval/lib",
 if test "$prefix" != "NONE"; then
   CFLAGS="$CFLAGS -I$prefix/include"; LDFLAGS="$LDFLAGS -L$prefix/lib"
 fi)
+
+dnl Check that libgcrypt is available
+AC_CHECK_LIB(gcrypt,gcry_check_version)
 
 dnl Select a user interface
 
