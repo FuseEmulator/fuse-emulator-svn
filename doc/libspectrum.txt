@@ -88,6 +88,7 @@ values:
 LIBSPECTRUM_MACHINE_16		16K Spectrum
 LIBSPECTRUM_MACHINE_48		48K Spectrum
 LIBSPECTRUM_MACHINE_TC2048	Timex TC2048
+LIBSPECTRUM_MACHINE_TC2068	Timex TC2068
 LIBSPECTRUM_MACHINE_128		(Original) 128K Spectrum
 LIBSPECTRUM_MACHINE_PLUS2	Spectrum +2 (the grey one)
 LIBSPECTRUM_MACHINE_PENT	Pentagon 128
@@ -138,7 +139,7 @@ File identification
 -------------------
 
 The `libspectrum_identify_file' function will, if given a file's
-contents and optionally its filename, will make a 'best guess' as to
+contents and optionally its filename, will make a `best guess' as to
 what sort of file it is:
 
 libspectrum_error
@@ -153,7 +154,9 @@ The type of file will be returned in the `type' parameter, and can take
 the following values:
 
 LIBSPECTRUM_ID_UNKNOWN		Couldn't identify this file
+LIBSPECTRUM_ID_CARTRIDGE_DCK	A .dck Timex dock image
 LIBSPECTRUM_ID_DISK_DSK		A .dsk disk file
+LIBSPECTRUM_ID_DISK_SCL		A .scl disk file
 LIBSPECTRUM_ID_DISK_TRD		A .trd disk file
 LIBSPECTRUM_ID_RECORDING_RZX	A .rzx input recording
 LIBSPECTRUM_ID_SNAPSHOT_SNA     A .sna snapshot 
@@ -165,6 +168,56 @@ LIBSPECTRUM_ID_TAPE_TZX		A .tzx tape file
 well as the extension of the filename and a couple of heuristics in its
 attempts to identify the file.  It's not perfect (especially when given
 files with the wrong extension), but it should work in most cases.
+
+Machine timings
+---------------
+
+The `libspectrum_machine_timings' function will give information about
+the speed and various timings constants used by the machines. Some of
+these timings are almost certainly wrong; if you have any corrections,
+please send them in.
+
+libspectrum_error
+libspectrum_machine_timings( libspectrum_timings *timings,
+			     libspectrum_machine machine )
+
+`machine' is one of the LIBSPECTRUM_MACHINE_* constants listed above,
+and `timings' is a pointer to a `libspectrum_timings' structure:
+
+typedef struct libspectrum_timings {
+
+  /* The machine type as given in the `machine' parameter to
+     `libspectrum_machine_timings' */
+  libspectrum_machine machine;
+
+  /* Processor speed in Hz */
+  libspectrum_dword hz;
+
+  /* AY clock speed in Hz */
+  libspectrum_dword ay_hz;
+
+  /* Line timings in tstates */
+  libspectrum_word left_border, horizontal_screen, right_border,
+	           horizontal_retrace;
+
+  /* The sum of the last four values */
+  libspectrum_word tstates_per_line;
+
+  /* Frame timings in lines */
+  libspectrum_word top_border, vertical_screen, bottom_border,
+	           vertical_retrace;
+ 
+  /* Sum of the last four values */
+  libspectrum_dword lines_per_frame;  
+
+  /* `tstates_per_line' * `lines_per_frame' */
+  libspectrum_dword tstates_per_frame;
+
+  /* How long after interrupt is the top-level pixel of the main screen
+     displayed */
+  libspectrum_dword top_left_pixel;
+
+} libspectrum_timings;
 
 Snapshot functions
 ==================
@@ -484,5 +537,64 @@ contains the length of the .rzx file.
 .rzx header fields. If `compress' is non-zero (and `zlib' was
 available when libspectrum was compiled), the resulting .rzx file will
 have its snapshot and input recording data compressed.
+
+Timex dock/exrom handling functions
+===================================
+
+The Timex TC2068 featured a cartridge port (the `dock') for which a
+few pieces of software were made available. The Warajevo emulator
+includes support for this feature, and uses the `.dck' extension for
+images of these cartridges. Documentation on this format is available
+at http://www.worldofspectrum.org/warajevo/Fformats.html#dck
+
+Each .dck file can hold multiple 64Kb RAM banks, which are stored in a
+`libspectrum_dck' structure:
+
+typedef struct libspectrum_dck {
+  libspectrum_dck_block *dck[256];
+} libspectrum_dck;
+
+Each 64Kb bank is stored in a `libspectrum_dck_block' structure:
+
+typedef struct libspectrum_dck_block {
+  libspectrum_dck_bank bank;
+  libspectrum_dck_page_type access[8];
+  libspectrum_byte *pages[8];
+} libspectrum_dck_block;
+
+The `bank' field specifies which type of memory this bank represents,
+and takes one of the following values:
+
+LIBSPECTRUM_DCK_BANK_DOCK	The dock
+LIBSPECTRUM_DCK_BANK_EXROM	The EXROM 
+LIBSPECTRUM_DCK_BANK_HOME	The normal memory space
+
+The `access' field gives the type of memory stored in each 8Kb page
+within the 64 Kb bank, and take be:
+
+LIBSPECTRUM_DCK_PAGE_NULL	Not present in this bank
+LIBSPECTRUM_DCK_PAGE_RAM_EMPTY  Uninitialised RAM
+LIBSPECTRUM_DCK_PAGE_ROM	ROM
+LIBSPECTRUM_DCK_PAGE_RAM	Initialised RAM
+
+Any ROM or initialised RAM banks are in the `pages' field.
+
+The actual routines for handling dock files:
+
+libspectrum_error libspectrum_dck_alloc( libspectrum_dck **dck )
+
+Allocate a dock structure.
+
+libspectrum_error libspectrum_dck_free( libspectrum_dck *dck, int keep_pages );
+
+Free a dock structure; if `keep_pages' is non-zero, any memory
+allocated to the structure will not be freed and can then be used by
+the calling program. Do remember to free it when you're finished with it!
+
+libspectrum_error
+libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
+                      size_t length );
+
+Read in a dock structure from the `length' byte long `buffer'.
 
 $Id$
