@@ -549,6 +549,8 @@ libspectrum_error WIN32_DLL
 libspectrum_rzx_stop_input( libspectrum_rzx *rzx );
 libspectrum_error WIN32_DLL
 libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap );
+libspectrum_error WIN32_DLL
+libspectrum_rzx_rollback( libspectrum_rzx *rzx, libspectrum_snap **snap );
 
 libspectrum_error WIN32_DLL
 libspectrum_rzx_store_frame( libspectrum_rzx *rzx, size_t instructions, 

@@ -187,7 +187,7 @@ const libspectrum_word libspectrum_rzx_repeat_frame = 0xffff;
  * Generic block handling routines
  */
 
-libspectrum_error
+static libspectrum_error
 block_alloc( rzx_block_t **block, rzx_block_id type )
 {
   *block = malloc( sizeof( **block ) );
@@ -202,12 +202,14 @@ block_alloc( rzx_block_t **block, rzx_block_id type )
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-libspectrum_error
+static libspectrum_error
 block_free( rzx_block_t *block )
 {
   size_t i;
   input_block_t *input;
   signature_block_t *signature;
+
+  printf( "Deleting block type %d at %p\n", block->type, block );
 
   switch( block->type ) {
 
@@ -244,6 +246,21 @@ block_free( rzx_block_t *block )
 			   "unknown RZX block type %d at %s:%d", block->type,
 			   __FILE__, __LINE__ );
   return LIBSPECTRUM_ERROR_LOGIC;
+}
+
+static void
+block_free_wrapper( gpointer data, gpointer user_data )
+{
+  block_free( data );
+}
+
+static gint
+find_block( gconstpointer a, gconstpointer b )
+{
+  const rzx_block_t *block = a;
+  libspectrum_byte id = GPOINTER_TO_INT( b );
+
+  return block->type - id;
 }
 
 /*
@@ -313,6 +330,48 @@ libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap )
   block->types.snap = snap;
 
   rzx->blocks = g_slist_append( rzx->blocks, block );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_rzx_rollback( libspectrum_rzx *rzx, libspectrum_snap **snap )
+{
+  GSList *previous, *list;
+  rzx_block_t *block;
+
+  if( rzx->current_input ) {
+    libspectrum_error error;
+    error = libspectrum_rzx_stop_input( rzx ); if( error ) return error;
+  }
+
+  /* Find the last snapshot block in the file */
+  previous = NULL; list = rzx->blocks;
+
+  while( 1 ) {
+    list =
+      g_slist_find_custom( list,
+			   GINT_TO_POINTER( LIBSPECTRUM_RZX_SNAPSHOT_BLOCK ),
+			   find_block );
+    if( !list ) break;
+
+    previous = list;
+    list = list->next;
+  }
+    
+
+  if( !previous ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "no snapshot block found in recording" );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  /* Delete all blocks after the snapshot */
+  g_slist_foreach( previous->next, block_free_wrapper, NULL );
+  previous->next = NULL;
+
+  block = previous->data;
+  *snap = block->types.snap;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -441,15 +500,6 @@ libspectrum_rzx_start_playback( libspectrum_rzx *rzx, int which,
   return LIBSPECTRUM_ERROR_INVALID;
 }
 
-gint
-find_block( gconstpointer a, gconstpointer b )
-{
-  const rzx_block_t *block = a;
-  libspectrum_byte id = GPOINTER_TO_INT( b );
-
-  return block->type - id;
-}
-
 libspectrum_error
 libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished )
 {
@@ -515,12 +565,6 @@ libspectrum_rzx_playback( libspectrum_rzx *rzx, libspectrum_byte *byte )
 
   *byte = rzx->data_frame->in_bytes[ rzx->in_count++ ];
   return LIBSPECTRUM_ERROR_NONE;
-}
-
-void
-block_free_wrapper( gpointer data, gpointer user_data )
-{
-  block_free( data );
 }
 
 libspectrum_error
