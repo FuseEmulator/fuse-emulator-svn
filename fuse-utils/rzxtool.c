@@ -266,7 +266,7 @@ parse_options( int argc, char **argv, struct options *options )
 int
 write_snapshot( libspectrum_snap *snap )
 {
-  unsigned char *buffer; size_t length = 0;
+  unsigned char *buffer = NULL; size_t length = 0;
   int flags;
 
   if( libspectrum_snap_write( &buffer, &length, &flags, snap,
