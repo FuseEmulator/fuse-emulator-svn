@@ -27,7 +27,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "tape.h"
+#include "internals.h"
 
 libspectrum_error
 libspectrum_tap_create( libspectrum_tape *tape, const libspectrum_byte *buffer,

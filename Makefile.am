@@ -29,6 +29,7 @@ lib_LTLIBRARIES = libspectrum.la
 libspectrum_la_SOURCES = libspectrum.c rzx.c sna.c tap.c tape.c\
 tzx_read.c tzx_write.c z80.c zlib.c
 
-noinst_HEADERS = libspectrum.h rzx.h tape.h
+include_HEADERS = libspectrum.h
+noinst_HEADERS = internals.h
 
 INCLUDES = @GLIB_CFLAGS@

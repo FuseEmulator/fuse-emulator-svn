@@ -1,5 +1,5 @@
 /* sna.c: Routines for handling .sna snapshots
-   Copyright (c) 2001 Philip Kendall
+   Copyright (c) 2001-2002 Philip Kendall
 
    $Id$
 
@@ -26,13 +26,19 @@
 
 #include <string.h>
 
-#include "libspectrum.h"
+#include "internals.h"
 
 #define LIBSPECTRUM_SNA_HEADER_LENGTH 27
 #define LIBSPECTRUM_SNA_128_HEADER_LENGTH 4
 
 static int libspectrum_sna_identify( size_t buffer_length, 
 				     libspectrum_machine *type );
+static int libspectrum_sna_read_header( const uchar *buffer,
+					size_t buffer_length,
+					libspectrum_snap *snap );
+static int libspectrum_sna_read_data( const uchar *buffer,
+				      size_t buffer_length,
+				      libspectrum_snap *snap );
 static int libspectrum_sna_read_128_header( const uchar *buffer,
 					    size_t buffer_length,
 					    libspectrum_snap *snap );
@@ -78,8 +84,9 @@ static int libspectrum_sna_identify( size_t buffer_length,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-int libspectrum_sna_read_header( const uchar *buffer, size_t buffer_length,
-				 libspectrum_snap *snap )
+static int
+libspectrum_sna_read_header( const uchar *buffer, size_t buffer_length,
+			     libspectrum_snap *snap )
 {
   if( buffer_length < LIBSPECTRUM_SNA_HEADER_LENGTH ) {
     libspectrum_print_error(
@@ -115,8 +122,9 @@ int libspectrum_sna_read_header( const uchar *buffer, size_t buffer_length,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-int libspectrum_sna_read_data( const uchar *buffer, size_t buffer_length,
-			       libspectrum_snap *snap )
+static int
+libspectrum_sna_read_data( const uchar *buffer, size_t buffer_length,
+			   libspectrum_snap *snap )
 {
   int error;
   int offset; int page;

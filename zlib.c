@@ -35,7 +35,7 @@
 
 #include <zlib.h>
 
-#include "libspectrum.h"
+#include "internals.h"
 
 libspectrum_error 
 libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,

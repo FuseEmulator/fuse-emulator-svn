@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "rzx.h"
+#include "internals.h"
 
 static libspectrum_error
 rzx_read_header( const libspectrum_byte **ptr, const libspectrum_byte *end );

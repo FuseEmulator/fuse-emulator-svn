@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "tape.h"
+#include "internals.h"
 
 /*** Local function prototypes ***/
 
