@@ -397,6 +397,8 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_DISK_SCL,      "scl", 3, "SINCLAIR",         0, 8, 4 },
       { LIBSPECTRUM_ID_DISK_TRD,      "trd", 3, NULL,		    0, 0, 0 },
 
+      { LIBSPECTRUM_ID_HARDDISK_HDF,  "hdf", 3, "RS-IDE\x1a",	    0, 7, 4 },
+
       { LIBSPECTRUM_ID_COMPRESSED_BZ2,"bz2", 3, "BZh",		    0, 3, 4 },
       { LIBSPECTRUM_ID_COMPRESSED_GZ, "gz",  3, "\x1f\x8b",	    0, 2, 4 },
 
@@ -468,6 +470,9 @@ libspectrum_identify_class( libspectrum_class_t *libspectrum_class,
   case LIBSPECTRUM_ID_DISK_SCL:
   case LIBSPECTRUM_ID_DISK_TRD:
     *libspectrum_class = LIBSPECTRUM_CLASS_DISK_TRDOS; return 0;
+
+  case LIBSPECTRUM_ID_HARDDISK_HDF:
+    *libspectrum_class = LIBSPECTRUM_CLASS_HARDDISK; return 0;
 
   case LIBSPECTRUM_ID_RECORDING_RZX:
     *libspectrum_class = LIBSPECTRUM_CLASS_RECORDING; return 0;
