@@ -224,7 +224,7 @@ int rzx_start_playback( const char *filename, int (*load_snap)(void) )
   if( error ) return error;
 
   libspec_error = libspectrum_rzx_read( rzx, &snap, file.buffer, file.length,
-					&rzx_key );
+					NULL );
   if( libspec_error != LIBSPECTRUM_ERROR_NONE ) {
     utils_close_file( &file );
     return libspec_error;
@@ -262,7 +262,7 @@ rzx_start_playback_from_buffer( const unsigned char *buffer, size_t length )
 
   if( rzx_recording ) return 0;
 
-  error = libspectrum_rzx_read( rzx, &snap, buffer, length, &rzx_key );
+  error = libspectrum_rzx_read( rzx, &snap, buffer, length, NULL );
   if( error ) return error;
 
   error = start_playback( rzx, snap );
