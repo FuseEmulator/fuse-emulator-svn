@@ -39,24 +39,38 @@
 libspectrum_error_function_t libspectrum_error_function =
   libspectrum_default_error_function;
 
+/* The version of libgcrypt that we need */
+static const char *MIN_GCRYPT_VERSION = "1.1.0";
+
 /* Initialise the library */
 libspectrum_error
 libspectrum_init( void )
 {
 #ifdef HAVE_GCRYPT_H
 
-  const char *version, *min_version = "1.1.0";
+  const char *version;
 
-  version = gcry_check_version( min_version );
-  if( !version ) {
-    libspectrum_print_error(
-      LIBSPECTRUM_ERROR_LOGIC,
-      "libspectrum_init: found libgcrypt %s, but need %s",
-      version, min_version );
-    return LIBSPECTRUM_ERROR_LOGIC;	/* FIXME: better error code */
+  if( !gcry_control( GCRYCTL_ANY_INITIALIZATION_P ) ) {
+
+    version = gcry_check_version( MIN_GCRYPT_VERSION );
+    if( !version ) {
+      libspectrum_print_error(
+        LIBSPECTRUM_ERROR_LOGIC,
+	"libspectrum_init: found libgcrypt %s, but need %s",
+	version, MIN_GCRYPT_VERSION
+      );
+      return LIBSPECTRUM_ERROR_LOGIC;	/* FIXME: better error code */
+    }
+
+    /* Give me some 'secure' memory */
+    gcry_control( GCRYCTL_INIT_SECMEM, 16384 );
+
+    /* But it's not very secure as we're not setuid root. However, this
+       isn't critical here, so don't warn about it */
+    gcry_control( GCRYCTL_SUSPEND_SECMEM_WARN );
+
+    gcry_control( GCRYCTL_INITIALIZATION_FINISHED );
   }
-
-  gcry_control( GCRYCTL_INIT_SECMEM, 16384 ); /* Use default pool size */
 
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
