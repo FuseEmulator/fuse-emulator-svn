@@ -111,6 +111,10 @@ int main(void)
 "GSList* g_slist_nth		(GSList		*list,\\\n"
 "				 guint		n);\\\n"
 "\\\n"
+"GSList* g_slist_find_custom	(GSList		*list,\\\n"
+"				 gpointer	data,\\\n"
+"				 GCompareFunc	func );\\\n"
+"\\\n"
 "gint	g_slist_position	(GSList		*list,\\\n"
 "				 GSList		*llink);"
 
