@@ -658,16 +658,51 @@ write_ramp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap, int page )
 {
   libspectrum_error error;
+  libspectrum_byte *block_length, *flags, *data, *compressed_data;
+  size_t data_length, compressed_length;
+  int use_compression;
 
-  /* FIXME: compression */
-
-  error = write_chunk_header( buffer, ptr, length, "RAMP", 3 + 0x4000 );
+  /* 8 for the chunk header, 3 for the flags and the page number */
+  error = libspectrum_make_room( buffer, 8 + 3, ptr, length );
   if( error ) return error;
 
-  libspectrum_write_word( ptr, 0 );	/* Flags */
+  memcpy( *ptr, "RAMP", 4 ); (*ptr) += 4;
+
+  /* Store this location for later */
+  block_length = *ptr; *ptr += 4;
+
+  /* And this one */
+  flags = *ptr; *ptr += 2;
+
   *(*ptr)++ = (libspectrum_byte)page;
 
-  memcpy( *ptr, libspectrum_snap_pages( snap, page ), 0x4000 ); *ptr += 0x4000;
+  use_compression = 0;
+  data = libspectrum_snap_pages( snap, page ); data_length = 0x4000;
+  compressed_data = NULL;
+
+#ifdef HAVE_ZLIB_H
+
+  error = libspectrum_zlib_compress( data, 0x4000,
+				     &compressed_data, &compressed_length );
+  if( error ) return error;
+
+  if( compressed_length < 0x4000 ) {
+    use_compression = 1;
+    data = compressed_data;
+    data_length = compressed_length;
+  }
+
+#endif				/* #ifdef HAVE_ZLIB_H */
+
+  libspectrum_write_dword( &block_length, 3 + data_length );
+  libspectrum_write_word( &flags, use_compression ? 0x01 : 0x00 );
+
+  error = libspectrum_make_room( buffer, data_length, ptr, length );
+  if( error ) { if( compressed_data ) free( compressed_data ); return error; }
+
+  memcpy( *ptr, data, data_length ); *ptr += data_length;
+
+  if( compressed_data ) free( compressed_data );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
