@@ -232,3 +232,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040603 Makefile.am,myglib/{.cvsignore,Makefile.am}: build the glib
 	 replacement as PIC.
 20040611 szx.c: skip those chunks we don't support.
+20040611 szx.c: small changes to the ZXAT and ZXCF chunks to make them
+	 more consistent with how the rest of the .szx format does things.

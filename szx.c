@@ -449,6 +449,8 @@ read_zxat_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 		 const libspectrum_byte **buffer,
 		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
+  libspectrum_word flags;
+
   if( data_length != 8 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "%s:read_zxat_chunk: unknown length %lu",
@@ -458,8 +460,10 @@ read_zxat_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 
   libspectrum_snap_set_zxatasp_active( snap, 1 );
 
-  libspectrum_snap_set_zxatasp_upload( snap, **buffer ); (*buffer)++;
-  libspectrum_snap_set_zxatasp_writeprotect( snap, **buffer ); (*buffer)++;
+  flags = libspectrum_read_word( buffer );
+  libspectrum_snap_set_zxatasp_upload( snap, flags & 0x01 );
+  libspectrum_snap_set_zxatasp_writeprotect( snap, flags & 0x02 );
+
   libspectrum_snap_set_zxatasp_port_a( snap, **buffer ); (*buffer)++;
   libspectrum_snap_set_zxatasp_port_b( snap, **buffer ); (*buffer)++;
   libspectrum_snap_set_zxatasp_port_c( snap, **buffer ); (*buffer)++;
@@ -475,7 +479,9 @@ read_zxcf_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 		 const libspectrum_byte **buffer,
 		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
-  if( data_length != 3 ) {
+  libspectrum_word flags;
+
+  if( data_length != 4 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "read_zxcf_chunk: unknown length %lu",
 			     (unsigned long)data_length );
@@ -483,7 +489,10 @@ read_zxcf_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   }
 
   libspectrum_snap_set_zxcf_active( snap, 1 );
-  libspectrum_snap_set_zxcf_upload( snap, **buffer ); (*buffer)++;
+
+  flags = libspectrum_read_word( buffer );
+  libspectrum_snap_set_zxcf_upload( snap, flags & 0x01 );
+
   libspectrum_snap_set_zxcf_memctl( snap, **buffer ); (*buffer)++;
   libspectrum_snap_set_zxcf_pages( snap, **buffer ); (*buffer)++;
 
@@ -1238,12 +1247,16 @@ static libspectrum_error
 write_zxat_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap )
 {
+  libspectrum_word flags;
   libspectrum_error error;
 
   error = write_chunk_header( buffer, ptr, length, "ZXAT", 8 );
 
-  *(*ptr)++ = libspectrum_snap_zxatasp_upload( snap );
-  *(*ptr)++ = libspectrum_snap_zxatasp_writeprotect( snap );
+  flags = 0;
+  if( libspectrum_snap_zxatasp_upload      ( snap ) ) flags |= 0x01;
+  if( libspectrum_snap_zxatasp_writeprotect( snap ) ) flags |= 0x02;
+  libspectrum_write_word( ptr, flags );
+
   *(*ptr)++ = libspectrum_snap_zxatasp_port_a( snap );
   *(*ptr)++ = libspectrum_snap_zxatasp_port_b( snap );
   *(*ptr)++ = libspectrum_snap_zxatasp_port_c( snap );
@@ -1275,11 +1288,15 @@ static libspectrum_error
 write_zxcf_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap )
 {
+  libspectrum_word flags;
   libspectrum_error error;
 
-  error = write_chunk_header( buffer, ptr, length, "ZXCF", 3 );
+  error = write_chunk_header( buffer, ptr, length, "ZXCF", 4 );
 
-  *(*ptr)++ = libspectrum_snap_zxcf_upload( snap );
+  flags = 0;
+  if( libspectrum_snap_zxcf_upload( snap ) ) flags |= 0x01;
+  libspectrum_write_word( ptr, flags );
+
   *(*ptr)++ = libspectrum_snap_zxcf_memctl( snap );
   *(*ptr)++ = libspectrum_snap_zxcf_pages( snap );
 
