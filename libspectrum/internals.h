@@ -38,8 +38,10 @@
 
 #ifdef __GNUC__
 #define GCC_UNUSED __attribute__ ((unused))
+#define GCC_PRINTF( fmtstring, args ) __attribute__ ((format( printf, fmtstring, args )))
 #else				/* #ifdef __GNUC__ */
 #define GCC_UNUSED
+#define GCC_PRINTF( fmtstring, args )
 #endif				/* #ifdef __GNUC__ */
 
 /* Win32 systems have _strcmpi, but not strcasecmp */
@@ -47,8 +49,9 @@
 #define strcasecmp _strcmpi
 #endif		/* #if !defined(HAVE_STRCASECMP) && defined(HAVE__STRCMPI) */
 
-/* Print an error to stdout */
-libspectrum_error libspectrum_print_error( const char *format, ... );
+/* Print using the user-provided error function */
+libspectrum_error
+libspectrum_print_error( const char *format, ... ) GCC_PRINTF( 1, 2 );
 
 /* Acquire more memory for a buffer */
 int libspectrum_make_room( libspectrum_byte **dest, size_t requested,

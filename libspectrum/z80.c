@@ -163,7 +163,8 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
       break;
     default:
       libspectrum_print_error(
-        "libspectrum_read_z80_header: unknown header length %d", extra_length
+        "libspectrum_read_z80_header: unknown header length %d",
+	(int)extra_length
       );
       return LIBSPECTRUM_ERROR_UNKNOWN;
       

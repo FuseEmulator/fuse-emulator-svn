@@ -149,8 +149,9 @@ libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished )
   /* Check we read the correct number of INs during this frame */
   if( rzx->in_count != rzx->data_frame->count ) {
     libspectrum_print_error(
-      "libspectrum_rzx_playback_frame: wrong number of INs in frame %d: expected %d, got %d",
-      rzx->current_frame, rzx->data_frame->count, rzx->in_count
+      "libspectrum_rzx_playback_frame: wrong number of INs in frame %lu: expected %lu, got %lu",
+      (unsigned long)rzx->current_frame,
+      (unsigned long)rzx->data_frame->count, (unsigned long)rzx->in_count
     );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
@@ -178,8 +179,8 @@ libspectrum_rzx_playback( libspectrum_rzx *rzx, libspectrum_byte *byte )
   /* Check we're not trying to read off the end of the array */
   if( rzx->in_count >= rzx->data_frame->count ) {
     libspectrum_print_error(
-      "More INs during frame %d than stored in RZX file (%d)",
-      rzx->current_frame, rzx->data_frame->count
+      "More INs during frame %lu than stored in RZX file (%lu)",
+      (unsigned long)rzx->current_frame, (unsigned long)rzx->data_frame->count
     );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
