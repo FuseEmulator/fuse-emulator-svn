@@ -40,11 +40,15 @@
 
 #include "internals.h"
 
+
 static libspectrum_error
 skip_gzip_header( const libspectrum_byte **gzptr, size_t *gzlength );
 static libspectrum_error
 skip_null_terminated_string( const libspectrum_byte **ptr, size_t *length,
 			     char *name );
+static libspectrum_error
+zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
+	      libspectrum_byte **outptr, size_t *outlength, int gzip_hack );
 
 libspectrum_error 
 libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
@@ -57,139 +61,26 @@ libspectrum_zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
  * Returns:	error flag (libspectrum_error)
  */
 {
-  int known_length;
-
-  if( *outlength ) {
-    known_length = 1;
-  } else {
-    known_length = 0; *outlength = 16384;
-  }
-
-  if( !known_length ) *outlength = 16384;
-
-  *outptr = malloc( *outlength );
-  if (!*outptr) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_zlib_inflate: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
-  if( known_length ) {
-
-    /* We were given the size of the output data; use the fast method */
-
-    uLongf dl = *outlength;
-
-    switch( uncompress( *outptr, &dl, gzptr, gzlength ) ) {
-
-    case Z_OK:			/* successfully decompressed */
-      *outlength = dl;
-      return LIBSPECTRUM_ERROR_NONE;
-    case Z_MEM_ERROR:		/* out of memory */
-      libspectrum_print_error(
-        LIBSPECTRUM_ERROR_MEMORY,
-	"libspectrum_zlib_inflate: out of memory in zlib"
-      );
-      return LIBSPECTRUM_ERROR_MEMORY;
-    default:			/* corrupt data or short length */
-      libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
-			       "libspectrum_zlib_inflate: corrupt data" );
-      return LIBSPECTRUM_ERROR_CORRUPT;
-    }
-
-  } else {
-
-    /* We don't know how big the output data is; use the slow method */
-    z_stream stream;
-
-    /* Cast to remove warning about losing constness */
-    stream.next_in = (libspectrum_byte*)gzptr;
-    stream.avail_in = gzlength;
-    stream.next_out = *outptr;
-    stream.avail_out = *outlength;
-
-    stream.zalloc = 0;
-    stream.zfree = 0;
-    stream.opaque = 0;
-
-    switch( inflateInit (&stream) ) {
-
-    case Z_OK:			/* initialised OK */
-      break;
-    case Z_MEM_ERROR:		/* out of memory */
-      inflateEnd( &stream );
-      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			       "libspectrum_zlib_inflate: out of memory" );
-      return LIBSPECTRUM_ERROR_MEMORY;
-    case Z_VERSION_ERROR:	/* unrecognised version */
-      inflateEnd( &stream );
-      libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
-			       "libspectrum_zlib_inflate: unknown version" );
-      return LIBSPECTRUM_ERROR_UNKNOWN;
-    default:			/* some other error */
-      libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
-			       "libspectrum_zlib_inflate: %s", stream.msg );
-      inflateEnd( &stream );
-      return LIBSPECTRUM_ERROR_CORRUPT;
-    }
-
-    while( 1 ) {
-
-      switch (inflate (&stream, Z_SYNC_FLUSH)) {
-
-      case Z_OK:		/* more to decompress */
-	break;
-      case Z_STREAM_END:	/* successfully decompressed */
-	*outlength = stream.next_out - *outptr;
-	*outptr = realloc( *outptr, *outlength );	/* truncate to fit */
-	inflateEnd( &stream );
-	return LIBSPECTRUM_ERROR_NONE;
-      case Z_BUF_ERROR:		/* need more buffer space? */
-	{
-	  libspectrum_byte *new_out =
-	    realloc( *outptr, (*outlength += 16384) );
-	  if( !new_out ) {
-	    inflateEnd( &stream );
-	    libspectrum_print_error(
-              LIBSPECTRUM_ERROR_MEMORY,
-	      "libspectrum_zlib_inflate: out of memory"
-            );
-	    return LIBSPECTRUM_ERROR_MEMORY;
-	  }
-
-	  /* Adjust from n bytes into *outptr to n bytes into new_out */
-	  stream.next_out += new_out - *outptr;
-	  *outptr = new_out;
-	  stream.avail_out += 16384;
-	}
-	break;
-      case Z_MEM_ERROR:		/* out of memory */
-	inflateEnd( &stream );
-	libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-				 "libspectrum_zlib_inflate: out of memory" );
-	return LIBSPECTRUM_ERROR_MEMORY;
-      default:			/* corrupt data or needs dictionary */
-	libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
-				 "libspectrum_zlib_inflate: %s", stream.msg);
-	inflateEnd( &stream );
-	return LIBSPECTRUM_ERROR_CORRUPT;
-      }
-    }
-  }
-
-  return LIBSPECTRUM_ERROR_LOGIC;	/* This can't happen */
+  return zlib_inflate( gzptr, gzlength, outptr, outlength, 0 );
 }
 
 libspectrum_error
 libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
 			  libspectrum_byte **outptr, size_t *outlength )
 {
-  z_stream stream;
-  libspectrum_error libspec_error;
-  int error, simple;
+  int error;
 
-  libspec_error = skip_gzip_header( &gzptr, &gzlength );
-  if( libspec_error ) return libspec_error;
+  error = skip_gzip_header( &gzptr, &gzlength ); if( error ) return error;
+
+  return zlib_inflate( gzptr, gzlength, outptr, outlength, 1 );
+}
+
+static libspectrum_error
+zlib_inflate( const libspectrum_byte *gzptr, size_t gzlength,
+	      libspectrum_byte **outptr, size_t *outlength, int gzip_hack )
+{
+  z_stream stream;
+  int error;
 
   /* Use default memory management */
   stream.zalloc = Z_NULL; stream.zfree = Z_NULL; stream.opaque = Z_NULL;
@@ -197,17 +88,26 @@ libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
   /* Cast needed to avoid warning about losing const */
   stream.next_in = (libspectrum_byte*)gzptr; stream.avail_in = gzlength;
 
-  /*
-   * HACK ALERT (comment from zlib 1.1.14:gzio.c:143)
-   *
-   * windowBits is passed < 0 to tell that there is no zlib header.
-   * Note that in this case inflate *requires* an extra "dummy" byte
-   * after the compressed stream in order to complete decompression
-   * and return Z_STREAM_END. Here the gzip CRC32 ensures that 4 bytes
-   * are present after the compressed stream.
-   *
-   */
-  error = inflateInit2( &stream, -15 );
+  if( gzip_hack ) { 
+
+    /*
+     * HACK ALERT (comment from zlib 1.1.14:gzio.c:143)
+     *
+     * windowBits is passed < 0 to tell that there is no zlib header.
+     * Note that in this case inflate *requires* an extra "dummy" byte
+     * after the compressed stream in order to complete decompression
+     * and return Z_STREAM_END. Here the gzip CRC32 ensures that 4 bytes
+     * are present after the compressed stream.
+     *
+     */
+    error = inflateInit2( &stream, -15 );
+
+  } else {
+
+    error = inflateInit( &stream );
+
+  }
+
   switch( error ) {
 
   case Z_OK: break;
@@ -218,7 +118,7 @@ libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
     inflateEnd( &stream );
     return LIBSPECTRUM_ERROR_MEMORY;
 
-  case Z_STREAM_ERROR:
+  default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "error from inflateInit2: %s", stream.msg );
     inflateEnd( &stream );
@@ -226,11 +126,15 @@ libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
 
   }
 
-  /* If we know the size of the output data, use the quick method;
-     otherwise we must inflate the data in chunks */
-  simple = *outlength;
+  if( *outlength ) {
 
-  if( simple ) {
+    *outptr = malloc( *outlength );
+    if( !( *outptr ) ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			       "out of memory at %s:%d", __FILE__, __LINE__ );
+      inflateEnd( &stream );
+      return LIBSPECTRUM_ERROR_MEMORY;
+    }
 
     stream.next_out = *outptr; stream.avail_out = *outlength;
 
@@ -275,27 +179,27 @@ libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
   case Z_NEED_DICT:
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "gzip inflation needs dictionary" );
-    if( !simple ) free( *outptr );
+    free( *outptr );
     inflateEnd( &stream );
     return LIBSPECTRUM_ERROR_UNKNOWN;
 
   case Z_DATA_ERROR:
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT, "corrupt gzip data" );
-    if( !simple ) free( *outptr );
+    free( *outptr );
     inflateEnd( &stream );
     return LIBSPECTRUM_ERROR_CORRUPT;
 
   case Z_MEM_ERROR:
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 			     "out of memory at %s:%d", __FILE__, __LINE__ );
-    if( !simple ) free( *outptr );
+    free( *outptr );
     inflateEnd( &stream );
     return LIBSPECTRUM_ERROR_MEMORY;
 
   case Z_BUF_ERROR:
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "not enough space in gzip output buffer" );
-    if( !simple ) free( *outptr );
+    free( *outptr );
     inflateEnd( &stream );
     return LIBSPECTRUM_ERROR_CORRUPT;
 
@@ -303,7 +207,7 @@ libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "gzip error from inflate: %s",
 			     stream.msg );
-    if( !simple ) free( *outptr );
+    free( *outptr );
     inflateEnd( &stream );
     return LIBSPECTRUM_ERROR_LOGIC;
 
@@ -313,7 +217,7 @@ libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
   if( error != Z_OK ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "gzip error from inflateEnd: %s", stream.msg );
-    if( !simple ) free( *outptr );
+    free( *outptr );
     inflateEnd( &stream );
     return LIBSPECTRUM_ERROR_LOGIC;
   }

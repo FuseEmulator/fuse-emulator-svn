@@ -124,3 +124,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20031020 Transparent reading of bzipped files.
 20031030 zlib.c: use the 'normal' zlib interface to decompress gzipped
 	 files rather than the gz* functions.
+20031030 zlib.c: merge duplicated code from libspectrum_zlib_inflate and
+	 libspectrum_gzip_inflate.
