@@ -34,8 +34,6 @@ libspectrum_error
 libspectrum_snp_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 		      size_t length )
 {
-  libspectrum_byte i, iff; const libspectrum_byte *ptr;
-  libspectrum_word sp;
   libspectrum_error error;
 
   /* Length must be at least 48K of RAM plus the 'trailer' */
