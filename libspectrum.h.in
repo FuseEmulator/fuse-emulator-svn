@@ -566,6 +566,8 @@ libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
 libspectrum_error
 libspectrum_verify_signature( libspectrum_rzx_signature *signature,
 			      libspectrum_rzx_dsa_key *key );
+libspectrum_error
+libspectrum_signature_free( libspectrum_rzx_signature *signature );
 
 #ifdef __cplusplus
 };
