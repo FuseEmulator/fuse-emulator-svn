@@ -1,0 +1,40 @@
+20030609 listbasic.c: A line number >= 16384 implies end of BASIC (not
+         > 16384) (Darren?)
+20030609 listbasic.c: Formatting improvements and support for 128K and
+	 TC2068 keywords (Darren?)
+20030609 man/Makefile.am: distribute listbasic.1
+20030609 man/scl2trd.1, man/tapeconv.1: fix roman/italic typos
+20030612 rzxtool.c: use libspectrum_creator
+20030613 rzxtool.c: use libspectrum_snap_write
+20030613 Add preliminary version of snapconv
+20030616 snapconv.c: print warnings if information lost on conversion
+20030717 listbasic.c, tzxlist.c: use encapsulated
+         libspectrum_tape_block API.
+20030722 listbasic.c: use encapsulated libspectrum_tape API
+20030722 Sync fuse-utils_start-crypto-branch to current head. Tag as
+	 fuse-utils_start-crypto-branch-1
+20030723 rzxdump.c: signature blocks are now 0x20 and 0x21
+	 (fuse-utils_start-crypto-branch)
+20030723 rzxtool.c: remove any use of Fuse's secret key
+	 (fuse-utils_start-crypto-branch)
+20030804 Use new crypto API (fuse-utils_start-crypto-branch)
+20030804 Add rzxcheck (fuse-utils_start-crypto-branch)
+20030804 rzxdump.c: print out the competition code
+	 (fuse-utils_start-crypto-branch)
+20030805 Add support for multiple keys in rzxcheck
+	 (fuse-utils_start-crypto-branch)
+20030807 tzxlist.c: step through the tape, rather than reading the
+	 first block an infinite number of times
+	 (fuse-utils_start-crypto-branch)
+20030811 rzxdump.c: print snapshot path for external snapshots
+20030812 Merge crypto branch (at fuse-utils_start-crypto-branch-2)
+	 onto HEAD (at fuse-utils_0_6_1pre1-merge-1)
+20030821 rzxdump.c: free allocated memory and MPIs at exit.
+20030821 rzxtool.c: initialise the snap buffer (to NULL); keeps
+	 valgrind happy.
+20030821 rzxtool.c: free any snapshot we're using at program exit.
+20030822 rzxcheck.c: free signature memory.
+20030824 rzxtool.c: free snapshot after writing it rather than before.
+20030901 Build rzxcheck iff libgcrypt is present.
+20030901 Remove the find an <n>-bit type stuff as that's now done by
+	 libspectrum.
