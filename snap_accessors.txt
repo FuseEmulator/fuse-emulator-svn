@@ -47,6 +47,7 @@ libspectrum_byte im
 libspectrum_dword tstates
 
 int halted
+int last_instruction_ei
 
 libspectrum_byte out_ula
 

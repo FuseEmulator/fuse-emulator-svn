@@ -72,6 +72,7 @@ struct libspectrum_snap {
   libspectrum_byte iff1, iff2, im;
 
   int halted;			/* Is the Z80 currently HALTed? */
+  int last_instruction_ei;	/* Was the last instruction an EI? */
 
   /* RAM */
 
@@ -139,6 +140,7 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
   libspectrum_snap_set_im  ( *snap, 1 );
 
   libspectrum_snap_set_halted( *snap, 0 );
+  libspectrum_snap_set_last_instruction_ei( *snap, 0 );
 
   for( i = 0; i < 8; i++ ) libspectrum_snap_set_pages( *snap, i, NULL );
   for( i = 0; i < 256; i++ ) {

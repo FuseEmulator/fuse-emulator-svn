@@ -812,7 +812,9 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
 
   *out_flags = 0;
 
-  /* .z80 format doesn't store the 'halted' state */
+  /* .z80 format doesn't store the 'last instruction EI' or 'halted' state */
+  if( libspectrum_snap_last_instruction_ei( snap ) ) 
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
   if( libspectrum_snap_halted( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
 
