@@ -24,6 +24,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+INCLUDES = @GLIB_CFLAGS@ @GTK_CFLAGS@
+
 noinst_LIBRARIES = libdebugger.a
 
 libdebugger_a_SOURCES = debugger.c

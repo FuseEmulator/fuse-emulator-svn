@@ -29,17 +29,20 @@
 #include <config.h>
 
 #include <stdio.h> 
-#include <stdlib.h>
 
 #include "debugger.h"
+#include "ui/ui.h"
 #include "z80/z80.h"
 #include "z80/z80_macros.h"
 
 /* The current activity state of the debugger */
 enum debugger_mode_t debugger_mode;
 
-/* The current breakpoint ( -1 => none ) */
+/* The current breakpoint */
 size_t debugger_breakpoint;
+
+/* Used to flag 'no breakpoint set' */
+const size_t DEBUGGER_BREAKPOINT_UNSET = -1;
 
 int
 debugger_init( void )
@@ -51,7 +54,7 @@ int
 debugger_reset( void )
 {
   debugger_mode = DEBUGGER_MODE_INACTIVE;
-  debugger_breakpoint = -1;
+  debugger_breakpoint = DEBUGGER_BREAKPOINT_UNSET;
   return 0;
 }
 
@@ -72,13 +75,13 @@ debugger_check( void )
   case DEBUGGER_MODE_STEP:     return 1;
 
   }
+  return 0;	/* Keep gcc happy */
 }
 
 /* Activate the debugger */
 int
 debugger_trap( void )
 {
-  printf( "Hello from the debugger\n" );
-  return 0;
+  return ui_debugger_activate();
 }
 

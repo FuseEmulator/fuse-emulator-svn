@@ -29,6 +29,8 @@
 #ifndef FUSE_DEBUGGER_H
 #define FUSE_DEBUGGER_H
 
+#include <stdlib.h>
+
 /* The current state of the debugger */
 enum debugger_mode_t
 {
@@ -39,6 +41,9 @@ enum debugger_mode_t
 };
 
 extern enum debugger_mode_t debugger_mode;
+
+extern size_t debugger_breakpoint;
+extern const size_t DEBUGGER_BREAKPOINT_UNSET;
 
 int debugger_init( void );
 int debugger_reset( void );
