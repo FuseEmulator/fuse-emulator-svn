@@ -171,3 +171,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 Scorpion support (part of patch #874504) (Stuart Brady).
 20040229 accessor.pl, libspectrum.c, z80.c: the Scorpion no longer has
 	 CAPABILITY_PLUS3_MEMORY.
+20040303 szx.c: the Scorpion is machine type 10 (Stuart Brady).

@@ -561,6 +561,7 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     /* As we don't currently save dock contents... */
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
     **ptr = 9; break;
+  case LIBSPECTRUM_MACHINE_SCORP:  **ptr = 10; break;
 
   case LIBSPECTRUM_MACHINE_UNKNOWN:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
