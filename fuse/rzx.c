@@ -27,9 +27,11 @@
 #include <config.h>
 
 #include <errno.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "event.h"
 #include "fuse.h"
@@ -87,6 +89,16 @@ libspectrum_rzx_dsa_key rzx_key = {
   "9A4E53CC249750C3194A38A3BE3EDEED28B171A9"	       /* x */
 };
 
+/* The time we started recording this RZX file */
+static struct timeval start_time;
+
+/* How many seconds do we expect to have elapsed since we started recording? */
+static float expected_time;
+
+/* By how much is the speed allowed to deviate from 100% whilst recording
+   a competition mode RZX file */
+static const float SPEED_TOLERANCE = 0.05;
+
 static int start_playback( libspectrum_rzx *rzx, libspectrum_snap *snap );
 static int recording_frame( void );
 static int playback_frame( void );
@@ -140,10 +152,23 @@ int rzx_start_recording( const char *filename, int embed_snapshot )
 
   /* Note that we're recording */
   rzx_recording = 1;
-  rzx_competition_mode = settings_current.competition_mode;
+
   if( settings_current.competition_mode ) {
-    settings_current.emulation_speed = 100;
-    timer_count = 0;
+
+    expected_time = 0;
+
+    error = gettimeofday( &start_time, NULL );
+    if( error ) {
+      ui_error( UI_ERROR_INFO,
+		"Couldn't get start time: %s: competition mode disabled",
+		strerror( errno ) );
+      rzx_competition_mode = 0;
+    } else {
+      settings_current.emulation_speed = 100;
+      timer_count = 0;
+      rzx_competition_mode = 1;
+    }
+    
   }
     
   ui_menu_activate_recording( 1 );
@@ -322,6 +347,44 @@ static int recording_frame( void )
 
   /* Reset the instruction counter */
   rzx_in_count = 0; counter_reset();
+
+  /* If we're in competition mode, check we're running at close to 100%
+     speed */
+  if( rzx_competition_mode ) {
+
+    struct timeval current_time;
+    float elapsed_time;
+
+    expected_time += 0.02;
+
+    /* Small time measurements are highly inaccurate, so wait at least
+       one second before doing them */
+    if( expected_time > 1.0 ) {
+    
+      error = gettimeofday( &current_time, NULL );
+      if( error ) {
+	ui_error(
+          UI_ERROR_INFO,
+	  "couldn't get time: %s: stopping competetion mode RZX recording",
+	  strerror( errno )
+	);
+	rzx_stop_recording();
+	return 1;
+      }
+
+      elapsed_time =   current_time.tv_sec  - start_time.tv_sec +
+	             ( current_time.tv_usec - start_time.tv_usec ) / 1000000.0;
+      if( fabs( elapsed_time / expected_time - 1 ) > SPEED_TOLERANCE ) {
+	ui_error(
+	  UI_ERROR_INFO,
+	  "emulator speed is %d%%: stopping competetion mode RZX recording",
+	  (int)( 100 * ( elapsed_time / expected_time ) )
+	);
+	rzx_stop_recording();
+      }
+    }
+
+  }
 
   return 0;
 }
