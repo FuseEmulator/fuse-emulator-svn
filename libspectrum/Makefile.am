@@ -32,4 +32,12 @@ tzx_read.c tzx_write.c z80.c zlib.c
 include_HEADERS = libspectrum.h
 noinst_HEADERS = internals.h
 
+noinst_PROGRAMS = make-sed
+
+libspectrum.h: libspectrum.h.in types.sed
+	@SED@ -f types.sed libspectrum.h.in > libspectrum.h
+
+types.sed: make-sed
+	./make-sed > types.sed
+
 INCLUDES = @GLIB_CFLAGS@
