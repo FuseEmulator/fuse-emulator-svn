@@ -73,6 +73,7 @@ libspectrum_machine_name( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_16:     return "Spectrum 16K";
   case LIBSPECTRUM_MACHINE_48:     return "Spectrum 48K";
   case LIBSPECTRUM_MACHINE_TC2048: return "Timex TC2048";
+  case LIBSPECTRUM_MACHINE_TC2068: return "Timex TC2068";
   case LIBSPECTRUM_MACHINE_128:    return "Spectrum 128K";
   case LIBSPECTRUM_MACHINE_PLUS2:  return "Spectrum +2";
   case LIBSPECTRUM_MACHINE_PENT:   return "Pentagon 128K";
@@ -107,6 +108,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_TC2068:
   case LIBSPECTRUM_MACHINE_PENT:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_AY; break;
   default:
@@ -142,6 +144,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   /* TC20[46]8-style 0x00fd memory paging */
   switch( type ) {
   case LIBSPECTRUM_MACHINE_TC2048:
+  case LIBSPECTRUM_MACHINE_TC2068:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY; break;
   default:
     break;
@@ -150,6 +153,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   /* TC20[46]8-style 0x00ff video mode selection */
   switch( type ) {
   case LIBSPECTRUM_MACHINE_TC2048:
+  case LIBSPECTRUM_MACHINE_TC2068:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO; break;
   default:
     break;
