@@ -245,6 +245,16 @@ libspectrum_creator_set_competition_code( libspectrum_creator *creator,
 libspectrum_dword
 libspectrum_creator_competition_code( libspectrum_creator *creator );
 
+libspectrum_error
+libspectrum_creator_set_custom( libspectrum_creator *creator,
+				libspectrum_byte *data, size_t length );
+
+libspectrum_byte*
+libspectrum_creator_custom( libspectrum_creator *creator );
+
+size_t
+libspectrum_creator_custom_length( libspectrum_creator *creator );
+
 /*
  * Snap handling routines
  */

@@ -105,3 +105,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 error source before comparing with an error code.
 20031006 z80.c: actually allocate memory for the .slt pages; thanks to
 	 Alberto Garcia for reporting this.
+20031009 creator.c, libspectrum.h.in, rzx.c, szx.c: add support for
+	 writing custom data in the creator blocks.

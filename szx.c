@@ -574,13 +574,22 @@ write_crtr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_creator *creator )
 {
   libspectrum_error error;
+  size_t custom_length;
 
-  error = write_chunk_header( buffer, ptr, length, "CRTR", 36 );
+  custom_length = libspectrum_creator_custom_length( creator );
+
+  error = write_chunk_header( buffer, ptr, length, "CRTR",
+			      36 + custom_length );
   if( error ) return error;
 
   memcpy( *ptr, libspectrum_creator_program( creator ), 32 ); *ptr += 32;
   libspectrum_write_word( ptr, libspectrum_creator_major( creator ) );
   libspectrum_write_word( ptr, libspectrum_creator_minor( creator ) );
+
+  if( custom_length ) {
+    memcpy( *ptr, libspectrum_creator_custom( creator ), custom_length );
+    *ptr += custom_length;
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 }
