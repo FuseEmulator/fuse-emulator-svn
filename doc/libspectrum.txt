@@ -69,6 +69,8 @@ type LIBSPECTRUM_ERROR_LOGIC, but that shouldn't happen...)
 General functions
 =================
 
+Functions which don't relate directly to one file type or another.
+
 Machine types and capabilities
 ------------------------------
 
@@ -153,20 +155,96 @@ attempts to identify the file.  It's not perfect (especially when given
 files with the wrong extension), but it should work in most cases.
 
 Snapshot functions
-------------------
+==================
+
+Functions for dealing with snapshot files. These act on a
+`libspectrum_snap' structure:
+
+typedef struct libspectrum_snap {
+
+  /* Which machine are we using here? */
+
+  libspectrum_machine machine;
+
+  /* Registers and the like */
+
+  libspectrum_byte a , f ; libspectrum_word bc , de , hl ;
+  libspectrum_byte a_, f_; libspectrum_word bc_, de_, hl_;
+
+  libspectrum_word ix, iy; libspectrum_byte i, r;
+  libspectrum_word sp, pc;
+
+  libspectrum_byte iff1, iff2, im;
+
+  /* RAM */
+
+  libspectrum_byte *pages[8];
+
+  /* Data from .slt files */
+
+  libspectrum_byte *slt[256];   /* Level data */
+  size_t slt_length[256];       /* Length of each level */
+
+  libspectrum_byte *slt_screen; /* Loading screen */
+  int slt_screen_level;         /* The id of the loading screen. Not used
+                                   for anything AFAIK, but copy it
+				   around just in case */
+
+  /* Peripheral status */
+
+  libspectrum_byte out_ula; libspectrum_dword tstates;
+
+  libspectrum_byte out_128_memoryport;
+
+  libspectrum_byte out_ay_registerport, ay_registers[16];
+
+  libspectrum_byte out_plus3_memoryport;
+
+  /* Timex-specific bits */
+  libspectrum_byte out_scld_hsr, out_scld_dec;
+
+} libspectrum_snap;
+
+Most of that should be fairly self-explanatory; the a_, f_, bc_, de_
+and hl_ members represent the A', F', BC', DE' and HL' registers. For
+48K snaps, 0x4000 to 0x7fff is stored in `pages[5]', 0x8000 to 0xbfff
+in `pages[2]' and 0xc000 to 0xffff in `pages[0]' (This is equivalent
+to the default mapping on the 128K machines).
+
+The actual routines for dealing with snaps are:
 
 libspectrum_error libspectrum_snap_alloc( libspectrum_snap **snap )
+
+Allocate a new libspectrum_snap structure.
+
 libspectrum_error libspectrum_snap_free( libspectrum_snap *snap )
+
+Release a structure allocated with `libspectrum_snap_alloc'.
 
 libspectrum_error libspectrum_sna_read( libspectrum_snap *snap,
 		                        const libspectrum_byte *buffer,
 				        size_t buffer_length )
+
+Take the .sna snapshot of length `buffer_length' bytes at `buffer' and
+convert it to a `libspectrum_snap' structure.
+
 libspectrum_error libspectrum_z80_read( libspectrum_snap *snap,
 		                        const libspectrum_byte *buffer,
 					size_t buffer_length )
+
+Similarly for a .z80 snapshot.
+
 libspectrum_error libspectrum_z80_write( libspectrum_byte **buffer,
 					 size_t *length,
 					 libspectrum_snap *snap )
+
+Take the snapshot in `snap' and serialise it into a .z80 file at
+'*buffer'. On entry, '*buffer' is assumed to be allocated '*length'
+bytes, and will grow if necessary; if '*length' is zero, '*buffer' can
+be uninitialised on entry.
+
+Note that there is (currently) no function to serialise to a .sna
+snapshot.
 
 Tape functions
 --------------
