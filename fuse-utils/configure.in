@@ -86,4 +86,4 @@ if test "$ac_cv_prog_gcc" = yes; then
     fi
 fi
 
-AC_OUTPUT(Makefile)
+AC_OUTPUT(Makefile man/Makefile)

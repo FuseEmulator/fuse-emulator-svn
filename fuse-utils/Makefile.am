@@ -24,6 +24,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+SUBDIRS = man
+
 bin_PROGRAMS = rzxdump rzxtool tzxconv tzxlist
 
 INCLUDES = @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@
