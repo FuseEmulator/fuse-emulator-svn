@@ -421,6 +421,7 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_SNAPSHOT_ZXS,  "zxs", 3, "SNAP",		    8, 4, 4 },
 
       { LIBSPECTRUM_ID_CARTRIDGE_DCK, "dck", 3, NULL,		    0, 0, 0 },
+      { LIBSPECTRUM_ID_CARTRIDGE_IF2, "rom", 3, NULL,		    0, 0, 0 },
 
       { LIBSPECTRUM_ID_TAPE_TAP,      "tap", 3, "\x13\0\0",	    0, 3, 1 },
       { LIBSPECTRUM_ID_TAPE_TZX,      "tzx", 3, "ZXTape!",	    0, 7, 4 },
@@ -523,6 +524,9 @@ libspectrum_identify_class( libspectrum_class_t *libspectrum_class,
   case LIBSPECTRUM_ID_TAPE_TZX:
   case LIBSPECTRUM_ID_TAPE_WARAJEVO:
     *libspectrum_class = LIBSPECTRUM_CLASS_TAPE; return 0;
+
+  case LIBSPECTRUM_ID_CARTRIDGE_IF2:
+    *libspectrum_class = LIBSPECTRUM_CLASS_CARTRIDGE_IF2; return 0;
 
   }
 
