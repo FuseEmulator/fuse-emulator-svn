@@ -130,6 +130,9 @@ static libspectrum_error
 write_cfrp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap, int page,
 		  int compress );
+static libspectrum_error
+write_if2r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		size_t *length, libspectrum_snap *snap );
 
 static libspectrum_error
 write_chunk_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -418,6 +421,43 @@ read_zxcf_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 }
 
 static libspectrum_error
+read_if2r_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
+{
+  libspectrum_byte *buffer2;
+
+  size_t compressed_length;
+  size_t uncompressed_length;
+
+  libspectrum_error error;
+
+  if( data_length < 4 ) {
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_UNKNOWN,
+      "szx_read_if2r_chunk: length %lu too short", (unsigned long)data_length
+    );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  compressed_length = libspectrum_read_dword( buffer );
+
+  uncompressed_length = 0x4000;
+
+  error = libspectrum_zlib_inflate( *buffer, data_length - 4, &buffer2,
+                                    &uncompressed_length );
+  if( error ) return error;
+
+  *buffer += data_length - 4;
+
+  libspectrum_snap_set_interface2_active( snap, 1 );
+
+  libspectrum_snap_set_interface2_rom( snap, 0, buffer2 );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
 skip_chunk( libspectrum_snap *snap GCC_UNUSED,
 	    libspectrum_word version GCC_UNUSED,
 	    const libspectrum_byte **buffer,
@@ -445,7 +485,7 @@ static struct read_chunk_t read_chunks[] = {
   { "DRUM",   skip_chunk      },
   { "DSK\0",  skip_chunk      },
   { "IF1\0",  skip_chunk      },
-  { "IF2R",   skip_chunk      },
+  { "IF2R",   read_if2r_chunk },
   { "JOY\0",  skip_chunk      },
   { "KEYB",   skip_chunk      },
   { "MDRV",   skip_chunk      },
@@ -695,6 +735,16 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
       error = write_cfrp_chunk( buffer, &ptr, length, snap, i, compress );
       if( error ) return error;
     }
+  }
+
+  if( libspectrum_snap_interface2_active( snap ) ) {
+#ifdef HAVE_ZLIB_H
+    error = write_if2r_chunk( buffer, &ptr, length, snap );
+    if( error ) return error;
+#else
+    /* IF2R blocks only support writing compressed images */
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+#endif                         /* #ifdef HAVE_ZLIB_H */
   }
 
   /* Set length to be actual length, not allocated length */
@@ -1083,6 +1133,50 @@ write_cfrp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   return LIBSPECTRUM_ERROR_NONE;
 }
+
+#ifdef HAVE_ZLIB_H
+
+static libspectrum_error
+write_if2r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+  libspectrum_byte *block_length, *data, *cart_size, *compressed_data;
+  size_t data_length, compressed_length;
+
+  /* 8 for the chunk header, 4 for the compressed cart size */
+  error = libspectrum_make_room( buffer, 8 + 4, ptr, length );
+  if( error ) return error;
+
+  memcpy( *ptr, "IF2R", 4 ); (*ptr) += 4;
+
+  /* Store this location for later */
+  block_length = *ptr; *ptr += 4;
+
+  /* And this one */
+  cart_size = *ptr; *ptr += 4;
+
+  data = libspectrum_snap_interface2_rom( snap, 0 ); data_length = 0x4000;
+  compressed_data = NULL;
+
+  error = libspectrum_zlib_compress( data, data_length,
+                                     &compressed_data, &compressed_length );
+  if( error ) return error;
+
+  libspectrum_write_dword( &block_length, 4 + compressed_length );
+  libspectrum_write_dword( &cart_size, compressed_length );
+
+  error = libspectrum_make_room( buffer, compressed_length, ptr, length );
+  if( error ) { if( compressed_data ) free( compressed_data ); return error; }
+
+  memcpy( *ptr, compressed_data, compressed_length ); *ptr += compressed_length;
+
+  if( compressed_data ) free( compressed_data );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+#endif                         /* #ifdef HAVE_ZLIB_H */
 
 static libspectrum_error
 write_chunk_header( libspectrum_byte **buffer, libspectrum_byte **ptr,

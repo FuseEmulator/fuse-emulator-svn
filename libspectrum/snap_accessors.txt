@@ -79,3 +79,6 @@ int zxcf_active
 libspectrum_byte zxcf_memctl
 size_t zxcf_pages
 libspectrum_byte* zxcf_ram 1
+
+int interface2_active
+libspectrum_byte* interface2_rom 1
