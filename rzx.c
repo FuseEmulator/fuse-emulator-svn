@@ -75,6 +75,8 @@ libspectrum_rzx_alloc( libspectrum_rzx **rzx )
     libspectrum_print_error( "libspectrum_rzx_alloc: out of memory" );
     return LIBSPECTRUM_ERROR_MEMORY;
   }
+  (*rzx)->count = (*rzx)->allocated = 0;
+  (*rzx)->frames = NULL;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
