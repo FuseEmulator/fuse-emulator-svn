@@ -103,6 +103,15 @@ main( int argc, char **argv )
     return error;
   }
 
+  if( flags & LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS ) {
+    fprintf( stderr,
+	     "%s: warning: major information loss during conversion\n",
+	     progname );
+  } else if( flags & LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS ) {
+    fprintf( stderr,
+	     "%s: warning: minor information loss during conversion\n",
+	     progname );
+  }
   error = libspectrum_creator_free( creator );
   if( error ) { free( buffer ); libspectrum_snap_free( snap ); return error; }
 
