@@ -266,3 +266,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          libspectrum_snap_write
 20040814 configure.in,dll.c,internals.h,zlib.c: small Visual C++
 	 compatability fixes.
+20040814 generate.pl.in,libspectrum.h.in,make-perl.c: more Visual C++
+	 compatability fixes.
