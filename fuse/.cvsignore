@@ -14,5 +14,6 @@ libtool
 missing
 mkinstalldirs
 settings.c
+settings.h
 stamp-h
 stamp-h.in
