@@ -40,7 +40,7 @@ libspectrum_la_SOURCES = dck.c \
 			 z80.c \
 			 zlib.c
 
-libspectrum_la_LDFLAGS = -version-info 0:0:0
+libspectrum_la_LDFLAGS = -version-info 1:0:1
 
 BUILT_SOURCES = libspectrum.h
 
