@@ -225,6 +225,12 @@ block_free( gpointer data, gpointer user_data GCC_UNUSED )
   }
 }
 
+/* Does this tape structure actually contain a tape? */
+int libspectrum_tape_present( libspectrum_tape *tape )
+{
+  return tape->blocks != NULL;
+}
+
 /* Called when a new block is started to initialise its internal state */
 libspectrum_error
 libspectrum_tape_init_block( libspectrum_tape_block *block )
@@ -828,6 +834,29 @@ jump_blocks( libspectrum_tape *tape, int offset )
   if( new_block == NULL ) return LIBSPECTRUM_ERROR_CORRUPT;
 
   tape->current_block = new_block;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+/* Select the nth block on the tape */
+libspectrum_error
+libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
+{
+  GSList *new_block;
+
+  new_block = g_slist_nth( tape->blocks, n );
+  if( !n ) {
+    libspectrum_print_error(
+      "libspectrum_tape_nth_block: tape does not have block %d", n
+    );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  tape->current_block = new_block;
+
+  libspectrum_tape_init_block(
+    (libspectrum_tape_block*)tape->current_block->data
+  );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
