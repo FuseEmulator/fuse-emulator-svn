@@ -313,3 +313,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20050218 ide.c: add libspectrum_ide_dirty function.
 20050227 make-perl.c,libspectrum.h.in: advertise that we support zlib
          compressed files (Fred).
+20050302 Makefile.am: Stop automake trying to build make-perl (Fred).
