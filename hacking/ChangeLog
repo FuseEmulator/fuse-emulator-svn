@@ -298,3 +298,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20050113 libspectrum.c: Set NTSC capability for the TS2068 (Fred).
 20050115 szx.c,zxs.c: fix compilation when zlib not present (closes bug
 	 #1098337).
+20050125 libspectrum.h.in: Warn about use of deprecated interfaces with GCC
+	 (Fred).
