@@ -175,6 +175,18 @@ GSList* g_slist_nth		(GSList		*list,
   return list;
 }
 
+GSList* g_slist_find_custom	(GSList		*list,
+				 gpointer	data,
+				 GCompareFunc	func ) {
+  while (list)
+    {
+      if (!(*func) (list->data, data)) return list;
+      list = list->next;
+    }
+
+  return NULL;
+}
+
 gint	g_slist_position	(GSList		*list,
 				 GSList		*llink) {
   int n;
