@@ -250,3 +250,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 select the format of the embedded snap in .rzx files.
 20040706 acinclude.m4: distribute the Glib 1.2 and Glib 2.x autoconf
 	 macros.
+20040707 autogen.sh: add --copy to automake invocation.
