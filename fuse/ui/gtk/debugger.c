@@ -58,9 +58,9 @@ static int debugger_active;
 int
 ui_debugger_activate( void )
 {
-  fuse_emulation_pause();
-
   char buffer[80];
+
+  fuse_emulation_pause();
 
   /* Create the dialog box if it doesn't already exist */
   if( !dialog_created ) if( create_dialog() ) return 1;
