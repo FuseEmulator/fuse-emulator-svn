@@ -95,6 +95,9 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
    <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has made a <a href="libspectrum-0.2.0.1-i386-1spec.tgz">Slackware 9.1</a> (<a href="libspectrum-0.2.0.1-i386-1spec.tgz.md5">md5 sum</a>) package of 0.2.0.1.</li>
   </ul>
 
+  <h3>Work in Progress</h3>
+  <p>9 July 2004: the <a href="libspectrum-0.2.2pre1.tar.gz">first release candidate</a> for version 0.2.2 is now available.</p>
+
 END_SECTION
 );
 

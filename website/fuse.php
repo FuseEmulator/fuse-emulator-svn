@@ -164,6 +164,9 @@ fuse_section (NULL, "What's new?", <<<END_SECTION
   </ul>
   <p>See the <a href="http://sourceforge.net/forum/forum.php?forum_id=351904">release announcement</a> for more details.</p>
 
+  <h3>9 July 2004</h3>
+  <p>The first release candidate for version 0.7.0 is now available: <a href="fuse-0.7.0pre1.tar.gz">Fuse</a> and the <a href="fuse-utils-0.7.0pre1.tar.gz">utilities</a>.</p>
+
   <h3>1 January 2004</h3>
   <p>An alpha version of a port of Fuse to Win32 is now <a href="fuse-win32.zip">available</a>. See the <a href="http://sourceforge.net/forum/forum.php?forum_id=341379">announcement</a> for more details.</p>
 
