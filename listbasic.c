@@ -186,7 +186,7 @@ parse_tape_file( const unsigned char *buffer, size_t length,
 		 libspectrum_id_t type )
 {
   libspectrum_tape *tape;
-  GSList *block;
+  libspectrum_tape_iterator iterator;
   libspectrum_tape_block *tape_block;
   libspectrum_byte *data;
   libspectrum_word program_length;
@@ -198,17 +198,19 @@ parse_tape_file( const unsigned char *buffer, size_t length,
   error = libspectrum_tape_read( tape, buffer, length, type, NULL );
   if( error ) { libspectrum_tape_free( tape ); return error; }
 
-  for( block = tape->blocks; block; block = block->next ) {
+  for( tape_block = libspectrum_tape_iterator_init( &iterator, tape );
+       tape_block;
+       tape_block = libspectrum_tape_iterator_next( &iterator ) )
+  {
 
     /* Find a ROM block */
-    tape_block = block->data;
     if( libspectrum_tape_block_type( tape_block )
 	!= LIBSPECTRUM_TAPE_BLOCK_ROM             ) continue;
 
     /* Start assuming this block is a BASIC header; firstly, check
        there is another block after this one to hold the data, and
        if there's not, just finish */
-    if( !block->next ) break;
+    if( !libspectrum_tape_peek_next_block( tape ) ) break;
 
     /* If it's a header, it must be 19 bytes long */
     if( libspectrum_tape_block_data_length( tape_block ) != 19 ) continue;
@@ -225,7 +227,7 @@ parse_tape_file( const unsigned char *buffer, size_t length,
     program_length = data[16] | data[17] << 8;
 
     /* Now have a look at the next block */
-    tape_block = block->next->data;
+    tape_block = libspectrum_tape_peek_next_block( tape );
 
     /* Must be a ROM block */
     if( libspectrum_tape_block_type( tape_block )
@@ -246,7 +248,7 @@ parse_tape_file( const unsigned char *buffer, size_t length,
     if( error ) { libspectrum_tape_free( tape ); return error; }
 
     /* Don't parse this block again */
-    block = block->next;
+    libspectrum_tape_iterator_next( &iterator );
   }
 
   error = libspectrum_tape_free( tape ); if( error ) return error;
