@@ -113,3 +113,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 of libgcrypt in use.
 20031014 .cvsignore, configure.in, libspectrum.qpg.in: add QNX package
 	 file (thanks, Mike Gorchak).
+20031014 configure.in, libspectrum.c, rzx.c: we need <strings.h> for
+	 strcasecmp() on QNX6 (thanks, Mike Gorchak).

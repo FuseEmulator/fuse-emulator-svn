@@ -28,6 +28,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#ifdef HAVE_STRINGS_H
+#include <strings.h>		/* Needed for strcasecmp() on QNX6 */
+#endif				/* #ifdef HAVE_STRINGS_H */
 
 #ifdef HAVE_GCRYPT_H
 
