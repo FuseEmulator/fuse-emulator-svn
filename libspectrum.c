@@ -1,5 +1,5 @@
 /* libspectrum.c: Some general routines
-   Copyright (c) 2001-2004 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2004 Philip Kendall, Darren Salt, Fredrick Meunier
 
    $Id$
 
@@ -202,6 +202,7 @@ libspectrum_machine_name( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_48:     return "Spectrum 48K";
   case LIBSPECTRUM_MACHINE_TC2048: return "Timex TC2048";
   case LIBSPECTRUM_MACHINE_TC2068: return "Timex TC2068";
+  case LIBSPECTRUM_MACHINE_TS2068: return "Timex TS2068";
   case LIBSPECTRUM_MACHINE_128:    return "Spectrum 128K";
   case LIBSPECTRUM_MACHINE_PLUS2:  return "Spectrum +2";
   case LIBSPECTRUM_MACHINE_PENT:   return "Pentagon 128K";
@@ -242,7 +243,9 @@ const int LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY = 1 << 10;
 const int LIBSPECTRUM_MACHINE_CAPABILITY_EVEN_M1 = 1 << 11;
                              /* M1 cycles always start on even tstate counts */
 const int LIBSPECTRUM_MACHINE_CAPABILITY_SE_MEMORY = 1 << 12;
-                                             /* SE-style memory paging */
+                                                   /* SE-style memory paging */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_NTSC = 1 << 13;
+                                                             /* NTSC display */
 
 /* Given a machine type, what features does it have? */
 int
@@ -255,7 +258,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
   case LIBSPECTRUM_MACHINE_PLUS3E:
-  case LIBSPECTRUM_MACHINE_TC2068:
+  case LIBSPECTRUM_MACHINE_TC2068: case LIBSPECTRUM_MACHINE_TS2068:
   case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
   case LIBSPECTRUM_MACHINE_SE:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_AY; break;
@@ -293,20 +296,19 @@ libspectrum_machine_capabilities( libspectrum_machine type )
     break;
   }
 
-  /* TC20[46]8-style 0x00fd memory paging */
+  /* T[CS]20[46]8-style 0x00fd memory paging */
   switch( type ) {
-  case LIBSPECTRUM_MACHINE_TC2048:
-  case LIBSPECTRUM_MACHINE_TC2068:
+  case LIBSPECTRUM_MACHINE_TC2048: case LIBSPECTRUM_MACHINE_TC2068:
+  case LIBSPECTRUM_MACHINE_TS2068:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY; break;
   default:
     break;
   }
 
-  /* TC20[46]8-style 0x00ff video mode selection */
+  /* T[CS]20[46]8-style 0x00ff video mode selection */
   switch( type ) {
-  case LIBSPECTRUM_MACHINE_TC2048:
-  case LIBSPECTRUM_MACHINE_TC2068:
-  case LIBSPECTRUM_MACHINE_SE:
+  case LIBSPECTRUM_MACHINE_TC2048: case LIBSPECTRUM_MACHINE_TC2068:
+  case LIBSPECTRUM_MACHINE_TS2068: case LIBSPECTRUM_MACHINE_SE:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO; break;
   default:
     break;
@@ -322,7 +324,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
 
   /* T[SC]2068-style cartridge port */
   switch( type ) {
-  case LIBSPECTRUM_MACHINE_TC2068:
+  case LIBSPECTRUM_MACHINE_TC2068: case LIBSPECTRUM_MACHINE_TS2068:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK; break;
   default:
     break;
