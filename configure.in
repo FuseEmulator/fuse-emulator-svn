@@ -30,7 +30,17 @@ AM_INIT_AUTOMAKE(libspectrum, 0.2.2)
 
 dnl Checks for programs.
 AC_PROG_CC
-AC_LIBTOOL_WIN32_DLL
+
+dnl Setup for compiling build tools (make-perl)
+AC_MSG_CHECKING([for a C compiler for build tools])
+if test $cross_compiling = yes; then
+  AC_CHECK_PROGS(CC_FOR_BUILD, gcc cc)
+else
+  CC_FOR_BUILD=$CC
+fi
+AC_MSG_RESULT([$CC_FOR_BUILD])
+AC_SUBST(CC_FOR_BUILD)
+
 AM_PROG_LIBTOOL
 AC_PATH_PROG(PERL, perl)
 AC_SUBST(PERL)
@@ -56,8 +66,11 @@ if test "$prefix" != "NONE"; then
   CPPFLAGS="$CPPFLAGS -I$prefix/include"; LDFLAGS="$LDFLAGS -L$prefix/lib"
 fi)
 
-dnl Check for zlib
-AC_CHECK_HEADERS(zlib.h,LIBS="$LIBS -lz")
+dnl Check for zlib (the UNIX version is called z, Win32 zdll)
+AC_CHECK_HEADERS(
+  zlib.h,
+  AC_SEARCH_LIBS(compress2, z zdll)
+)
 
 dnl Check for libgcrypt
 AC_CHECK_HEADERS(gcrypt.h,LIBS="$LIBS -lgcrypt")
@@ -111,13 +124,6 @@ if test "$ac_cv_prog_gcc" = yes; then
       CFLAGS="$CFLAGS -Wstrict-prototypes -Wmissing-prototypes -Winline -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Waggregate-return -W -Wsign-compare"
   fi
 fi
-
-dnl Blow away libspectrum.h, forcing it to be regenerated; necessary because
-dnl libspectrum.h appears in the distribution tarball and we don't want
-dnl users having the version from wherever the distribution tarball was
-dnl built
-dnl FIXME: is there a better way to do this?
-rm -rf libspectrum.h
 
 AC_OUTPUT(
   Makefile
