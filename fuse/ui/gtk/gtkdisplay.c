@@ -140,7 +140,8 @@ init_colours( void )
     green = rgb_colours[i][1];
     blue  = rgb_colours[i][2];
 
-    grey = 0.299 * red + 0.587 * green + 0.114 * blue;
+    /* Addition of 0.5 is to avoid rounding errors */
+    grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
 
 #ifdef WORDS_BIGENDIAN
 

@@ -206,10 +206,11 @@ get_rgb32_data( libspectrum_byte *rgb32_data, size_t stride,
 
   libspectrum_byte grey_palette[16];
 
+  /* Addition of 0.5 is to avoid rounding errors */
   for( i = 0; i < 16; i++ )
-    grey_palette[i] = 0.299 * palette[i][0] +
-		      0.587 * palette[i][1] +
-		      0.114 * palette[i][2];
+    grey_palette[i] = ( 0.299 * palette[i][0] +
+			0.587 * palette[i][1] +
+			0.114 * palette[i][2]   ) + 0.5;
 
   for( y = 0; y < height; y++ ) {
     for( x = 0; x < width; x++ ) {
