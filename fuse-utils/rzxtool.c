@@ -190,12 +190,11 @@ main( int argc, char **argv )
 
     libspectrum_creator_free( creator );
 
-    if( snap ) libspectrum_snap_free( snap );
-
     /* And (finally!) write it */
     if( fwrite( buffer, 1, length, stdout ) != length ) {
       free( buffer );
       libspectrum_rzx_free( rzx );
+      if( snap ) libspectrum_snap_free( snap );
       return 1;
     }
 
