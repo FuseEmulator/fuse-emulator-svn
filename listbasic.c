@@ -274,7 +274,7 @@ extract_basic( libspectrum_word offset, libspectrum_word end,
 
     line_number = get_byte( offset, data ) << 8 | get_byte( offset + 1, data );
     offset += 2;
-    if( line_number > 16384 ) break;
+    if( line_number >= 16384 ) break;
 
     printf( "%d", line_number );
 
