@@ -1,0 +1,47 @@
+libspectrum 0.1.0
+=================
+
+libspectrum is a library which is designed to make the input and
+output of ZX Spectrum emulator files slightly easier than it would be
+otherwise. It should hopefully compile and run on Unix-based systems,
+Win32 and Mac OS X.
+
+Currently supported are (both read and write unless stated):
+
+* Input recording files
+  * RZX
+* Snapshots
+  * SNA (read only)
+  * Z80
+* Tape images
+  * TAP (`Z80' format, rather than Warajevo format)
+  * TZX
+
+On Unix and Mac OS X, compiling libspectrum should just be as easy as
+
+$ ./configure
+$ make
+
+and then `make install' should install it in `/usr/local' ready for
+use on your system. If you want to install it somewhere other than
+`/usr/local', give the `--prefix=DIR' option to `configure' to install
+it under `DIR'. If you do this, you may then have to play about with
+`ldconfig' and/or `LD_LIBRARY_PATH' to get things to find it. Ask your
+local guru.
+
+For details on the functions available, see `doc/libspectrum.txt'.
+
+libspectrum is made available under the GNU General Public License,
+which means that it is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See `COPYING' for
+the full license.
+
+For updates for libspectrum, its homepage is at:
+
+http://www.srcf.ucam.org/~pak21/spectrum/libspectrum.html
+
+Philip Kendall <pak21-fuse@srcf.ucam.org>
+4 December 2002
+
+
