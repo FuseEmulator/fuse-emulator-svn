@@ -35,9 +35,6 @@ AC_C_BIGENDIAN
 dnl Check for header files
 AC_CHECK_HEADERS(strings.h)
 
-dnl Check that zlib is available
-AC_CHECK_LIB(z,zlibVersion)
-
 dnl Allow the user to say that various libraries are in one place
 AC_ARG_WITH(local-prefix,
 [  --with-local-prefix=PFX local libraries installed in PFX (optional)],
@@ -48,8 +45,9 @@ fi)
 
 dnl Check that libgcrypt is available
 AC_CHECK_LIB(gcrypt,gcry_check_version,
-	     AC_DEFINE(HAVE_LIBGCRYPT) LIBS="$LIBS -lgcrypt"
+	     AC_DEFINE(HAVE_LIBGCRYPT) GCRYPT_LIBS="$LIBS -lgcrypt"
 	     RZXCHECK="rzxcheck")
+AC_SUBST(GCRYPT_LIBS)
 AC_SUBST(RZXCHECK)
 
 # Either find glib or use the replacement (as supplied by libspectrum)
