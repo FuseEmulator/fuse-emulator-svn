@@ -512,3 +512,5 @@
 	 (Release-0_6_2-branch) (Fred).
 20040127 ui/gtk/statusbar.c, timer.c: visual improvements to the GTK+
 	 statusbar (Release-0_6_2-branch).
+20040129 ui/gtk/{gtkinternals.h,pixmaps.c,statusbar.c}: add pause icon
+	 (Release-0_6_2-branch).

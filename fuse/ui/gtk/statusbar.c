@@ -39,7 +39,10 @@ static GtkWidget *status_bar;
 
 static GdkPixmap
   *pixmap_tape_inactive, *pixmap_tape_active,
-  *pixmap_disk_inactive, *pixmap_disk_active;
+  *pixmap_disk_inactive, *pixmap_disk_active,
+  *pixmap_pause_inactive, *pixmap_pause_active;
+
+static GdkBitmap *pause_mask;
 
 static GtkWidget
   *disk_status,		/* Is the disk motor running? */
@@ -69,6 +72,14 @@ gtkstatusbar_create( GtkBox *parent )
     gdk_pixmap_colormap_create_from_xpm_d( NULL, gdk_rgb_get_cmap(), NULL,
 					   NULL, gtkpixmap_disk_active );
 
+  pixmap_pause_inactive = 
+    gdk_pixmap_colormap_create_from_xpm_d( NULL, gdk_rgb_get_cmap(),
+					   &pause_mask, NULL,
+					   gtkpixmap_pause_inactive );
+  pixmap_pause_active = 
+    gdk_pixmap_colormap_create_from_xpm_d( NULL, gdk_rgb_get_cmap(), NULL,
+					   NULL, gtkpixmap_pause_active );
+
   speed_status = gtk_label_new( "100%" );
   gtk_box_pack_end( GTK_BOX( status_bar ), speed_status, FALSE, FALSE, 0 );
 
@@ -81,7 +92,7 @@ gtkstatusbar_create( GtkBox *parent )
   disk_status = gtk_pixmap_new( pixmap_disk_inactive, NULL );
   gtk_box_pack_end( GTK_BOX( status_bar ), disk_status, FALSE, FALSE, 0 );
 
-  pause_status = gtk_label_new( "Paused: 0" );
+  pause_status = gtk_pixmap_new( pixmap_pause_inactive, pause_mask );
   gtk_box_pack_end( GTK_BOX( status_bar ), pause_status, FALSE, FALSE, 0 );
 
   separator = gtk_vseparator_new();
@@ -125,10 +136,9 @@ ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
     return 0;
 
   case UI_STATUSBAR_ITEM_PAUSED:
-    gtk_label_set(
-      GTK_LABEL( pause_status ),
-      state == UI_STATUSBAR_STATE_ACTIVE ? "Paused: 1" : "Paused: 0"
-    );
+    which = ( state == UI_STATUSBAR_STATE_ACTIVE ?
+	      pixmap_pause_active : pixmap_pause_inactive );
+    gtk_pixmap_set( GTK_PIXMAP( pause_status ), which, pause_mask  );
     return 0;
 
   case UI_STATUSBAR_ITEM_TAPE:
