@@ -91,6 +91,10 @@ typedef enum libspectrum_machine {
   LIBSPECTRUM_MACHINE_PLUS2A,
   LIBSPECTRUM_MACHINE_PLUS3,
 
+  /* Used by libspectrum_tape_guess_hardware if we can't work out what
+     hardware should be used */
+  LIBSPECTRUM_MACHINE_UNKNOWN,
+
 } libspectrum_machine;
 
 const char* libspectrum_machine_name( libspectrum_machine type );
@@ -522,7 +526,7 @@ libspectrum_error libspectrum_tape_clear( libspectrum_tape *tape );
 libspectrum_error libspectrum_tape_free( libspectrum_tape *tape );
 
 /* Does this tape structure actually contain a tape? */
-int libspectrum_tape_present( libspectrum_tape *tape );
+int libspectrum_tape_present( const libspectrum_tape *tape );
 
 libspectrum_error
 libspectrum_tape_init_block( libspectrum_tape_block *block );
@@ -546,6 +550,11 @@ libspectrum_tape_block_description( char *buffer, size_t length,
 libspectrum_error
 libspectrum_tape_append_block( libspectrum_tape *tape,
 			       libspectrum_tape_block *block );
+
+/* Make a guess at which hardware this tape should run on */
+libspectrum_error
+libspectrum_tape_guess_hardware( libspectrum_machine *machine,
+				 const libspectrum_tape *tape );
 
 /*** Routines for .tap format files ***/
 
