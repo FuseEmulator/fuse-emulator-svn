@@ -126,6 +126,7 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 {
   const libspectrum_byte *header = buffer;
   int capabilities;
+  libspectrum_timings timings; libspectrum_error error;
 
   snap->a   = header[ 0]; snap->f  = header[ 1];
   snap->bc  = header[ 2] + header[ 3]*0x100;
@@ -229,10 +230,14 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	return LIBSPECTRUM_ERROR_UNKNOWN;
       }
 
-      /* 1/4 of the number of T-states in a frame */
-      quarter_tstates = ( snap->machine==LIBSPECTRUM_MACHINE_48 ) ?
-	17472 : 17727;
+      /* FIXME: We haven't yet done Spectaculator's 16K, +2 or +2A extensions
+	 therefore this assumes that (16K and 48K), (128K and +2) and
+	 (+2A and +3) have the same timings */
+      error = libspectrum_machine_timings( &timings, snap->machine );
+      if( error ) return error;
 
+      quarter_tstates = timings.tstates_per_frame / 4;
+      
       /* This is correct, even if it does disagree with Z80 v3.05's
 	 `z80dump'; thanks to Pedro Gimeno for pointing this out when
 	 this code was part of SnapConv */
@@ -822,7 +827,7 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 {
   int i; libspectrum_error error;
 
-  libspectrum_dword quarter_states;
+  libspectrum_timings timings; libspectrum_dword quarter_states;
 
   int capabilities = libspectrum_machine_capabilities( snap->machine );
 
@@ -883,10 +888,10 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   *(*ptr)++ = snap->out_ay_registerport;
   memcpy( *ptr, snap->ay_registers, 16 ); *ptr += 16;
 
-  /* Number of T-states in 1/4 of a frame */
-  quarter_states = ( snap->machine == LIBSPECTRUM_MACHINE_48 ||
-                     snap->machine == LIBSPECTRUM_MACHINE_16 ) ?
-    17472 : 17727;
+  error = libspectrum_machine_timings( &timings, snap->machine );
+  if( error ) return error;
+  quarter_states = timings.tstates_per_frame / 4;
+
   libspectrum_write_word(
     ptr, quarter_states - ( snap->tstates % quarter_states ) - 1
   );
