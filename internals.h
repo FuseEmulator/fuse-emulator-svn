@@ -78,11 +78,14 @@ libspectrum_zlib_compress( const libspectrum_byte *data, size_t length,
 int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 				    const libspectrum_byte* data );
 
-/* Format specific snapshot read routines */
+/* Format specific snapshot routines */
 
 libspectrum_error
 libspectrum_plusd_read( libspectrum_snap *snap,
 			const libspectrum_byte *buffer, size_t buffer_length );
+libspectrum_error
+libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
+		       int *out_flags, libspectrum_snap *snap, int in_flags );
 libspectrum_error
 libspectrum_snp_read( libspectrum_snap *snap,
 		      const libspectrum_byte *buffer, size_t buffer_length );

@@ -144,6 +144,9 @@ libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
 
   switch( type ) {
 
+  case LIBSPECTRUM_ID_SNAPSHOT_SNA:
+    return libspectrum_sna_write( buffer, length, out_flags, snap, in_flags );
+
   case LIBSPECTRUM_ID_SNAPSHOT_SZX:
     return libspectrum_szx_write( buffer, length, out_flags, snap, creator,
 				  in_flags );
