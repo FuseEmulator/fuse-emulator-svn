@@ -96,7 +96,11 @@ const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY = 1 << 4;
 const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO  = 1 << 5;
                                               /* TC20[46]8-style video modes */
 const int LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK   = 1 << 6;
-                                                    /* TRDOS-style disk drive */
+                                                   /* TRDOS-style disk drive */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK   = 1 << 7;
+                                           /* T[SC]2068-style cartridge port */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_SINCLAIR_JOYSTICK = 1 << 8;
+                                            /* Sinclair-style joystick ports */
 
 /* Given a machine type, what features does it have? */
 int
@@ -163,6 +167,23 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_PENT:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK; break;
+  default:
+    break;
+  }
+
+  /* T[SC]2068-style cartridge port */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_TC2068:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_DOCK; break;
+  default:
+    break;
+  }
+
+  /* Sinclair-style joystick ports */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_PLUS2: case LIBSPECTRUM_MACHINE_PLUS2A:
+  case LIBSPECTRUM_MACHINE_PLUS3:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_SINCLAIR_JOYSTICK; break;
   default:
     break;
   }
