@@ -110,7 +110,7 @@ main( int argc, char **argv )
   }
 
   length = 0;
-  if( libspectrum_tap_write( tzx, &buffer, &length ) ) {
+  if( libspectrum_tap_write( &buffer, &length, tzx ) ) {
     libspectrum_tape_free( tzx );
     return 1;
   }

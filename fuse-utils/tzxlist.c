@@ -153,9 +153,9 @@ process_tzx( char *filename )
     libspectrum_tape_archive_info_block *info_block;
     libspectrum_tape_hardware_block *hardware_block;
 
-    error = libspectrum_tape_block_description(
-      block, description, DESCRIPTION_LENGTH
-    );
+    error =
+      libspectrum_tape_block_description( description, DESCRIPTION_LENGTH,
+					  block );
     if( error ) return 1;
     printf( "Block type 0x%02x (%s)\n", block->type, description );
 
