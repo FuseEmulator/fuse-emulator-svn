@@ -277,6 +277,7 @@ libspectrum_identify_class( libspectrum_class_t *class, libspectrum_id_t type )
   case LIBSPECTRUM_ID_SNAPSHOT_PLUSD:
   case LIBSPECTRUM_ID_SNAPSHOT_SNA:
   case LIBSPECTRUM_ID_SNAPSHOT_SNP:
+  case LIBSPECTRUM_ID_SNAPSHOT_SP:
   case LIBSPECTRUM_ID_SNAPSHOT_Z80:
   case LIBSPECTRUM_ID_SNAPSHOT_ZXS:
     *class = LIBSPECTRUM_CLASS_SNAPSHOT; return 0;
