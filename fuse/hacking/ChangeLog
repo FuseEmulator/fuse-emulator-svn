@@ -549,3 +549,4 @@
 	 (Release-0_6_2-branch).
 20040211 fuse.c, sound.h, man/fuse.1: fix the 'no sound on SVGAlib
 	 startup' bug (Release-0_6_2-branch) (Rus).
+20040212 TAG: Release-0_6_2 (Release-0_6_2-branch).
