@@ -54,6 +54,10 @@ static libspectrum_error
 serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 		GcryMPI r, GcryMPI s );
 
+static libspectrum_error
+restore_mpis( GcryMPI *r, GcryMPI *s, const libspectrum_byte *signature,
+	      size_t signature_length );
+
 libspectrum_error
 libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
 		       libspectrum_byte *data, size_t data_length )
@@ -304,5 +308,45 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 
   return LIBSPECTRUM_ERROR_NONE;
 }
-  
+
+libspectrum_error
+libspectrum_verify_signature( const libspectrum_byte *signature,
+			      size_t signature_length,
+			      const libspectrum_byte *data, size_t length )
+{
+  libspectrum_error error;
+  GcryMPI r, s;
+
+  error = restore_mpis( &r, &s, signature, signature_length );
+  if( error ) return error;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+restore_mpis( GcryMPI *r, GcryMPI *s, const libspectrum_byte *signature,
+	      size_t signature_length )
+{
+  size_t length; int error;
+
+  length = signature_length;
+  error = gcry_mpi_scan( r, GCRYMPI_FMT_PGP, signature, &length );
+  if( error ) {
+    libspectrum_print_error( "restore_mpis: reading r: %s",
+			     gcry_strerror( error ) );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  length = signature_length - length;
+  error = gcry_mpi_scan( s, GCRYMPI_FMT_PGP, signature + length, &length );
+  if( error ) {
+    libspectrum_print_error( "restore_mpis: reading s: %s",
+			     gcry_strerror( error ) );
+    gcry_mpi_release( *r );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
 #endif				/* #ifdef HAVE_GCRYPT_H */

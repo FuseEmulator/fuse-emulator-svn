@@ -554,7 +554,7 @@ static libspectrum_error
 rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
 		   const libspectrum_byte *sign_start )
 {
-  size_t length;
+  size_t length; libspectrum_error error;
 
   if( !sign_start ) {
     libspectrum_print_error(
@@ -569,16 +569,29 @@ rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  length = libspectrum_read_dword( ptr );
+  /* Get the length; the -5 is because we've read the block ID and the length
+     bytes */
+  length = libspectrum_read_dword( ptr ) - 5;
 
-  /* Check there's still enough data (the -5 is because we've already read
-     the block ID) */
-  if( end - (*ptr) < (ptrdiff_t)length - 5 ) {
+  /* Check there's still enough data */
+  if( end - (*ptr) < length ) {
     libspectrum_print_error( "rzx_read_sign_end: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  (*ptr) += length - 5;
+  error = libspectrum_verify_signature( *ptr, length, sign_start,
+					(*ptr) - sign_start );
+  if( error ) {
+    if( error == LIBSPECTRUM_ERROR_SIGNATURE ) {
+      libspectrum_print_error(
+        "libspectrum warning: signature does NOT verify"
+      );
+    } else {
+      return error;
+    }
+  }
+
+  (*ptr) += length;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
