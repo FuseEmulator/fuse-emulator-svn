@@ -129,7 +129,7 @@ href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.6.1.1.tar
   <ul>
    <li>Unofficial packages for <a href="http://www.debian.org/">Debian</a>, by Darren Salt: either <a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">stable</a> or <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a> (both 0.6.1.1).</li>
    <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.6.1.1 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a> (but the utilities aren't available?).</li>
-   <li><a href="http://www.gentoo.org/">Gentoo</a> users have an <a href="http://www.gentoo.org/cgi-bin/viewcvs.cgi/app-emulation/fuse/">ebuild</a> of 0.6.0.1 available.</li>
+   <li><a href="http://www.gentoo.org/">Gentoo</a> users have an <a href="http://www.gentoo.org/dyn/pkgs/app-emulation/fuse.xml">ebuild</a> of 0.6.1.1 available.</li>
    <li>Miguel Barrio Orsikowsky has made <a href="http://www.speccy.org/sinclairmania/arch/emu/mandrake/">Mandrake 9.1 and 9.2</a> packages of version 0.6.1.1 available, as well as some of the libraries needed by Fuse such as lib765 and libdsk.</li>
    <li>Mac OS X: <a href="http://prdownloads.sourceforge.net/fuse-emulator/Fuse-0.6.1.1.dmg?download">Fuse binaries</a>, the slightly <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-macosx-0.6.1.1.tar.g
 z?download">modified Fuse source</a>, or the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-macosx-0.6.1.t
