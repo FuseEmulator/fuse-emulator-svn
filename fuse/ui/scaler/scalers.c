@@ -59,6 +59,7 @@ struct scaler_info {
 
   const char *name;
   const char *id;
+  enum scaler_flags_t flags;
   ScalerProc *scaler;
 
 };
@@ -67,21 +68,22 @@ struct scaler_info {
    in the same order as scaler.h:scaler_type */
 static struct scaler_info available_scalers[] = {
 
-  { "Timex Half size", "half",       Half       },
-  { "Normal",	       "normal",     Normal1x   },
-  { "Double size",     "2x",	     Normal2x   },
-  { "Triple size",     "3x",	     Normal3x   },
-  { "2xSaI",	       "2xsai",	     _2xSaI     },
-  { "Super 2xSaI",     "super2xsai", Super2xSaI },
-  { "SuperEagle",      "supereagle", SuperEagle },
-  { "AdvMAME 2x",      "advmame2x",  AdvMame2x  },
-  { "TV 2x",	       "tv2x",	     TV2x	},
-  { "Timex TV",	       "timextv",    TimexTV    },
+  { "Timex Half size", "half",       SCALER_FLAGS_NONE,	       Half       },
+  { "Normal",	       "normal",     SCALER_FLAGS_NONE,	       Normal1x   },
+  { "Double size",     "2x",	     SCALER_FLAGS_NONE,	       Normal2x   },
+  { "Triple size",     "3x",	     SCALER_FLAGS_NONE,	       Normal3x   },
+  { "2xSaI",	       "2xsai",	     SCALER_EXPAND_1_PIXEL,    _2xSaI     },
+  { "Super 2xSaI",     "super2xsai", SCALER_EXPAND_1_PIXEL,    Super2xSaI },
+  { "SuperEagle",      "supereagle", SCALER_EXPAND_1_PIXEL,    SuperEagle },
+  { "AdvMAME 2x",      "advmame2x",  SCALER_EXPAND_1_PIXEL,    AdvMame2x  },
+  { "TV 2x",	       "tv2x",	     SCALER_EXPAND_1_PIXEL,    TV2x       },
+  { "Timex TV",	       "timextv",    SCALER_EXPAND_2_Y_PIXELS, TimexTV    },
 
 };
 
 scaler_type current_scaler;
 ScalerProc *scaler_proc;
+scaler_flags_t scaler_flags;
 
 int
 scaler_select_scaler( scaler_type scaler )
@@ -102,6 +104,7 @@ scaler_select_scaler( scaler_type scaler )
   }
 
   scaler_proc = scaler_get_proc( current_scaler );
+  scaler_flags = scaler_get_flags( current_scaler );
 
   uidisplay_hotswap_gfx_mode();
 
@@ -155,6 +158,12 @@ ScalerProc*
 scaler_get_proc( scaler_type scaler )
 {
   return available_scalers[scaler].scaler;
+}
+
+scaler_flags_t
+scaler_get_flags( scaler_type scaler )
+{
+  return available_scalers[scaler].flags;
 }
 
 /********** 2XSAI Filter *****************/
