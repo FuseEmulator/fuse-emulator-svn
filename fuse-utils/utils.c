@@ -34,6 +34,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <sys/utsname.h>
 
 #include <libspectrum.h>
 
@@ -42,7 +43,16 @@ extern char *progname;
 int
 get_creator( libspectrum_creator **creator, const char *program )
 {
-  libspectrum_error error;
+  char *custom;
+  struct utsname buf;
+  libspectrum_error error; int sys_error;
+
+  sys_error = uname( &buf );
+  if( sys_error ) {
+    fprintf( stderr, "%s: error getting system information: %s\n", progname,
+	     strerror( errno ) );
+    return 1;
+  }
 
   error = libspectrum_creator_alloc( creator );
   if( error ) return error;
@@ -55,6 +65,24 @@ get_creator( libspectrum_creator **creator, const char *program )
 
   error = libspectrum_creator_set_minor( *creator, 0x0100 );
   if( error ) { libspectrum_creator_free( *creator ); return error; }
+
+  custom = malloc( 256 );
+  if( !custom ) {
+    fprintf( stderr, "%s: out of memory at %s:%d\n", progname,
+	     __FILE__, __LINE__ );
+    libspectrum_creator_free( *creator );
+    return 1;
+  }
+
+  snprintf( custom, 256, "uname: %s %s %s\n", buf.sysname, buf.machine,
+	    buf.release );
+
+  error = libspectrum_creator_set_custom( *creator,
+					  custom, strlen( custom ) );
+  if( error ) {
+    free( custom ); libspectrum_creator_free( *creator );
+    return error;
+  }
 
   return 0;
 }
