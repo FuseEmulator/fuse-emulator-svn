@@ -128,3 +128,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 libspectrum_gzip_inflate.
 20031103 tape.c: don't explicitly include <glib.h> (thanks, Erik Kunze).
 20031103 README: small change to the installation instructions.
+20031107 accessor.pl, snap_accessors.txt, szx.c, z80.c: add support for
+	 the 'last instruction EI' flag.

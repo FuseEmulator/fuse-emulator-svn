@@ -599,7 +599,7 @@ write_z80r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap )
 {
   libspectrum_dword tstates;
-
+  libspectrum_byte flags;
   libspectrum_error error;
 
   error = write_chunk_header( buffer, ptr, length, "Z80R", 37 );
@@ -639,8 +639,10 @@ write_z80r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = '\0';
   }
 
-  /* Flags; 'last instruction EI' flag not supported, but 'halted' is */
-  *(*ptr)++ = libspectrum_snap_halted( snap ) ? 0x02 : 0x00;
+  flags = '\0';
+  if( libspectrum_snap_last_instruction_ei( snap ) ) flags |= 0x01;
+  if( libspectrum_snap_halted( snap ) ) flags |= 0x02;
+  *(*ptr)++ = flags;
 
   /* Hidden register not supported */
   *(*ptr)++ = '\0';
