@@ -131,33 +131,9 @@ read_tape( char *filename, libspectrum_id_t type, libspectrum_tape **tape )
     return 1;
   }
 
-  switch( type ) {
-
-  case LIBSPECTRUM_ID_TAPE_TAP:
-    if( libspectrum_tap_read( *tape, buffer, length ) ) {
-      munmap( buffer, length ); libspectrum_tape_free( *tape );
-      return 1;
-    }
-    break;
-
-  case LIBSPECTRUM_ID_TAPE_TZX:
-    if( libspectrum_tzx_read( *tape, buffer, length ) ) {
-      munmap( buffer, length ); libspectrum_tape_free( *tape );
-      return 1;
-    }
-    break;
-
-  case LIBSPECTRUM_ID_UNKNOWN:
-    fprintf( stderr, "%s: couldn't identify file type of `%s'\n", progname,
-	     filename );
+  if( libspectrum_tape_read( *tape, buffer, length, type, filename ) ) {
     munmap( buffer, length ); libspectrum_tape_free( *tape );
     return 1;
-
-  default:
-    fprintf( stderr, "%s: `%s' is not a tape file\n", progname, filename );
-    munmap( buffer, length ); libspectrum_tape_free( *tape );
-    return 1;
-
   }
 
   if( munmap( buffer, length ) == -1 ) {
