@@ -69,6 +69,7 @@ const char* libspectrum_error_message( libspectrum_error error );
 typedef enum libspectrum_machine {
 
   LIBSPECTRUM_MACHINE_48,
+  LIBSPECTRUM_MACHINE_TC2048,
   LIBSPECTRUM_MACHINE_128,
   LIBSPECTRUM_MACHINE_PLUS2,
   LIBSPECTRUM_MACHINE_PENT,
@@ -87,6 +88,10 @@ extern const int LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY;
                                                    /* +3-style memory paging */
 extern const int LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_DISK;
                                                       /* +3-style disk drive */
+extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_MEMORY;
+                                            /* TC20[46]8-style memory paging */
+extern const int LIBSPECTRUM_MACHINE_CAPABILITY_TIMEX_VIDEO;
+                                              /* TC20[46]8-style video modes */
 
 /* Get the capabilities of a machine */
 int libspectrum_machine_capabilities( libspectrum_machine type );
@@ -141,6 +146,9 @@ typedef struct libspectrum_snap {
   libspectrum_byte out_ay_registerport, ay_registers[16];
 
   libspectrum_byte out_plus3_memoryport;
+
+  /* Timex-specific bits */
+  libspectrum_byte out_scld_hsr, out_scld_dec;
 
   /* Internal use only */
 
