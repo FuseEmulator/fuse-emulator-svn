@@ -103,5 +103,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20031006 crypto.c, rzx.c: use gcrypt errors properly; most importantly in
 	 crypto.c:libspectrum_verify_signature, we have to ignore the
 	 error source before comparing with an error code.
-
-	
+20031006 z80.c: actually allocate memory for the .slt pages; thanks to
+	 Alberto Garcia for reporting this.
