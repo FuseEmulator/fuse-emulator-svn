@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-dnl Copyright (c) 1999-2003 Philip Kendall
+dnl Copyright (c) 1999-2004 Philip Kendall
 
 dnl $Id$
 
@@ -26,7 +26,7 @@ AC_INIT(libspectrum.c)
 AM_CONFIG_HEADER(config.h)
 
 dnl Use automake to produce `Makefile.in'
-AM_INIT_AUTOMAKE(libspectrum, 0.2.0.1)
+AM_INIT_AUTOMAKE(libspectrum, 0.2.1)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -76,10 +76,21 @@ if test "$withval" = no; then glib=no; else glib=yes; fi,
 glib=yes)
 AC_MSG_RESULT($glib)
 if test "$glib" = yes; then
-  AM_PATH_GLIB(1.2.0,
-	       AC_DEFINE(HAVE_LIB_GLIB)
-	       LIBS="$LIBS `glib-config --libs`",
-               AC_MSG_WARN(glib not found - using internal replacement))
+  glib2=no
+  AM_PATH_GLIB_2_0(
+    2.0.0,
+    glib2=yes
+    AC_DEFINE(HAVE_LIB_GLIB)
+    LIBS="$LIBS `pkg-config --libs glib-2.0`",
+  )
+  if test "$glib2" = no; then
+    AM_PATH_GLIB(
+      1.2.0,
+      AC_DEFINE(HAVE_LIB_GLIB)
+      LIBS="$LIBS `glib-config --libs`",
+      AC_MSG_WARN(glib not found - using internal replacement)
+    )
+  fi
 fi
 
 dnl If it appears we're using gcc as our compiler, turn on warnings
@@ -109,4 +120,5 @@ dnl FIXME: is there a better way to do this?
 rm -rf libspectrum.h
 
 AC_OUTPUT(Makefile \
+doc/Makefile \
 libspectrum.qpg)

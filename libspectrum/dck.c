@@ -111,10 +111,46 @@ libspectrum_error
 libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
 		      const size_t length )
 {
+  return libspectrum_dck_read2( dck, buffer, length, NULL );
+}
+
+libspectrum_error
+libspectrum_dck_read2( libspectrum_dck *dck, const libspectrum_byte *buffer,
+		       const size_t clength, const char *filename )
+{
   int i;
   int num_dck_block = 0;
   libspectrum_error error;
-  const libspectrum_byte *end = buffer + length;
+  const libspectrum_byte *end;
+  libspectrum_id_t raw_type;
+  libspectrum_class_t class;
+  libspectrum_byte *new_buffer;
+  size_t length;
+
+  /* Ugly but necessary to get around the fact that 'clength' is a const
+     parameter, but we now modify it */
+  length = clength;
+
+  /* For storing the uncompressed data in if the input file was
+     compressed */
+  new_buffer = NULL;
+
+  error = libspectrum_identify_file_raw( &raw_type, filename, buffer, length );
+  if( error ) return error;
+
+  error = libspectrum_identify_class( &class, raw_type );
+  if( error ) return error;
+
+  if( class == LIBSPECTRUM_CLASS_COMPRESSED ) {
+
+    size_t new_length;
+
+    error = libspectrum_uncompress_file( &new_buffer, &new_length, NULL,
+                                         raw_type, buffer, length, NULL );
+    buffer = new_buffer; length = new_length;
+  }
+
+  end = buffer + length;
 
   for( i=0; i<256; i++ ) dck->dck[i]=NULL;
 
@@ -126,7 +162,8 @@ libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
         LIBSPECTRUM_ERROR_CORRUPT,
         "libspectrum_dck_read: not enough data in buffer"
       );
-      return LIBSPECTRUM_ERROR_CORRUPT;
+      error = LIBSPECTRUM_ERROR_CORRUPT;
+      goto end;
     }
 
     switch( buffer[0] ) {
@@ -138,7 +175,8 @@ libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
       libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
                                "libspectrum_dck_read: unknown bank ID %d",
 			       buffer[0] );
-      return LIBSPECTRUM_ERROR_UNKNOWN;
+      error = LIBSPECTRUM_ERROR_UNKNOWN;
+      goto end;
     }
 
     for( i = 1; i < 9; i++ )
@@ -154,7 +192,8 @@ libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
         libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
                                  "libspectrum_dck_read: unknown page type %d",
 				 buffer[i] );
-        return LIBSPECTRUM_ERROR_UNKNOWN;
+        error = LIBSPECTRUM_ERROR_UNKNOWN;
+	goto end;
       }
 
     if( buffer + 9 + DCK_PAGE_SIZE * pages > end ) {
@@ -162,12 +201,13 @@ libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
         LIBSPECTRUM_ERROR_CORRUPT,
         "libspectrum_dck_read: not enough data in buffer"
       );
-      return LIBSPECTRUM_ERROR_CORRUPT;
+      error = LIBSPECTRUM_ERROR_CORRUPT;
+      goto end;
     }
 
     /* Allocate new dck_block */
     error = libspectrum_dck_block_alloc( &dck->dck[num_dck_block] );
-    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+    if( error != LIBSPECTRUM_ERROR_NONE ) goto end;
 
     /* Copy the bank ID */
     dck->dck[num_dck_block]->bank = *buffer++;
@@ -185,7 +225,8 @@ libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
         if( !dck->dck[num_dck_block]->pages[i] ) {
           libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
                                    "libspectrum_dck_read: out of memory" );
-          return LIBSPECTRUM_ERROR_MEMORY;
+          error = LIBSPECTRUM_ERROR_MEMORY;
+	  goto end;
         }
         break;
       case LIBSPECTRUM_DCK_PAGE_ROM:
@@ -195,7 +236,8 @@ libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
         if( !dck->dck[num_dck_block]->pages[i] ) {
           libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
                                    "libspectrum_dck_read: out of memory" );
-          return LIBSPECTRUM_ERROR_MEMORY;
+          error = LIBSPECTRUM_ERROR_MEMORY;
+	  goto end;
         }
         memcpy( dck->dck[num_dck_block]->pages[i], buffer, DCK_PAGE_SIZE );
         buffer += DCK_PAGE_SIZE;
@@ -207,10 +249,16 @@ libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
     if( num_dck_block == 256 ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 			       "libspectrum_dck_read: more than 256 banks" );
-      return LIBSPECTRUM_ERROR_MEMORY;
+      error = LIBSPECTRUM_ERROR_MEMORY;
+      goto end;
     }
   }
 
-  /* Done :-) */
-  return LIBSPECTRUM_ERROR_NONE;
+  /* Finished successfully */
+  error = LIBSPECTRUM_ERROR_NONE;
+
+  end:
+
+  free( new_buffer );
+  return error;
 }
