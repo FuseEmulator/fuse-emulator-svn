@@ -114,6 +114,9 @@ libspectrum_z80_read( libspectrum_snap *snap,
   const libspectrum_byte *data;
   int version, compressed;
 
+  /* Assume the Z80 isn't halted */
+  libspectrum_snap_set_halted( snap, 0 );
+
   error = read_header( buffer, snap, &data, &version, &compressed );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
