@@ -531,5 +531,6 @@
 	 competition mode files (Release-0_6_2-branch).
 20040207 ui/svga/svgakeyboard.c: #include "utils.h"
 	 (Release-0_6_2-branch).
-
-	
+20040208 settings.dat, man/fuse.1, ui/options.dat, ui/gtk/gtkdisplay.c,
+	 ui/sdl/sdldisplay.c: Rename Colour TV to Black and white TV for
+	 extra clarity (Release-0_6_2-branch).

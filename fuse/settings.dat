@@ -43,7 +43,7 @@ double_screen, null, 0
 full_screen, boolean, 0
 writable_roms, boolean, 0
 autosave_settings, boolean, 0
-colour_tv, boolean, 1
+bw_tv, boolean, 0
 confirm_dangerous, boolean, 1
 printer, boolean, 0
 statusbar, boolean, 1

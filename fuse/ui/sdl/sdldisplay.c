@@ -409,8 +409,8 @@ uidisplay_frame_end( void )
   SDL_Rect *r;
   Uint32 tmp_screen_pitch, dstPitch;
   SDL_Rect *last_rect;
-  Uint32 *palette_values = settings_current.colour_tv ? colour_values :
-                           bw_values;
+  Uint32 *palette_values = settings_current.bw_tv ? bw_values :
+                           colour_values;
 
   /* We check for a switch to fullscreen here to give systems with a
      windowed-only UI a chance to free menu etc. resources before
