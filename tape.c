@@ -861,7 +861,7 @@ libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
   GSList *new_block;
 
   new_block = g_slist_nth( tape->blocks, n );
-  if( !n ) {
+  if( !new_block ) {
     libspectrum_print_error(
       "libspectrum_tape_nth_block: tape does not have block %d", n
     );
