@@ -60,6 +60,12 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 static libspectrum_error
 rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 		 libspectrum_byte **ptr, size_t *length, int compress );
+static libspectrum_error
+rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
+			size_t *length, ptrdiff_t *sign_offset );
+static libspectrum_error
+rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		      size_t *length, ptrdiff_t sign_offset );
 
 /* The signature used to identify .rzx files */
 const libspectrum_byte *signature = "RZX!";
@@ -505,8 +511,12 @@ libspectrum_rzx_write( libspectrum_rzx *rzx,
 {
   libspectrum_error error;
   libspectrum_byte *ptr = *buffer;
+  ptrdiff_t sign_offset;
 
   error = rzx_write_header( buffer, &ptr, length );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  error = rzx_write_signed_start( buffer, &ptr, length, &sign_offset );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   error = rzx_write_creator( buffer, &ptr, length, program, major, minor );
@@ -521,6 +531,9 @@ libspectrum_rzx_write( libspectrum_rzx *rzx,
   error = rzx_write_input( rzx, buffer, &ptr, length, compress );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   
+  error = rzx_write_signed_end( buffer, &ptr, length, sign_offset );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
   /* *length is the allocated size; we want to return how much is used */
   *length = ptr - *buffer;
 
@@ -733,6 +746,68 @@ rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 #endif				/* #ifdef HAVE_ZLIB_H */
 
   }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
+			size_t *length, ptrdiff_t *sign_offset )
+{
+#ifdef HAVE_GCRYPT_H
+  libspectrum_error error;
+  
+  error = libspectrum_make_room( buffer, 5, ptr, length );
+  if( error != LIBSPECTRUM_ERROR_NONE ) {
+    libspectrum_print_error( "rzx_write_signed_start: out of memory" );
+    return error;
+  }
+
+  /* Block ID */
+  *(*ptr)++ = 0xfe;
+
+  /* Block length */
+  libspectrum_write_dword( ptr, 5 );
+
+  /* And flag where to start signing data */
+  *sign_offset = *ptr - *buffer;
+#endif				/* #ifdef HAVE_GCRYPT_H */
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		      size_t *length, ptrdiff_t sign_offset )
+{
+#ifdef HAVE_GCRYPT_H
+  libspectrum_error error;
+  libspectrum_byte *signature; size_t sig_length;
+
+  /* Get the actual signature */
+  error = libspectrum_sign_data( &signature, &sig_length,
+				 ( *buffer + sign_offset ),
+				 (*ptr) - ( *buffer + sign_offset ) );
+  if( error ) return error;
+
+  error = libspectrum_make_room( buffer, sig_length + 5, ptr, length );
+  if( error != LIBSPECTRUM_ERROR_NONE ) {
+    libspectrum_print_error( "rzx_write_signed_start: out of memory" );
+    return error;
+  }
+
+  /* Block ID */
+  *(*ptr)++ = 0xff;
+
+  /* Block length */
+  libspectrum_write_dword( ptr, sig_length + 5 );
+
+  /* Write the signature */
+  memcpy( *ptr, signature, sig_length ); (*ptr) += sig_length;
+
+  free( signature );
+
+#endif				/* #ifdef HAVE_GCRYPT_H */
 
   return LIBSPECTRUM_ERROR_NONE;
 }

@@ -73,4 +73,10 @@ libspectrum_zlib_compress( const libspectrum_byte *data, size_t length,
 int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 				    const libspectrum_byte* data );
 
+/* Crypto functions */
+
+libspectrum_error
+libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
+		       libspectrum_byte *data, size_t data_length );
+
 #endif				/* #ifndef LIBSPECTRUM_INTERNALS_H */

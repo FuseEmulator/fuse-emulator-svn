@@ -61,6 +61,10 @@ typedef enum libspectrum_error {
 
 } libspectrum_error;
 
+/* Initialisation */
+
+libspectrum_error libspectrum_init( void );
+
 /* Error handling */
 
 typedef libspectrum_error (*libspectrum_error_function_t)( const char *format,
