@@ -180,7 +180,7 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 
     int type;
 
-    char *extension;
+    char *extension; int extension_score;
 
     char *signature; size_t offset, length; int sig_score;
   };
@@ -188,24 +188,24 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
   struct type *ptr,
     types[] = {
       
-      { LIBSPECTRUM_ID_RECORDING_RZX, "rzx", "RZX!",     0, 4, 3 },
+      { LIBSPECTRUM_ID_RECORDING_RZX, "rzx", 3, "RZX!",		    0, 4, 4 },
 
-      { LIBSPECTRUM_ID_SNAPSHOT_SNA,  "sna", NULL,       0, 0, 0 },
-      { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "z80", "\0\0",     6, 2, 1 },
+      { LIBSPECTRUM_ID_SNAPSHOT_SNA,  "sna", 3, NULL,		    0, 0, 0 },
+      { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "z80", 3, "\0\0",		    6, 2, 1 },
       /* .slt files also dealt with by the .z80 loading code */
-      { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "slt", "\0\0",     6, 2, 1 },
+      { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "slt", 3, "\0\0",		    6, 2, 1 },
 
-      { LIBSPECTRUM_ID_CARTRIDGE_DCK, "dck", NULL,       0, 0, 0 },
+      { LIBSPECTRUM_ID_CARTRIDGE_DCK, "dck", 3, NULL,		    0, 0, 0 },
 
-      { LIBSPECTRUM_ID_TAPE_TAP,      "tap", "\x13\0\0", 0, 3, 1 },
-      { LIBSPECTRUM_ID_TAPE_TZX,      "tzx", "ZXTape!",  0, 7, 3 },
-      { LIBSPECTRUM_ID_TAPE_WARAJEVO, "tap", "\xff\xff\xff\xff", 8, 4, 1 },
+      { LIBSPECTRUM_ID_TAPE_TAP,      "tap", 3, "\x13\0\0",	    0, 3, 1 },
+      { LIBSPECTRUM_ID_TAPE_TZX,      "tzx", 3, "ZXTape!",	    0, 7, 4 },
+      { LIBSPECTRUM_ID_TAPE_WARAJEVO, "tap", 2, "\xff\xff\xff\xff", 8, 4, 2 },
 
-      { LIBSPECTRUM_ID_DISK_DSK,      "dsk", NULL,       0, 0, 0 },
-      { LIBSPECTRUM_ID_DISK_SCL,      "scl", NULL,       0, 0, 0 },
-      { LIBSPECTRUM_ID_DISK_TRD,      "trd", NULL,       0, 0, 0 },
+      { LIBSPECTRUM_ID_DISK_DSK,      "dsk", 3, NULL,		    0, 0, 0 },
+      { LIBSPECTRUM_ID_DISK_SCL,      "scl", 3, NULL,		    0, 0, 0 },
+      { LIBSPECTRUM_ID_DISK_TRD,      "trd", 3, NULL,		    0, 0, 0 },
 
-      { -1, NULL, NULL, 0, 0, 0 }, /* End marker */
+      { -1 }, /* End marker */
 
     };
 
@@ -226,7 +226,7 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 
     if( extension && ptr->extension &&
 	!strcasecmp( extension, ptr->extension ) )
-      score += 2;
+      score += ptr->extension_score;
 
     if( ptr->signature && length >= ptr->offset + ptr->length &&
 	!memcmp( &buffer[ ptr->offset ], ptr->signature, ptr->length ) )
@@ -234,7 +234,7 @@ libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 
     if( score > best_score ) {
       best_guess = ptr->type; best_score = score; duplicate_best = 0;
-    } else if( score == best_score ) {
+    } else if( score == best_score && ptr->type != best_guess ) {
       duplicate_best = 1;
     }
   }
