@@ -268,3 +268,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 compatability fixes.
 20040814 generate.pl.in,libspectrum.h.in,make-perl.c: more Visual C++
 	 compatability fixes.
+20040905 libspectrum.h.in,rzx.c: support multiple input recording blocks
+	 in an RZX file.

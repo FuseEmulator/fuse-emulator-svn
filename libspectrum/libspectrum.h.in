@@ -544,11 +544,19 @@ libspectrum_error WIN32_DLL libspectrum_rzx_alloc( libspectrum_rzx **rzx );
 libspectrum_error WIN32_DLL libspectrum_rzx_free( libspectrum_rzx *rzx );
 
 libspectrum_error WIN32_DLL
+libspectrum_rzx_start_input( libspectrum_rzx *rzx, libspectrum_dword tstates );
+libspectrum_error WIN32_DLL
+libspectrum_rzx_stop_input( libspectrum_rzx *rzx );
+libspectrum_error WIN32_DLL
+libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap );
+
+libspectrum_error WIN32_DLL
 libspectrum_rzx_store_frame( libspectrum_rzx *rzx, size_t instructions, 
 			     size_t count, libspectrum_byte *in_bytes );
 
 libspectrum_error WIN32_DLL
-libspectrum_rzx_start_playback( libspectrum_rzx *rzx );
+libspectrum_rzx_start_playback( libspectrum_rzx *rzx, int which,
+				libspectrum_snap **snap );
 libspectrum_error WIN32_DLL
 libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished );
 libspectrum_error WIN32_DLL
@@ -556,8 +564,6 @@ libspectrum_rzx_playback( libspectrum_rzx *rzx, libspectrum_byte *byte );
 
 /* Get and set the tstate counter */
 size_t WIN32_DLL libspectrum_rzx_tstates( libspectrum_rzx *rzx );
-size_t WIN32_DLL
-libspectrum_rzx_set_tstates( libspectrum_rzx *rzx, size_t tstates );
 
 /* Get the current frame's instruction count */
 size_t WIN32_DLL libspectrum_rzx_instructions( libspectrum_rzx *rzx );
@@ -583,9 +589,8 @@ typedef struct libspectrum_rzx_signature {
 } libspectrum_rzx_signature;
 
 libspectrum_error WIN32_DLL
-libspectrum_rzx_read( libspectrum_rzx *rzx, libspectrum_snap **snap,
-	              const libspectrum_byte *buffer, size_t length,
-		      libspectrum_rzx_signature *signature );
+libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
+		      size_t length );
 
 libspectrum_error WIN32_DLL
 libspectrum_rzx_write2( libspectrum_byte **buffer, size_t *length,
