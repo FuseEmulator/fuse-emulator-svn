@@ -339,8 +339,8 @@ const int LIBSPECTRUM_TAPE_FLAGS_STOP48 = 1 << 2; /* Stop tape if in
    t-states until the next edge, and a marker if this was the last edge
    on the tape */
 libspectrum_error
-libspectrum_tape_get_next_edge( libspectrum_tape *tape,
-				libspectrum_dword *tstates, int *flags )
+libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
+	                        libspectrum_tape *tape )
 {
   int error;
 
@@ -833,8 +833,8 @@ jump_blocks( libspectrum_tape *tape, int offset )
 }
 
 libspectrum_error
-libspectrum_tape_block_description( libspectrum_tape_block *block,
-				    char *buffer, size_t length )
+libspectrum_tape_block_description( char *buffer, size_t length,
+	                            libspectrum_tape_block *block )
 {
   switch( block->type ) {
   case LIBSPECTRUM_TAPE_BLOCK_ROM:

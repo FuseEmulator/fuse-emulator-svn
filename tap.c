@@ -133,8 +133,8 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 }
 
 libspectrum_error
-libspectrum_tap_write( libspectrum_tape *tape,
-		       libspectrum_byte **buffer, size_t *length )
+libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_tape *tape )
 {
   GSList *block_ptr;
   libspectrum_error error;
@@ -270,8 +270,8 @@ skip_block( libspectrum_tape_block *block, const char *message )
   char description[ DESCRIPTION_LENGTH ];
   libspectrum_error error;
 
-  error = libspectrum_tape_block_description( block, description,
-					      DESCRIPTION_LENGTH );
+  error = libspectrum_tape_block_description( description, DESCRIPTION_LENGTH,
+					      block );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   if( message ) {

@@ -101,8 +101,8 @@ uncompress_block( libspectrum_byte **dest, size_t *dest_length,
 		  const libspectrum_byte *src, size_t src_length);
 
 libspectrum_error
-libspectrum_z80_read( const libspectrum_byte *buffer, size_t buffer_length,
-		      libspectrum_snap *snap )
+libspectrum_z80_read( libspectrum_snap *snap,
+	              const libspectrum_byte *buffer, size_t buffer_length )
 {
   libspectrum_error error;
   const libspectrum_byte *data;
