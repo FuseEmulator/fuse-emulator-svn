@@ -213,3 +213,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040521 accessor.pl,sna.c,snap_accessors.txt,snapshot.c,szx.c,z80.c:
          add support for saving interface 2 cart in .szx snapshots.
 20040521 szx.c: remove warnings.
+20040521 szx.c: save RAM page 8 for the Spectrum SE.

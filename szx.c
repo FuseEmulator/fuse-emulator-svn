@@ -968,6 +968,11 @@ write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   }
 
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SE_MEMORY ) {
+    error = write_ramp_chunk( buffer, ptr, length, snap, 8, compress );
+    if( error ) return error;
+  }
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 
