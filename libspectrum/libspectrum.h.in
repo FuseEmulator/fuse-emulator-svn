@@ -164,21 +164,24 @@ typedef struct libspectrum_snap {
 
 } libspectrum_snap;
 
-int libspectrum_snap_initalise( libspectrum_snap *snap );
-int libspectrum_snap_destroy( libspectrum_snap *snap );
+libspectrum_error libspectrum_snap_alloc( libspectrum_snap **snap );
+libspectrum_error libspectrum_snap_free( libspectrum_snap *snap );
 
 /* .sna specific routines */
 
-int libspectrum_sna_read( const libspectrum_byte *buffer, size_t buffer_length,
-			  libspectrum_snap *snap );
+libspectrum_error
+libspectrum_sna_read( const libspectrum_byte *buffer, size_t buffer_length,
+		      libspectrum_snap *snap );
 
 /* .z80 specific routines */
 
-int libspectrum_z80_read( const libspectrum_byte *buffer, size_t buffer_length,
-			  libspectrum_snap *snap );
+libspectrum_error
+libspectrum_z80_read( const libspectrum_byte *buffer, size_t buffer_length,
+	              libspectrum_snap *snap );
 
-int libspectrum_z80_write( libspectrum_byte **buffer, size_t *length,
-			   libspectrum_snap *snap );
+libspectrum_error
+libspectrum_z80_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_snap *snap );
 
 /*
  * Tape handling routines
@@ -506,8 +509,9 @@ typedef struct libspectrum_tape {
 
 /* Routines to manipulate tape blocks */
 
-libspectrum_error
-libspectrum_tape_free( libspectrum_tape *tape );
+libspectrum_error libspectrum_tape_alloc( libspectrum_tape **tape );
+libspectrum_error libspectrum_tape_clear( libspectrum_tape *tape );
+libspectrum_error libspectrum_tape_free( libspectrum_tape *tape );
 
 libspectrum_error
 libspectrum_tape_init_block( libspectrum_tape_block *block );
@@ -523,8 +527,8 @@ libspectrum_tape_block_description( libspectrum_tape_block *block,
 /*** Routines for .tap format files ***/
 
 libspectrum_error
-libspectrum_tap_create( libspectrum_tape *tape, const libspectrum_byte *buffer,
-			const size_t length );
+libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		      const size_t length );
 libspectrum_error
 libspectrum_tap_write( libspectrum_tape *tape,
 		       libspectrum_byte **buffer, size_t *length );
@@ -532,8 +536,8 @@ libspectrum_tap_write( libspectrum_tape *tape,
 /*** Routines for .tzx format files ***/
 
 libspectrum_error
-libspectrum_tzx_create( libspectrum_tape *tape, const libspectrum_byte *buffer,
-			const size_t length );
+libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		      const size_t length );
 
 libspectrum_error
 libspectrum_tzx_write( libspectrum_tape *tape,
@@ -568,6 +572,8 @@ typedef struct libspectrum_rzx {
   size_t tstates;
 
 } libspectrum_rzx;
+
+libspectrum_error libspectrum_rzx_alloc( libspectrum_rzx **rzx );
 
 libspectrum_error libspectrum_rzx_frame( libspectrum_rzx *rzx,
 					 size_t instructions, 

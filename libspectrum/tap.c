@@ -51,8 +51,8 @@ static libspectrum_error
 skip_block( libspectrum_tape_block *block, const char *message );
 
 libspectrum_error
-libspectrum_tap_create( libspectrum_tape *tape, const libspectrum_byte *buffer,
-			const size_t length )
+libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		      const size_t length )
 {
   libspectrum_tape_block *block;
   libspectrum_tape_rom_block *rom_block;

@@ -68,6 +68,18 @@ const libspectrum_byte *signature = "RZX!";
 const libspectrum_word libspectrum_rzx_repeat_frame = 0xffff;
 
 libspectrum_error
+libspectrum_rzx_alloc( libspectrum_rzx **rzx )
+{
+  (*rzx) = (libspectrum_rzx*)malloc( sizeof( libspectrum_rzx ) );
+  if( !(*rzx) ) {
+    libspectrum_print_error( "libspectrum_rzx_alloc: out of memory" );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
 libspectrum_rzx_frame( libspectrum_rzx *rzx, size_t instructions,
 		       size_t count, libspectrum_byte *in_bytes )
 {
@@ -261,10 +273,8 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
   if( compressed ) {
     error = libspectrum_zlib_inflate( (*ptr) + 8, blocklength - 17,
 				      &gzsnap, &uncompressed_length );
-    if( error != LIBSPECTRUM_ERROR_NONE ) {
-      libspectrum_snap_destroy( *snap ); free( *snap );
-      return error;
-    }
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
     if( uncompressed_length != snaplength ) {
       libspectrum_print_error(
         "rzx_read_snapshot: compressed snapshot has wrong length"
@@ -289,16 +299,10 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
   }
 
   /* Initialise the snap */
-  (*snap) = malloc( sizeof( libspectrum_snap ) );
-  if( *snap == NULL ) {
-    if( compressed ) free( gzsnap );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
-  error = libspectrum_snap_initalise( *snap );
+  error = libspectrum_snap_alloc( snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
     if( compressed ) free( gzsnap );
-    free( *snap ); (*snap) = 0;
+    libspectrum_snap_free( *snap );
     return error;
   }
 
@@ -311,13 +315,13 @@ rzx_read_snapshot( const libspectrum_byte **ptr, const libspectrum_byte *end,
       "rzx_read_snapshot: unrecognised snapshot format"
     );
     if( compressed ) free( gzsnap );
-    free( *snap ); (*snap) = 0;
+    libspectrum_snap_free( *snap );
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
   if( error != LIBSPECTRUM_ERROR_NONE ) {
     if( compressed ) free( gzsnap );
-    free( *snap ); (*snap) = 0;
+    libspectrum_snap_free( *snap );
     return error;
   }
 
