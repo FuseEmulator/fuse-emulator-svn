@@ -87,3 +87,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 try to allocate zero bytes.
 20030919 configure.in: link against glib, gcrypt and zlib if available
 	 (Darren).
+20030921 crypto.c, libspectrum.c, rzx.c: use libgcrypt 1.1.42.
