@@ -86,7 +86,7 @@ main( int argc, char **argv )
 
   if( mmap_file( options.rzxfile, &buffer, &length ) ) return 1;
 
-  if( libspectrum_rzx_read( rzx, buffer, length, &snap ) ) {
+  if( libspectrum_rzx_read( rzx, buffer, length, &snap, NULL ) ) {
     munmap( buffer, length );
     return 1;
   }
