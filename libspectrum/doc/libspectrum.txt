@@ -1,0 +1,99 @@
+libspectrum draft API
+=====================
+
+$Id$
+
+In general, user code should never use the libspectrum_* objects
+directly, but only pointers to them so binary compatibility can be
+maintained if (when) the data structures change.
+
+Naming conventions:
+
+*_alloc: give us a new object
+*_free:  we're done with this object
+*_read:  restore object from serialised form
+*_write: serialise object
+
+General functions
+-----------------
+
+const char* libspectrum_error_message( libspectrum_error error )
+/* Give a message describing `error'
+   Should this be thrown away completely and replaced with the new
+   error stuff? */
+
+const char* libspectrum_machine_name( libspectrum_machine type )
+/* A textual name for `type' */
+
+int libspectrum_machine_capabilities( libspectrum_machine type )
+/* What special memory etc capabilities does `type' have */
+
+Snapshot functions
+------------------
+
+libspectrum_error libspectrum_snap_alloc( libspectrum_snap **snap )
+libspectrum_error libspectrum_snap_free( libspectrum_snap *snap )
+
+libspectrum_error libspectrum_sna_read( const libspectrum_byte *buffer,
+				        size_t buffer_length,
+					libspectrum_snap *snap )
+libspectrum_error libspectrum_z80_read( const libspectrum_byte *buffer,
+					size_t buffer_length,
+					libspectrum_snap *snap )
+libspectrum_error libspectrum_z80_write( libspectrum_byte **buffer,
+					 size_t *length,
+					 libspectrum_snap *snap )
+
+Tape functions
+--------------
+
+libspectrum_error libspectrum_tape_alloc( libspectrum_tape **tape )
+libspectrum_error libspectrum_tape_free( libspectrum_tape *tape )
+
+libspectrum_error libspectrum_tape_get_next_edge( libspectrum_tape *tape,
+                                                  libspectrum_dword *tstates,
+						  int *flags )
+/* How long will it be until the next edge from this tape? */
+
+libspectrum_error
+libspectrum_tape_block_description( libspectrum_tape_block *block,
+				    char *buffer, size_t length )
+/* Give a textual representation of the type of `block' */
+
+libspectrum_error
+libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+	              const size_t length )
+libspectrum_error
+libspectrum_tap_write( libspectrum_tape *tape, libspectrum_byte **buffer,
+		       size_t *length )
+
+libspectrum_error
+libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		      const size_t length )
+libspectrum_error
+libspectrum_tzx_write( libspectrum_tape *tape, libspectrum_byte **buffer,
+		       size_t *length )
+
+RZX functions
+-------------
+
+libspectrum_error libspectrum_rzx_alloc( libspectrum_rzx **rzx )
+libspectrum_error libspectrum_rzx_free( libspectrum_rzx *rzx )
+
+libspectrum_error libspectrum_rzx_frame( libspectrum_rzx *rzx,
+					 size_t instructions, 
+					 size_t count,
+					 libspectrum_byte *in_bytes )
+/* Add a frame to the current RZX recording */
+
+libspectrum_error
+libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
+		      const size_t length, libspectrum_snap **snap )
+libspectrum_error
+libspectrum_rzx_write( libspectrum_rzx *rzx,
+		       libspectrum_byte **buffer, size_t *length,
+		       libspectrum_byte *snap, size_t snap_length,
+		       const char *program, libspectrum_word major,
+		       libspectrum_word minor, int compress )
+
+/* (Probably: a `read an IN byte from this RZX file' function) */
