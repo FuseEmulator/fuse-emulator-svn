@@ -30,8 +30,8 @@
 
 #include "internals.h"
 
-const static char *signature = "ZXST";
-const static size_t signature_length = 4;
+static const char *signature = "ZXST";
+static const size_t signature_length = 4;
 
 static libspectrum_error
 read_chunk( libspectrum_snap *snap, libspectrum_word version,
@@ -76,9 +76,9 @@ write_chunk_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		    libspectrum_dword block_length );
 
 static libspectrum_error
-read_ay_chunk( libspectrum_snap *snap, libspectrum_word version,
-	       const libspectrum_byte **buffer, const libspectrum_byte *end,
-	       size_t data_length )
+read_ay_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+	       const libspectrum_byte **buffer,
+	       const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
   size_t i;
 
@@ -101,9 +101,9 @@ read_ay_chunk( libspectrum_snap *snap, libspectrum_word version,
 }
 
 static libspectrum_error
-read_ramp_chunk( libspectrum_snap *snap, libspectrum_word version,
-		 const libspectrum_byte **buffer, const libspectrum_byte *end,
-		 size_t data_length )
+read_ramp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
   libspectrum_word flags;
   libspectrum_byte page, *buffer2;
@@ -169,9 +169,9 @@ read_ramp_chunk( libspectrum_snap *snap, libspectrum_word version,
 }
 
 static libspectrum_error
-read_scld_chunk( libspectrum_snap *snap, libspectrum_word version,
-	       const libspectrum_byte **buffer, const libspectrum_byte *end,
-	       size_t data_length )
+read_scld_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
   if( data_length != 2 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
@@ -188,8 +188,8 @@ read_scld_chunk( libspectrum_snap *snap, libspectrum_word version,
 
 static libspectrum_error
 read_spcr_chunk( libspectrum_snap *snap, libspectrum_word version,
-		 const libspectrum_byte **buffer, const libspectrum_byte *end,
-		 size_t data_length )
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
   libspectrum_byte out_ula;
 
@@ -218,8 +218,8 @@ read_spcr_chunk( libspectrum_snap *snap, libspectrum_word version,
 
 static libspectrum_error
 read_z80r_chunk( libspectrum_snap *snap, libspectrum_word version,
-		 const libspectrum_byte **buffer, const libspectrum_byte *end,
-		 size_t data_length )
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
   if( data_length != 37 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
@@ -271,8 +271,10 @@ read_z80r_chunk( libspectrum_snap *snap, libspectrum_word version,
 }
 
 static libspectrum_error
-skip_chunk( libspectrum_snap *snap, libspectrum_word version,
-	    const libspectrum_byte **buffer, const libspectrum_byte *end,
+skip_chunk( libspectrum_snap *snap GCC_UNUSED,
+	    libspectrum_word version GCC_UNUSED,
+	    const libspectrum_byte **buffer,
+	    const libspectrum_byte *end GCC_UNUSED,
 	    size_t data_length )
 {
   *buffer += data_length;
@@ -281,7 +283,7 @@ skip_chunk( libspectrum_snap *snap, libspectrum_word version,
 
 struct read_chunk_t {
 
-  char *id;
+  const char *id;
   read_chunk_fn function;
 
 };

@@ -30,7 +30,7 @@
 
 #include "internals.h"
 
-static const int SP_HEADER_LENGTH = 37;
+static const size_t SP_HEADER_LENGTH = 37;
 
 libspectrum_error
 libspectrum_sp_read( libspectrum_snap *snap, const libspectrum_byte *buffer,

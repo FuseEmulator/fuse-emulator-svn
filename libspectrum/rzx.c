@@ -414,7 +414,7 @@ rzx_read_header( const libspectrum_byte **ptr, const libspectrum_byte *end,
   libspectrum_dword flags;
 
   /* Check the header exists */
-  if( end - (*ptr) < strlen( rzx_signature ) + 6 ) {
+  if( end - (*ptr) < (ptrdiff_t)strlen( rzx_signature ) + 6 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "rzx_read_header: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
@@ -817,7 +817,7 @@ rzx_read_sign_end( const libspectrum_byte **ptr, const libspectrum_byte *end,
   length = libspectrum_read_dword( ptr ) - 5;
 
   /* Check there's still enough data */
-  if( end - (*ptr) < length ) {
+  if( end - (*ptr) < (ptrdiff_t)length ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "rzx_read_sign_end: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;

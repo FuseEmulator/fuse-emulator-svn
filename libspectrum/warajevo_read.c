@@ -109,7 +109,7 @@ static copy_command command;
 
 /* The Warajevo .tap file signature (3rd group of 4 bytes) also end of tap
    marker */
-static const libspectrum_dword signature = 0xffffffff;
+static const libspectrum_dword warajevo_signature = 0xffffffff;
 
 /*** Local function prototypes ***/
 
@@ -189,7 +189,7 @@ libspectrum_warajevo_read( libspectrum_tape *tape,
   }
 
   /* Now check the signature */
-  if( lsb2dword( ptr + 8 ) != signature ) {
+  if( lsb2dword( ptr + 8 ) != warajevo_signature ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_SIGNATURE,
 			     "libspectrum_warajevo_read: wrong signature" );
     return LIBSPECTRUM_ERROR_SIGNATURE;
@@ -198,7 +198,7 @@ libspectrum_warajevo_read( libspectrum_tape *tape,
   /* Get inital offset */
   offset = lsb2dword( ptr );
 
-  while( offset != signature ) {
+  while( offset != warajevo_signature ) {
     error = get_next_block( &offset, ptr, end, tape );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
@@ -214,8 +214,8 @@ get_next_block( size_t *offset, const libspectrum_byte *buffer,
   libspectrum_dword next_block = lsb2dword( buffer + 4 + *offset );
 
   /* Check for EOF marker */
-  if( next_block == signature ) {
-    *offset = signature;
+  if( next_block == warajevo_signature ) {
+    *offset = warajevo_signature;
     return LIBSPECTRUM_ERROR_NONE;
   }
 
@@ -236,7 +236,7 @@ get_next_block( size_t *offset, const libspectrum_byte *buffer,
 /* Executes a bytes worth of commands */
 static libspectrum_error
 exec_command( libspectrum_byte *dest, const libspectrum_byte *src,
-	      const libspectrum_byte *end, size_t *sp, size_t *pc,
+	      const libspectrum_byte *end GCC_UNUSED, size_t *sp, size_t *pc,
 	      size_t *bytes_written, const size_t to_write )
 {
   size_t i;

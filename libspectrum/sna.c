@@ -281,7 +281,8 @@ libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
 
 libspectrum_error
 libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
-		       int *out_flags, libspectrum_snap *snap, int in_flags )
+		       int *out_flags, libspectrum_snap *snap,
+		       int in_flags GCC_UNUSED )
 {
   libspectrum_error error;
   libspectrum_byte *ptr, *sp;
@@ -416,9 +417,7 @@ static libspectrum_error
 write_128k_sna( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, libspectrum_snap *snap )
 {
-  int page;
-
-  size_t i; libspectrum_error error;
+  size_t i, page; libspectrum_error error;
   
   page = libspectrum_snap_out_128_memoryport( snap ) & 0x07;
 

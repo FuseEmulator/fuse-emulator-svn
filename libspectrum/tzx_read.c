@@ -403,7 +403,7 @@ tzx_read_pulses_block( libspectrum_tape *tape, const libspectrum_byte **ptr,
   libspectrum_tape_block_set_count( block, count );
 
   /* Check enough data exists for every pulse */
-  if( end - (*ptr) < 2 * count ) {
+  if( end - (*ptr) < (ptrdiff_t)( 2 * count ) ) {
     free( block );
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
