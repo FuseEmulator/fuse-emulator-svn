@@ -99,4 +99,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (libspectrum_0_2_0-bugfix-branch).
 20031001 ChangeLog, Makefile.am, README, configure.in, rzx.c: port the
 	 0.2.0.1 release changes back to HEAD.
-
+20031003 make-perl.c: change GcryMPI to gcry_mpi_t.
