@@ -363,6 +363,12 @@ sdl_blit_icon( SDL_Surface *icon, SDL_Rect *r, Uint32 tmp_screen_pitch,
   );
 
   /* Adjust rects for the destination rect size */
+
+  if( num_rects == MAX_UPDATE_RECT ) {
+    sdldisplay_force_full_refresh = 1;
+    return;
+  }
+
   updated_rects[num_rects].x = x * sdldisplay_current_size;
   updated_rects[num_rects].y = dst_y;
   updated_rects[num_rects].w = w * sdldisplay_current_size;
