@@ -578,9 +578,14 @@ libspectrum_error libspectrum_dck_alloc( libspectrum_dck **dck );
 libspectrum_error libspectrum_dck_free( libspectrum_dck *dck, int keep_pages );
 
 /* Read in a DCK file */
+
 libspectrum_error
 libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
                       size_t length );
+
+libspectrum_error
+libspectrum_dck_read2( libspectrum_dck *dck, const libspectrum_byte *buffer,
+                       size_t length, const char *filename );
 
 /*
  * Crypto functions

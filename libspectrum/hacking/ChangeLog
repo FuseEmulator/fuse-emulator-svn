@@ -149,5 +149,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040126 libspectrum.c: replace HAVE_BZLIB_H with HAVE_LIBBZ2 as used
 	 since the 20040109 change (patch #884231)
 	 (libspectrum_0_2_1-branch) (Fred).
-
-	
+20040126 dck.c, libspectrum.h.in: support compressed .dck files (patch
+	 #884355) (libspectrum_0_2_1-branch) (Fred).
