@@ -80,3 +80,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20030912 libspectrum.h.in, z80.c: move libspectrum_slt_type from
          libspectrum.h.in to z80.c.
 20030912 doc/libspectrum.txt: document the tape routines.
+20030912 ChangeLog, README: small doc updates for the 0.2.0 release.
