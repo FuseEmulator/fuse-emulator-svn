@@ -1,6 +1,6 @@
 /* listbasic: extract the BASIC listing from a snapshot or tape file
    Copyright (c) 2002 Chris Cowley
-                 2003 Philip Kendall
+                 2003 Philip Kendall, Darren Salt
 
    $Id$
   
@@ -276,7 +276,7 @@ extract_basic( libspectrum_word offset, libspectrum_word end,
     offset += 2;
     if( line_number >= 16384 ) break;
 
-    printf( "%d", line_number );
+    printf( "%5d", line_number );
 
     line_length = get_byte( offset, data ) | get_byte( offset + 1, data ) << 8;
     offset += 2;
@@ -292,166 +292,184 @@ extract_basic( libspectrum_word offset, libspectrum_word end,
   return 0;
 }
 
+static char
+print_keyword( const char *keyword, char space )
+{
+  char last_char;
+
+  if( !space && keyword[0] == ' ' ) {
+    printf( "%s", keyword + 1 );
+  } else {
+    printf( "%s", keyword );
+  }
+
+  last_char = keyword[ strlen( keyword ) - 1 ];
+
+  return( last_char != ' ' );
+}
+
 int
 detokenize( libspectrum_word offset, int length,
 	    memory_read_fn get_byte, void *data )
 {
   int i;
   libspectrum_byte b;
+  char space = 1, keyword_next = 1, quote = 0, rem = 0;
+
+  static const char keyword[][12] = {
+    " SPECTRUM ",
+    " PLAY ",	"RND",		"INKEY$",	"PI",
+    "FN ",	"POINT ",	"SCREEN$ ",	"ATTR ",
+    "AT ",	"TAB ",		"VAL$ ",	"CODE ",
+    "VAL ",	"LEN ",		"SIN ",		"COS ",
+    "TAN ",	"ASN ",		"ACS ",		"ATN ",
+    "LN ",	"EXP ",		"INT ",		"SQR ",
+    "SGN ",	"ABS ",		"PEEK ",	"IN ",
+    "USR ",	"STR$ ",	"CHR$ ",	"NOT ",
+    "BIN ",	" OR ",		" AND ",	"<=",
+    ">=",	"<>",		" LINE ",	" THEN ",
+    " TO ",	" STEP ",	" DEF FN ",	" CAT ",
+    " FORMAT ",	" MOVE ",	" ERASE ",	" OPEN #",
+    " CLOSE #",	" MERGE ",	" VERIFY ",	" BEEP ",
+    " CIRCLE ",	" INK ",	" PAPER ",	" FLASH ",
+    " BRIGHT ",	" INVERSE ",	" OVER ",	" OUT ",
+    " LPRINT ",	" LLIST ",	" STOP ",	" READ ",
+    " DATA ",	" RESTORE ",	" NEW ",	" BORDER ",
+    " CONTINUE "," DIM ",	" REM ",	" FOR ",
+    " GO TO ",	" GO SUB ",	" INPUT ",	" LOAD ",
+    " LIST ",	" LET ",	" PAUSE ",	" NEXT ",
+    " POKE ",	" PRINT ",	" PLOT ",	" RUN ",
+    " SAVE ",	" RANDOMIZE ",	" IF ",		" CLS ",
+    " DRAW ",	" CLEAR ",	" RETURN ",	" COPY "
+  };
 
   for( i = 0; i < length; i++ ) {
 
+    char nextspace = 1;
+
     b = get_byte( offset + i, data );
 
-    switch( b ) {
+    if( b < 128 ) {
 
-    case 14: i += 5; break;		/* Skip encoded number */
+      switch( b ) {
 
-    /* Skip encoded INK, PAPER, FLASH, BRIGHT, INVERSE< OVER */
-    case 16: case 17: case 18: case 19: case 20: case 21:
-      i++; break;
+      case 12:
+        if( !keyword_next ) continue;
+        nextspace = print_keyword( " DELETE ", space );
+        break;
 
-    case 22: case 23:			/* Skip encoded AT, TAB */
-      i += 2; break;
+      case 14:				/* Skip encoded number */
+        i += 5;
+        continue;
 
-    case  92: printf( "\\\\" ); break;
+      /* Skip encoded INK, PAPER, FLASH, BRIGHT, INVERSE, OVER */
+      case 16: case 17: case 18: case 19: case 20: case 21:
+        i++;
+        continue;
 
-    case 127: printf( "\\*" ); break;	/* (c) symbol */
+      case 22: case 23:			/* Skip encoded AT, TAB */
+        i += 2;
+        continue;
 
-    case 128: printf( "\\  " ); break;	/* Graphics characters */
-    case 129: printf( "\\ '" ); break;
-    case 130: printf( "\\' " ); break;
-    case 131: printf( "\\''" ); break;
-    case 132: printf( "\\ ." ); break;
-    case 133: printf( "\\ :" ); break;
-    case 134: printf( "\\'." ); break;
-    case 135: printf( "\\':" ); break;
-    case 136: printf( "\\. " ); break;
-    case 137: printf( "\\.'" ); break;
-    case 138: printf( "\\: " ); break;
-    case 139: printf( "\\:'" ); break;
-    case 140: printf( "\\.." ); break;
-    case 141: printf( "\\.:" ); break;
-    case 142: printf( "\\:." ); break;
-    case 143: printf( "\\::" ); break;
+      case  32:
+        putchar( b );
+        nextspace = 0;
+        break;
 
-    case 144: printf( "\\a" ); break;	/* UDGs */
-    case 145: printf( "\\b" ); break;
-    case 146: printf( "\\c" ); break;
-    case 147: printf( "\\d" ); break;
-    case 148: printf( "\\e" ); break;
-    case 149: printf( "\\f" ); break;
-    case 150: printf( "\\g" ); break;
-    case 151: printf( "\\h" ); break;
-    case 152: printf( "\\i" ); break;
-    case 153: printf( "\\j" ); break;
-    case 154: printf( "\\k" ); break;
-    case 155: printf( "\\l" ); break;
-    case 156: printf( "\\m" ); break;
-    case 157: printf( "\\n" ); break;
-    case 158: printf( "\\o" ); break;
-    case 159: printf( "\\p" ); break;
-    case 160: printf( "\\q" ); break;
-    case 161: printf( "\\r" ); break;
-    case 162: printf( "\\s" ); break;
-    case 163: printf( "\\t" ); break;
-    case 164: printf( "\\u" ); break;
+      case  34:
+        if( !rem ) quote = !quote;
+        putchar( b );
+        break;
 
-    case 165: printf( "RND" ); break;
-    case 166: printf( "INKEY$" ); break;
-    case 167: printf( "PI" ); break;
-    case 168: printf( "FN " ); break;
-    case 169: printf( "POINT " ); break;
-    case 170: printf( "SCREEN$ " ); break;
-    case 171: printf( "ATTR " ); break;
-    case 172: printf( "AT " ); break;
-    case 173: printf( "TAB " ); break;
-    case 174: printf( "VAL$ " ); break;
-    case 175: printf( "CODE " ); break;
-    case 176: printf( "VAL " ); break;
-    case 177: printf( "LEN " ); break;
-    case 178: printf( "SIN " ); break;
-    case 179: printf( "COS " ); break;
-    case 180: printf( "TAN " ); break;
-    case 181: printf( "ASN " ); break;
-    case 182: printf( "ACS " ); break;
-    case 183: printf( "ATN " ); break;
-    case 184: printf( "LN " ); break;
-    case 185: printf( "EXP " ); break;
-    case 186: printf( "INT " ); break;
-    case 187: printf( "SQR " ); break;
-    case 188: printf( "SGN " ); break;
-    case 189: printf( "ABS " ); break;
-    case 190: printf( "PEEK " ); break;
-    case 191: printf( "IN " ); break;
-    case 192: printf( "USR " ); break;
-    case 193: printf( "STR$ " ); break;
-    case 194: printf( "CHR$ " ); break;
-    case 195: printf( "NOT " ); break;
-    case 196: printf( "BIN " ); break;
-    case 197: printf( " OR " ); break;
-    case 198: printf( " AND " ); break;
-    case 199: printf( "<=" ); break;
-    case 200: printf( ">=" ); break;
-    case 201: printf( "<>" ); break;
-    case 202: printf( " LINE " ); break;
-    case 203: printf( " THEN " ); break;
-    case 204: printf( " TO " ); break;
-    case 205: printf( " STEP " ); break;
-    case 206: printf( " DEF FN " ); break;
-    case 207: printf( " CAT " ); break;
-    case 208: printf( " FORMAT " ); break;
-    case 209: printf( " MOVE " ); break;
-    case 210: printf( " ERASE " ); break;
-    case 211: printf( " OPEN #" ); break;
-    case 212: printf( " CLOSE #" ); break;
-    case 213: printf( " MERGE " ); break;
-    case 214: printf( " VERIFY " ); break;
-    case 215: printf( " BEEP " ); break;
-    case 216: printf( " CIRCLE " ); break;
-    case 217: printf( " INK " ); break;
-    case 218: printf( " PAPER " ); break;
-    case 219: printf( " FLASH " ); break;
-    case 220: printf( " BRIGHT " ); break;
-    case 221: printf( " INVERSE " ); break;
-    case 222: printf( " OVER " ); break;
-    case 223: printf( " OUT " ); break;
-    case 224: printf( " LPRINT " ); break;
-    case 225: printf( " LLIST " ); break;
-    case 226: printf( " STOP " ); break;
-    case 227: printf( " READ " ); break;
-    case 228: printf( " DATA " ); break;
-    case 229: printf( " RESTORE " ); break;
-    case 230: printf( " NEW " ); break;
-    case 231: printf( " BORDER " ); break;
-    case 232: printf( " CONTINUE " ); break;
-    case 233: printf( " DIM " ); break;
-    case 234: printf( " REM " ); break;
-    case 235: printf( " FOR " ); break;
-    case 236: printf( " GO TO " ); break;
-    case 237: printf( " GO SUB " ); break;
-    case 238: printf( " INPUT " ); break;
-    case 239: printf( " LOAD " ); break;
-    case 240: printf( " LIST " ); break;
-    case 241: printf( " LET " ); break;
-    case 242: printf( " PAUSE " ); break;
-    case 243: printf( " NEXT " ); break;
-    case 244: printf( " POKE " ); break;
-    case 245: printf( " PRINT " ); break;
-    case 246: printf( " PLOT " ); break;
-    case 247: printf( " RUN " ); break;
-    case 248: printf( " SAVE " ); break;
-    case 249: printf( " RANDOMIZE " ); break;
-    case 250: printf( " IF " ); break;
-    case 251: printf( " CLS " ); break;
-    case 252: printf( " DRAW " ); break;
-    case 253: printf( " CLEAR " ); break;
-    case 254: printf( " RETURN " ); break;
-    case 255: printf( " COPY " ); break;
+      case  58:
+        if( !rem && !quote ) keyword_next = 2;
+        putchar( b );
+        break;
 
-    default:
-      if( b >= 32 ) printf( "%c", b ); break;
+      case  92:
+        printf( "\\\\" );
+        break;
+/*
+      case 96:
+        putchar (0xA3);
+        break;
+*/
+      case 123:
+        if( keyword_next ) {
+          keyword_next = 2;
+          nextspace = print_keyword( " ON ERR ", space );
+        } else {
+          putchar( b );
+	}
+        break;
 
+      case 124:
+        if( keyword_next ) {
+          nextspace = print_keyword( " STICK ", space );
+	} else {
+          putchar( b );
+	}
+        break;
+
+      case 125:
+        if( keyword_next ) {
+          nextspace = print_keyword( " SOUND ", space );
+        } else {
+          putchar( b );
+	}
+        break;
+
+      case 126:
+        if( keyword_next ) {
+          nextspace = print_keyword (" FREE ", space);
+        } else {
+          putchar( b );
+	}
+        break;
+
+      case 127:
+        if( keyword_next ) {
+          nextspace = print_keyword (" RESET ", space);
+        } else {
+          printf( "\\*" ); /* putchar (0xA9); */
+	}
+        break;
+	
+      case 128: printf( "\\  " ); break; /* Graphics characters */
+      case 129: printf( "\\ '" ); break;
+      case 130: printf( "\\' " ); break;
+      case 131: printf( "\\''" ); break;
+      case 132: printf( "\\ ." ); break;
+      case 133: printf( "\\ :" ); break;
+      case 134: printf( "\\'." ); break;
+      case 135: printf( "\\':" ); break;
+      case 136: printf( "\\. " ); break;
+      case 137: printf( "\\.'" ); break;
+      case 138: printf( "\\: " ); break;
+      case 139: printf( "\\:'" ); break;
+      case 140: printf( "\\.." ); break;
+      case 141: printf( "\\.:" ); break;
+      case 142: printf( "\\:." ); break;
+      case 143: printf( "\\::" ); break;
+
+      default:
+        if( b < 32 ) continue;
+        putchar( b );
+        break;
+      }
+    
+    } else if( b < 163 + 2 * quote ) {	/* UDGs */
+      printf( "\\%c", b - 144 + 'a' );
+    } else {
+      nextspace = print_keyword( keyword[ b - 163 ], space );
+    }
+
+    space = nextspace;
+
+    switch (b) {
+    case 203: keyword_next = 1; break;	/* THEN */
+    case 234: rem = 1; break;		/* REM */
+    default: if( keyword_next ) keyword_next--; break;
     }
   }
 
