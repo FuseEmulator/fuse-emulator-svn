@@ -55,9 +55,9 @@ GSList* g_slist_insert_sorted	(GSList		*list,
     if(!free_list) {
         int i;
         free_list=(GSList *)malloc(1024*sizeof(GSList));
-        for(i=0;i<127;i++)
+        for(i=0;i<1023;i++)
             free_list[i].next=&free_list[i+1];
-        free_list[127].next=NULL;
+        free_list[1023].next=NULL;
     }
 
 
@@ -176,8 +176,12 @@ void	g_slist_foreach		(GSList		*list,
 void	g_slist_free		(GSList		*list) {
   if (list)
     {
-      list->data = list->next;
-      list->next = free_list;
+      GSList *last_node = list;
+
+      while( last_node->next )
+	last_node = last_node->next;
+
+      last_node->next = free_list;
       free_list = list;
     }
 }

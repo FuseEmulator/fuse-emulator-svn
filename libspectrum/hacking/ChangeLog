@@ -197,3 +197,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 move the glib replacement code into its own directory.
 20040408 myglib/Makefile.am,myglib/ghash.c: add minimal GHashTable
 	 replacement (borrowed from glib 2.4.0).
+20040414 myglib/gslist.c: fix two free_list related memory leaks.
