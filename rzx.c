@@ -56,7 +56,7 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
 static libspectrum_error
 rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		    size_t *length, libspectrum_byte *snap,
-		    size_t snap_length );
+		    size_t snap_length, int compress );
 static libspectrum_error
 rzx_write_input( libspectrum_rzx *rzx, libspectrum_byte **buffer,
 		 libspectrum_byte **ptr, size_t *length, int compress );
@@ -507,7 +507,8 @@ libspectrum_rzx_write( libspectrum_rzx *rzx,
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   if( snap ) {
-    error = rzx_write_snapshot( buffer, &ptr, length, snap, snap_length );
+    error = rzx_write_snapshot( buffer, &ptr, length, snap, snap_length,
+				compress );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
 
@@ -572,22 +573,47 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
 static libspectrum_error
 rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		    size_t *length, libspectrum_byte *snap,
-		    size_t snap_length )
+		    size_t snap_length, int compress )
 {
   libspectrum_error error;
+  libspectrum_byte *gzsnap = NULL; size_t gzlength;
 
-  error = libspectrum_make_room( buffer, 17 + snap_length, ptr, length );
+  if( compress ) {
+
+    error = libspectrum_zlib_compress( snap, snap_length, &gzsnap, &gzlength );
+    if( error != LIBSPECTRUM_ERROR_NONE ) {
+      libspectrum_print_error( "rzx_write_snapshot: compression error: %s\n",
+			       libspectrum_error_message( error ) );
+      return error;
+    }
+    error = libspectrum_make_room( buffer, 17 + gzlength, ptr, length );
+  } else {
+    error = libspectrum_make_room( buffer, 17 + snap_length, ptr, length );
+  }
+
   if( error != LIBSPECTRUM_ERROR_NONE ) {
+    if( gzsnap ) free( gzsnap );
     libspectrum_print_error( "rzx_write_snapshot: out of memory\n" );
     return error;
   }
 
   *(*ptr)++ = 0x30;			/* Block identififer */
-  libspectrum_write_dword( ptr, 17 + snap_length ); /* Block length */
-  libspectrum_write_dword( ptr, 0 );	/* Flags */
+  if( compress ) {			/* Block length and flags */
+    libspectrum_write_dword( ptr, 17 + gzlength );
+    libspectrum_write_dword( ptr, 2 );
+  } else {
+    libspectrum_write_dword( ptr, 17 + snap_length );
+    libspectrum_write_dword( ptr, 0 );
+  }
   strcpy( *ptr, "Z80" ); (*ptr) += 4;	/* Snapshot type */
   libspectrum_write_dword( ptr, snap_length );	/* Snapshot length */
-  memcpy( *ptr, snap, snap_length ); (*ptr) += snap_length;
+
+  if( compress ) {
+    memcpy( *ptr, gzsnap, gzlength ); (*ptr) += gzlength;
+    free( gzsnap );
+  } else {
+    memcpy( *ptr, snap, snap_length ); (*ptr) += snap_length;
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 }
