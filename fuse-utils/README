@@ -8,6 +8,7 @@ independent of Fuse and can be used on their own.
 
 The available utilities are:
 
+* listbasic: list the BASIC in a snapshot or tape file.
 * rzxdump: list the contents of an RZX input recording file.
 * rzxtool: add, extract or remove the embedded snapshot from an RZX file,
 	   or compress or uncompress the file.
@@ -44,6 +45,6 @@ http://www.srcf.ucam.org/~pak21/spectrum/fuse.html
 Please send any bug reports, comments, etc to me.
 
 Philip Kendall <pak21-fuse@srcf.ucam.org>
-16 April 2003
+19 April 2003
 
 $Id$
