@@ -36,6 +36,8 @@
 
 #include "utils.h"
 
+static int read_tape( char *filename, libspectrum_tape **tape );
+
 char *progname;
 
 int
@@ -59,25 +61,7 @@ main( int argc, char **argv )
     return 1;
   }
 
-  if( mmap_file( argv[1], &buffer, &length ) ) return 1;
-
-  if( libspectrum_tape_alloc( &tzx ) ) {
-    munmap( buffer, length );
-    return 1;
-  }
-
-  if( libspectrum_tzx_read( tzx, buffer, length ) ) {
-    munmap( buffer, length );
-    libspectrum_tape_free( tzx );
-    return 1;
-  }
-
-  if( munmap( buffer, length ) == -1 ) {
-    fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, argv[1],
-	     strerror( errno ) );
-    libspectrum_tape_free( tzx );
-    return 1;
-  }
+  if( read_tape( argv[1], &tzx ) ) return 1;
 
   length = 0;
   if( libspectrum_tap_write( &buffer, &length, tzx ) ) {
@@ -91,6 +75,63 @@ main( int argc, char **argv )
   }
 
   free( buffer ); libspectrum_tape_free( tzx );
+
+  return 0;
+}
+
+static int
+read_tape( char *filename, libspectrum_tape **tape )
+{
+  libspectrum_byte *buffer; size_t length;
+  libspectrum_id_t type;
+
+  if( mmap_file( filename, &buffer, &length ) ) return 1;
+
+  if( libspectrum_identify_file( &type, filename, buffer, length ) ) {
+    munmap( buffer, length );
+    return 1;
+  }
+
+  if( libspectrum_tape_alloc( tape ) ) {
+    munmap( buffer, length );
+    return 1;
+  }
+
+  switch( type ) {
+
+  case LIBSPECTRUM_ID_TAPE_TAP:
+    if( libspectrum_tap_read( *tape, buffer, length ) ) {
+      munmap( buffer, length ); libspectrum_tape_free( *tape );
+      return 1;
+    }
+    break;
+
+  case LIBSPECTRUM_ID_TAPE_TZX:
+    if( libspectrum_tzx_read( *tape, buffer, length ) ) {
+      munmap( buffer, length ); libspectrum_tape_free( *tape );
+      return 1;
+    }
+    break;
+
+  case LIBSPECTRUM_ID_UNKNOWN:
+    fprintf( stderr, "%s: couldn't identify file type of `%s'\n", progname,
+	     filename );
+    munmap( buffer, length ); libspectrum_tape_free( *tape );
+    return 1;
+
+  default:
+    fprintf( stderr, "%s: `%s' is not a tape file\n", progname, filename );
+    munmap( buffer, length ); libspectrum_tape_free( *tape );
+    return 1;
+
+  }
+
+  if( munmap( buffer, length ) == -1 ) {
+    fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, filename,
+	     strerror( errno ) );
+    libspectrum_tape_free( *tape );
+    return 1;
+  }
 
   return 0;
 }
