@@ -60,6 +60,7 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 		       size_t length, libspectrum_id_t type,
 		       const char *filename )
 {
+  libspectrum_class_t class;
   libspectrum_error error;
 
   /* If we don't know what sort of file this is, make a best guess */
@@ -77,6 +78,15 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
     }
   }
 
+  error = libspectrum_identify_class( &class, type );
+  if( error ) return error;
+
+  if( class != LIBSPECTRUM_CLASS_SNAPSHOT ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "libspectrum_snap_read: not a snapshot file" );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
   switch( type ) {
 
   case LIBSPECTRUM_ID_SNAPSHOT_PLUSD:
@@ -85,17 +95,29 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
   case LIBSPECTRUM_ID_SNAPSHOT_SNA:
     return libspectrum_sna_read( snap, buffer, length );
 
+  case LIBSPECTRUM_ID_SNAPSHOT_SNP:
+    return libspectrum_snp_read( snap, buffer, length );
+
+  case LIBSPECTRUM_ID_SNAPSHOT_SP:
+    return libspectrum_sp_read( snap, buffer, length );
+
+  case LIBSPECTRUM_ID_SNAPSHOT_SZX:
+    return libspectrum_szx_read( snap, buffer, length );
+
   case LIBSPECTRUM_ID_SNAPSHOT_Z80:
     return libspectrum_z80_read( snap, buffer, length );
 
   case LIBSPECTRUM_ID_SNAPSHOT_ZXS:
     return libspectrum_zxs_read( snap, buffer, length );
 
+  /* Should never reach here as all non-snapshot types removed above */
   default:
-    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
-			     "libspectrum_snap_read: not a snapshot file" );
-    return LIBSPECTRUM_ERROR_CORRUPT;
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "libspectrum_snap_read: unknown snapshot type %d",
+			     type );
+    return LIBSPECTRUM_ERROR_LOGIC;
   }
+
 }
 
 /* Given a 48K memory dump `data', place it into the

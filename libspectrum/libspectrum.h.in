@@ -1,5 +1,5 @@
 /* libspectrum.h: the library for dealing with ZX Spectrum emulator files
-   Copyright (c) 2001-2002 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2003 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -106,6 +106,7 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_SNAPSHOT_SP,		/* .sp snapshot */
   LIBSPECTRUM_ID_SNAPSHOT_SNP,		/* .snp snapshot */
   LIBSPECTRUM_ID_SNAPSHOT_ZXS,		/* .zxs snapshot (zx32) */
+  LIBSPECTRUM_ID_SNAPSHOT_SZX,		/* .szx snapshot (Spectaculator) */
 
 } libspectrum_id_t;
 
@@ -246,6 +247,18 @@ libspectrum_sna_read( libspectrum_snap *snap,
 
 libspectrum_error
 libspectrum_snp_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
+		      size_t length );
+
+/* .sp specific routines */
+
+libspectrum_error
+libspectrum_sp_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
+		     size_t length );
+
+/* .szx specific routines */
+
+libspectrum_error
+libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 		      size_t length );
 
 /* .z80 specific routines */
