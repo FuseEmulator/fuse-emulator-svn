@@ -191,6 +191,9 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	snap->machine = LIBSPECTRUM_MACHINE_128;    break;
       case 14:
 	snap->machine = LIBSPECTRUM_MACHINE_TC2048; break;
+      case 15:
+      case 128: /* Load TS2068 snaps as TC2068 for now */
+	snap->machine = LIBSPECTRUM_MACHINE_TC2068; break;
       default:
         libspectrum_print_error(
           LIBSPECTRUM_ERROR_UNKNOWN,
@@ -221,6 +224,9 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	snap->machine = LIBSPECTRUM_MACHINE_PLUS2A; break;
       case 14:
 	snap->machine = LIBSPECTRUM_MACHINE_TC2048; break;
+      case 15:
+      case 128: /* Load TS2068 snaps as TC2068 for now */
+	snap->machine = LIBSPECTRUM_MACHINE_TC2068; break;
       default:
         libspectrum_print_error(
           LIBSPECTRUM_ERROR_UNKNOWN,
@@ -856,6 +862,8 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = 13; break;
   case LIBSPECTRUM_MACHINE_TC2048:
     *(*ptr)++ = 14; break;
+  case LIBSPECTRUM_MACHINE_TC2068:
+    *(*ptr)++ = 15; break;
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "write_extended_header: unknown machine type %d",
