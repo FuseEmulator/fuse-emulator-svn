@@ -318,3 +318,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          replacement code (Fred).
 20050305 libspectrum.h.in,timings.c: add interrupt length to timings
 	 information.
+20050325 tzx_read.c: avoid implementation-defined behaviour if a block
+	 has no data bytes.
+20050325 tape_block.c: avoid undefined behaviour if a ROM block has no
+	 data bytes.
