@@ -529,3 +529,7 @@
 	 release (Release-0_6_2-branch).
 20040206 rzx.c: change over to using the 'release' key for signing
 	 competition mode files (Release-0_6_2-branch).
+20040207 ui/svga/svgakeyboard.c: #include "utils.h"
+	 (Release-0_6_2-branch).
+
+	
