@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-## Copyright (c) 1999-2002 Philip Kendall
+## Copyright (c) 2001-2004 Philip Kendall
 
 ## $Id$
 
@@ -24,46 +24,15 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = man
+noinst_LIBRARIES = libuiwin32.a
 
-bin_PROGRAMS = listbasic \
-	       @RZXCHECK@ \
-	       rzxdump \
-	       rzxtool \
-	       scl2trd \
-	       snap2tzx \
-	       snapconv \
-	       tapeconv \
-	       tzxlist
+libuiwin32_a_SOURCES = error.c \
+		       keysyms.c \
+		       win32display.c \
+		       win32keyboard.c \
+		       win32ui.c
 
-EXTRA_PROGRAMS = rzxcheck
+noinst_HEADERS = win32display.h \
+		 win32keyboard.h
 
-INCLUDES = @LIBSPEC_CFLAGS@
-
-listbasic_SOURCES = listbasic.c utils.c
-listbasic_LDADD = @LIBSPEC_LIBS@
-
-rzxcheck_SOURCES = rzxcheck.c keys.c utils.c
-rzxcheck_LDADD = @LIBSPEC_LIBS@
-
-rzxdump_SOURCES = rzxdump.c utils.c
-rzxdump_LDADD = @LIBSPEC_LIBS@
-
-rzxtool_SOURCES = rzxtool.c utils.c
-rzxtool_LDADD = @LIBSPEC_LIBS@
-
-scl2trd_SOURCES = scl2trd.c
-
-snap2tzx_SOURCES = snap2tzx.c utils.c
-snap2tzx_LDADD = @LIBSPEC_LIBS@
-
-snapconv_SOURCES = snapconv.c utils.c
-snapconv_LDADD = @LIBSPEC_LIBS@
-
-tapeconv_SOURCES = tapeconv.c utils.c
-tapeconv_LDADD = @LIBSPEC_LIBS@
-
-tzxlist_SOURCES = tzxlist.c utils.c
-tzxlist_LDADD = @LIBSPEC_LIBS@
-
-noinst_HEADERS = utils.h
+EXTRA_DIST = todo.txt

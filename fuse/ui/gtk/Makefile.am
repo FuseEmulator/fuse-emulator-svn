@@ -42,6 +42,7 @@ libuigtk_a_SOURCES = binary.c \
 		     memory.c \
 	             options.c \
 		     picture.c \
+		     pixmaps.c \
 		     pokefinder.c \
 		     roms.c \
 		     statusbar.c

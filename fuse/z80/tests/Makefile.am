@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-## Copyright (c) 1999-2003 Philip Kendall
+## Copyright (c) 2001-2004 Philip Kendall
 
 ## $Id$
 
@@ -24,13 +24,5 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-man_MANS = listbasic.1 \
-	   rzxcheck.1 \
-	   rzxdump.1 \
-	   rzxtool.1 \
-	   scl2trd.1 \
-	   snapconv.1 \
-	   tapeconv.1 \
-	   tzxlist.1
-
-EXTRA_DIST = $(man_MANS)
+EXTRA_DIST = *.in \
+	     *.out

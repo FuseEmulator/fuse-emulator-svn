@@ -24,7 +24,7 @@ AC_INIT(fuse.c)
 AM_CONFIG_HEADER(config.h)
 
 dnl Use automake to produce `Makefile.in'
-AM_INIT_AUTOMAKE(fuse, 0.6.1.1)
+AM_INIT_AUTOMAKE(fuse, 0.6.2)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -393,6 +393,10 @@ ui/fb/Makefile \
 ui/ggi/Makefile \
 ui/gtk/Makefile \
 ui/svga/Makefile \
-ui/sdl/Makefile ui/scaler/Makefile \
-ui/xlib/Makefile widget/Makefile z80/Makefile)
-
+ui/sdl/Makefile \
+ui/scaler/Makefile \
+ui/win32/Makefile \
+ui/xlib/Makefile \
+widget/Makefile \
+z80/Makefile \
+z80/tests/Makefile)
