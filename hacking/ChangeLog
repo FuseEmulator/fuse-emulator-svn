@@ -291,3 +291,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 handling (rest of patch #1085429) (Gergely Szasz).
 20050102 libspectrum.{c,h.in},sna.c,szx.c,timings.c,z80.c: TS2068 support
 	 (patch #1080531) (Fred).
+20050108 libspectrum.c: Declare libspectrum_default_error_function before
+         referring to it (Fred).
