@@ -1272,7 +1272,8 @@ write_ram_page( libspectrum_byte **buffer, libspectrum_byte **ptr,
 				       &compressed_data, &compressed_length );
     if( error ) return error;
 
-    if( compressed_length < data_length ) {
+    if( compress & LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS ||
+        compressed_length < data_length ) {
       use_compression = 1;
       data = compressed_data;
       data_length = compressed_length;

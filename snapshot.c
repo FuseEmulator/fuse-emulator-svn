@@ -32,6 +32,7 @@
 
 /* Some flags which may be given to libspectrum_snap_write() */
 const int LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION = 1 << 0;
+const int LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS = 1 << 1;
 
 /* Some flags which may be returned from libspectrum_snap_write() */
 const int LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS = 1 << 0;

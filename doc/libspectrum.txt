@@ -579,11 +579,22 @@ Take the snapshot in `snap' and serialise it into `*buffer' as a
 snapshot of `type'. On entry, '*buffer' is assumed to be allocated
 '*length' bytes, and will grow if necessary; if '*length' is zero,
 '*buffer' can be uninitialised on entry. `in_flags' can be used
-specify minor changes to the snapshot; currently the only available
-option is LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION, which specifies
-that the snapshot should not be compressed for formats where it would
-normally be (.z80 and .szx). `out_flags' will return the logical OR of
-some extra information from the serialisation:
+specify minor changes to the snapshot; currently there are two
+options:
+
+LIBSPECTRUM_FLAG_SNAPSHOT_NO_COMPRESSION
+  This flag specifies that the snapshot should not be compressed for
+  formats where it would normally be (.z80 and .szx).
+
+LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS
+  This flag specifies that all the snapshot components should be
+  compressed for formats which would normally use some uncompressed
+  components when the file size would end up smaller. This is useful
+  for compatibility with programs that have problems with
+  uncompressed .z80 files, but also works with .szx snapshots.
+
+`out_flags' will return the logical OR of some extra information from the
+serialisation:
 
 LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS
   A small amount of information was lost in serialisation. The
