@@ -173,3 +173,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 CAPABILITY_PLUS3_MEMORY.
 20040303 szx.c: the Scorpion is machine type 10 (Stuart Brady).
 20040307 z80.c: don't skip RAM page 11 when saving Scorpion snaps.
+20040318 Makefile.am,ide.c,libspectrum.h.in: support for .hdf hard disk
+	 images. Basically just Garry's patch with some coding style
+	 changes (patch #916186) (Garry Lancaster).
