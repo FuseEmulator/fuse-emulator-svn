@@ -110,7 +110,7 @@ int main(void)
 
 #ifdef HAVE_LIB_GLIB		/* #ifdef HAVE_LIB_GLIB */
 
-  printf( "  $_ = \"#include <glib.h>\\n\"\n\n" );
+  printf( "  $_ = '';\n\n" );
 
 #else				/* #ifdef HAVE_LIB_GLIB */
 

@@ -43,7 +43,7 @@ LIBSPECTRUM_INCLUDE_GCRYPT
 /* Standard typedefs */
 LIBSPECTRUM_DEFINE_TYPES
 
-/* glib or its replacement */
+/* glib replacement (if necessary) */
 LIBSPECTRUM_GLIB_REPLACEMENT
 
 /*
@@ -455,7 +455,7 @@ libspectrum_warajevo_read( libspectrum_tape *tape,
 			   const libspectrum_byte *buffer, size_t length );
 
 /* Something to step through all the blocks in a tape */
-typedef GSList* libspectrum_tape_iterator;
+typedef struct _GSList *libspectrum_tape_iterator;
 
 libspectrum_tape_block*
 libspectrum_tape_iterator_init( libspectrum_tape_iterator *iterator,
