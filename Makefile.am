@@ -44,4 +44,4 @@ generate.sed: make-sed
 
 INCLUDES = @GLIB_CFLAGS@
 
-EXTRA_DIST = libspectrum.h.in
+EXTRA_DIST = libspectrum.h.in doc/api.txt
