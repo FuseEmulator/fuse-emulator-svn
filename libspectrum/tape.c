@@ -854,6 +854,27 @@ libspectrum_tape_append_block( libspectrum_tape *tape,
 }
 
 libspectrum_error
+libspectrum_tape_remove_block( libspectrum_tape *tape,
+			       libspectrum_tape_iterator it )
+{
+  if( it->data ) libspectrum_tape_block_free( it->data );
+
+  tape->blocks = g_slist_delete_link( tape->blocks, it );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_tape_insert_block( libspectrum_tape *tape,
+			       libspectrum_tape_block *block,
+			       size_t position )
+{
+  tape->blocks = g_slist_insert( tape->blocks, block, position );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
 libspectrum_tape_block_description( char *buffer, size_t length,
 	                            libspectrum_tape_block *block )
 {

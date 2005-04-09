@@ -324,3 +324,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 data bytes.
 20050402 microdrive.c: don't check bad blocks when checksumming (part of
 	 patch #1161364) (Gergely Szasz).
+20050409 libspectrum.h.in,tape.c: add libspectrum_tape_{insert,remove}_block
+	 routines.

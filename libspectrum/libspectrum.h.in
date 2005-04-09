@@ -461,6 +461,9 @@ typedef enum libspectrum_tape_type {
 
 typedef struct libspectrum_tape_block libspectrum_tape_block;
 
+/* Something to step through all the blocks in a tape */
+typedef struct _GSList *libspectrum_tape_iterator;
+
 /* Some flags */
 extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_BLOCK;  /* End of block */
 extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_STOP;	  /* Stop tape */
@@ -553,6 +556,15 @@ libspectrum_error WIN32_DLL
 libspectrum_tape_append_block( libspectrum_tape *tape,
 			       libspectrum_tape_block *block );
 
+libspectrum_error
+libspectrum_tape_remove_block( libspectrum_tape *tape,
+			       libspectrum_tape_iterator it );
+
+libspectrum_error
+libspectrum_tape_insert_block( libspectrum_tape *tape,
+			       libspectrum_tape_block *block,
+			       size_t position );
+
 /*** Routines for .tap format files ***/
 
 libspectrum_error WIN32_DLL
@@ -577,9 +589,6 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
 libspectrum_error WIN32_DLL
 libspectrum_warajevo_read( libspectrum_tape *tape,
 			   const libspectrum_byte *buffer, size_t length );
-
-/* Something to step through all the blocks in a tape */
-typedef struct _GSList *libspectrum_tape_iterator;
 
 libspectrum_tape_block WIN32_DLL *
 libspectrum_tape_iterator_init( libspectrum_tape_iterator *iterator,
