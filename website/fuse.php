@@ -1,7 +1,7 @@
 <?php
 
 /* fuse.php: the main Fuse homepage
-   Copyright (c) 1999-2004 Darren Salt, Philip Kendall
+   Copyright (c) 1999-2005 Darren Salt, Philip Kendall
 
    $Id$
 
@@ -41,7 +41,7 @@ fuse_section (NULL, "What is it?", <<<END_SECTION
   <ul>
    <li>A "buggy snapshot" of a Win32 port is available; see the <a href="#What_s_new">What's New</a> section for more details.</li>
    <li>Fuse 0.4.0 was ported to the PocketPC by Anders Holmberg as <a href="http://pocketclive.emuunlim.com/">PocketClive</a>.</li>
-   <li>And PocketClive has been ported to the <a href="http://www.surrealservices.dsl.pipex.com/PocketClive.html">Nokia Smartphone</a>.</li>
+   <li>And PocketClive has been ported to the both the <a href="http://www.surrealservices.dsl.pipex.com/PocketClive.html">Nokia Smartphone 2002</a> and <a href="http://www.aooa27.dsl.pipex.com/FuseSP.htm">Smartphone 2003 SE</a>.</li>
   </ul>
 
 END_SECTION
