@@ -326,3 +326,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 patch #1161364) (Gergely Szasz).
 20050409 libspectrum.h.in,tape.c: add libspectrum_tape_{insert,remove}_block
 	 routines.
+20050430 internals.h,sna.c,snapshot.c,z80.c: add wrappers so that
+	 libspectrum_snap_read doesn't have to call deprecated functions.

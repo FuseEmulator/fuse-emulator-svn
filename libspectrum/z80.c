@@ -195,6 +195,13 @@ libspectrum_error
 libspectrum_z80_read( libspectrum_snap *snap,
 	              const libspectrum_byte *buffer, size_t buffer_length )
 {
+  return internal_z80_read( snap, buffer, buffer_length );
+}
+
+libspectrum_error
+internal_z80_read( libspectrum_snap *snap,
+		   const libspectrum_byte *buffer, size_t buffer_length )
+{
   libspectrum_error error;
   const libspectrum_byte *data;
   int version, compressed;

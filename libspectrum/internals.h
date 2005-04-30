@@ -119,6 +119,9 @@ libspectrum_error
 libspectrum_plusd_read( libspectrum_snap *snap,
 			const libspectrum_byte *buffer, size_t buffer_length );
 libspectrum_error
+internal_sna_read( libspectrum_snap *snap,
+		   const libspectrum_byte *buffer, size_t buffer_length );
+libspectrum_error
 libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
 		       int *out_flags, libspectrum_snap *snap, int in_flags );
 libspectrum_error
@@ -134,6 +137,9 @@ libspectrum_error
 libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
 		       int *out_flags, libspectrum_snap *snap,
 		       libspectrum_creator *creator, int in_flags );
+libspectrum_error
+internal_z80_read( libspectrum_snap *snap,
+		   const libspectrum_byte *buffer, size_t buffer_length );
 libspectrum_error
 libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
 			int *out_flags, libspectrum_snap *snap, int in_flags );
