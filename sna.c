@@ -63,6 +63,13 @@ libspectrum_error
 libspectrum_sna_read( libspectrum_snap *snap,
 	              const libspectrum_byte *buffer, size_t buffer_length )
 {
+  return internal_sna_read( snap, buffer, buffer_length );
+}
+
+libspectrum_error
+internal_sna_read( libspectrum_snap *snap,
+		   const libspectrum_byte *buffer, size_t buffer_length )
+{
   int error;
 
   error = identify_machine( buffer_length, snap );
