@@ -1,5 +1,5 @@
 /* bzip2.c: routines for bzip2 decompression of data
-   Copyright (c) 2003-2004 Philip Kendall
+   Copyright (c) 2003-2005 Philip Kendall
 
    $Id$
 
@@ -54,11 +54,8 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
 
     length2 = *outlength;
 
-    /* The cast here is necessary as libbz2 doesn't declare its input
-       buffers as being const */
-    error = BZ2_bzBuffToBuffDecompress( *outptr, &length2,
-					(libspectrum_byte*)bzptr, bzlength,
-					0, 0 );
+    error = BZ2_bzBuffToBuffDecompress( (char*)*outptr, &length2, (char*)bzptr,
+					bzlength, 0, 0 );
     if( error != BZ_OK ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			       "error decompressing bzip data" );
@@ -108,9 +105,8 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
       }
     }
 
-    /* Cast necessary as libbz2 doesn't declare its input buffers as const */
-    stream.next_in = (libspectrum_byte*)bzptr; stream.avail_in = bzlength;
-    stream.next_out = *outptr; stream.avail_out = bzlength;
+    stream.next_in = (char*)bzptr; stream.avail_in = bzlength;
+    stream.next_out = (char*)*outptr; stream.avail_out = bzlength;
 
     while( 1 ) {
 
@@ -145,7 +141,7 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
 	  return LIBSPECTRUM_ERROR_MEMORY;
 	}
 	*outptr = ptr;
-	stream.next_out = *outptr + stream.total_out_lo32;
+	stream.next_out = (char*)*outptr + stream.total_out_lo32;
 	stream.avail_out += bzlength;
 	break;
 

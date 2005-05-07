@@ -1,5 +1,5 @@
 /* creator.c: simple type for storing creator information
-   Copyright (c) 2003 Philip Kendall
+   Copyright (c) 2003-2005 Philip Kendall
 
    $Id$
 
@@ -73,7 +73,8 @@ libspectrum_creator_set_program( libspectrum_creator *creator,
 				 const libspectrum_byte *program )
 {
   memset( creator->program, 0, sizeof( creator->program ) );
-  snprintf( creator->program, sizeof( creator->program ), "%s", program );
+  snprintf( (char*)creator->program, sizeof( creator->program ), "%s",
+	    program );
   return LIBSPECTRUM_ERROR_NONE;
 }
 

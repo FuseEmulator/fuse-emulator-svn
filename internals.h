@@ -1,6 +1,6 @@
 /* internals.h: functions which need to be called inter-file by libspectrum
                 routines, but not by user code
-   Copyright (c) 2001-2002 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2005 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -95,6 +95,10 @@ libspectrum_gzip_inflate( const libspectrum_byte *gzptr, size_t gzlength,
 libspectrum_error
 libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
 			   libspectrum_byte **outptr, size_t *outlength );
+
+/* The TZX file signature */
+
+extern const char *libspectrum_tzx_signature;
 
 /* Convert a 48K memory dump into separate RAM pages */
 

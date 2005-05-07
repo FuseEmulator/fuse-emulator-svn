@@ -1,5 +1,5 @@
 /* tzx_read.c: Routines for reading .tzx files
-   Copyright (c) 2001, 2002 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2005 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -33,7 +33,7 @@
 #include "internals.h"
 
 /* The .tzx file signature (first 8 bytes) */
-static const libspectrum_byte *signature = "ZXTape!\x1a";
+const char *libspectrum_tzx_signature = "ZXTape!\x1a";
 
 /*** Local function prototypes ***/
 
@@ -113,12 +113,13 @@ libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   libspectrum_error error;
 
   const libspectrum_byte *ptr, *end;
+  size_t signature_length = strlen( libspectrum_tzx_signature );
 
   ptr = buffer; end = buffer + length;
 
   /* Must be at least as many bytes as the signature, and the major/minor
      version numbers */
-  if( length < strlen(signature) + 2 ) {
+  if( length < signature_length + 2 ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
       "libspectrum_tzx_create: not enough data in buffer"
@@ -127,12 +128,12 @@ libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   }
 
   /* Now check the signature */
-  if( memcmp( ptr, signature, strlen( signature ) ) ) {
+  if( memcmp( ptr, libspectrum_tzx_signature, signature_length ) ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_SIGNATURE,
 			     "libspectrum_tzx_create: wrong signature" );
     return LIBSPECTRUM_ERROR_SIGNATURE;
   }
-  ptr += strlen( signature );
+  ptr += signature_length;
   
   /* Just skip the version numbers */
   ptr += 2;
@@ -1041,16 +1042,18 @@ tzx_read_custom( libspectrum_tape *tape, const libspectrum_byte **ptr,
 static libspectrum_error
 tzx_read_concat( const libspectrum_byte **ptr, const libspectrum_byte *end )
 {
+  size_t signature_length = strlen( libspectrum_tzx_signature );
+
   /* Check there's enough data left; the -1 here is because we've already
      read the first byte of the signature as the block ID */
-  if( end - (*ptr) < (ptrdiff_t)strlen( signature ) + 2 - 1 ) {
+  if( end - (*ptr) < (ptrdiff_t)signature_length + 2 - 1 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "tzx_read_concat: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
   /* Skip the data */
-  (*ptr) += strlen( signature ) + 2 - 1;
+  *ptr += signature_length + 2 - 1;
 
   return LIBSPECTRUM_ERROR_NONE;
 }

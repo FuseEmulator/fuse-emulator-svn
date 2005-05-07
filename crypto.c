@@ -1,5 +1,5 @@
 /* crypto.c: crytography-related functions
-   Copyright (c) 2002-2003 Philip Kendall
+   Copyright (c) 2002-2005 Philip Kendall
 
    $Id$
 
@@ -117,7 +117,7 @@ static libspectrum_error
 get_hash( gcry_sexp_t *hash, const libspectrum_byte *data, size_t data_length )
 {
   gcry_error_t error;
-  char *digest; size_t digest_length;
+  unsigned char *digest; size_t digest_length;
   gcry_mpi_t hash_mpi;
   
   digest_length = gcry_md_get_algo_dlen( HASH_ALGORITHM );
@@ -169,15 +169,20 @@ create_key( gcry_sexp_t *s_key, libspectrum_rzx_dsa_key *key,
 
   for( i=0; i<MPI_COUNT; i++ ) mpis[i] = NULL;
 
-  error = gcry_mpi_scan( &mpis[0], GCRYMPI_FMT_HEX, key->p, 0, NULL );
+    error = gcry_mpi_scan( &mpis[0], GCRYMPI_FMT_HEX, (unsigned char*)key->p,
+			   0, NULL );
   if( !error ) 
-    error = gcry_mpi_scan( &mpis[1], GCRYMPI_FMT_HEX, key->q, 0, NULL );
+    error = gcry_mpi_scan( &mpis[1], GCRYMPI_FMT_HEX, (unsigned char*)key->q,
+			   0, NULL );
   if( !error )
-    error = gcry_mpi_scan( &mpis[2], GCRYMPI_FMT_HEX, key->g, 0, NULL );
+    error = gcry_mpi_scan( &mpis[2], GCRYMPI_FMT_HEX, (unsigned char*)key->g,
+			   0, NULL );
   if( !error )
-    error = gcry_mpi_scan( &mpis[3], GCRYMPI_FMT_HEX, key->y, 0, NULL );
+    error = gcry_mpi_scan( &mpis[3], GCRYMPI_FMT_HEX, (unsigned char*)key->y,
+			   0, NULL );
   if( !error && secret_key )
-    error = gcry_mpi_scan( &mpis[4], GCRYMPI_FMT_HEX, key->x, 0, NULL );
+    error = gcry_mpi_scan( &mpis[4], GCRYMPI_FMT_HEX, (unsigned char*)key->x,
+			   0, NULL );
 
   if( error ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
@@ -251,7 +256,7 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 {
   gcry_error_t error;
   size_t length, length_s;
-  char *ptr;
+  unsigned char *ptr;
 
   error = gcry_mpi_print( GCRYMPI_FMT_PGP, NULL, 0, &length, r );
   if( error ) {

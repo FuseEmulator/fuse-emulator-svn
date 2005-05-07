@@ -1,5 +1,5 @@
 /* rzx.c: routines for dealing with .rzx files
-   Copyright (c) 2002-2003 Philip Kendall
+   Copyright (c) 2002-2005 Philip Kendall
 
    $Id$
 
@@ -167,7 +167,7 @@ rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		      libspectrum_rzx_dsa_key *key );
 
 /* The signature used to identify .rzx files */
-const libspectrum_byte *rzx_signature = "RZX!";
+const char *rzx_signature = "RZX!";
 
 /* The IN count used to signify 'repeat last frame' */
 const libspectrum_word libspectrum_rzx_repeat_frame = 0xffff;
@@ -935,7 +935,7 @@ rzx_read_snapshot( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
   snap = block->types.snap;
 
   for( done = 0, type = snapshot_strings; type->format; type++ ) {
-    if( !strncasecmp( *ptr, type->string, 4 ) ) {
+    if( !strncasecmp( (char*)*ptr, type->string, 4 ) ) {
       error = libspectrum_snap_read( snap, snap_ptr, uncompressed_length,
 				     type->format, NULL );
       done = 1;
@@ -1325,6 +1325,7 @@ rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, ptrdiff_t *sign_offset, int sign )
 {
   libspectrum_error error;
+  size_t signature_length = strlen( rzx_signature );
 
   error = libspectrum_make_room( buffer, strlen( rzx_signature ) + 6, ptr,
 				 length );
@@ -1334,7 +1335,8 @@ rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     return error;
   }
 
-  strcpy( *ptr, rzx_signature ); (*ptr) += strlen( rzx_signature );
+  memcpy( *ptr, rzx_signature, signature_length ); *ptr += signature_length;
+
   *(*ptr)++ = 0;		/* Major version number */
 
   /* Flags */
@@ -1471,7 +1473,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   for( type = snapshot_strings, done = 0; type->format; type++ ) {
     if( type->format == snap_format ) {
-      strcpy( *ptr, type->string ); (*ptr) += 4;
+      memcpy( *ptr, type->string, 4 ); *ptr += 4;
       done = 1;
       break;
     }
