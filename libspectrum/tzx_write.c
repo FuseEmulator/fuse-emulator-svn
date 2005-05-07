@@ -1,5 +1,5 @@
 /* tzx_write.c: Routines for writing .tzx files
-   Copyright (c) 2001-2003 Philip Kendall
+   Copyright (c) 2001-2005 Philip Kendall
 
    $Id$
 
@@ -30,9 +30,6 @@
 #include <string.h>
 
 #include "internals.h"
-
-/* The .tzx file signature (first 8 bytes) */
-static const libspectrum_byte *signature = "ZXTape!\x1a";
 
 /*** Local function prototypes ***/
 
@@ -111,11 +108,15 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
   libspectrum_tape_block *block;
   libspectrum_byte *ptr = *buffer;
 
+  size_t signature_length = strlen( libspectrum_tzx_signature );
+
   /* First, write the .tzx signature and the version numbers */
-  error = libspectrum_make_room( buffer, strlen(signature) + 2, &ptr, length );
+  error = libspectrum_make_room( buffer, signature_length + 2, &ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-  memcpy( ptr, signature, strlen( signature ) ); ptr += strlen( signature );
+  memcpy( ptr, libspectrum_tzx_signature, signature_length );
+  ptr += signature_length;
+
   *ptr++ = 1;		/* Major version number */
   *ptr++ = 13;		/* Minor version number */
 
@@ -369,7 +370,8 @@ tzx_write_group_start( libspectrum_tape_block *block,
   libspectrum_error error;
   libspectrum_byte *name; size_t name_length;
 
-  name = libspectrum_tape_block_text( block ); name_length = strlen( name );
+  name = libspectrum_tape_block_text( block );
+  name_length = strlen( (char*)name );
 
   /* Make room for the ID byte, the length byte and the name */
   error = libspectrum_make_room( buffer, 2 + name_length, ptr, length );
@@ -433,7 +435,7 @@ tzx_write_select( libspectrum_tape_block *block, libspectrum_byte **buffer,
   total_length = 4 + 3 * count;
 
   for( i = 0; i < count; i++ )
-    total_length += strlen( libspectrum_tape_block_texts( block, i ) );
+    total_length += strlen( (char*)libspectrum_tape_block_texts( block, i ) );
 
   error = libspectrum_make_room( buffer, total_length, ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
@@ -475,7 +477,7 @@ tzx_write_comment( libspectrum_tape_block *block, libspectrum_byte **buffer,
   libspectrum_byte *comment; size_t comment_length;
 
   comment = libspectrum_tape_block_text( block );
-  comment_length = strlen( comment );
+  comment_length = strlen( (char*)comment );
 
   /* Make room for the ID byte, the length byte and the text */
   error = libspectrum_make_room( buffer, 2 + comment_length, ptr, length );
@@ -496,7 +498,7 @@ tzx_write_message( libspectrum_tape_block *block, libspectrum_byte **buffer,
   libspectrum_byte *message; size_t text_length;
 
   message = libspectrum_tape_block_text( block );
-  text_length = strlen( message );
+  text_length = strlen( (char*)message );
 
   /* Make room for the ID byte, the time byte, length byte and the text */
   error = libspectrum_make_room( buffer, 3 + text_length, ptr, length );
@@ -525,7 +527,7 @@ tzx_write_archive_info( libspectrum_tape_block *block,
   total_length = 2 + 2 * count;
   /* And then the length of all the strings */
   for( i = 0; i < count; i++ )
-    total_length += strlen( libspectrum_tape_block_texts( block, i ) );
+    total_length += strlen( (char*)libspectrum_tape_block_texts( block, i ) );
 
   /* Make room for all that, and two bytes storing the length */
   error = libspectrum_make_room( buffer, total_length + 2, ptr, length );
@@ -634,7 +636,7 @@ tzx_write_string( libspectrum_byte **ptr, libspectrum_byte *string )
 {
   libspectrum_error error;
 
-  size_t i, length = strlen( string );
+  size_t i, length = strlen( (char*)string );
 
   error = tzx_write_bytes( ptr, length, 1, string );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;

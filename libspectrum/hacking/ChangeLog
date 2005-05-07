@@ -328,3 +328,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 routines.
 20050430 internals.h,sna.c,snapshot.c,z80.c: add wrappers so that
 	 libspectrum_snap_read doesn't have to call deprecated functions.
+20050507 bzip2.c,creator.c,crypto.c,internals.h,rzx.c,tzx_read.c,
+	 tzx_write.c: fix up gcc 4.0 signedness warnings (fixes bug
+	 #1197013).
