@@ -102,7 +102,7 @@ fuse_section ("Requirements", "What do I need to run Fuse?", <<<END_SECTION
   </dl>
 
   <h3>Mac OS X</h3>
-  <p>A native port to OS X by <a href="mailto:fredm@spamcop.net">Fredrick Meunier</a> is available below, or the original will compile on OS X 10.3 (Panther) or later.</p>
+  <p>A native port to OS X by <a href="mailto:fredm@spamcop.net">Fredrick Meunier</a> is available below, as well as a Spotlight importer for Mac OS X 10.4 Tiger users. Alternatively, the original version of Fuse will compile on OS X 10.3 (Panther) or later.</p>
 
 END_SECTION
 );
@@ -132,7 +132,7 @@ href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.7.0.tar.g
    <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.6.1.1 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a> (but the utilities aren't available?).</li>
    <li><a href="http://www.gentoo.org/">Gentoo</a> users have an <a href="http://packages.gentoo.org/packages/?category=app-emulation;name=fuse">ebuild</a> of 0.7.0 available.</li>
    <li><a href="http://www.mandrake.org/">Mandrake</a> 10.0 packages of 0.7.0 are available from the <a href="http://plf.zarb.org/">PLF</a>, or Miguel Barrio Orsikowsky has some <a href="http://www.speccy.org/sinclairmania/arch/emu/mandrake/">older versions</a> available.</li>
-   <li>Mac OS X: <a href="http://prdownloads.sourceforge.net/fuse-emulator/Fuse-0.7.0.1.dmg?download">Fuse binaries</a>, the slightly <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-macosx-0.7.0.1.tar.bz2?download">modified Fuse source</a>, or the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-macosx-0.7.0.tar.bz2?download">utilities binaries</a>. These are also mirrored at WoS: <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/mac/osx/Fuse-0.7.0.1.dmg">Fuse</a>, <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/mac/osx/Fuse-0.7.0.1-src.tar.bz2">Fuse source</a> or <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/mac/osx/fuse-utils-0.7.0.tar.bz2">utilities</a>. These require OS X 10.3 or later; if you're using an earlier version of OS X, Fuse 0.6.1.1 will work there: <a href="http://prdownloads.sourceforge.net/fuse-emulator/Fuse-0.6.1.1.dmg?download">Fuse binary</a>, <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-macosx-0.6.1.1.tar.gz?download">Fuse source</a> and <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-macosx-0.6.1.tar.gz?download">utilities binaries</a>.</li>
+   <li>Mac OS X: <a href="http://prdownloads.sourceforge.net/fuse-emulator/Fuse-0.7.0.1.dmg?download">Fuse binaries</a>, the slightly <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-macosx-0.7.0.1.tar.bz2?download">modified Fuse source</a>, or the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-macosx-0.7.0.tar.bz2?download">utilities binaries</a>. These are also mirrored at WoS: <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/mac/osx/Fuse-0.7.0.1.dmg">Fuse</a>, <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/mac/osx/Fuse-0.7.0.1-src.tar.bz2">Fuse source</a> or <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/mac/osx/fuse-utils-0.7.0.tar.bz2">utilities</a>. These require OS X 10.3 or later; if you're using an earlier version of OS X, Fuse 0.6.1.1 will work there: <a href="http://prdownloads.sourceforge.net/fuse-emulator/Fuse-0.6.1.1.dmg?download">Fuse binary</a>, <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-macosx-0.6.1.1.tar.gz?download">Fuse source</a> and <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-macosx-0.6.1.tar.gz?download">utilities binaries</a>. Mac OS X 10.4 users can also use the <a href="http://prdownloads.sourceforge.net/fuse-emulator/FuseImporter1.0.dmg?download">Fuse Spotlight Importer</a> which allows Spotlight to find ZX Spectrum emulation related files based on metadata in the files. The <a href="http://prdownloads.sourceforge.net/fuse-emulator/FuseImporter1.0.tar.bz2?download">source</a> is also available.</li>
    <li><a href="http://www.netbsd.org/">NetBSD</a> users can get version 0.7.0 from <a href="http://www.pkgsrc.org/">pkgsrc</a> (the NetBSD Packages Collection) as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse/">emulators/fuse</a> and <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse-utils/">emulators/fuse-utils</a>.</li>
    <li><a href="http://www.openbsd.org/">OpenBSD</a> users have version 0.6.2.1 available from ports as <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse/">ports/emulators/fuse</a>, and <a
 href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse-utils/">ports/emulators/fuse-utils/</a>, with thanks to Alexander Yurchenko.</li>
@@ -148,7 +148,9 @@ END_SECTION
 #<!-- ======================================================= -->
 
 fuse_section (NULL, "What's new?", <<<END_SECTION
-  <h3>0.7.0.1 for Mac OS X</h3>
+  <h3>Fuse Spotlight Importer for Mac OS X 10.4 Tiger</h3>
+  <p>The <a href="http://prdownloads.sourceforge.net/fuse-emulator/FuseImporter1.0.dmg?download">Fuse Spotlight Importer</a> allows Spotlight to find ZX Spectrum emulation related files based on metadata in the files. The <a href="http://prdownloads.sourceforge.net/fuse-emulator/FuseImporter1.0.tar.bz2?download">source</a> is also available.</p>
+   <h3>0.7.0.1 for Mac OS X</h3>
   <p>This is a minor revision that resolves issues with saving .sna snapshots, TR-DOS disk ejection and autoloading TR-DOS and +3 disks.</p>
   <h3>0.7.0</h3>
   <ul>
