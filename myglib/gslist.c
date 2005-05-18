@@ -43,6 +43,61 @@ gint	last_function		(gconstpointer	 a,
 
 GSList * free_list = NULL;
 
+GSList* g_slist_insert	(GSList		*list,
+			 gpointer	 data,
+			 gint		 position) {
+    
+  GSList *prev_list;
+  GSList *tmp_list;
+  GSList *new_list;
+
+  if (position < 0)
+    return g_slist_append (list, data);
+  else if (position == 0)
+    return g_slist_prepend (list, data);
+
+
+    if(!free_list) {
+        int i;
+        free_list=(GSList *)malloc(1024*sizeof(GSList));
+        for(i=0;i<1023;i++)
+            free_list[i].next=&free_list[i+1];
+        free_list[1023].next=NULL;
+    }
+
+  new_list = free_list;
+  free_list=free_list->next;
+  new_list->data = data;
+  new_list->next=NULL;
+
+  if (!list)
+    {
+      return new_list;
+    }
+
+  prev_list = NULL;
+  tmp_list = list;
+
+  while ((position-- > 0) && tmp_list)
+    {
+      prev_list = tmp_list;
+      tmp_list = tmp_list->next;
+    }
+
+  if (prev_list)
+    {
+      new_list->next = prev_list->next;
+      prev_list->next = new_list;
+    }
+  else
+    {
+      new_list->next = list;
+      list = new_list;
+    }
+
+  return list;
+}
+
 GSList* g_slist_insert_sorted	(GSList		*list,
 				 gpointer	 data,
 				 GCompareFunc	 func) {
@@ -160,6 +215,51 @@ GSList* g_slist_remove		(GSList		*list,
     }
 
   return list;
+}
+
+GSList* g_slist_delete_link	(GSList		*list,
+				 GSList		*link) {
+
+  GSList *tmp;
+  GSList *prev;
+
+  prev = NULL;
+  tmp = list;
+
+  while (tmp)
+    {
+      if (tmp == link)
+        {
+          if (prev)
+            prev->next = tmp->next;
+          if (list == tmp)
+            list = list->next;
+
+          tmp->next = NULL;
+          g_slist_free (tmp);
+          break;
+        }
+
+      prev = tmp;
+      tmp = tmp->next;
+    }
+
+  return list;
+}
+
+guint
+g_slist_length (GSList *list)
+{
+  guint length;
+
+  length = 0;
+  while (list)
+    {
+      length++;
+      list = list->next;
+    }
+
+  return length;
 }
 
 void	g_slist_foreach		(GSList		*list,

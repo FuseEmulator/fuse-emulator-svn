@@ -331,3 +331,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20050507 bzip2.c,creator.c,crypto.c,internals.h,rzx.c,tzx_read.c,
 	 tzx_write.c: fix up gcc 4.0 signedness warnings (fixes bug
 	 #1197013).
+20050517 make-perl.c, myglib.c: add g_slist_delete_link, g_slist_insert,
+         g_slist_length, GINT_TO_POINTER and GPOINTER_TO_INT to the glib
+         emulation layer (Fred).
