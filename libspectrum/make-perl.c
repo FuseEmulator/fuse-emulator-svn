@@ -147,6 +147,10 @@ int main(void)
 "						 gpointer	 data,\n"
 "						 GCompareFunc	 func);\n"
 "\n"
+"GSList WIN32_DLL *g_slist_insert		(GSList		*list,\n"
+"			 			 gpointer	 data,\n"
+"			 			 gint		 position);\n"
+"\n"
 "GSList WIN32_DLL *g_slist_append		(GSList		*list,\n"
 "						 gpointer	 data);\n"
 "\n"
@@ -155,6 +159,11 @@ int main(void)
 "\n"
 "GSList WIN32_DLL *g_slist_remove		(GSList		*list,\n"
 "						 gpointer	 data);\n"
+"\n"
+"GSList WIN32_DLL *g_slist_delete_link		(GSList		*list,\n"
+"				 		 GSList		*link);\n"
+"\n"
+"guint	WIN32_DLL g_slist_length		(GSList *list);\n"
 "\n"
 "void	WIN32_DLL g_slist_foreach		(GSList		*list,\n"
 "						 GFunc		 func,\n"
@@ -201,7 +210,18 @@ int main(void)
 "						 gpointer	 user_data);\n"
 "\n"
 "guint	WIN32_DLL g_hash_table_size (GHashTable	*hash_table);\n"
-"CODE\n" );
+"\n" );
+  if( sizeof( void* ) == sizeof( int ) ) {
+    printf( "#define GINT_TO_POINTER(i)      ((gpointer)  (i))\n" );
+    printf( "#define GPOINTER_TO_INT(p)      ((gint)   (p))\n" );
+  } else if( sizeof( void* ) == sizeof( long ) ) {
+    printf( "#define GINT_TO_POINTER(i)      ((gpointer)  (glong)(i))\n" );
+    printf( "#define GPOINTER_TO_INT(p)      ((gint)   (glong)(p))\n" );
+  } else {
+    fprintf( stderr, "No plausible int to pointer cast found\n" );
+    return 1;
+  }
+  printf( "CODE\n" );
 #endif				/* #ifdef HAVE_LIB_GLIB */
 
   printf( "}\n\n" );
