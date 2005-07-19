@@ -118,3 +118,4 @@
 20050209 snapconv.c: correct filename in error message if target format
 	 couldn't be identified.
 20050310 man/createhdf.1: fix small typo (access -> accesses).
+20050719 tzxlist.c,man/tzxlist.1: handle all supported tape types (Fred).

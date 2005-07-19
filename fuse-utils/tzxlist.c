@@ -75,7 +75,7 @@ hardware_desc( int type, int id )
 }
 
 static int
-process_tzx( char *filename )
+process_tape( char *filename )
 {
   int error;
 
@@ -94,7 +94,8 @@ process_tzx( char *filename )
     return 1;
   }
 
-  error = libspectrum_tzx_read( tape, buffer, length );
+  error = libspectrum_tape_read( tape, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
+                                 filename );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
     munmap( buffer, length );
     return error;
@@ -286,14 +287,14 @@ main( int argc, char **argv )
   progname = argv[0];
 
   if( argc < 2 ) {
-    fprintf( stderr, "%s: usage: %s <tzx files>...\n", progname, progname );
+    fprintf( stderr, "%s: usage: %s <tape files>...\n", progname, progname );
     return 1;
   }
 
   error = init_libspectrum(); if( error ) return error;
 
   while( ++arg < argc )
-    ret |= process_tzx( argv[arg] );
+    ret |= process_tape( argv[arg] );
 
   return ret;
 }
