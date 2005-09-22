@@ -93,7 +93,7 @@ static libspectrum_error
 tzx_write_bytes( libspectrum_byte **ptr, size_t length,
 		 size_t length_bytes, libspectrum_byte *data );
 static libspectrum_error
-tzx_write_string( libspectrum_byte **ptr, libspectrum_byte *string );
+tzx_write_string( libspectrum_byte **ptr, char *string );
 
 /*** Function definitions ***/
 
@@ -368,7 +368,7 @@ tzx_write_group_start( libspectrum_tape_block *block,
 		       size_t *length )
 {
   libspectrum_error error;
-  libspectrum_byte *name; size_t name_length;
+  char *name; size_t name_length;
 
   name = libspectrum_tape_block_text( block );
   name_length = strlen( (char*)name );
@@ -474,7 +474,7 @@ tzx_write_comment( libspectrum_tape_block *block, libspectrum_byte **buffer,
 		   libspectrum_byte **ptr, size_t *length )
 {
   libspectrum_error error;
-  libspectrum_byte *comment; size_t comment_length;
+  char *comment; size_t comment_length;
 
   comment = libspectrum_tape_block_text( block );
   comment_length = strlen( (char*)comment );
@@ -495,7 +495,7 @@ tzx_write_message( libspectrum_tape_block *block, libspectrum_byte **buffer,
 		   libspectrum_byte **ptr, size_t *length )
 {
   libspectrum_error error;
-  libspectrum_byte *message; size_t text_length;
+  char *message; size_t text_length;
 
   message = libspectrum_tape_block_text( block );
   text_length = strlen( (char*)message );
@@ -632,13 +632,13 @@ tzx_write_bytes( libspectrum_byte **ptr, size_t length,
 }
 
 static libspectrum_error
-tzx_write_string( libspectrum_byte **ptr, libspectrum_byte *string )
+tzx_write_string( libspectrum_byte **ptr, char *string )
 {
   libspectrum_error error;
 
   size_t i, length = strlen( (char*)string );
 
-  error = tzx_write_bytes( ptr, length, 1, string );
+  error = tzx_write_bytes( ptr, length, 1, (libspectrum_byte*)string );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   /* Fix up line endings */

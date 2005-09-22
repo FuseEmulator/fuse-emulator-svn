@@ -99,7 +99,7 @@ tzx_read_data( const libspectrum_byte **ptr, const libspectrum_byte *end,
 	       size_t *length, int bytes, libspectrum_byte **data );
 static libspectrum_error
 tzx_read_string( const libspectrum_byte **ptr, const libspectrum_byte *end,
-		 libspectrum_byte **dest );
+		 char **dest );
 
 /*** Function definitions ***/
 
@@ -563,7 +563,7 @@ tzx_read_group_start( libspectrum_tape *tape, const libspectrum_byte **ptr,
 		      const libspectrum_byte *end )
 {
   libspectrum_tape_block *block;
-  libspectrum_byte *name;
+  char *name;
   libspectrum_error error;
   
   /* Check the length byte exists */
@@ -664,7 +664,7 @@ tzx_read_select( libspectrum_tape *tape, const libspectrum_byte **ptr,
 
   size_t length, count, i, j;
   int *offsets;
-  libspectrum_byte **descriptions;
+  char **descriptions;
 
   /* Check there's enough left in the buffer for the length and the count
      byte */
@@ -701,7 +701,7 @@ tzx_read_select( libspectrum_tape *tape, const libspectrum_byte **ptr,
   }
   libspectrum_tape_block_set_offsets( block, offsets );
 
-  descriptions = malloc( count * sizeof( libspectrum_byte* ) );
+  descriptions = malloc( count * sizeof( char* ) );
   if( !descriptions ) {
     free( offsets ); free( block );
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
@@ -776,7 +776,7 @@ tzx_read_comment( libspectrum_tape *tape, const libspectrum_byte **ptr,
 		  const libspectrum_byte *end )
 {
   libspectrum_tape_block* block;
-  libspectrum_byte *text;
+  char *text;
   libspectrum_error error;
 
   /* Check the length byte exists */
@@ -808,7 +808,7 @@ tzx_read_message( libspectrum_tape *tape, const libspectrum_byte **ptr,
 		  const libspectrum_byte *end )
 {
   libspectrum_tape_block* block;
-  libspectrum_byte *text;
+  char *text;
   libspectrum_error error;
 
   /* Check the time and length byte exists */
@@ -847,7 +847,7 @@ tzx_read_archive_info( libspectrum_tape *tape, const libspectrum_byte **ptr,
 
   size_t i, count;
   int *ids;
-  libspectrum_byte **strings;
+  char **strings;
 
   /* Check there's enough left in the buffer for the length and the count
      byte */
@@ -881,7 +881,7 @@ tzx_read_archive_info( libspectrum_tape *tape, const libspectrum_byte **ptr,
   }
   libspectrum_tape_block_set_ids( block, ids );
 
-  strings = malloc( count * sizeof( libspectrum_byte* ) );
+  strings = malloc( count * sizeof( char* ) );
   if( !strings ) {
     free( ids ); free( block );
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
@@ -1004,7 +1004,8 @@ tzx_read_custom( libspectrum_tape *tape, const libspectrum_byte **ptr,
 		 const libspectrum_byte *end )
 {
   libspectrum_tape_block* block;
-  libspectrum_byte *description, *data; size_t length;
+  char *description;
+  libspectrum_byte* data; size_t length;
   libspectrum_error error;
 
   /* Check the description (16) and length bytes (4) exist */
@@ -1120,13 +1121,13 @@ tzx_read_data( const libspectrum_byte **ptr, const libspectrum_byte *end,
 
 static libspectrum_error
 tzx_read_string( const libspectrum_byte **ptr, const libspectrum_byte *end,
-		 libspectrum_byte **dest )
+		 char **dest )
 {
   size_t length;
   libspectrum_error error;
-  libspectrum_byte *ptr2;
+  char *ptr2;
 
-  error = tzx_read_data( ptr, end, &length, -1, dest );
+  error = tzx_read_data( ptr, end, &length, -1, (libspectrum_byte**)dest );
   if( error ) return error;
   
   /* Null terminate the string */

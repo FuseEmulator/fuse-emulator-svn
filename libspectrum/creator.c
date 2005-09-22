@@ -33,7 +33,7 @@
 
 struct libspectrum_creator {
 
-  libspectrum_byte program[32];
+  char program[32];
   libspectrum_word major, minor;
 
   libspectrum_dword competition_code;
@@ -70,7 +70,7 @@ libspectrum_creator_free( libspectrum_creator *creator )
 
 libspectrum_error
 libspectrum_creator_set_program( libspectrum_creator *creator,
-				 const libspectrum_byte *program )
+				 const char *program )
 {
   memset( creator->program, 0, sizeof( creator->program ) );
   snprintf( (char*)creator->program, sizeof( creator->program ), "%s",
@@ -78,7 +78,7 @@ libspectrum_creator_set_program( libspectrum_creator *creator,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-const libspectrum_byte*
+const char*
 libspectrum_creator_program( libspectrum_creator *creator )
 {
   return creator->program;
