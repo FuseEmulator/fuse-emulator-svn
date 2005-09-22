@@ -129,13 +129,13 @@ libspectrum_dword	sync1_length		0	-1
 libspectrum_dword	sync2_length		0	-1
 	turbo
 
-libspectrum_byte*	text			0	NULL
+char*	text			0	NULL
 	group_start	name
 	comment
 	message
 	custom		description
 
-libspectrum_byte*	texts			1	NULL
+char*	texts			1	NULL
 	archive_info	strings
 	select		descriptions
 

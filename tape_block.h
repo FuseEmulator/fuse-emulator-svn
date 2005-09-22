@@ -165,7 +165,7 @@ typedef struct libspectrum_tape_pause_block {
 /* A group start block */
 typedef struct libspectrum_tape_group_start_block {
 
-  libspectrum_byte *name;
+  char *name;
 
 } libspectrum_tape_group_start_block;
 
@@ -195,7 +195,7 @@ typedef struct libspectrum_tape_select_block {
 
   /* Offset of each selection, and a description of each */
   int *offsets;
-  libspectrum_byte **descriptions;
+  char **descriptions;
 
 } libspectrum_tape_select_block;
 
@@ -204,7 +204,7 @@ typedef struct libspectrum_tape_select_block {
 /* A comment block */
 typedef struct libspectrum_tape_comment_block {
 
-  libspectrum_byte *text;
+  char *text;
 
 } libspectrum_tape_comment_block;
 
@@ -212,7 +212,7 @@ typedef struct libspectrum_tape_comment_block {
 typedef struct libspectrum_tape_message_block {
 
   int time;
-  libspectrum_byte *text;
+  char *text;
 
 } libspectrum_tape_message_block;
 
@@ -226,7 +226,7 @@ typedef struct libspectrum_tape_archive_info_block {
   int *ids;
 
   /* Text of each string */
-  libspectrum_byte **strings;
+  char **strings;
 
 } libspectrum_tape_archive_info_block;
 
@@ -245,7 +245,7 @@ typedef struct libspectrum_tape_hardware_block {
 typedef struct libspectrum_tape_custom_block {
 
   /* Description of this block */
-  libspectrum_byte *description;
+  char *description;
 
   /* And the data for it; currently, no attempt is made to interpret
      this data */

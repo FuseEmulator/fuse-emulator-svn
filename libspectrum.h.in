@@ -319,8 +319,8 @@ libspectrum_creator_free( libspectrum_creator *creator );
 
 libspectrum_error WIN32_DLL
 libspectrum_creator_set_program( libspectrum_creator *creator,
-				 const libspectrum_byte *program );
-const libspectrum_byte WIN32_DLL *
+				 const char *program );
+const char WIN32_DLL *
 libspectrum_creator_program( libspectrum_creator *creator );
 
 libspectrum_error WIN32_DLL

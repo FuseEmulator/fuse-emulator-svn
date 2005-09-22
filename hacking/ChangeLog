@@ -334,3 +334,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20050517 make-perl.c, myglib.c: add g_slist_delete_link, g_slist_insert,
          g_slist_length, GINT_TO_POINTER and GPOINTER_TO_INT to the glib
          emulation layer (Fred).
+20050922 creator.c,libspectrum.h.in,tape_accessors.txt,tape_block.h,
+         tzx_read.c,tzx_write.c,doc/libspectrum.txt: API changes for gcc 4.0
+         signed char conversion warnings (patch #1197351) (Fred).

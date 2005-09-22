@@ -368,7 +368,7 @@ Free the memory used by a `libspectrum_creator' structure.
 
 libspectrum_error
 libspectrum_creator_set_program( libspectrum_creator *creator,
-				 const libspectrum_byte *program );
+				 const char *program );
 const libspectrum_byte*
 libspectrum_creator_program( libspectrum_creator *creator );
 
@@ -982,12 +982,12 @@ libspectrum_dword sync1_length		TURBO
 
 libspectrum_dword sync2_length		TURBO
 
-libspectrum_byte* text			GROUP_START
+char* text				GROUP_START
 					COMMENT
 					MESSAGE
 					CUSTOM
 
-libspectrum_byte* texts[]		ARCHIVE_INFO
+char* texts[]				ARCHIVE_INFO
 					SELECT
 
 int types[]				HARDWARE
