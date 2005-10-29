@@ -337,3 +337,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20050922 creator.c,libspectrum.h.in,tape_accessors.txt,tape_block.h,
          tzx_read.c,tzx_write.c,doc/libspectrum.txt: API changes for gcc 4.0
          signed char conversion warnings (patch #1197351) (Fred).
+20051029 timings.c: timing tweak for TC2048 (Fred)
