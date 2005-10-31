@@ -119,3 +119,6 @@
 	 couldn't be identified.
 20050310 man/createhdf.1: fix small typo (access -> accesses).
 20050719 tzxlist.c,man/tzxlist.1: handle all supported tape types (Fred).
+20051031 .cvsignore,Makefile.am,createhdf.c,ide.[ch],raw2hdf.c,
+	 man/{Makefile.am,fuse-utils.1,raw2hdf.1}: add raw2hdf utility
+	 (Matthew Westcott).

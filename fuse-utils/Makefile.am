@@ -28,6 +28,7 @@ SUBDIRS = man
 
 bin_PROGRAMS = createhdf \
 	       listbasic \
+	       raw2hdf \
 	       @RZXCHECK@ \
 	       rzxdump \
 	       rzxtool \
@@ -41,8 +42,12 @@ EXTRA_PROGRAMS = rzxcheck
 
 INCLUDES = @LIBSPEC_CFLAGS@
 
+createhdf_SOURCES = ide.c createhdf.c
+
 listbasic_SOURCES = listbasic.c utils.c
 listbasic_LDADD = @LIBSPEC_LIBS@
+
+raw2hdf_SOURCES = ide.c raw2hdf.c
 
 rzxcheck_SOURCES = rzxcheck.c keys.c utils.c
 rzxcheck_LDADD = @LIBSPEC_LIBS@
