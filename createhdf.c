@@ -1,5 +1,5 @@
 /* createhdf.c: Create an empty .hdf file
-   Copyright (c) 2004 Philip Kendall
+   Copyright (c) 2004-2005 Philip Kendall
 
    $Id$
 
@@ -32,32 +32,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "ide.h"
+
 const char *progname;
-
-#define HDF_HEADER_LENGTH 0x80
-
-enum {
-
-  HDF_SIGNATURE_OFFSET   = 0x00,
-  HDF_VERSION_OFFSET     = 0x07,
-  HDF_COMPACT_OFFSET     = 0x08,
-  HDF_DATA_OFFSET_OFFSET = 0x09,
-  HDF_IDENTITY_OFFSET    = 0x16,
-
-};
-
-static const char *HDF_SIGNATURE = "RS-IDE\x1a";
-static const size_t HDF_SIGNATURE_LENGTH = 7;
-static const char HDF_VERSION = '\x10';
-static const size_t HDF_DATA_OFFSET = 0x80;
-
-enum {
-
-  IDENTITY_CYLINDERS_OFFSET = 0x02,
-  IDENTITY_HEADS_OFFSET     = 0x06,
-  IDENTITY_SECTORS_OFFSET   = 0x0c,
-
-};
 
 #define CHUNK_LENGTH 1 << 20
 

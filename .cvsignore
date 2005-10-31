@@ -14,6 +14,7 @@ createhdf
 fuse-utils.qpg
 libtool
 listbasic
+raw2hdf
 rzxcheck
 rzxdump
 rzxtool
