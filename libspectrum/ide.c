@@ -38,6 +38,7 @@ typedef enum libspectrum_ide_command {
   LIBSPECTRUM_IDE_COMMAND_READ_SECTOR = 0x20,
   LIBSPECTRUM_IDE_COMMAND_WRITE_SECTOR = 0x30,
   LIBSPECTRUM_IDE_COMMAND_IDENTIFY_DRIVE = 0xec,
+  LIBSPECTRUM_IDE_COMMAND_INITIALIZE_DEVICE_PARAMETERS = 0x91,
 
 } libspectrum_ide_command;
 
@@ -74,6 +75,34 @@ typedef enum libspectrum_ide_errorreg {
   LIBSPECTRUM_IDE_ERROR_UNC = 0x40, 
 
 } libspectrum_ide_errorcode;
+
+typedef enum libspectrum_ide_identityfield {
+  
+  LIBSPECTRUM_IDE_IDENTITY_NUM_CYLINDERS = 1,
+  LIBSPECTRUM_IDE_IDENTITY_NUM_HEADS = 3,
+  LIBSPECTRUM_IDE_IDENTITY_NUM_SECTORS = 6,
+  LIBSPECTRUM_IDE_IDENTITY_CAPABILITIES = 49,
+  LIBSPECTRUM_IDE_IDENTITY_FIELD_VALIDITY = 53,
+  LIBSPECTRUM_IDE_IDENTITY_CURRENT_CYLINDERS = 54,
+  LIBSPECTRUM_IDE_IDENTITY_CURRENT_HEADS = 55,
+  LIBSPECTRUM_IDE_IDENTITY_CURRENT_SECTORS = 56,
+  LIBSPECTRUM_IDE_IDENTITY_CURRENT_CAPACITY_LOW = 57,
+  LIBSPECTRUM_IDE_IDENTITY_CURRENT_CAPACITY_HI = 58,
+  LIBSPECTRUM_IDE_IDENTITY_TOTAL_SECTORS_LOW = 60,
+  LIBSPECTRUM_IDE_IDENTITY_TOTAL_SECTORS_HI = 61,
+
+} libspectrum_ide_identityfield;
+
+/* Operations on identity fields.
+   For reasons best known to Ramsoft, these (together with the disk
+   data itself) are stored in Intel little-endian format rather than
+   the way the ATA spec describes.
+ */
+#define GET_WORD( arr, index ) \
+  ( ( (arr)[ ( (index) << 1 ) + 1 ] << 8 ) | ( (arr)[ (index) << 1 ] ) )
+#define SET_WORD( arr, index, val ) \
+  (arr)[ ( (index) << 1 ) + 1 ] = (val) >> 8; \
+  (arr)[ (index) << 1 ] = (val) & 0xff;
 
 typedef struct libspectrum_hdf_header {
 
@@ -137,6 +166,25 @@ struct libspectrum_ide_channel {
   GHashTable *cache[2];
 
 };
+
+/* Private function prototypes */
+static gboolean write_to_disk( gpointer key, gpointer value,
+  gpointer user_data );
+static gboolean clear_cache( gpointer key, gpointer value,
+  gpointer user_data GCC_UNUSED );
+static int read_hdf( libspectrum_ide_channel *chn );
+static int write_hdf( libspectrum_ide_channel *chn );
+static libspectrum_byte read_data( libspectrum_ide_channel *chn );
+static void write_data( libspectrum_ide_channel *chn,
+  libspectrum_byte data );
+static libspectrum_error seek( libspectrum_ide_channel *chn );
+static void identifydevice( libspectrum_ide_channel *chn );
+static void readsector( libspectrum_ide_channel *chn );
+static void writesector( libspectrum_ide_channel *chn );
+static void init_device_params( libspectrum_ide_channel *chn );
+static void execute_command( libspectrum_ide_channel *chn,
+  libspectrum_byte data );
+
 
 /* Initialise a libspectrum_ide_channel structure */
 libspectrum_error
@@ -235,18 +283,13 @@ libspectrum_ide_insert( libspectrum_ide_channel *chn,
     ( drv->hdf.datastart_hi << 8 ) | ( drv->hdf.datastart_low );
   drv->sector_size = ( drv->hdf.flags & 0x01 ) ? 256 : 512;
   
-  /* Extract drive geometry from the drive identity command.
-
-     For reasons best known to RamSoft, this (together with the disk
-     data itself) is stored in Intel little-endian format rather than
-     the way the ATA spec describes.
-  */
-  drv->cylinders =
-    ( drv->hdf.drive_identity[ 3] << 8 ) | ( drv->hdf.drive_identity[ 2] );
-  drv->heads =
-    ( drv->hdf.drive_identity[ 7] << 8 ) | ( drv->hdf.drive_identity[ 6] );
-  drv->sectors =
-    ( drv->hdf.drive_identity[13] << 8 ) | ( drv->hdf.drive_identity[12] );
+  /* Extract drive geometry from the drive identity command */
+  drv->cylinders = GET_WORD(
+    drv->hdf.drive_identity, LIBSPECTRUM_IDE_IDENTITY_NUM_CYLINDERS );
+  drv->heads = GET_WORD(
+    drv->hdf.drive_identity, LIBSPECTRUM_IDE_IDENTITY_NUM_HEADS );
+  drv->sectors = GET_WORD(
+    drv->hdf.drive_identity, LIBSPECTRUM_IDE_IDENTITY_NUM_SECTORS );
   
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -516,8 +559,14 @@ read_data( libspectrum_ide_channel *chn )
 
   /* Check for end of phase */
   if( chn->datacounter >= 512 ) {
-    chn->phase = LIBSPECTRUM_IDE_PHASE_READY;
-    chn->status &= ~LIBSPECTRUM_IDE_STATUS_DRQ;
+    if( chn->sector_count ) {
+      /* more sectors to read */
+      readsector( chn );
+    } else {
+      /* all sectors done */
+      chn->phase = LIBSPECTRUM_IDE_PHASE_READY;
+      chn->status &= ~LIBSPECTRUM_IDE_STATUS_DRQ;
+    }
   }
 
   return data;
@@ -584,15 +633,20 @@ write_data( libspectrum_ide_channel *chn, libspectrum_byte data )
   /* Check for end of phase */
   if( chn->datacounter >= 512 ) {
 
-    chn->phase = LIBSPECTRUM_IDE_PHASE_READY;
-    chn->status &= ~LIBSPECTRUM_IDE_STATUS_DRQ;
-      
     /* Write data to disk */
     if ( write_hdf( chn ) ) {
       chn->status |= LIBSPECTRUM_IDE_STATUS_ERR;
       chn->error = LIBSPECTRUM_IDE_ERROR_ABRT | LIBSPECTRUM_IDE_ERROR_UNC;
     }
 
+    if( chn->sector_count ) {
+      /* more sectors to write */
+      writesector( chn );
+    } else {
+      /* all sectors done */
+      chn->phase = LIBSPECTRUM_IDE_PHASE_READY;
+      chn->status &= ~LIBSPECTRUM_IDE_STATUS_DRQ;
+    }
   }
 
 }
@@ -603,14 +657,8 @@ seek( libspectrum_ide_channel *chn )
 {
   libspectrum_ide_drive *drv = &chn->drive[ chn->selected ];
   int sectornumber;
+  int next_head;
 
-  /* Sector count must be 1 */
-  if( chn->sector_count != 1 ) {
-    chn->status |= LIBSPECTRUM_IDE_STATUS_ERR;
-    chn->error = LIBSPECTRUM_IDE_ERROR_ABRT;
-    return LIBSPECTRUM_ERROR_UNKNOWN;
-  }
-  
   /* Calculate sector number, depending upon LBA/CHS mode. */
   if( chn->head & LIBSPECTRUM_IDE_HEAD_LBA ) {
 
@@ -645,6 +693,43 @@ seek( libspectrum_ide_channel *chn )
 
   chn->sector_number = sectornumber;
   
+  /* advance registers to next sector, for multiple sector accesses */
+  chn->sector_count--;
+  if( chn->head & LIBSPECTRUM_IDE_HEAD_LBA ) {
+
+    /* increment using LBA scheme */
+    chn->sector = ( chn->sector + 1 ) & 0xff;
+    if( !chn->sector ) {
+      chn->cylinder_low = ( chn->cylinder_low + 1 ) & 0xff;
+      if( !chn->cylinder_low ) {
+        chn->cylinder_high = ( chn->cylinder_high + 1 ) & 0xff;
+        if( !chn->cylinder_high ) {
+          next_head = ( ( chn->head & LIBSPECTRUM_IDE_HEAD_HEAD ) + 1 ) &
+            LIBSPECTRUM_IDE_HEAD_HEAD;
+          chn->head = ( chn->head & ~LIBSPECTRUM_IDE_HEAD_HEAD ) | next_head;
+        }
+      }
+    }
+
+  } else {
+
+    /* increment using CHS scheme */
+    chn->sector = ( chn->sector % drv->sectors ) + 1;
+    /* NB sector number is 1-based */
+    if( chn->sector == 1 ) {
+      next_head = ( ( chn->head & LIBSPECTRUM_IDE_HEAD_HEAD ) + 1 )
+        % drv->heads;
+      chn->head = ( chn->head & ~LIBSPECTRUM_IDE_HEAD_HEAD ) | next_head;
+      if( !next_head ) {
+        chn->cylinder_low = ( chn->cylinder_low + 1 ) & 0xff;
+        if( !chn->cylinder_low ) {
+          chn->cylinder_high++;
+        }
+      }
+    }
+
+  }
+  
   return LIBSPECTRUM_ERROR_NONE;
 }
 
@@ -652,11 +737,49 @@ seek( libspectrum_ide_channel *chn )
 static void
 identifydevice( libspectrum_ide_channel *chn )
 {
+  libspectrum_ide_drive *drv = &chn->drive[ chn->selected ];
+  unsigned long sector_count = drv->cylinders * drv->heads * drv->sectors;
+
   /* Clear sector buffer and copy in HDF identity information */
   memset( &chn->buffer[0], 0, 512 );
-  memcpy( &chn->buffer[0], &chn->drive[ chn->selected ].hdf.drive_identity[0],
-	  0x6a );
+  memcpy( &chn->buffer[0], &drv->hdf.drive_identity[0], 0x6a );
     
+  /* Fill in fields that lie beyond the end of the HDF header */
+  /* Field validity */
+  /* TODO: handle drives that exceed the limits of the CHS scheme
+     (possibly determining their actual size from HDF file size);
+     in this case, words 54-58 will be flagged as invalid */
+  /* 0x01 = 'words 54-58 are valid' */
+  SET_WORD( chn->buffer, LIBSPECTRUM_IDE_IDENTITY_FIELD_VALIDITY, 0x01 );
+  /* Number of current logical cylinders */
+  SET_WORD( chn->buffer, LIBSPECTRUM_IDE_IDENTITY_CURRENT_CYLINDERS,
+	    drv->cylinders );
+  /* Number of current logical heads */
+  SET_WORD( chn->buffer, LIBSPECTRUM_IDE_IDENTITY_CURRENT_HEADS,
+	    drv->heads );
+  /* Number of current logical sectors per logical track */
+  SET_WORD( chn->buffer, LIBSPECTRUM_IDE_IDENTITY_CURRENT_SECTORS,
+	    drv->sectors );
+  /* Current capacity in sectors */
+  SET_WORD( chn->buffer, LIBSPECTRUM_IDE_IDENTITY_CURRENT_CAPACITY_LOW,
+	    ( sector_count & 0x0000ffff ) );
+  SET_WORD( chn->buffer, LIBSPECTRUM_IDE_IDENTITY_CURRENT_CAPACITY_HI,
+	    ( sector_count & 0xffff0000 ) >> 16 );
+
+  /* Total number of user addressable sectors;
+     only defined if LBA supported */
+  if( GET_WORD( chn->buffer, LIBSPECTRUM_IDE_IDENTITY_CAPABILITIES ) &
+      0x0200 ) {
+    SET_WORD( chn->buffer, LIBSPECTRUM_IDE_IDENTITY_TOTAL_SECTORS_LOW,
+	      ( sector_count & 0x0000ffff ) );
+    SET_WORD( chn->buffer, LIBSPECTRUM_IDE_IDENTITY_TOTAL_SECTORS_HI,
+	      ( sector_count & 0xffff0000 ) >> 16 );
+  }
+  
+  /* prevent read_data from trying to read from disk after identity block
+     is completely read in */
+  chn->sector_count = 0;
+
   /* Initiate the PIO input phase */
   chn->phase = LIBSPECTRUM_IDE_PHASE_PIO_IN;
   chn->status |= LIBSPECTRUM_IDE_STATUS_DRQ;
@@ -683,7 +806,6 @@ readsector( libspectrum_ide_channel *chn )
     chn->datacounter = 0;
 
   }
-
 }
 
 /* Execute the WRITE SECTOR command */
@@ -698,13 +820,28 @@ writesector( libspectrum_ide_channel *chn )
   chn->datacounter = 0;
 }
 
+/* Execute the INITIALIZE DEVICE PARAMETERS command */
+static void
+init_device_params( libspectrum_ide_channel *chn )
+{
+  libspectrum_ide_drive *drv = &chn->drive[ chn->selected ];
+
+  /* Return success iff the requested geometry matches the actual geometry
+     of the disk */
+  if( chn->sector_count == drv->sectors &&
+      ( chn->head & LIBSPECTRUM_IDE_HEAD_HEAD ) == drv->heads - 1 ) return;
+      
+  /* if not, return ABRT error */
+  chn->status |= LIBSPECTRUM_IDE_STATUS_ERR;
+  chn->error = LIBSPECTRUM_IDE_ERROR_ABRT;
+}
+
 /* Execute a command */
 static void
 execute_command( libspectrum_ide_channel *chn, libspectrum_byte data )
 {
-
-  if( !chn->drive[ chn->selected].disk          ||
-      chn->phase != LIBSPECTRUM_IDE_PHASE_READY    ) return;
+  if( !chn->drive[ chn->selected].disk ) return;
+  chn->phase = LIBSPECTRUM_IDE_PHASE_READY;
 
   /* Clear error conditions */
   chn->error = LIBSPECTRUM_IDE_ERROR_OK;
@@ -717,13 +854,14 @@ execute_command( libspectrum_ide_channel *chn, libspectrum_byte data )
   case LIBSPECTRUM_IDE_COMMAND_READ_SECTOR:    readsector( chn );     break;
   case LIBSPECTRUM_IDE_COMMAND_WRITE_SECTOR:   writesector( chn );    break;
   case LIBSPECTRUM_IDE_COMMAND_IDENTIFY_DRIVE: identifydevice( chn ); break;
+  case LIBSPECTRUM_IDE_COMMAND_INITIALIZE_DEVICE_PARAMETERS:
+    init_device_params( chn ); break;
       
     /* Unknown/unsupported commands */
   default:
     chn->status |= LIBSPECTRUM_IDE_STATUS_ERR;
     chn->error = LIBSPECTRUM_IDE_ERROR_ABRT;
   }
-
 }
 
 
