@@ -338,3 +338,8 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          tzx_read.c,tzx_write.c,doc/libspectrum.txt: API changes for gcc 4.0
          signed char conversion warnings (patch #1197351) (Fred).
 20051029 timings.c: timing tweak for TC2048 (Fred)
+20051031 ide.c: improved IDE emulation for use with Demfir (Matthew
+	 Westcott).
+20051220 Makefile.am,libspectrum.c,libspectrum.h.in,tape.c,tape_block.[ch],
+	 z80em.c: support for Z80Em and CSW files (patch #1357700)
+	 (Darren).

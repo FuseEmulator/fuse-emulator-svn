@@ -163,6 +163,8 @@ typedef enum libspectrum_id_t {
   /* Below here, present only in [FIXME] and later */
 
   LIBSPECTRUM_ID_MICRODRIVE_MDR,	/* .mdr microdrive cartridge */
+  LIBSPECTRUM_ID_TAPE_CSW,		/* .csw tape image */
+  LIBSPECTRUM_ID_TAPE_Z80EM		/* Z80Em tape image */
 
 } libspectrum_id_t;
 
@@ -428,9 +430,11 @@ libspectrum_z80_write( libspectrum_byte **buffer, size_t *length,
  * Tape handling routines
  */
 
-/* The various types of block available
-   The values here must be the same as used in the .tzx format */
+/* The various types of block available */
 typedef enum libspectrum_tape_type {
+
+  /* Values must be the same as used in the .tzx format */
+
   LIBSPECTRUM_TAPE_BLOCK_ROM = 0x10,
   LIBSPECTRUM_TAPE_BLOCK_TURBO,
   LIBSPECTRUM_TAPE_BLOCK_PURE_TONE,
@@ -457,6 +461,11 @@ typedef enum libspectrum_tape_type {
   LIBSPECTRUM_TAPE_BLOCK_CUSTOM = 0x35,
 
   LIBSPECTRUM_TAPE_BLOCK_CONCAT = 0x5a,
+
+  /* Past here are block types not in the .tzx format */
+
+  LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE = 0x100,
+
 } libspectrum_tape_type;
 
 typedef struct libspectrum_tape_block libspectrum_tape_block;
@@ -671,6 +680,18 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 
 libspectrum_error WIN32_DLL libspectrum_rzx_alloc( libspectrum_rzx **rzx );
 
+/*** Routines for Z80Em raw tape format files ***/
+
+libspectrum_error
+libspectrum_z80em_read( libspectrum_tape *tape,
+			const libspectrum_byte *buffer, size_t length );
+
+/*** Routines for CSW raw tape format files ***/
+
+libspectrum_error
+libspectrum_csw_read( libspectrum_tape *tape,
+		      const libspectrum_byte *buffer, size_t length );
+
 /* Something to step through all the blocks in a tape */
 typedef struct _GSList *libspectrum_rzx_iterator;
 
@@ -697,6 +718,17 @@ libspectrum_rzx_block_id WIN32_DLL
 libspectrum_rzx_iterator_get_type( libspectrum_rzx_iterator it );
 size_t WIN32_DLL
 libspectrum_rzx_iterator_get_frames( libspectrum_rzx_iterator it );
+
+/*** Routines for Z80Em and CSW raw tape files ***/
+
+libspectrum_error WIN32_DLL
+libspectrum_z80em_create( libspectrum_tape *tape,
+			  const libspectrum_byte *buffer,
+			  const size_t length );
+
+libspectrum_error WIN32_DLL
+libspectrum_csw_create( libspectrum_tape *tape,
+			const libspectrum_byte *buffer, const size_t length );
 
 /*
  * Microdrive image handling routines
