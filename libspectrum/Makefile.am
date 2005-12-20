@@ -51,6 +51,7 @@ libspectrum_la_SOURCES = bzip2.c \
 			 tzx_write.c \
 			 warajevo_read.c \
 			 z80.c \
+			 z80em.c \
 			 zlib.c \
 			 zxs.c
 

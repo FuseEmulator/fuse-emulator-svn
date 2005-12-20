@@ -140,6 +140,11 @@ libspectrum_tape_block_free( libspectrum_tape_block *block )
     free( block->types.custom.data );
     break;
 
+    /* Block types not present in .tzx follow here */
+
+  case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
+    free( block->types.rle_pulse.data );
+    break;
 
   case LIBSPECTRUM_TAPE_BLOCK_CONCAT: /* This should never occur */
   default:
@@ -187,6 +192,9 @@ libspectrum_tape_block_init( libspectrum_tape_block *block )
     return pure_data_init( &(block->types.pure_data) );
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
     return raw_data_init( &(block->types.raw_data) );
+  case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
+    block->types.rle_pulse.index = 0;
+    return LIBSPECTRUM_ERROR_NONE;
 
   /* These blocks need no initialisation */
   case LIBSPECTRUM_TAPE_BLOCK_PAUSE:

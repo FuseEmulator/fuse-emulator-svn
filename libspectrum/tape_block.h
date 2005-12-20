@@ -255,6 +255,18 @@ typedef struct libspectrum_tape_custom_block {
 
 /* No block needed for concatenation block, as it isn't stored */
 
+/* Block types not present in the TZX format follow here */
+
+/* A Z80Em or CSW audio block */
+typedef struct libspectrum_tape_rle_pulse_block {
+
+  size_t length;
+  size_t index;
+  libspectrum_byte *data;
+  long scale;
+
+} libspectrum_tape_rle_pulse_block;
+
 /*
  * The generic tape block
  */
@@ -288,6 +300,8 @@ struct libspectrum_tape_block {
     libspectrum_tape_hardware_block hardware;
 
     libspectrum_tape_custom_block custom;
+
+    libspectrum_tape_rle_pulse_block rle_pulse;
   } types;
 
 };

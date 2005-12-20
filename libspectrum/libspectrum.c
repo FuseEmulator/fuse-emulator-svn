@@ -477,6 +477,9 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_COMPRESSED_BZ2,"bz2", 3, "BZh",		    0, 3, 4 },
       { LIBSPECTRUM_ID_COMPRESSED_GZ, "gz",  3, "\x1f\x8b",	    0, 2, 4 },
 
+      { LIBSPECTRUM_ID_TAPE_Z80EM,    "raw", 1, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0Raw tape sample",  0, 64, 0 },
+      { LIBSPECTRUM_ID_TAPE_CSW,      "csw", 2, "Compressed Square Wave\x1a",  0, 23, 4 },
+
       { -1, NULL, 0, NULL, 0, 0, 0 }, /* End marker */
 
     };
@@ -567,6 +570,8 @@ libspectrum_identify_class( libspectrum_class_t *libspectrum_class,
   case LIBSPECTRUM_ID_TAPE_TAP:
   case LIBSPECTRUM_ID_TAPE_TZX:
   case LIBSPECTRUM_ID_TAPE_WARAJEVO:
+  case LIBSPECTRUM_ID_TAPE_Z80EM:
+  case LIBSPECTRUM_ID_TAPE_CSW:
     *libspectrum_class = LIBSPECTRUM_CLASS_TAPE; return 0;
 
   case LIBSPECTRUM_ID_CARTRIDGE_IF2:

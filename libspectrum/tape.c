@@ -96,6 +96,10 @@ raw_data_edge( libspectrum_tape_raw_data_block *block,
 static libspectrum_error
 jump_blocks( libspectrum_tape *tape, int offset );
 
+static libspectrum_error
+rle_pulse_edge( libspectrum_tape_rle_pulse_block *block,
+		libspectrum_dword *tstates, int *end_of_block );
+
 /*** Function definitions ****/
 
 /* Allocate a list of blocks */
@@ -202,6 +206,12 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 
   case LIBSPECTRUM_ID_TAPE_WARAJEVO:
     error = libspectrum_warajevo_read( tape, buffer, length ); break;
+
+  case LIBSPECTRUM_ID_TAPE_Z80EM:
+    error = libspectrum_z80em_read( tape, buffer, length ); break;
+
+  case LIBSPECTRUM_ID_TAPE_CSW:
+    error = libspectrum_csw_read( tape, buffer, length ); break;
 
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
@@ -347,6 +357,11 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
   case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
   case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
     *tstates = 0; end_of_block = 1;
+    break;
+
+  case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
+    error = rle_pulse_edge( &(block->types.rle_pulse), tstates, &end_of_block);
+    if( error ) return error;
     break;
 
   default:
@@ -758,6 +773,38 @@ jump_blocks( libspectrum_tape *tape, int offset )
   if( new_block == NULL ) return LIBSPECTRUM_ERROR_CORRUPT;
 
   tape->current_block = new_block;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+
+/* Extra, non-TZX, blocks which can be handled as if TZX */
+
+static libspectrum_error
+rle_pulse_edge( libspectrum_tape_rle_pulse_block *block,
+		libspectrum_dword *tstates, int *end_of_block )
+{
+  if( block->data[block->index] ) {
+
+    *tstates = block->scale * block->data[ block->index++ ];
+
+  } else {
+
+    if( block->index + 5 > block->length ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			       "rle_pulse_edge: file is truncated\n" );
+      return LIBSPECTRUM_ERROR_LOGIC;
+    }
+
+    *tstates = block->scale * ( block->data[ block->index + 1 ]       |
+			        block->data[ block->index + 2 ] << 8  |
+			        block->data[ block->index + 3 ] << 16 |
+			        block->data[ block->index + 4 ] << 24   );
+    block->index += 5;
+
+  }
+
+  if( block->index == block->length ) *end_of_block = 1;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
