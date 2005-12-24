@@ -122,3 +122,4 @@
 20051031 .cvsignore,Makefile.am,createhdf.c,ide.[ch],raw2hdf.c,
 	 man/{Makefile.am,fuse-utils.1,raw2hdf.1}: add raw2hdf utility
 	 (Matthew Westcott).
+20051224 autogen.sh: remove --copy on automake invocation.
