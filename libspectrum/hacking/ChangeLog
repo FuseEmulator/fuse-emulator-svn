@@ -343,3 +343,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20051220 Makefile.am,libspectrum.c,libspectrum.h.in,tape.c,tape_block.[ch],
 	 z80em.c: support for Z80Em and CSW files (patch #1357700)
 	 (Darren).
+20051224 autogen.sh: add --automake to libtoolize invocation (Markus
+         Obermuller). Remove --copy on automake.
