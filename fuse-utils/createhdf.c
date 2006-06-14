@@ -1,5 +1,5 @@
 /* createhdf.c: Create an empty .hdf file
-   Copyright (c) 2004-2005 Philip Kendall
+   Copyright (c) 2004-2006 Philip Kendall
 
    $Id$
 
@@ -27,9 +27,11 @@
 #include <config.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "ide.h"
@@ -71,7 +73,7 @@ parse_options( int argc, char **argv, size_t *cylinders, size_t *heads,
 }
 
 int
-write_header( FILE *f, size_t cylinders, size_t heads, size_t sectors,
+write_header( int fd, size_t cylinders, size_t heads, size_t sectors,
 	      int compact, const char *filename )
 {
   char hdf_header[ HDF_HEADER_LENGTH ], *identity;
@@ -97,7 +99,7 @@ write_header( FILE *f, size_t cylinders, size_t heads, size_t sectors,
   identity[ IDENTITY_SECTORS_OFFSET       ] = ( sectors        ) & 0xff;
   identity[ IDENTITY_SECTORS_OFFSET   + 1 ] = ( sectors   >> 8 ) & 0xff;
 
-  bytes = fwrite( hdf_header, 1, HDF_HEADER_LENGTH, f );
+  bytes = write( fd, hdf_header, HDF_HEADER_LENGTH );
   if( bytes != HDF_HEADER_LENGTH ) {
     fprintf( stderr,
 	     "%s: could write only %lu header bytes out of %lu to '%s'\n",
@@ -110,7 +112,7 @@ write_header( FILE *f, size_t cylinders, size_t heads, size_t sectors,
 }
 
 int
-write_data( FILE *f, size_t cylinders, size_t heads, size_t sectors,
+write_data( int fd, size_t cylinders, size_t heads, size_t sectors,
 	    int compact, int sparse, const char *filename )
 {
   size_t data_size;
@@ -119,15 +121,9 @@ write_data( FILE *f, size_t cylinders, size_t heads, size_t sectors,
 
   if( sparse ) {
 
-    if( fseek( f, data_size - 1, SEEK_CUR ) ) {
-      fprintf( stderr, "%s: error seeking in '%s': %s\n", progname, filename,
+    if( ftruncate( fd, data_size ) ) {
+      fprintf( stderr, "%s: error truncating '%s': %s\n", progname, filename,
 	       strerror( errno ) );
-      return 1;
-    }
-
-    if( fputc( '\0', f ) == EOF ) {
-      fprintf( stderr, "%s: error terminating null to '%s'\n", progname,
-	       filename );
       return 1;
     }
 
@@ -141,12 +137,11 @@ write_data( FILE *f, size_t cylinders, size_t heads, size_t sectors,
 
     while( data_size ) {
 
-      char buffer[ CHUNK_LENGTH ];
       size_t bytes_to_write, bytes_written;
 
       bytes_to_write = data_size > CHUNK_LENGTH ? CHUNK_LENGTH : data_size;
 
-      bytes_written = fwrite( buffer, 1, bytes_to_write, f );
+      bytes_written = write( fd, buffer, bytes_to_write );
       if( bytes_written != bytes_to_write ) {
 	fprintf( stderr, "%s: could write only %lu bytes out of %lu to '%s'",
 		 progname, (unsigned long)total_written + bytes_written,
@@ -168,7 +163,7 @@ main( int argc, char **argv )
   size_t cylinders, heads, sectors;
   int compact, sparse;
   const char *filename;
-  FILE *f;
+  int fd;
   int error;
 
   progname = argv[0];
@@ -179,17 +174,19 @@ main( int argc, char **argv )
 			 &sparse, &filename );
   if( error ) return error;
 
-  f = fopen( filename, "wb" );
-  if( !f ) {
+  fd = creat( filename, S_IRUSR | S_IWUSR |
+			S_IRGRP | S_IWGRP |
+			S_IROTH | S_IWOTH   );
+  if( fd == -1 ) {
     fprintf( stderr, "%s: error opening '%s': %s\n", progname, filename,
 	     strerror( errno ) );
     return 1;
   }
 
-  error = write_header( f, cylinders, heads, sectors, compact, filename );
+  error = write_header( fd, cylinders, heads, sectors, compact, filename );
   if( error ) return error;
 
-  error = write_data( f, cylinders, heads, sectors, compact, sparse,
+  error = write_data( fd, cylinders, heads, sectors, compact, sparse,
 		      filename );
   if( error ) return error;
 
