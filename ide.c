@@ -28,5 +28,26 @@
 
 const char *HDF_SIGNATURE = "RS-IDE\x1a";
 const size_t HDF_SIGNATURE_LENGTH = 7;
-const char HDF_VERSION = '\x10';
 const size_t HDF_DATA_OFFSET = 0x80;
+
+char
+hdf_version( enum hdf_version_t version )
+{
+  switch( version ) {
+  case HDF_VERSION_10: return '\x10';
+  case HDF_VERSION_11: return '\x11';
+  }
+
+  return 0;
+}
+
+size_t
+hdf_data_offset( enum hdf_version_t version )
+{
+  switch( version ) {
+  case HDF_VERSION_10: return 0x0080;
+  case HDF_VERSION_11: return 0x0216;
+  }
+
+  return 0;
+}

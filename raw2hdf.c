@@ -1,5 +1,5 @@
 /* raw2hdf.c: Create an .hdf file from a raw binary image
-   Copyright (c) 2005 Matthew Westcott
+   Copyright (c) 2005 Matthew Westcott, 2006 Philip Kendall
 
    $Id$
 
@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "ide.h"
 
@@ -39,44 +40,68 @@ static const size_t MODEL_NUMBER_LENGTH = 40;
 
 int
 parse_options( int argc, char **argv, const char **raw_filename,
-  const char **hdf_filename )
+	       const char **hdf_filename, enum hdf_version_t *version )
 {
+  int c;
 
-  if( argc != 3 ) {
-    fprintf( stderr, "%s: usage: %s <raw-filename> <hdf-filename>\n",
+  while( ( c = getopt( argc, argv, "v:" ) ) != -1 ) {
+
+    switch( c ) {
+
+    case 'v':
+      if( strcasecmp( optarg, "1.0" ) == 0 ) {
+	*version = HDF_VERSION_10;
+      } else if( strcasecmp( optarg, "1.1" ) == 0 ) {
+	*version = HDF_VERSION_11;
+      }
+      break;
+
+    }
+  }
+
+  if( argc - optind != 2 ) {
+    fprintf( stderr, "%s: usage: %s [-v<version>] <raw-filename> <hdf-filename>\n",
              progname, progname );
     return 1;
   }
 
-  *raw_filename  = argv[1];
-  *hdf_filename  = argv[2];
+  *raw_filename  = argv[ optind++ ];
+  *hdf_filename  = argv[ optind++ ];
 
   return 0;
 }
 
 int
-write_header( FILE *f, size_t byte_count, const char *filename )
+write_header( FILE *f, size_t byte_count, const char *filename,
+	      enum hdf_version_t version )
 {
 
-  char hdf_header[ HDF_HEADER_LENGTH ], *identity;
+  char *hdf_header, *identity;
   size_t bytes, total_sectors, head_count, cyl_count, sector_count;
-  size_t sectors_per_head;
+  size_t sectors_per_head, data_offset;
 
-  memset( hdf_header, 0, HDF_HEADER_LENGTH );
+  data_offset = hdf_data_offset( version );
+
+  hdf_header = calloc( 1, data_offset );
+  if( !hdf_header ) {
+    fprintf( stderr, "%s: out of memory at line %d\n", progname, __LINE__ );
+    return 1;
+  }
 
   memcpy( &hdf_header[ HDF_SIGNATURE_OFFSET ], HDF_SIGNATURE,
           HDF_SIGNATURE_LENGTH );
-  hdf_header[ HDF_VERSION_OFFSET ] = HDF_VERSION;
+  hdf_header[ HDF_VERSION_OFFSET ] = hdf_version( version );
   hdf_header[ HDF_COMPACT_OFFSET ] = 0;
-  hdf_header[ HDF_DATA_OFFSET_OFFSET     ] = ( HDF_DATA_OFFSET      ) & 0xff;
-  hdf_header[ HDF_DATA_OFFSET_OFFSET + 1 ] = ( HDF_DATA_OFFSET >> 8 ) & 0xff;
+  hdf_header[ HDF_DATA_OFFSET_OFFSET     ] = ( data_offset      ) & 0xff;
+  hdf_header[ HDF_DATA_OFFSET_OFFSET + 1 ] = ( data_offset >> 8 ) & 0xff;
 
   identity = &hdf_header[ HDF_IDENTITY_OFFSET ];
 
   /* invent suitable geometry to match the file length */
   if( byte_count & 0x1f ) {
     fprintf( stderr,
-      "Warning: image is not a whole number of sectors in length\n" );
+	     "%s: warning: image is not a whole number of sectors in length\n",
+	     progname );
   }
   total_sectors = byte_count >> 9;
   if( total_sectors >= 16514064 ) {
@@ -120,26 +145,29 @@ write_header( FILE *f, size_t byte_count, const char *filename )
           MODEL_NUMBER_LENGTH );  
 
   rewind( f );
-  bytes = fwrite( hdf_header, 1, HDF_HEADER_LENGTH, f );
-  if( bytes != HDF_HEADER_LENGTH ) {
+  bytes = fwrite( hdf_header, 1, data_offset, f );
+  if( bytes != data_offset ) {
     fprintf( stderr,
              "%s: could write only %lu header bytes out of %lu to '%s'\n",
-             progname, (unsigned long)bytes, (unsigned long)HDF_HEADER_LENGTH,
+             progname, (unsigned long)bytes, (unsigned long)data_offset,
              filename );
+    free( hdf_header );
     return 1;
   }
+
+  free( hdf_header );
 
   return 0;
 }
 
 int
 copy_data( FILE *from, FILE *to, size_t *byte_count, const char *from_filename,
-  const char *to_filename )
+	   const char *to_filename, enum hdf_version_t version )
 {
   char buffer[ CHUNK_LENGTH ];
   size_t bytes_read;
 
-  if( fseek( to, HDF_DATA_OFFSET, SEEK_SET ) ) {
+  if( fseek( to, hdf_data_offset( version ), SEEK_SET ) ) {
     fprintf( stderr, "%s: error seeking in '%s': %s\n", progname,
              to_filename, strerror( errno ) );
     return 1;
@@ -174,10 +202,11 @@ main( int argc, char **argv )
   FILE *raw, *hdf;
   int error;
   size_t byte_count;
+  enum hdf_version_t version;
 
   progname = argv[0];
 
-  error = parse_options( argc, argv, &raw_filename, &hdf_filename );
+  error = parse_options( argc, argv, &raw_filename, &hdf_filename, &version );
   if( error ) return error;
 
   raw = fopen( raw_filename, "rb" );
@@ -194,12 +223,13 @@ main( int argc, char **argv )
     return 1;
   }
 
-  error = copy_data( raw, hdf, &byte_count, raw_filename, hdf_filename );
+  error = copy_data( raw, hdf, &byte_count, raw_filename, hdf_filename,
+		     version );
   if( error ) return error;
 
   fclose( raw );
 
-  error = write_header( hdf, byte_count, hdf_filename );
+  error = write_header( hdf, byte_count, hdf_filename, version );
   if( error ) return error;
 
   fclose( hdf );
