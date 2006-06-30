@@ -29,12 +29,15 @@
 
 #include <stdlib.h>
 
-#define HDF_HEADER_LENGTH 0x80
-
 extern const char *HDF_SIGNATURE;
 extern const size_t HDF_SIGNATURE_LENGTH;
-extern const char HDF_VERSION;
-extern const size_t HDF_DATA_OFFSET;
+
+enum hdf_version_t {
+
+  HDF_VERSION_10,
+  HDF_VERSION_11,
+
+};
 
 enum {
 
@@ -55,5 +58,8 @@ enum {
   IDENTITY_CAPABILITIES_OFFSET = 98,
 
 };
+
+char hdf_version( enum hdf_version_t version );
+size_t hdf_data_offset( enum hdf_version_t version );
 
 #endif				/* #ifndef FUSE_UTILS_IDE_H */

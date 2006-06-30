@@ -43,23 +43,30 @@ const char *progname;
 int
 parse_options( int argc, char **argv, size_t *cylinders, size_t *heads,
 	       size_t *sectors, int *compact, int *sparse,
-	       const char **filename )
+	       const char **filename, enum hdf_version_t *version )
 {
   int c;
 
-  while( ( c = getopt( argc, argv, "cs" ) ) != -1 ) {
+  while( ( c = getopt( argc, argv, "csv:" ) ) != -1 ) {
 
     switch( c ) {
 
     case 'c': *compact = 1; break;
     case 's': *sparse = 0; break;
+    case 'v':
+      if( strcasecmp( optarg, "1.0" ) == 0 ) {
+	*version = HDF_VERSION_10;
+      } else if( strcasecmp( optarg, "1.1" ) == 0 ) {
+	*version = HDF_VERSION_11;
+      }
+      break;
 
     }
   }
 
   if( argc - optind < 4 ) {
     fprintf( stderr,
-	     "%s: usage: %s [-c] [-s] <cylinders> <heads> <sectors> <hdf>\n",
+	     "%s: usage: %s [-c] [-s] [-v<version>] <cylinders> <heads> <sectors> <hdf>\n",
 	     progname, progname );
     return 1;
   }
@@ -74,19 +81,25 @@ parse_options( int argc, char **argv, size_t *cylinders, size_t *heads,
 
 int
 write_header( int fd, size_t cylinders, size_t heads, size_t sectors,
-	      int compact, const char *filename )
+	      int compact, const char *filename, enum hdf_version_t version )
 {
-  char hdf_header[ HDF_HEADER_LENGTH ], *identity;
-  size_t bytes;
+  char *hdf_header, *identity;
+  size_t bytes, data_offset;
 
-  memset( hdf_header, 0, HDF_HEADER_LENGTH );
+  data_offset = hdf_data_offset( version );
+
+  hdf_header = calloc( 1, data_offset );
+  if( !hdf_header ) {
+    fprintf( stderr, "%s: out of memory at line %d\n", progname, __LINE__ );
+    return 1;
+  }
 
   memcpy( &hdf_header[ HDF_SIGNATURE_OFFSET ], HDF_SIGNATURE,
 	  HDF_SIGNATURE_LENGTH );
-  hdf_header[ HDF_VERSION_OFFSET ] = HDF_VERSION;
+  hdf_header[ HDF_VERSION_OFFSET ] = hdf_version( version );
   hdf_header[ HDF_COMPACT_OFFSET ] = compact;
-  hdf_header[ HDF_DATA_OFFSET_OFFSET     ] = ( HDF_DATA_OFFSET      ) & 0xff;
-  hdf_header[ HDF_DATA_OFFSET_OFFSET + 1 ] = ( HDF_DATA_OFFSET >> 8 ) & 0xff;
+  hdf_header[ HDF_DATA_OFFSET_OFFSET     ] = ( data_offset      ) & 0xff;
+  hdf_header[ HDF_DATA_OFFSET_OFFSET + 1 ] = ( data_offset >> 8 ) & 0xff;
 
   identity = &hdf_header[ HDF_IDENTITY_OFFSET ];
 
@@ -99,21 +112,25 @@ write_header( int fd, size_t cylinders, size_t heads, size_t sectors,
   identity[ IDENTITY_SECTORS_OFFSET       ] = ( sectors        ) & 0xff;
   identity[ IDENTITY_SECTORS_OFFSET   + 1 ] = ( sectors   >> 8 ) & 0xff;
 
-  bytes = write( fd, hdf_header, HDF_HEADER_LENGTH );
-  if( bytes != HDF_HEADER_LENGTH ) {
+  bytes = write( fd, hdf_header, data_offset );
+  if( bytes != data_offset ) {
     fprintf( stderr,
 	     "%s: could write only %lu header bytes out of %lu to '%s'\n",
-	     progname, (unsigned long)bytes, (unsigned long)HDF_HEADER_LENGTH,
+	     progname, (unsigned long)bytes, (unsigned long)data_offset,
 	     filename );
+    free( hdf_header );
     return 1;
   }
+
+  free( hdf_header );
 
   return 0;
 }
 
 int
 write_data( int fd, size_t cylinders, size_t heads, size_t sectors,
-	    int compact, int sparse, const char *filename )
+	    int compact, int sparse, const char *filename,
+	    enum hdf_version_t version )
 {
   size_t data_size;
 
@@ -121,7 +138,7 @@ write_data( int fd, size_t cylinders, size_t heads, size_t sectors,
 
   if( sparse ) {
 
-    if( ftruncate( fd, data_size ) ) {
+    if( ftruncate( fd, data_size + hdf_data_offset( version ) ) ) {
       fprintf( stderr, "%s: error truncating '%s': %s\n", progname, filename,
 	       strerror( errno ) );
       return 1;
@@ -162,6 +179,7 @@ main( int argc, char **argv )
 {
   size_t cylinders, heads, sectors;
   int compact, sparse;
+  enum hdf_version_t version;
   const char *filename;
   int fd;
   int error;
@@ -170,8 +188,9 @@ main( int argc, char **argv )
 
   compact = 0;
   sparse = 1;
+  version = HDF_VERSION_11;
   error = parse_options( argc, argv, &cylinders, &heads, &sectors, &compact,
-			 &sparse, &filename );
+			 &sparse, &filename, &version );
   if( error ) return error;
 
   fd = creat( filename, S_IRUSR | S_IWUSR |
@@ -183,11 +202,12 @@ main( int argc, char **argv )
     return 1;
   }
 
-  error = write_header( fd, cylinders, heads, sectors, compact, filename );
+  error = write_header( fd, cylinders, heads, sectors, compact, filename,
+			version );
   if( error ) return error;
 
   error = write_data( fd, cylinders, heads, sectors, compact, sparse,
-		      filename );
+		      filename, version );
   if( error ) return error;
 
   return 0;
