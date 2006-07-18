@@ -989,6 +989,10 @@ libspectrum_tape_block_description( char *buffer, size_t length,
     strncpy( buffer, "Custom Info", length );
     break;
 
+  case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
+    strncpy( buffer, "RLE Pulse", length );
+    break;
+
   default:
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_LOGIC,
