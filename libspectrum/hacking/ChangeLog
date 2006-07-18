@@ -345,3 +345,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (Darren).
 20051224 autogen.sh: add --automake to libtoolize invocation (Markus
          Obermuller). Remove --copy on automake.
+20060718 tape.c: add block description for RLE blocks (Fred).
