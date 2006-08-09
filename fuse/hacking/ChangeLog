@@ -1430,3 +1430,7 @@
          aligned access, comparison and assignment (Fred).
 20060810 display.c: bulk allocate border changes (helps with Shock II
          performance) (Fred).
+20060810 event.c: display events are frequent and nearly always added to the
+         front, and there is only one outstanding at any one time. Add a
+         dedicated slot for display events which are being added to the head
+         of the queue (Fred).
