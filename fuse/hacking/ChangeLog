@@ -1428,3 +1428,5 @@
 20060809 display.c: don't use get_beam_position in display_write, replace the
          three individual display cache elements with a single dword for faster
          aligned access, comparison and assignment (Fred).
+20060810 display.c: bulk allocate border changes (helps with Shock II
+         performance) (Fred).

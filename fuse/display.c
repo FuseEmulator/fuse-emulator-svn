@@ -140,15 +140,31 @@ display_get_addr( int x, int y )
   }
 }
 
+static int last_border_list_size = 0;
+
+struct border_change_t *
+alloc_change(void)
+{
+  static int change_list_size = 0;
+  static struct border_change_t *change_list = NULL;
+
+  if( last_border_list_size == change_list_size ) {
+    change_list_size += 10;
+    change_list = realloc( change_list,
+                           (change_list_size+10)*sizeof( struct border_change_t )
+                         );
+    if( !change_list ) {
+      ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
+      fuse_abort();
+    }
+  }
+  return change_list + last_border_list_size++; 
+}
+
 static int
 add_border_sentinel( void )
 {
-  struct border_change_t *sentinel = malloc( sizeof( *sentinel ) );
-
-  if( !sentinel ) {
-    ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
-    return 1;
-  }
+  struct border_change_t *sentinel = alloc_change();
 
   sentinel->x = sentinel->y = 0;
   sentinel->colour = scld_last_dec.name.hires ?
@@ -578,7 +594,7 @@ push_border_change( int colour )
   if( beam_x > DISPLAY_SCREEN_WIDTH_COLS ) beam_x = DISPLAY_SCREEN_WIDTH_COLS;
   if( beam_y < 0 ) beam_y = 0;
 
-  change = malloc( sizeof( *change ) );
+  change = alloc_change();
   if( !change ) {
     ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
     return;
@@ -738,7 +754,7 @@ update_border( void )
        first->next;
        first = second, second = second->next ) {
     do_border_change( first->data, second->data );
-    free( first->data );
+    last_border_list_size = 0;
   }
 
   g_slist_free( border_changes ); border_changes = NULL;
