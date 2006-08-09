@@ -62,13 +62,19 @@ static libspectrum_byte display_current_border[ DISPLAY_SCREEN_HEIGHT ];
 
 /* Stores the pixel, attribute and SCLD screen mode information used to
    draw each 8x1 group of pixels (including border) last frame */
-static libspectrum_byte
-display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT*3 ];
+static libspectrum_dword
+display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT ];
 
 /* Offsets as to where the data and the attributes for each pixel
    line start */
 libspectrum_word display_line_start[ DISPLAY_HEIGHT ];
 libspectrum_word display_attr_start[ DISPLAY_HEIGHT ];
+
+/* Used for grouping screen writes together */
+struct point { int x,y; };
+
+/* Offsets for the coordinates of each ULA/SCLD display probe */
+struct point ula_read_coords[DISPLAY_WIDTH_COLS*DISPLAY_HEIGHT];
 
 /* The number of frames mod 32 that have elapsed.
     0<=d_f_c<16 => Flashing characters are normal
@@ -167,8 +173,9 @@ display_init( int *argc, char ***argv )
   for( i = 0; i < DISPLAY_SCREEN_WIDTH_COLS; i++ )
     display_all_dirty = ( display_all_dirty << 1 ) | 0x01;
 
-  memset( display_last_screen, 255,
-          DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT*3 );
+  memset( display_last_screen, 0xff,
+          DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT*
+          sizeof(libspectrum_dword) );
 
   for(i=0;i<3;i++)
     for(j=0;j<8;j++)
@@ -194,6 +201,13 @@ display_init( int *argc, char ***argv )
   error = add_border_sentinel(); if( error ) return error;
   display_last_border = scld_last_dec.name.hires ?
                             display_hires_border : display_lores_border;
+
+  for( y=0; y<DISPLAY_HEIGHT; y++ ) {
+    for( i=0; i<DISPLAY_WIDTH_COLS; i++ ) {
+      struct point p = { i, y };
+      ula_read_coords[ i + y * DISPLAY_WIDTH_COLS ] = p;
+    }
+  }
 
   return 0;
 }
@@ -613,27 +627,22 @@ display_set_hires_border( int colour )
 static void
 set_border( int y, int start, int end, int colour )
 {
-  /* Fake byte */
-  libspectrum_byte data = 255;
-  /* and fake screen mode */
-  libspectrum_byte mode_data = 0;
-  int index = (start + y * DISPLAY_SCREEN_WIDTH_COLS)*3;
+  libspectrum_dword d = 0x000000ff | colour << 8;
+  int index = (start + y * DISPLAY_SCREEN_WIDTH_COLS);
 
   for( ; start < end; start++ ) {
     /* Draw it if it is different to what was there last time - we know that
-       data and mode will have been the same*/
-    if( display_last_screen[ index+1 ] != colour ) {
-      display_plot8( start, y, data, colour, 0 );
+       data and mode will have been the same */
+    if( display_last_screen[ index ] != d ) {
+      display_plot8( start, y, 0xff, colour, 0 );
 
       /* Update last display record */
-      display_last_screen[ index ] = data;
-      display_last_screen[ index+1 ] = colour;
-      display_last_screen[ index+2 ] = mode_data;
+      display_last_screen[ index ] = d;
 
       /* And now mark it dirty */
       display_is_dirty[y] |= ( (libspectrum_qword)1 << start );
     }
-    index += 3;
+    index++;
   }
 }
 
@@ -827,8 +836,9 @@ void display_refresh_all(void)
   for( i = 0; i < DISPLAY_SCREEN_HEIGHT; i++ )
     display_current_border[i] = display_border_mixed;
 
-  memset( display_last_screen, 255,
-          DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT*3 );
+  memset( display_last_screen, 0xff,
+          DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT*
+          sizeof(libspectrum_dword) );
 }
 
 void
@@ -836,12 +846,13 @@ display_write( libspectrum_dword last_tstates )
 {
   static int next_ula = 0;
   int beam_x, beam_y;
-  int x, y;
+  int x, y, index;
   libspectrum_word offset;
   libspectrum_byte *screen;
-  libspectrum_byte data, data2;
-  libspectrum_byte mode_data;
-  libspectrum_word hires_data;
+  libspectrum_dword data, data2;
+  libspectrum_dword mode_data;
+  libspectrum_word hires_data = 0;
+  libspectrum_dword d;
 
   /* last_tstates == 0 means schedule first event of the frame */
   if( !last_tstates ) {
@@ -851,19 +862,16 @@ display_write( libspectrum_dword last_tstates )
     return;
   }
 
-  /* Convert tstates to address */
-  get_beam_position( last_tstates, &beam_x, &beam_y );
-  x = beam_x - DISPLAY_BORDER_WIDTH_COLS;
-  y = beam_y - DISPLAY_BORDER_HEIGHT;
+  x = ula_read_coords[ next_ula ].x;
+  y = ula_read_coords[ next_ula ].y;
+  beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
+  beam_y = y + DISPLAY_BORDER_HEIGHT;
   offset = display_get_addr( x, y );
 
   /* Read byte, atrr/byte, and screen mode */
   screen = RAM[ memory_current_screen ];
   data = screen[ offset ];
-  mode_data = ( display_flash_reversed<<7 |
-                scld_last_dec.mask.hirescol |
-                scld_last_dec.mask.scrnmode
-              );
+  mode_data = scld_last_dec.byte;
 
   if( scld_last_dec.name.hires ) {
     switch( scld_last_dec.mask.scrnmode ) {
@@ -892,12 +900,10 @@ display_write( libspectrum_dword last_tstates )
     data2 = display_get_attr_byte( x, y );
   }
 
+  d = (display_flash_reversed << 24) | (mode_data << 16) | (data2 << 8) | data;
   /* And draw it if it is different to what was there last time */
-  int index = (beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS)*3;
-  if( display_last_screen[ index ] != data ||
-      display_last_screen[ index+1 ] != data2 ||
-      display_last_screen[ index+2 ] != mode_data
-    ) {
+  index = (beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS);
+  if( display_last_screen[ index ] != d ) {
     libspectrum_byte ink, paper;
     display_get_attr( x, y, &ink, &paper );
     if( scld_last_dec.name.hires ) {
@@ -907,9 +913,7 @@ display_write( libspectrum_dword last_tstates )
     }
 
     /* Update last display record */
-    display_last_screen[ index ] = data;
-    display_last_screen[ index+1 ] = data2;
-    display_last_screen[ index+2 ] = mode_data;
+    display_last_screen[ index ] = d;
 
     /* And now mark it dirty */
     display_is_dirty[beam_y] |= ( (libspectrum_qword)1 << beam_x );

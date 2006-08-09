@@ -1425,3 +1425,6 @@
          freeing them each time (Fred).
 20060809 event.c: use a single free element pointer rather than a list for
          more speed (Fred).
+20060809 display.c: don't use get_beam_position in display_write, replace the
+         three individual display cache elements with a single dword for faster
+         aligned access, comparison and assignment (Fred).
