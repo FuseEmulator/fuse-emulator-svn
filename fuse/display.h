@@ -96,7 +96,9 @@ int display_dirty_border(void);
 int display_frame(void);
 void display_refresh_all(void);
 
-libspectrum_word display_get_addr( int x, int y );
+#define display_get_addr( x, y ) \
+  scld_last_dec.name.altdfile ? display_line_start[(y)]+(x)+ALTDFILE_OFFSET : \
+  display_line_start[(y)]+(x)
 
 void display_write( libspectrum_dword last_tstates );
 

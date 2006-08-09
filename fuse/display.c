@@ -119,8 +119,6 @@ struct border_change_t {
 static struct border_change_t border_change_end_sentinel =
   { DISPLAY_SCREEN_WIDTH_COLS, DISPLAY_SCREEN_HEIGHT - 1, 0 };
 
-GSList *border_changes;
-
 /* The current border colour */
 int current_border[ DISPLAY_SCREEN_HEIGHT ][ DISPLAY_SCREEN_WIDTH_COLS ];
 
@@ -130,35 +128,26 @@ static void display_get_attr( int x, int y,
 static int add_rectangle( int y, int x, int w );
 static int end_line( int y );
 
-libspectrum_word
-display_get_addr( int x, int y )
-{
-  if ( scld_last_dec.name.altdfile ) {
-    return display_line_start[y]+x+ALTDFILE_OFFSET;
-  } else {
-    return display_line_start[y]+x;
-  }
-}
-
-static int last_border_list_size = 0;
+static int border_changes_last = 0;
+static struct border_change_t *border_changes = NULL;
 
 struct border_change_t *
 alloc_change(void)
 {
-  static int change_list_size = 0;
-  static struct border_change_t *change_list = NULL;
+  static int border_changes_size = 0;
 
-  if( last_border_list_size == change_list_size ) {
-    change_list_size += 10;
-    change_list = realloc( change_list,
-                           (change_list_size+10)*sizeof( struct border_change_t )
-                         );
-    if( !change_list ) {
+  if( border_changes_size == border_changes_last ) {
+    border_changes_size += 10;
+    border_changes = realloc( border_changes,
+                              border_changes_size*
+                                sizeof( struct border_change_t )
+                            );
+    if( !border_changes ) {
       ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
       fuse_abort();
     }
   }
-  return change_list + last_border_list_size++; 
+  return border_changes + border_changes_last++; 
 }
 
 static int
@@ -169,8 +158,6 @@ add_border_sentinel( void )
   sentinel->x = sentinel->y = 0;
   sentinel->colour = scld_last_dec.name.hires ?
                             display_hires_border : display_lores_border;
-
-  border_changes = g_slist_prepend( border_changes, sentinel );
 
   return 0;
 }
@@ -213,6 +200,10 @@ display_init( int *argc, char ***argv )
 
   display_redraw_all = 0;
 
+  border_changes_last = 0;
+  if( border_changes ) {
+    free( border_changes );
+  }
   border_changes = NULL;
   error = add_border_sentinel(); if( error ) return error;
   display_last_border = scld_last_dec.name.hires ?
@@ -595,16 +586,10 @@ push_border_change( int colour )
   if( beam_y < 0 ) beam_y = 0;
 
   change = alloc_change();
-  if( !change ) {
-    ui_error( UI_ERROR_ERROR, "out of memory at %s:%d", __FILE__, __LINE__ );
-    return;
-  }
 
   change->x = beam_x;
   change->y = beam_y;
   change->colour = colour;
-
-  border_changes = g_slist_append( border_changes, change );
 }
 
 /* Change border colour if the colour in use changes */
@@ -743,21 +728,20 @@ do_border_change( struct border_change_t *first,
 static void
 update_border( void )
 {
-  GSList *first, *second;
+  int pos;
   int error;
 
   /* Put the final sentinel onto the list */
-  border_changes = g_slist_append( border_changes,
-				   &border_change_end_sentinel );
+  struct border_change_t *end_sentinel = alloc_change();
 
-  for( first = border_changes, second = first->next;
-       first->next;
-       first = second, second = second->next ) {
-    do_border_change( first->data, second->data );
-    last_border_list_size = 0;
+  memcpy( end_sentinel, &border_change_end_sentinel,
+          sizeof( struct border_change_t ) );
+
+  for( pos = 0; pos < border_changes_last-1; pos++ ) {
+    do_border_change( border_changes+pos, border_changes+pos+1 );
   }
 
-  g_slist_free( border_changes ); border_changes = NULL;
+  border_changes_last = 0;
 
   error = add_border_sentinel(); if( error ) return;
 
@@ -932,7 +916,7 @@ display_write( libspectrum_dword last_tstates )
     display_last_screen[ index ] = d;
 
     /* And now mark it dirty */
-    display_is_dirty[beam_y] |= ( (libspectrum_qword)1 << beam_x );
+    display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
   }
 
   /* Schedule next EVENT_TYPE_DISPLAY_WRITE as long as there are reads

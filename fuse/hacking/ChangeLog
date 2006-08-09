@@ -1434,3 +1434,5 @@
          front, and there is only one outstanding at any one time. Add a
          dedicated slot for display events which are being added to the head
          of the queue (Fred).
+20060810 display.[ch]: make display_get_addr a macro and make border_changes
+         an array rather than a gslist (more Shock II performance) (Fred).
