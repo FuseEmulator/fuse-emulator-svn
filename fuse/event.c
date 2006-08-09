@@ -56,8 +56,8 @@ libspectrum_dword event_next_event;
 /* The actual list of events */
 static GSList* event_list;
 
-/* The list of events ready to be reused */
-static GSList* event_free_list;
+/* An event ready to be reused */
+static event_t *event_free;
 
 /* Comparision function so events stay in t-state order */
 static gint event_add_cmp( gconstpointer a, gconstpointer b );
@@ -78,7 +78,7 @@ static int event_force_events( void );
 int event_init(void)
 {
   event_list=NULL;
-  event_free_list=NULL;
+  event_free=NULL;
   event_next_event=event_no_events;
   return 0;
 }
@@ -89,9 +89,9 @@ event_add( libspectrum_dword event_time, event_type type )
 {
   event_t *ptr;
 
-  if( event_free_list ) {
-    ptr=((event_t*)(event_free_list->data) );
-    event_free_list=g_slist_remove(event_free_list,ptr);
+  if( event_free ) {
+    ptr=event_free;
+    event_free=NULL;
   } else {
     ptr=(event_t*)malloc(sizeof(event_t));
     if(!ptr) return 1;
@@ -100,9 +100,12 @@ event_add( libspectrum_dword event_time, event_type type )
   ptr->tstates= event_time;
   ptr->type=type;
 
-  event_list=g_slist_insert_sorted(event_list,(gpointer)ptr,event_add_cmp);
-
-  if( event_time < event_next_event ) event_next_event = event_time;
+  if( event_time < event_next_event ) {
+    event_next_event = event_time;
+    event_list=g_slist_prepend(event_list,(gpointer)ptr);
+  } else {
+    event_list=g_slist_insert_sorted(event_list,(gpointer)ptr,event_add_cmp);
+  }
 
   return 0;
 }
@@ -183,7 +186,11 @@ int event_do_events(void)
       ui_error( UI_ERROR_ERROR, "unknown event type %d", ptr->type );
       break;
     }
-    event_free_list=g_slist_prepend(event_free_list,ptr);
+    if( event_free ) {
+      free( ptr );
+    } else {
+      event_free=ptr;
+    }
   }
 
   return 0;
@@ -237,10 +244,9 @@ int event_reset(void)
   g_slist_foreach(event_list,event_free_entry,NULL);
   g_slist_free(event_list);
   event_list=NULL;
-  g_slist_foreach(event_free_list,event_free_entry,NULL);
-  g_slist_free(event_free_list);
-  event_free_list=NULL;
   event_next_event=event_no_events;
+  if( event_free ) free( event_free );
+  event_free=NULL;
   return 0;
 }
 

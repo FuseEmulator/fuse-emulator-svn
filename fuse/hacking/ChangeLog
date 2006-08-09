@@ -1423,3 +1423,5 @@
          display_plot8 for drawing (Fred).
 20060801 event.c: store old events in a free list rather than mallocing and
          freeing them each time (Fred).
+20060809 event.c: use a single free element pointer rather than a list for
+         more speed (Fred).
