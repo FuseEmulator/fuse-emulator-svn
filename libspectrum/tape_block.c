@@ -1,5 +1,5 @@
 /* tape_block.c: one tape block
-   Copyright (c) 2003 Philip Kendall
+   Copyright (c) 2003-2006 Philip Kendall
 
    $Id$
 
@@ -280,4 +280,39 @@ raw_data_init( libspectrum_tape_raw_data_block *block )
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
+}
+
+/* Does this block consist solely of metadata? */
+int
+libspectrum_tape_block_metadata( libspectrum_tape_block *block )
+{
+  switch( block->type ) {
+  case LIBSPECTRUM_TAPE_BLOCK_ROM:
+  case LIBSPECTRUM_TAPE_BLOCK_TURBO:
+  case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
+  case LIBSPECTRUM_TAPE_BLOCK_PULSES:
+  case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
+  case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
+  case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
+  case LIBSPECTRUM_TAPE_BLOCK_JUMP:
+  case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
+  case LIBSPECTRUM_TAPE_BLOCK_SELECT:
+  case LIBSPECTRUM_TAPE_BLOCK_STOP48:
+  case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
+    return 0;
+
+  case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
+  case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
+  case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
+  case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
+  case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
+  case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
+  case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
+  case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
+  case LIBSPECTRUM_TAPE_BLOCK_CONCAT:
+    return 1;
+  }
+
+  /* Should never happen */
+  return -1;
 }

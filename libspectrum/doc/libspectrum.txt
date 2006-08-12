@@ -900,6 +900,12 @@ type, an error will be printed and LIBSPECTRUM_ERROR_INVALID returned.
 For the `get' functions, an error will be printed and an undefined
 value returned.
 
+int
+libspectrum_tape_block_metadata( libspectrum_tape_block *block )
+
+Returns 1 if the block consists solely of metadata (comments, etc) or
+0 if it contains real data.
+
 The `get' and `set' functions follow the same pattern as for the
 snapshot routines: the `get' functions are like
 
