@@ -1436,3 +1436,6 @@
          of the queue (Fred).
 20060810 display.[ch]: make display_get_addr a macro and make border_changes
          an array rather than a gslist (more Shock II performance) (Fred).
+20060812 display.[ch],memory.c,scld.c,machines/spec128.c: put chunks on a
+         checklist when written to and shortcircuit ULA reads where there is
+         no chance changes have been made to the screen (Fred).

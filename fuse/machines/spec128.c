@@ -227,6 +227,7 @@ spec128_memory_map( void )
 {
   int page, rom;
   size_t i;
+  int old_current_screen = memory_current_screen;
 
   page = machine_current->ram.last_byte & 0x07;
   memory_current_screen = ( machine_current->ram.last_byte & 0x08 ) ? 7 : 5;
@@ -239,6 +240,9 @@ spec128_memory_map( void )
     memory_map_read[i] = memory_map_write[i] = *memory_map_home[i];
 
   memory_romcs_map();
+
+  if( memory_current_screen != old_current_screen )
+    display_refresh_main_screen();
 
   return 0;
 }

@@ -70,6 +70,22 @@ display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT ];
 libspectrum_word display_line_start[ DISPLAY_HEIGHT ];
 libspectrum_word display_attr_start[ DISPLAY_HEIGHT ];
 
+/* If you write to the byte at display_dirty_?table[n+0x4000], then
+   the eight pixels starting at (8*xtable[n],ytable[n]) must be
+   replotted */
+static libspectrum_word
+  display_dirty_ytable[ DISPLAY_WIDTH_COLS * DISPLAY_HEIGHT ];
+static libspectrum_word
+  display_dirty_xtable[ DISPLAY_WIDTH_COLS * DISPLAY_HEIGHT ];
+
+/* If you write to the byte at display_dirty_?table2[n+0x5800], then
+   the 64 pixels starting at (8*xtable2[n],ytable2[n]) must be
+   replotted */
+static libspectrum_word
+  display_dirty_ytable2[ DISPLAY_WIDTH_COLS * DISPLAY_HEIGHT_ROWS ];
+static libspectrum_word
+  display_dirty_xtable2[ DISPLAY_WIDTH_COLS * DISPLAY_HEIGHT_ROWS ];
+
 /* Used for grouping screen writes together */
 struct point { int x,y; };
 
@@ -87,6 +103,12 @@ static int display_flash_reversed;
    be redisplayed. Bit 0 corresponds to pixels 0-7, bit 39 to
    pixels 311-319. */
 static libspectrum_qword display_is_dirty[ DISPLAY_SCREEN_HEIGHT ];
+
+/* Which non-border eight-pixel chunks on each line might need to
+   be redisplayed. Bit 0 corresponds to pixels 0-7, bit 31 to
+   pixels 247-255. */
+static libspectrum_dword display_maybe_dirty[ DISPLAY_SCREEN_HEIGHT ];
+
 /* This value signifies that the entire line must be redisplayed */
 static libspectrum_qword display_all_dirty;
 
@@ -122,11 +144,16 @@ static struct border_change_t border_change_end_sentinel =
 /* The current border colour */
 int current_border[ DISPLAY_SCREEN_HEIGHT ][ DISPLAY_SCREEN_WIDTH_COLS ];
 
+static void display_dirty8( libspectrum_word address );
+static void display_dirty64( libspectrum_word address );
+
 static void display_get_attr( int x, int y,
 			      libspectrum_byte *ink, libspectrum_byte *paper);
 
 static int add_rectangle( int y, int x, int w );
 static int end_line( int y );
+
+static void display_dirty_flashing(void);
 
 static int border_changes_last = 0;
 static struct border_change_t *border_changes = NULL;
@@ -165,7 +192,7 @@ add_border_sentinel( void )
 int
 display_init( int *argc, char ***argv )
 {
-  int i, j, k, y;
+  int i, j, k, x, y;
   int error;
 
   if(ui_init(argc, argv))
@@ -175,10 +202,6 @@ display_init( int *argc, char ***argv )
   display_all_dirty = 0;
   for( i = 0; i < DISPLAY_SCREEN_WIDTH_COLS; i++ )
     display_all_dirty = ( display_all_dirty << 1 ) | 0x01;
-
-  memset( display_last_screen, 0xff,
-          DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT*
-          sizeof(libspectrum_dword) );
 
   for(i=0;i<3;i++)
     for(j=0;j<8;j++)
@@ -190,15 +213,21 @@ display_init( int *argc, char ***argv )
     display_attr_start[y]=6144 + (32*(y/8));
   }
 
+  for(y=0;y<DISPLAY_HEIGHT;y++)
+    for(x=0;x<DISPLAY_WIDTH_COLS;x++) {
+      display_dirty_ytable[ display_line_start[y]+x ] =        y;
+      display_dirty_xtable[ display_line_start[y]+x ] = x;
+    }
+
+  for(y=0;y<DISPLAY_HEIGHT_ROWS;y++)
+    for(x=0;x<DISPLAY_WIDTH_COLS;x++) {
+      display_dirty_ytable2[ (32*y) + x ] = y * 8;
+      display_dirty_xtable2[ (32*y) + x ] = x;
+    }
+
   display_frame_count=0; display_flash_reversed=0;
 
-  for( y = 0; y < DISPLAY_SCREEN_HEIGHT; y++ )
-    display_is_dirty[ y ] = display_all_dirty;
-
-  for( y = 0; y < DISPLAY_SCREEN_HEIGHT; y++ )
-    display_current_border[ y ] = display_border_mixed;
-
-  display_redraw_all = 0;
+  display_refresh_all();
 
   border_changes_last = 0;
   if( border_changes ) {
@@ -814,8 +843,10 @@ display_frame( void )
   display_frame_count++;
   if(display_frame_count==16) {
     display_flash_reversed=1;
+    display_dirty_flashing();
   } else if(display_frame_count==32) {
     display_flash_reversed=0;
+    display_dirty_flashing();
     display_frame_count=0;
   }
   
@@ -824,21 +855,70 @@ display_frame( void )
   return 0;
 }
 
+static void display_dirty_flashing(void)
+{
+  libspectrum_word offset;
+  libspectrum_byte *screen, attr;
+
+  screen = RAM[ memory_current_screen ];
+
+  if( !scld_last_dec.name.hires ) {
+    if( scld_last_dec.name.b1 ) {
+
+      for( offset = ALTDFILE_OFFSET; offset < 0x3800; offset++ ) {
+        attr = screen[ offset ];
+        if( attr & 0x80 ) display_dirty8( offset - ALTDFILE_OFFSET );
+      }
+
+    } else if( scld_last_dec.name.altdfile ) {
+
+      for( offset= 0x3800; offset < 0x3b00; offset++ ) {
+        attr = screen[ offset ];
+        if( attr & 0x80 ) display_dirty64( offset - ALTDFILE_OFFSET );
+      }
+
+      for( offset = 0x1800; offset < 0x1b00; offset++ ) {
+        attr = screen[ offset ];
+        if( attr & 0x80 ) display_dirty64( offset );
+      }
+
+    } else { /* Standard Speccy screen */
+
+      for( offset = 0x1800; offset < 0x1b00; offset++ ) {
+        attr = screen[ offset ];
+        if( attr & 0x80 ) display_dirty64( offset );
+      }
+
+    }
+  }
+}
+
+void display_refresh_main_screen(void)
+{
+  size_t i;
+
+  for( i = 0; i < DISPLAY_HEIGHT; i++ )
+    display_maybe_dirty[i] = display_all_dirty;
+
+  for( i = 0; i < DISPLAY_SCREEN_HEIGHT; i++ )
+    display_is_dirty[i] = display_all_dirty;
+
+  memset( display_last_screen, 0xff,
+          DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT*
+          sizeof(libspectrum_dword) );
+}
+
 void display_refresh_all(void)
 {
   size_t i;
 
   display_redraw_all = 1;
 
-  for( i = 0; i < DISPLAY_SCREEN_HEIGHT; i++ )
-    display_is_dirty[i] = display_all_dirty;
-
-  for( i = 0; i < DISPLAY_SCREEN_HEIGHT; i++ )
+  for( i = 0; i < DISPLAY_SCREEN_HEIGHT; i++ ) {
     display_current_border[i] = display_border_mixed;
+  }
 
-  memset( display_last_screen, 0xff,
-          DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT*
-          sizeof(libspectrum_dword) );
+  display_refresh_main_screen();
 }
 
 void
@@ -864,6 +944,12 @@ display_write( libspectrum_dword last_tstates )
 
   x = ula_read_coords[ next_ula ].x;
   y = ula_read_coords[ next_ula ].y;
+
+  if( !(display_maybe_dirty[y] & ( (libspectrum_dword)1 << x ) )) {
+    goto next_event;
+  }
+  display_maybe_dirty[y] ^= ( (libspectrum_dword)1 << x );
+
   beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
   beam_y = y + DISPLAY_BORDER_HEIGHT;
   offset = display_get_addr( x, y );
@@ -919,9 +1005,85 @@ display_write( libspectrum_dword last_tstates )
     display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
   }
 
+next_event:
   /* Schedule next EVENT_TYPE_DISPLAY_WRITE as long as there are reads
      still to be done this frame */
   if( ++next_ula < DISPLAY_WIDTH_COLS*DISPLAY_HEIGHT )
     event_add( machine_current->ula_read_sequence[ next_ula ],
                 EVENT_TYPE_DISPLAY_WRITE );
+}
+
+/* Mark the 8-pixel chunk at (x,y) as maybe dirty */
+static void
+display_dirty_chunk( int x, int y )
+{
+  display_maybe_dirty[y] |= ( (libspectrum_dword)1 << x );
+}
+
+static void
+display_dirty8( libspectrum_word offset )
+{
+  int x, y;
+
+  x=display_dirty_xtable[ offset ];
+  y=display_dirty_ytable[ offset ];
+
+  display_dirty_chunk( x, y );
+}
+
+static void
+display_dirty64( libspectrum_word offset )
+{
+  int i, x, y;
+
+  x=display_dirty_xtable2[ offset - 0x1800 ];
+  y=display_dirty_ytable2[ offset - 0x1800 ];
+
+  for( i = 0; i < 8; i++ ) display_dirty_chunk( x, y + i );
+}
+
+/* Mark as maybe 'dirty' the pixels which may have been changed by a write to
+  'offset' within the RAM page containing the screen */
+void
+display_dirty( libspectrum_word offset )
+{
+  switch ( scld_last_dec.mask.scrnmode ) {
+
+  case STANDARD: /* standard Speccy screen */
+  case HIRESATTR: /* strange mode */
+    if( offset >= 0x1b00 ) break;
+    if( offset <  0x1800 ) {          /* 0x1800 = first attributes byte */
+      display_dirty8( offset );
+    } else { 
+      display_dirty64( offset );
+    }
+    break;
+
+  case ALTDFILE: /* second screen */
+  case HIRESATTRALTD: /* strange mode using second screen */      
+    if( offset < 0x2000 || offset >= 0x3b00 ) break;
+    if( offset < 0x3800 ) {           /* 0x3800 = first attributes byte */
+      display_dirty8( offset - ALTDFILE_OFFSET );
+    } else {
+      display_dirty64( offset - ALTDFILE_OFFSET );
+    }
+    break;
+
+  case EXTCOLOUR: /* extended colours */
+  case HIRES: /* hires mode */
+    if( offset >= 0x3800 ) break;
+    if( offset >= 0x1800 && offset < 0x2000 ) break;
+    if( offset >= 0x2000 ) offset -= ALTDFILE_OFFSET;
+    display_dirty8( offset );
+    break;
+
+  default:
+    /* case EXTCOLALTD: extended colours, but attributes and data
+       taken from second screen */
+    /* case HIRESDOUBLECOL: hires mode, but data taken only from
+       second screen */
+    if( offset >= 0x2000 && offset < 0x3800 )
+      display_dirty8( offset - ALTDFILE_OFFSET );
+    break;
+  }
 }

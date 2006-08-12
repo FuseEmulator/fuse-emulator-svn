@@ -236,12 +236,14 @@ writebyte_internal( libspectrum_word address, libspectrum_byte b )
        takes effect */
     if( mapping->bank == MEMORY_BANK_HOME && 
 	mapping->page_num == memory_current_screen &&
-	( offset2 & memory_screen_mask ) < 0x1b00 &&
-        event_next_event <= tstates &&
-        event_next_event >= machine_current->ula_read_sequence[ 0 ] &&
-        event_next_event <= machine_current->ula_read_sequence[
-                                    DISPLAY_WIDTH_COLS*DISPLAY_HEIGHT-1 ] ) {
+	( offset2 & memory_screen_mask ) < 0x1b00 ) {
+      display_dirty( offset2 );
+      if( event_next_event <= tstates &&
+          event_next_event >= machine_current->ula_read_sequence[ 0 ] &&
+          event_next_event <= machine_current->ula_read_sequence[
+                                      DISPLAY_WIDTH_COLS*DISPLAY_HEIGHT-1 ] ) {
         event_do_events();
+      }
     }
     memory[ offset ] = b;
   }

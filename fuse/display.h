@@ -86,6 +86,8 @@ void display_plot8( int x, int y, libspectrum_byte data, libspectrum_byte ink,
 void display_plot16( int x, int y, libspectrum_word data, libspectrum_byte ink,
 		     libspectrum_byte paper);
 
+void display_dirty( libspectrum_word offset );
+
 void display_parse_attr( libspectrum_byte attr, libspectrum_byte *ink,
 			 libspectrum_byte *paper );
 
@@ -94,6 +96,7 @@ void display_set_hires_border(int colour);
 int display_dirty_border(void);
 
 int display_frame(void);
+void display_refresh_main_screen(void);
 void display_refresh_all(void);
 
 #define display_get_addr( x, y ) \

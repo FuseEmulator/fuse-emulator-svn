@@ -74,6 +74,10 @@ scld_dec_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 
   display_parse_attr( hires_get_attr(), &ink, &paper );
   display_set_hires_border( paper );
+
+  if( scld_last_dec.name.altdfile != old_dec.name.altdfile ||
+      scld_last_dec.name.hires != old_dec.name.hires )
+    display_refresh_main_screen();
 }
 
 void
