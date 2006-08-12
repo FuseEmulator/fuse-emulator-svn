@@ -1,5 +1,5 @@
 /* libspectrum.h: the library for dealing with ZX Spectrum emulator files
-   Copyright (c) 2001-2005 Philip Kendall, Darren Salt, Fredrick Meunier
+   Copyright (c) 2001-2006 Philip Kendall, Darren Salt, Fredrick Meunier
 
    $Id$
 
@@ -510,6 +510,9 @@ libspectrum_tape_block_init( libspectrum_tape_block *block );
 libspectrum_error WIN32_DLL
 libspectrum_tape_block_description( char *buffer, size_t length,
 	                            libspectrum_tape_block *block );
+
+int WIN32_DLL
+libspectrum_tape_block_metadata( libspectrum_tape_block *block );
 
 /* Accessor functions */
 LIBSPECTRUM_TAPE_ACCESSORS

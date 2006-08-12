@@ -346,3 +346,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20051224 autogen.sh: add --automake to libtoolize invocation (Markus
          Obermuller). Remove --copy on automake.
 20060718 tape.c: add block description for RLE blocks (Fred).
+20060812 libspectrum.h.in,tape_block.c,doc/libspectrum.txt: add
+	 libspectrum_tape_block_metadata() function (needed to fix North
+	 and South and Super Hang-On; see bug #1531346).
+
