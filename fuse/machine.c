@@ -269,7 +269,7 @@ machine_select_machine( fuse_machine_info *machine )
   /* Reset any dialogue boxes etc. which contain machine-dependent state */
   ui_widgets_reset();
 
-  display_write( 0 );
+  display_write_reset();
 
   return 0;
 }

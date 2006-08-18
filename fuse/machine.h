@@ -72,7 +72,7 @@ typedef struct fuse_machine_info {
   libspectrum_dword line_times[DISPLAY_SCREEN_HEIGHT+1];
 
   /* An array of each point at which a screen reading should be taken */
-  libspectrum_word ula_read_sequence[DISPLAY_WIDTH_COLS*DISPLAY_HEIGHT];
+  libspectrum_dword ula_read_sequence[DISPLAY_WIDTH_COLS*DISPLAY_HEIGHT];
 
   spectrum_raminfo ram; /* How do we access memory, and what's currently
 			   paged in */

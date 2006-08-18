@@ -43,6 +43,9 @@
 #include "ui/uidisplay.h"
 #include "scld.h"
 
+/* When will the next display write event happen? */
+libspectrum_dword display_next_event;
+
 /* Set once we have initialised the UI */
 int display_ui_initialised = 0;
 
@@ -63,7 +66,7 @@ static libspectrum_byte display_current_border[ DISPLAY_SCREEN_HEIGHT ];
 /* Stores the pixel, attribute and SCLD screen mode information used to
    draw each 8x1 group of pixels (including border) last frame */
 static libspectrum_dword
-display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT ];
+display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT ];
 
 /* Offsets as to where the data and the attributes for each pixel
    line start */
@@ -90,7 +93,7 @@ static libspectrum_word
 struct point { int x,y; };
 
 /* Offsets for the coordinates of each ULA/SCLD display probe */
-struct point ula_read_coords[DISPLAY_WIDTH_COLS*DISPLAY_HEIGHT];
+struct point ula_read_coords[ DISPLAY_WIDTH_COLS * DISPLAY_HEIGHT ];
 
 /* The number of frames mod 32 that have elapsed.
     0<=d_f_c<16 => Flashing characters are normal
@@ -106,11 +109,14 @@ static libspectrum_qword display_is_dirty[ DISPLAY_SCREEN_HEIGHT ];
 
 /* Which non-border eight-pixel chunks on each line might need to
    be redisplayed. Bit 0 corresponds to pixels 0-7, bit 31 to
-   pixels 247-255. */
-static libspectrum_dword display_maybe_dirty[ DISPLAY_SCREEN_HEIGHT ];
+   pixels 248-255. */
+static libspectrum_dword display_maybe_dirty[ DISPLAY_HEIGHT ];
 
 /* This value signifies that the entire line must be redisplayed */
 static libspectrum_qword display_all_dirty;
+
+/* This value signifies that the entire line might be redisplayed */
+static const libspectrum_dword display_maybe_all_dirty = 0xffffffff;
 
 /* Used to signify that we're redrawing the entire screen */
 static int display_redraw_all;
@@ -215,7 +221,7 @@ display_init( int *argc, char ***argv )
 
   for(y=0;y<DISPLAY_HEIGHT;y++)
     for(x=0;x<DISPLAY_WIDTH_COLS;x++) {
-      display_dirty_ytable[ display_line_start[y]+x ] =        y;
+      display_dirty_ytable[ display_line_start[y]+x ] = y;
       display_dirty_xtable[ display_line_start[y]+x ] = x;
     }
 
@@ -850,7 +856,7 @@ display_frame( void )
     display_frame_count=0;
   }
   
-  display_write( 0 );
+  display_write_reset();
 
   return 0;
 }
@@ -877,11 +883,6 @@ static void display_dirty_flashing(void)
         if( attr & 0x80 ) display_dirty64( offset - ALTDFILE_OFFSET );
       }
 
-      for( offset = 0x1800; offset < 0x1b00; offset++ ) {
-        attr = screen[ offset ];
-        if( attr & 0x80 ) display_dirty64( offset );
-      }
-
     } else { /* Standard Speccy screen */
 
       for( offset = 0x1800; offset < 0x1b00; offset++ ) {
@@ -898,13 +899,13 @@ void display_refresh_main_screen(void)
   size_t i;
 
   for( i = 0; i < DISPLAY_HEIGHT; i++ )
-    display_maybe_dirty[i] = display_all_dirty;
+    display_maybe_dirty[i] = display_maybe_all_dirty;
 
   for( i = 0; i < DISPLAY_SCREEN_HEIGHT; i++ )
     display_is_dirty[i] = display_all_dirty;
 
   memset( display_last_screen, 0xff,
-          DISPLAY_SCREEN_WIDTH_COLS*DISPLAY_SCREEN_HEIGHT*
+          DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT *
           sizeof(libspectrum_dword) );
 }
 
@@ -921,96 +922,104 @@ void display_refresh_all(void)
   display_refresh_main_screen();
 }
 
+static int next_ula;
+
 void
-display_write( libspectrum_dword last_tstates )
+display_write_reset(void)
 {
-  static int next_ula = 0;
+  next_ula = 0;
+  display_next_event = machine_current->ula_read_sequence[ next_ula ];
+}
+
+static inline void
+set_next_event(void)
+{
+  /* Schedule next display_event as long as there are reads
+     still to be done this frame */
+  if( ++next_ula < DISPLAY_WIDTH_COLS*DISPLAY_HEIGHT )
+    display_next_event = machine_current->ula_read_sequence[ next_ula ];
+  else
+    display_next_event = 0xfffffff;
+}
+
+void
+display_write(void)
+{
   int beam_x, beam_y;
   int x, y, index;
   libspectrum_word offset;
   libspectrum_byte *screen;
   libspectrum_dword data, data2;
   libspectrum_dword mode_data;
-  libspectrum_word hires_data = 0;
-  libspectrum_dword d;
+  libspectrum_dword d, mask;
 
-  /* last_tstates == 0 means schedule first event of the frame */
-  if( !last_tstates ) {
-    next_ula = 0;
-    event_add( machine_current->ula_read_sequence[ next_ula ],
-               EVENT_TYPE_DISPLAY_WRITE );
-    return;
-  }
+  while( display_next_event <= tstates ) {
+    x = ula_read_coords[ next_ula ].x;
+    y = ula_read_coords[ next_ula ].y;
 
-  x = ula_read_coords[ next_ula ].x;
-  y = ula_read_coords[ next_ula ].y;
-
-  if( !(display_maybe_dirty[y] & ( (libspectrum_dword)1 << x ) )) {
-    goto next_event;
-  }
-  display_maybe_dirty[y] ^= ( (libspectrum_dword)1 << x );
-
-  beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
-  beam_y = y + DISPLAY_BORDER_HEIGHT;
-  offset = display_get_addr( x, y );
-
-  /* Read byte, atrr/byte, and screen mode */
-  screen = RAM[ memory_current_screen ];
-  data = screen[ offset ];
-  mode_data = scld_last_dec.byte;
-
-  if( scld_last_dec.name.hires ) {
-    switch( scld_last_dec.mask.scrnmode ) {
-
-    case HIRESATTRALTD:
-      offset = display_attr_start[ y ] + x + ALTDFILE_OFFSET;
-      data2 = screen[ offset ];
-      break;
-
-    case HIRES:
-      data2 = screen[ offset + ALTDFILE_OFFSET ];
-      break;
-
-    case HIRESDOUBLECOL:
-      data2 = data;
-      break;
-
-    default: /* case HIRESATTR: */
-      offset = display_attr_start[ y ] + x;
-      data2 = screen[ offset ];
-      break;
-
+    mask = (libspectrum_dword)1 << x;
+    if( !(display_maybe_dirty[y] & mask) ) {
+      set_next_event();
+      continue;
     }
-    hires_data = (data << 8) + data2;
-  } else {
-    data2 = display_get_attr_byte( x, y );
-  }
+    display_maybe_dirty[y] ^= mask;
 
-  d = (display_flash_reversed << 24) | (mode_data << 16) | (data2 << 8) | data;
-  /* And draw it if it is different to what was there last time */
-  index = (beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS);
-  if( display_last_screen[ index ] != d ) {
-    libspectrum_byte ink, paper;
-    display_get_attr( x, y, &ink, &paper );
+    beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
+    beam_y = y + DISPLAY_BORDER_HEIGHT;
+    offset = display_get_addr( x, y );
+
+    /* Read byte, atrr/byte, and screen mode */
+    screen = RAM[ memory_current_screen ];
+    data = screen[ offset ];
+    mode_data = scld_last_dec.byte;
+
     if( scld_last_dec.name.hires ) {
-      display_plot16( beam_x, beam_y, hires_data, ink, paper );
+      switch( scld_last_dec.mask.scrnmode ) {
+
+      case HIRESATTRALTD:
+        offset = display_attr_start[ y ] + x + ALTDFILE_OFFSET;
+        data2 = screen[ offset ];
+        break;
+
+      case HIRES:
+        data2 = screen[ offset + ALTDFILE_OFFSET ];
+        break;
+
+      case HIRESDOUBLECOL:
+        data2 = data;
+        break;
+
+      default: /* case HIRESATTR: */
+        offset = display_attr_start[ y ] + x;
+        data2 = screen[ offset ];
+        break;
+
+      }
     } else {
-      display_plot8( beam_x, beam_y, data, ink, paper );
+      data2 = display_get_attr_byte( x, y );
     }
 
-    /* Update last display record */
-    display_last_screen[ index ] = d;
+    d = (display_flash_reversed << 24) | (mode_data << 16) | (data2 << 8) | data;
+    /* And draw it if it is different to what was there last time */
+    index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
+    if( display_last_screen[ index ] != d ) {
+      libspectrum_byte ink, paper;
+      display_get_attr( x, y, &ink, &paper );
+      if( scld_last_dec.name.hires ) {
+        libspectrum_word hires_data = (data << 8) + data2;
+        display_plot16( beam_x, beam_y, hires_data, ink, paper );
+      } else {
+        display_plot8( beam_x, beam_y, data, ink, paper );
+      }
 
-    /* And now mark it dirty */
-    display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
+      /* Update last display record */
+      display_last_screen[ index ] = d;
+
+      /* And now mark it dirty */
+      display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
+    }
+    set_next_event();
   }
-
-next_event:
-  /* Schedule next EVENT_TYPE_DISPLAY_WRITE as long as there are reads
-     still to be done this frame */
-  if( ++next_ula < DISPLAY_WIDTH_COLS*DISPLAY_HEIGHT )
-    event_add( machine_current->ula_read_sequence[ next_ula ],
-                EVENT_TYPE_DISPLAY_WRITE );
 }
 
 /* Mark the 8-pixel chunk at (x,y) as maybe dirty */

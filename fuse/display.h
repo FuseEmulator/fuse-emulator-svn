@@ -103,6 +103,10 @@ void display_refresh_all(void);
   scld_last_dec.name.altdfile ? display_line_start[(y)]+(x)+ALTDFILE_OFFSET : \
   display_line_start[(y)]+(x)
 
-void display_write( libspectrum_dword last_tstates );
+void display_write_reset(void);
+void display_write(void);
+
+/* When will the next display write event happen? */
+extern libspectrum_dword display_next_event;
 
 #endif			/* #ifndef FUSE_DISPLAY_H */

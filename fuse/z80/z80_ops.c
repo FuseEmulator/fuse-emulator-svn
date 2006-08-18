@@ -219,6 +219,9 @@ z80_do_opcodes( void )
 #include "opcodes_base.c"
     }
 
+    if( display_next_event <= tstates ) {
+      display_write();
+    }
   }
 
 }

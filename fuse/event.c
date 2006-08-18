@@ -59,9 +59,6 @@ static GSList* event_list;
 /* An event ready to be reused */
 static event_t *event_free;
 
-/* Next display event */
-static event_t *event_display;
-
 /* Comparision function so events stay in t-state order */
 static gint event_add_cmp( gconstpointer a, gconstpointer b );
 
@@ -82,7 +79,6 @@ int event_init(void)
 {
   event_list=NULL;
   event_free=NULL;
-  event_display=NULL;
   event_next_event=event_no_events;
   return 0;
 }
@@ -106,11 +102,7 @@ event_add( libspectrum_dword event_time, event_type type )
 
   if( event_time < event_next_event ) {
     event_next_event = event_time;
-    if( type == EVENT_TYPE_DISPLAY_WRITE ) {
-      event_display = ptr;
-    } else {
-      event_list=g_slist_prepend(event_list,(gpointer)ptr);
-    }
+    event_list=g_slist_prepend(event_list,(gpointer)ptr);
   } else {
     event_list=g_slist_insert_sorted(event_list,(gpointer)ptr,event_add_cmp);
   }
@@ -134,23 +126,15 @@ int event_do_events(void)
   event_t *ptr;
 
   while(event_next_event <= tstates) {
-    if( event_display && event_display->tstates == event_next_event ) {
-      ptr= event_display;
-      event_display= NULL;
-    } else {
-      ptr= ( (event_t*) (event_list->data) );
+    ptr= ( (event_t*) (event_list->data) );
 
-      /* Remove the event from the list *before* processing */
-      event_list=g_slist_remove(event_list,ptr);
-    }
+    /* Remove the event from the list *before* processing */
+    event_list=g_slist_remove(event_list,ptr);
 
     if( event_list == NULL ) {
       event_next_event = event_no_events;
     } else {
       event_next_event= ( (event_t*) (event_list->data) ) -> tstates;
-    }
-    if( event_display && event_display->tstates < event_next_event ) {
-      event_next_event= event_display->tstates;
     }
 
     switch(ptr->type) {
@@ -195,8 +179,6 @@ int event_do_events(void)
     case EVENT_TYPE_BREAKPOINT:
       debugger_check( DEBUGGER_BREAKPOINT_TYPE_TIME, 0 );
       break;
-
-    case EVENT_TYPE_DISPLAY_WRITE: display_write( ptr->tstates ); break;
 
     default:
       ui_error( UI_ERROR_ERROR, "unknown event type %d", ptr->type );
@@ -263,8 +245,6 @@ int event_reset(void)
   event_next_event=event_no_events;
   if( event_free ) free( event_free );
   event_free=NULL;
-  if( event_display ) free( event_display );
-  event_display = NULL;
   return 0;
 }
 
@@ -318,7 +298,6 @@ event_name( event_type type )
   case EVENT_TYPE_TRDOS_INDEX: return "TR-DOS index";
   case EVENT_TYPE_BREAKPOINT: return "Breakpoint";
   case EVENT_TYPE_TIMER: return "Timer";
-  case EVENT_TYPE_DISPLAY_WRITE: return "ULA display write";
 
   }
 

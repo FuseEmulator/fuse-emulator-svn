@@ -1439,3 +1439,5 @@
 20060812 display.[ch],memory.c,scld.c,machines/spec128.c: put chunks on a
          checklist when written to and shortcircuit ULA reads where there is
          no chance changes have been made to the screen (Fred).
+20060818 display.[ch],event.[ch],machine.[ch],memory.c,z80/coretest.c,
+         z80/z80_ops.c: remove display events from event system (Fred).

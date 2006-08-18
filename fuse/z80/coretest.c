@@ -42,6 +42,7 @@ static int init_dummies( void );
 
 libspectrum_dword tstates;
 libspectrum_dword event_next_event;
+libspectrum_dword display_next_event;
 
 /* 64Kb of RAM */
 static libspectrum_byte initial_memory[ 0x10000 ], memory[ 0x10000 ];
@@ -446,6 +447,11 @@ event_add( libspectrum_dword event_time, int type )
   return 0;
 }
 
+void
+display_write(void)
+{
+  /* Do nothing */
+}
 fuse_machine_info *machine_current;
 static fuse_machine_info dummy_machine;
 
