@@ -1441,3 +1441,4 @@
          no chance changes have been made to the screen (Fred).
 20060818 display.[ch],event.[ch],machine.[ch],memory.c,z80/coretest.c,
          z80/z80_ops.c: remove display events from event system (Fred).
+20060824 memory.c: fix Shock II again (Fred).

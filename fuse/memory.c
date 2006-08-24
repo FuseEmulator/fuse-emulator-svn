@@ -239,10 +239,10 @@ writebyte_internal( libspectrum_word address, libspectrum_byte b )
 	( offset2 & memory_screen_mask ) < 0x1b00 ) {
       display_dirty( offset2 );
     }
-    memory[ offset ] = b;
     if( display_next_event <= tstates ) {
       display_write();
     }
+    memory[ offset ] = b;
   }
 }
 
