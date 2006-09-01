@@ -844,6 +844,35 @@ ui_trdos_disk_write( trdos_drive_number which )
   return 0;
 }
 
+int
+ui_disciple_disk_write( disciple_drive_number which )
+{
+  char drive, *filename, title[80];
+
+  switch( which ) {
+    case DISCIPLE_DRIVE_1: drive = '1'; break;
+    case DISCIPLE_DRIVE_2: drive = '2'; break;
+    case DISCIPLE_DRIVE_3: drive = '3'; break;
+    case DISCIPLE_DRIVE_4: drive = '4'; break;
+    default: drive = '?'; break;
+  }
+
+  fuse_emulation_pause();
+
+  snprintf( title, 80, "Fuse - Write DISCiPLE Disk %c", drive );
+
+  filename = menu_get_filename( title );
+  if( !filename ) { fuse_emulation_unpause(); return 1; }
+
+  disciple_disk_write( which, filename );
+
+  free( filename );
+
+  fuse_emulation_unpause();
+
+  return 0;
+}
+
 /* Called on machine selection */
 int
 ui_widgets_reset( void )

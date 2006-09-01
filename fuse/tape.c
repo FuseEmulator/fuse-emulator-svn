@@ -532,6 +532,9 @@ int tape_save_trap( void )
 static int
 trap_check_rom( void )
 {
+  if( disciple_available && disciple_active )
+    return 0;		/* +D/DISCiPLE must not be active */
+
   switch( machine_current->machine ) {
   case LIBSPECTRUM_MACHINE_16:
   case LIBSPECTRUM_MACHINE_48:

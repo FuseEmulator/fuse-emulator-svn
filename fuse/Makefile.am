@@ -56,6 +56,8 @@ DIST_SUBDIRS = compat \
 
 fuse_SOURCES = ay.c \
 	dck.c \
+	disciple.c \
+	disk.c \
 	display.c \
 	divide.c \
 	event.c \
@@ -91,6 +93,7 @@ fuse_SOURCES = ay.c \
 	uidisplay.c \
 	ula.c \
 	utils.c \
+	wd1770.c \
 	zxatasp.c \
 	zxcf.c
 
@@ -131,6 +134,7 @@ INCLUDES = @GLIB_CFLAGS@ @GTK_CFLAGS@ @LIBSPEC_CFLAGS@ @DSK_CFLAGS@\
 noinst_HEADERS = ay.h \
 	compat.h \
 	dck.h \
+	disciple.h \
 	display.h \
 	divide.h \
 	event.h \
@@ -164,6 +168,7 @@ noinst_HEADERS = ay.h \
 	profile.h \
 	scld.h \
 	ula.h \
+	wd1770.h \
 	zxatasp.h \
 	zxcf.h
 

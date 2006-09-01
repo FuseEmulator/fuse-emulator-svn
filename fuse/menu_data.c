@@ -232,6 +232,16 @@ Media/Disk/TR-DOS/Drive B:/_Insert..., Item,, menu_media_disk_insert, 6
 Media/Disk/TR-DOS/Drive B:/_Eject, Item,, menu_media_disk_eject, 6
 Media/Disk/TR-DOS/Drive B:/Eject and _write..., Item,, menu_media_disk_eject, 22
 
+Media/Disk/_DISCiPLE, Branch
+Media/Disk/DISCiPLE/Drive _1, Branch
+Media/Disk/DISCiPLE/Drive 1/_Insert..., Item,, menu_media_disk_insert, 9
+Media/Disk/DISCiPLE/Drive 1/_Eject, Item,, menu_media_disk_eject, 9
+Media/Disk/DISCiPLE/Drive 1/Eject and _write..., Item,, menu_media_disk_eject, 25
+Media/Disk/DISCiPLE/Drive _2, Branch
+Media/Disk/DISCiPLE/Drive 2/_Insert..., Item,, menu_media_disk_insert, 10
+Media/Disk/DISCiPLE/Drive 2/_Eject, Item,, menu_media_disk_eject, 10
+Media/Disk/DISCiPLE/Drive 2/Eject and _write..., Item,, menu_media_disk_eject, 26
+
 Media/_Cartridge, Branch
 Media/Cartridge/_Timex Dock, Branch
 Media/Cartridge/Timex Dock/_Insert..., Item

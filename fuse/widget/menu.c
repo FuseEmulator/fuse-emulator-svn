@@ -526,6 +526,18 @@ ui_trdos_disk_write( trdos_drive_number which )
 	 ? trdos_disk_write( which, widget_filesel_name ) : 0;
 }
 
+/*
+int
+ui_disciple_disk_write( disciple_drive_number which )
+{
+  char filename[ 20 ];
+
+  snprintf( filename, 20, "drive%c.mgt", (char)( 'a' + which ) );
+
+  return disciple_disk_write( which, filename );
+}
+*/
+
 void
 menu_help_keyboard( int action )
 {

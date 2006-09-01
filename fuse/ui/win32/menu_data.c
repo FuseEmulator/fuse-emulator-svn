@@ -135,13 +135,14 @@ void handle_menu( DWORD cmd, HWND okno )
     case IDM_MENU_MEDIA_DISK_DRIVE_A_EJECT: 
         menu_media_disk_eject( 1 ); break;
     case IDM_MENU_MEDIA_DISK_DRIVE_A_EJECT_AND_WRITE: 
-        menu_media_disk_eject( 3 ); break;
+        menu_media_disk_eject( 5 ); break;
     case IDM_MENU_MEDIA_DISK_DRIVE_B_INSERT: 
         menu_media_disk_insert( 2 ); break;
     case IDM_MENU_MEDIA_DISK_DRIVE_B_EJECT: 
         menu_media_disk_eject( 2 ); break;
     case IDM_MENU_MEDIA_DISK_DRIVE_B_EJECT_AND_WRITE: 
-        menu_media_disk_eject( 4 ); break;
+        menu_media_disk_eject( 6 ); break;
+/* TODO: Drives C and D */
     case IDM_MENU_MEDIA_CARTRIDGE_TIMEX_DOCK_INSERT: 
         menu_media_cartridge_timexdock_insert( 0 ); break;
     case IDM_MENU_MEDIA_CARTRIDGE_TIMEX_DOCK_EJECT: 

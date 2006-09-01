@@ -233,6 +233,7 @@ static int fuse_init(int argc, char **argv)
   if( rzx_init() ) return 1;
   if( psg_init() ) return 1;
   if( trdos_init() ) return 1;
+  if( disciple_init() ) return 1;
   if( simpleide_init() ) return 1;
   if( zxatasp_init() ) return 1;
   if( zxcf_init() ) return 1;
@@ -764,6 +765,7 @@ static int fuse_end(void)
   zxatasp_end();
   zxcf_end();
   divide_end();
+  disciple_end();
 
   machine_end();
 

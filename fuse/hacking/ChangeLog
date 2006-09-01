@@ -1434,3 +1434,10 @@
 20060825 man/fuse.1: fix typo (Stuart Brady).
 20060825 TAG: Release-0_7_0-trunk-1
 20060825 BRANCH: Release-0_7_0-disciple-branch
+20060901 disciple.[ch],disk.[ch]},event.[ch]},fuse.c},machine.c},
+         machines/{spec16.c,spec48.c,tc2048.c},Makefile.am,memory.c,menu.c,
+         menu_data.c,periph.[ch],roms/Makefile.am,settings.dat,snapshot.c,
+         tape.c,ui/gtk/gtkui.c,ui/{options.dat,ui.h},
+         ui/win32/{menu_data.[ch],menu_data.rc},ui.c,wd1770.[ch],
+         widget/menu.c,z80/{coretest.c,z80_ops.c}: +D/DISCiPLE support (patch
+         #1546570) (Stuart Brady).

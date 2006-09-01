@@ -310,7 +310,7 @@ dump_memory_state( void )
 
 /* Error 'handing': dump core as these should never be called */
 
-int
+void
 fuse_abort( void )
 {
   abort();
@@ -411,6 +411,16 @@ trdos_page( void )
 
 void
 trdos_unpage( void )
+{
+  abort();
+}
+
+int disciple_available = 0;
+int disciple_active = 0;
+int disciple_isplusd = 0;
+
+void
+disciple_page( void )
 {
   abort();
 }

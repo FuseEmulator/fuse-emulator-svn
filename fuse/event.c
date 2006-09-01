@@ -162,7 +162,17 @@ int event_do_events(void)
       trdos_event_cmd_done( ptr->tstates );
       break;
 
-    case EVENT_TYPE_TRDOS_INDEX: trdos_event_index( ptr->tstates ); break;
+    case EVENT_TYPE_TRDOS_INDEX:
+      trdos_event_index( ptr->tstates );
+      break;
+
+    case EVENT_TYPE_DISCIPLE_CMD_DONE:
+      disciple_event_cmd_done( ptr->tstates );
+      break;
+
+    case EVENT_TYPE_DISCIPLE_INDEX:
+      disciple_event_index( ptr->tstates );
+      break;
 
     case EVENT_TYPE_BREAKPOINT:
       debugger_check( DEBUGGER_BREAKPOINT_TYPE_TIME, 0 );
@@ -276,8 +286,10 @@ event_name( event_type type )
   case EVENT_TYPE_INTERRUPT: return "Retriggered interrupt";
   case EVENT_TYPE_NMI: return "Non-maskable interrupt";
   case EVENT_TYPE_NULL: return "[Deleted event]";
-  case EVENT_TYPE_TRDOS_CMD_DONE: return "End of TR-DOS command";
-  case EVENT_TYPE_TRDOS_INDEX: return "TR-DOS index";
+  case EVENT_TYPE_TRDOS_CMD_DONE: return "End of BetaDisk command";
+  case EVENT_TYPE_TRDOS_INDEX: return "BetaDisk index";
+  case EVENT_TYPE_DISCIPLE_CMD_DONE: return "End of DISCiPLE command";
+  case EVENT_TYPE_DISCIPLE_INDEX: return "DISCiPLE index";
   case EVENT_TYPE_BREAKPOINT: return "Breakpoint";
   case EVENT_TYPE_TIMER: return "Timer";
 

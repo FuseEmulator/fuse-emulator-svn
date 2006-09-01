@@ -31,6 +31,7 @@
 #include <libspectrum.h>
 
 #include "debugger/debugger.h"
+#include "disciple.h"
 #include "display.h"
 #include "divide.h"
 #include "fuse.h"
@@ -40,6 +41,7 @@
 #include "memory.h"
 #include "settings.h"
 #include "spectrum.h"
+#include "trdos.h"
 #include "ui/ui.h"
 #include "ula.h"
 #include "zxatasp.h"
@@ -262,6 +264,10 @@ memory_romcs_map( void )
   if( machine_current->capabilities &
       LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK )
     trdos_memory_map();
+
+  if( disciple_active ) {
+    disciple_memory_map();
+  }
 
   if( if1_active ) if1_memory_map();	/* if2 is superior */
   if( if2_active ) if2_memory_map();

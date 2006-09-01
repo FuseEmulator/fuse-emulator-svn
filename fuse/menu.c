@@ -29,6 +29,7 @@
 #include <libspectrum.h>
 
 #include "dck.h"
+#include "disciple.h"
 #include "divide.h"
 #include "event.h"
 #include "fuse.h"
@@ -43,6 +44,7 @@
 #include "settings.h"
 #include "snapshot.h"
 #include "tape.h"
+#include "trdos.h"
 #include "ui/ui.h"
 #include "utils.h"
 #include "widget/widget.h"
@@ -442,12 +444,15 @@ MENU_CALLBACK_WITH_ACTION( menu_media_disk_insert )
 
   switch( type ) {
   case 0:
+    trdos_disk_insert_default_autoload( which, filename );
+    break;
+  case 1:
 #ifdef HAVE_765_H
     specplus3_disk_insert_default_autoload( which, filename );
 #endif				/* #ifdef HAVE_765_H */
     break;
-  case 1:
-    trdos_disk_insert_default_autoload( which, filename );
+  case 2:
+    disciple_disk_insert_default_autoload( which, filename );
     break;
   }
 
@@ -469,12 +474,15 @@ MENU_CALLBACK_WITH_ACTION( menu_media_disk_eject )
 
   switch( type ) {
   case 0:
+    trdos_disk_eject( which, write );
+    break;
+  case 1:
 #ifdef HAVE_765_H
     specplus3_disk_eject( which, write );
 #endif			/* #ifdef HAVE_765_H */
     break;
-  case 1:
-    trdos_disk_eject( which, write );
+  case 2:
+    disciple_disk_eject( which, write );
     break;
   }
 

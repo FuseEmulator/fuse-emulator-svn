@@ -291,6 +291,12 @@ periph_present interface2_present;
 /* Is the Interface II currently active */
 int periph_interface2_active;
 
+/* What sort of +D/DISCiPLE interface does the curret machine have */
+periph_present disciple_present;
+
+/* Is the +D/DISCiPLE currently active */
+int periph_disciple_active;
+
 int
 periph_setup( const periph_t *peripherals_list, size_t n )
 {
@@ -313,6 +319,7 @@ periph_setup( const periph_t *peripherals_list, size_t n )
   kempston_present = PERIPH_PRESENT_NEVER;
   interface1_present = PERIPH_PRESENT_NEVER;
   interface2_present = PERIPH_PRESENT_NEVER;
+  disciple_present = PERIPH_PRESENT_NEVER;
 
   return 0;
 }
@@ -330,6 +337,11 @@ periph_setup_interface1( periph_present present ) {
 void
 periph_setup_interface2( periph_present present ) {
   interface2_present = present;
+}
+
+void
+periph_setup_disciple( periph_present present ) {
+  disciple_present = present;
 }
 
 static void
@@ -402,6 +414,24 @@ periph_update( void )
 
   ui_menu_activate( UI_MENU_ITEM_MEDIA_CARTRIDGE_IF2,
 		    periph_interface2_active );
+
+  switch( disciple_present ) {
+  case PERIPH_PRESENT_NEVER: periph_disciple_active = 0; break;
+  case PERIPH_PRESENT_OPTIONAL:
+    periph_disciple_active = settings_current.disciple ||
+      settings_current.plusd;
+    disciple_isplusd = settings_current.plusd;
+    break;
+  case PERIPH_PRESENT_ALWAYS: periph_disciple_active = 1; break;
+  }
+
+  if( periph_disciple_active ) {
+    if( !disciple_isplusd ) {
+      periph_register_n( disciple_peripherals, disciple_peripherals_count );
+    } else {
+      periph_register_n( plusd_peripherals, plusd_peripherals_count );
+    }
+  }
 
   if( ui_mouse_present ) {
     if( settings_current.kempston_mouse ) {

@@ -121,6 +121,18 @@ win32_menu MENU
         MENUITEM "&Eject", IDM_MENU_MEDIA_DISK_DRIVE_B_EJECT
         MENUITEM "Eject and &write...", IDM_MENU_MEDIA_DISK_DRIVE_B_EJECT_AND_WRITE
       }    
+      POPUP "Drive &C:"
+      {
+        MENUITEM "&Insert...", IDM_MENU_MEDIA_DISK_DRIVE_C_INSERT
+        MENUITEM "&Eject", IDM_MENU_MEDIA_DISK_DRIVE_C_EJECT
+        MENUITEM "Eject and &write...", IDM_MENU_MEDIA_DISK_DRIVE_C_EJECT_AND_WRITE
+      }    
+      POPUP "Drive &D:"
+      {
+        MENUITEM "&Insert...", IDM_MENU_MEDIA_DISK_DRIVE_D_INSERT
+        MENUITEM "&Eject", IDM_MENU_MEDIA_DISK_DRIVE_D_EJECT
+        MENUITEM "Eject and &write...", IDM_MENU_MEDIA_DISK_DRIVE_D_EJECT_AND_WRITE
+      }    
     }
     POPUP "&Cartridge"
     {

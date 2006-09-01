@@ -57,6 +57,8 @@ interface1, boolean, 0
 mdr_len, numeric, 180
 interface2, boolean, 1
 snapsasz80, null, 0
+disciple, boolean, 0
+plusd, boolean, 0
 
 sound_device, string, NULL, 'd'
 sound, boolean, 1
@@ -165,3 +167,5 @@ rom_scorpion_3, string, strdup( "256s-3.rom" ),
 rom_spec_se_0, string, strdup( "se-0.rom" ),
 rom_spec_se_1, string, strdup( "se-1.rom" ),
 rom_interface_i, string, strdup( "if1-2.rom" ),
+rom_disciple, string, strdup( "disciple.rom" ),
+rom_plusd, string, strdup( "plusd.rom" ),

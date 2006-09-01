@@ -29,6 +29,7 @@
 #include <libspectrum.h>
 
 #include "ay.h"
+#include "disciple.h"
 #include "fuse.h"
 #include "if2.h"
 #include "joystick.h"
@@ -148,6 +149,8 @@ snapshot_copy_from( libspectrum_snap *snap )
   error = ula_from_snapshot( snap ); if( error ) return error;
   error = ay_from_snapshot( snap, capabilities ); if( error ) return error;
   error = trdos_from_snapshot( snap, capabilities ); if( error ) return error;
+  error = disciple_from_snapshot( snap, capabilities );
+  if( error ) return error;
   error = memory_ram_from_snapshot( snap, capabilities );
   if( error ) return error;
   error = slt_from_snapshot( snap ); if( error ) return error;
@@ -225,6 +228,7 @@ snapshot_copy_to( libspectrum_snap *snap )
   error = ula_to_snapshot( snap ); if( error ) return error;
   error = ay_to_snapshot( snap ); if( error ) return error;
   error = trdos_to_snapshot( snap ); if( error ) return error;
+  error = disciple_to_snapshot( snap ); if( error ) return error;
   error = memory_ram_to_snapshot( snap ); if( error ) return error;
   error = slt_to_snapshot( snap ); if( error ) return error;
   error = zxatasp_to_snapshot( snap ); if( error ) return error;

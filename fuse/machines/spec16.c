@@ -108,6 +108,7 @@ spec16_reset( void )
   periph_setup_kempston( PERIPH_PRESENT_OPTIONAL );
   periph_setup_interface1( PERIPH_PRESENT_OPTIONAL );
   periph_setup_interface2( PERIPH_PRESENT_OPTIONAL );
+  periph_setup_disciple( PERIPH_PRESENT_OPTIONAL );
   periph_update();
 
   /* ROM 0, RAM 5, nothing, nothing */
