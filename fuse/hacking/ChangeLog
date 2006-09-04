@@ -1441,3 +1441,5 @@
          ui/win32/{menu_data.[ch],menu_data.rc},ui.c,wd1770.[ch],
          widget/menu.c,z80/{coretest.c,z80_ops.c}: +D/DISCiPLE support (patch
          #1546570) (Stuart Brady).
+20060903 disciple.[ch],disk.[ch],wd1770.[ch]: remainder of +D/DISCiPLE support
+         - forgot to add new files (patch #1546570) (Stuart Brady).
