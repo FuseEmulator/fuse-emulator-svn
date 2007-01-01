@@ -331,11 +331,6 @@ libspectrum_rzx_rollback( libspectrum_rzx *rzx, libspectrum_snap **snap )
   GSList *previous, *list;
   rzx_block_t *block;
 
-  if( rzx->current_input ) {
-    libspectrum_error error;
-    error = libspectrum_rzx_stop_input( rzx ); if( error ) return error;
-  }
-
   /* Find the last snapshot block in the file */
   previous = NULL; list = rzx->blocks;
 
@@ -357,6 +352,11 @@ libspectrum_rzx_rollback( libspectrum_rzx *rzx, libspectrum_snap **snap )
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
+  if( rzx->current_input ) {
+    libspectrum_error error;
+    error = libspectrum_rzx_stop_input( rzx ); if( error ) return error;
+  }
+
   /* Delete all blocks after the snapshot */
   g_slist_foreach( previous->next, block_free_wrapper, NULL );
   previous->next = NULL;
@@ -375,11 +375,6 @@ libspectrum_rzx_rollback_to( libspectrum_rzx *rzx, libspectrum_snap **snap,
   rzx_block_t *block;
   size_t i;
 
-  if( rzx->current_input ) {
-    libspectrum_error error;
-    error = libspectrum_rzx_stop_input( rzx ); if( error ) return error;
-  }
-
   /* Find the nth snapshot block in the file */
   for( i = 0, list = rzx->blocks; i <= which; i++, list = list->next ) {
     list =
@@ -394,6 +389,11 @@ libspectrum_rzx_rollback_to( libspectrum_rzx *rzx, libspectrum_snap **snap,
     }
 
     previous = list;
+  }
+
+  if( rzx->current_input ) {
+    libspectrum_error error;
+    error = libspectrum_rzx_stop_input( rzx ); if( error ) return error;
   }
 
   /* Delete all blocks after the snapshot */
