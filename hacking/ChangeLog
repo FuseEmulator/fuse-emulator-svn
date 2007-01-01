@@ -349,4 +349,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20060812 libspectrum.h.in,tape_block.c,doc/libspectrum.txt: add
 	 libspectrum_tape_block_metadata() function (needed to fix North
 	 and South and Super Hang-On; see bug #1531346).
-
+20070101 rzx.c: when rolling back, don't stop recording until we know
+	 that the required snapshot exists.
