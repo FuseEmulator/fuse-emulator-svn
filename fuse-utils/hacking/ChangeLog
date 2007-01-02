@@ -129,3 +129,4 @@
 20060630 createhdf.c,ide.[ch],raw2hdf.c,man/{createhdf.1,raw2hdf.1}: allow
 	 creation of v1.1 .hdf images. Fix a bug introduced in the last
 	 change which made sparse files short by <header length> bytes.
+20070102 autogen.sh: add libtoolize
