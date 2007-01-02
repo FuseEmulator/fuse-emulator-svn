@@ -353,3 +353,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 that the required snapshot exists.
 20070102 tape.c,tape_block.[ch],tzx_read.c: stub support for TZX
 	 "Generali[sz]ed Data" blocks (ID 0x19).
+20070102 Makefile.am,internals.h,libspectrum.h.in,tape_accessors.{pl,txt},
+	 tape_block.[ch], tape_set.pl, tzx_read.c: sufficient 0x19
+	 functionality to allow tzxlist to do something with these blocks.

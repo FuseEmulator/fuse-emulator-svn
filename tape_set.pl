@@ -60,7 +60,7 @@ print << "CODE";
 
 CODE
 
-my( $name, $default, $started );
+my( $name, $default, $started, $pointer );
 
 sub trailer ($) {
 
@@ -71,8 +71,7 @@ sub trailer ($) {
     default:
       libspectrum_print_error(
         LIBSPECTRUM_ERROR_INVALID,
-        "invalid block type %d given to libspectrum_tape_block_$name",
-        block->type
+        "invalid block type 0x%2x given to %s", block->type, __func__
       );
       return LIBSPECTRUM_ERROR_INVALID;
   }
@@ -95,8 +94,8 @@ while( <> ) {
 
 	$member ||= $name;
 
-	printf "    case LIBSPECTRUM_TAPE_BLOCK_%s: block->types.$type.$member = $name; break;\n",
-            uc $type;
+	printf "    case LIBSPECTRUM_TAPE_BLOCK_%s: block->types.$type.$member = %s$name; break;\n",
+            uc $type, $pointer ? '*' : '';
 
     } else {
 
@@ -104,7 +103,7 @@ while( <> ) {
 
 	my( $type, $indexed );
 
-	( $type, $name, $indexed, undef ) = split;
+	( $type, $name, $indexed, undef, $pointer ) = split;
 
 	printf "libspectrum_error\nlibspectrum_tape_block_set_$name( libspectrum_tape_block *block, $type %s$name",
             ( $indexed ? "*" : "" );

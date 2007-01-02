@@ -151,6 +151,12 @@ libspectrum_error
 libspectrum_zxs_read( libspectrum_snap *snap,
 		      const libspectrum_byte *buffer, size_t buffer_length );
 
+/* Tape routines */
+
+libspectrum_error libspectrum_tape_block_read_symbol_table_parameters(
+  libspectrum_tape_block *block, int pilot, const libspectrum_byte **ptr );
+
+
 /* Crypto functions */
 
 libspectrum_error
