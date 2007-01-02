@@ -56,6 +56,10 @@ static libspectrum_error
 tzx_read_raw_data( libspectrum_tape *tape, const libspectrum_byte **ptr,
 		   const libspectrum_byte *end );
 static libspectrum_error
+tzx_read_generalised_data( libspectrum_tape *tape,
+			   const libspectrum_byte **ptr,
+			   const libspectrum_byte *end );
+static libspectrum_error
 tzx_read_pause( libspectrum_tape *tape, const libspectrum_byte **ptr,
 		const libspectrum_byte *end );
 static libspectrum_error
@@ -166,6 +170,11 @@ libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
       break;
     case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
       error = tzx_read_raw_data( tape, &ptr, end );
+      if( error ) { libspectrum_tape_free( tape ); return error; }
+      break;
+
+    case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+      error = tzx_read_generalised_data( tape, &ptr, end );
       if( error ) { libspectrum_tape_free( tape ); return error; }
       break;
 
@@ -524,6 +533,49 @@ tzx_read_raw_data (libspectrum_tape *tape, const libspectrum_byte **ptr,
   if( error ) { libspectrum_tape_block_free( block ); return error; }
 
   /* And return with no error */
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+tzx_read_generalised_data( libspectrum_tape *tape,
+			   const libspectrum_byte **ptr,
+			   const libspectrum_byte *end )
+{
+  libspectrum_tape_block *block;
+  libspectrum_dword length;
+  libspectrum_error error;
+
+  /* Check the length exists */
+  if( end - (*ptr) < 4 ) {
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_CORRUPT,
+      "tzx_read_generalised_data: not enough data in buffer"
+    );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  length = libspectrum_read_dword( ptr );
+
+  /* Check this much data exists */
+  if( end - (*ptr) < length ) {
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_CORRUPT,
+      "tzx_read_generalised_data: not enough data in buffer"
+    );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  /* Skip over the data */
+  (*ptr) += length;
+
+  error =
+    libspectrum_tape_block_alloc( &block,
+				  LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA );
+  if( error ) return error;
+
+  error = libspectrum_tape_append_block( tape, block );
+  if( error ) { libspectrum_tape_block_free( block ); return error; }
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 

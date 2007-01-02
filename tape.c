@@ -945,6 +945,10 @@ libspectrum_tape_block_description( char *buffer, size_t length,
     strncpy( buffer, "Raw Data", length );
     break;
 
+  case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+    strncpy( buffer, "Generalised Data", length );
+    break;
+
   case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
     strncpy( buffer, "Pause", length );
     break;

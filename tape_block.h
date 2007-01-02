@@ -155,6 +155,10 @@ typedef struct libspectrum_tape_raw_data_block {
 
 } libspectrum_tape_raw_data_block;
 
+typedef struct libspectrum_tape_generalised_block {
+
+} libspectrum_tape_generalised_data_block;
+
 /* A pause block */
 typedef struct libspectrum_tape_pause_block {
 
@@ -282,6 +286,8 @@ struct libspectrum_tape_block {
     libspectrum_tape_pulses_block pulses;
     libspectrum_tape_pure_data_block pure_data;
     libspectrum_tape_raw_data_block raw_data;
+
+    libspectrum_tape_generalised_data_block generalised_data;
 
     libspectrum_tape_pause_block pause;
     libspectrum_tape_group_start_block group_start;
