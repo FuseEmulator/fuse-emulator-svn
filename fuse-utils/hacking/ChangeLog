@@ -130,3 +130,4 @@
 	 creation of v1.1 .hdf images. Fix a bug introduced in the last
 	 change which made sparse files short by <header length> bytes.
 20070102 autogen.sh: add libtoolize
+20070102 tzxlist.c: list some info for TZX generalised data blocks.

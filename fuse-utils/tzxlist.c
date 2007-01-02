@@ -42,6 +42,14 @@
 
 const char *progname;
 
+static void
+dump_symbol_table( libspectrum_tape_generalised_data_symbol_table *table )
+{
+  printf("    Symbols in block: %ld\n", (unsigned long)libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table ) );
+  printf("    Max pulses: %d\n", libspectrum_tape_generalised_data_symbol_table_max_pulses( table ) );
+  printf("    Symbols in table: %d\n", libspectrum_tape_generalised_data_symbol_table_symbols_in_table( table ) );
+}
+
 static const char*
 hardware_desc( int type, int id )
 {
@@ -172,6 +180,14 @@ process_tape( char *filename )
 	     libspectrum_tape_block_bit_length( block ) );
       printf("  Pause length: %d ms\n",
 	     libspectrum_tape_block_pause( block ) );
+      break;
+
+    case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+      printf("  Pause length: %d ms\n", libspectrum_tape_block_pause( block ) );
+      printf("  Pilot table:\n");
+      dump_symbol_table( libspectrum_tape_block_pilot_table( block ) );
+      printf("  Data table:\n");
+      dump_symbol_table( libspectrum_tape_block_data_table( block ) );
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
