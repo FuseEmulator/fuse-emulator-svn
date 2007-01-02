@@ -351,3 +351,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 and South and Super Hang-On; see bug #1531346).
 20070101 rzx.c: when rolling back, don't stop recording until we know
 	 that the required snapshot exists.
+20070102 tape.c,tape_block.[ch],tzx_read.c: stub support for TZX
+	 "Generali[sz]ed Data" blocks (ID 0x19).

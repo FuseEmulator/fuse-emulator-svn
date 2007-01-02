@@ -90,6 +90,8 @@ libspectrum_tape_block_free( libspectrum_tape_block *block )
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
     free( block->types.raw_data.data );
     break;
+  case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+    break;
 
   case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
     break;
@@ -149,7 +151,8 @@ libspectrum_tape_block_free( libspectrum_tape_block *block )
   case LIBSPECTRUM_TAPE_BLOCK_CONCAT: /* This should never occur */
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
-			     "Unknown block type %d", block->type );
+			     "%s: unknown block type %d", __func__,
+			     block->type );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
