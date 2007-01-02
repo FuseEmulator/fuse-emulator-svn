@@ -296,6 +296,7 @@ libspectrum_tape_block_metadata( libspectrum_tape_block *block )
   case LIBSPECTRUM_TAPE_BLOCK_PULSES:
   case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
+  case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
   case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
   case LIBSPECTRUM_TAPE_BLOCK_JUMP:
   case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
@@ -318,4 +319,22 @@ libspectrum_tape_block_metadata( libspectrum_tape_block *block )
 
   /* Should never happen */
   return -1;
+}
+
+libspectrum_error
+libspectrum_tape_block_read_symbol_table_parameters(
+  libspectrum_tape_block *block, int pilot, const libspectrum_byte **ptr )
+{
+  libspectrum_tape_generalised_data_block *generalised =
+    &block->types.generalised_data;
+
+  libspectrum_tape_generalised_data_symbol_table *table =
+    pilot ? &generalised->pilot_table : &generalised->data_table;
+
+  table->symbols_in_block = libspectrum_read_dword( ptr );
+  table->max_pulses = (*ptr)[0];
+  table->symbols_in_table = (*ptr)[1];
+  (*ptr) += 2;
+
+  return LIBSPECTRUM_ERROR_NONE;
 }

@@ -42,12 +42,15 @@
 # if passed a 'type' block. 'member_name' defaults to 'name' if not
 # specified.
 #
+# If 'indexed' is non-zero, the function will take an extra
+# parameter 'index' of type size_t and will return
+# block->types.'type'.'member_name'[ index ] instead.
+#
 # If the block is not of the types listed, 'default' will be returned,
 # and an error reported via 'libspectrum_print_error()'.
 #
-# Finally, if 'indexed' is non-zero, the function will take an extra
-# parameter 'index' of type size_t and will return
-# block->types.'type'.'member_name'[ index ] instead.
+# If 'pointer' is present and non-zero, the function will return a pointer
+# to the given member, rather than the member itself.
 
 libspectrum_dword	bit_length		0	-1
 	raw_data
@@ -87,6 +90,9 @@ size_t			data_length		0	-1
        rom		length
        turbo		length
 
+libspectrum_tape_generalised_data_symbol_table*	data_table	0	NULL	1
+	generalised_data
+
 int			ids			1	-1
 	archive_info
 	hardware
@@ -98,6 +104,7 @@ int			offsets			1	0
 	select
 
 libspectrum_dword	pause			0	-1
+	generalised_data
 	message		time
 	pause		length
 	pure_data
@@ -110,6 +117,9 @@ libspectrum_dword	pilot_length		0	-1
 
 size_t			pilot_pulses		0	-1
 	turbo
+
+libspectrum_tape_generalised_data_symbol_table*	pilot_table	0	NULL	1
+	generalised_data
 
 libspectrum_dword	pulse_length		0	-1
 	pure_tone	length

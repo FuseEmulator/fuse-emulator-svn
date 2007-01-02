@@ -556,6 +556,13 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 
   length = libspectrum_read_dword( ptr );
 
+  /* Sanity check */
+  if( length < 14 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "%s: length less than minimum", __func__ );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
   /* Check this much data exists */
   if( end - (*ptr) < length ) {
     libspectrum_print_error(
@@ -565,16 +572,25 @@ tzx_read_generalised_data( libspectrum_tape *tape,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  /* Skip over the data */
-  (*ptr) += length;
-
   error =
     libspectrum_tape_block_alloc( &block,
 				  LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA );
   if( error ) return error;
 
+  libspectrum_tape_block_set_pause( block, (*ptr)[0] + (*ptr)[1] * 0x100 );
+  (*ptr) += 2;
+
+  error = libspectrum_tape_block_read_symbol_table_parameters( block, 1, ptr );
+  if( error ) { free( block ); return error; }
+
+  error = libspectrum_tape_block_read_symbol_table_parameters( block, 0, ptr );
+  if( error ) { free( block ); return error; }
+
   error = libspectrum_tape_append_block( tape, block );
   if( error ) { libspectrum_tape_block_free( block ); return error; }
+
+  /* Skip over the rest of the data for now */
+  (*ptr) += length - 14;
 
   return LIBSPECTRUM_ERROR_NONE;
 }

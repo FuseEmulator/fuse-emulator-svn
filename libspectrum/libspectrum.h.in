@@ -442,6 +442,8 @@ typedef enum libspectrum_tape_type {
   LIBSPECTRUM_TAPE_BLOCK_PURE_DATA,
   LIBSPECTRUM_TAPE_BLOCK_RAW_DATA,
 
+  LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA = 0x19,
+
   LIBSPECTRUM_TAPE_BLOCK_PAUSE = 0x20,
   LIBSPECTRUM_TAPE_BLOCK_GROUP_START,
   LIBSPECTRUM_TAPE_BLOCK_GROUP_END,
@@ -469,6 +471,7 @@ typedef enum libspectrum_tape_type {
 } libspectrum_tape_type;
 
 typedef struct libspectrum_tape_block libspectrum_tape_block;
+typedef struct libspectrum_tape_generalised_data_symbol_table libspectrum_tape_generalised_data_symbol_table;
 
 /* Something to step through all the blocks in a tape */
 typedef struct _GSList *libspectrum_tape_iterator;
@@ -602,12 +605,21 @@ libspectrum_error WIN32_DLL
 libspectrum_warajevo_read( libspectrum_tape *tape,
 			   const libspectrum_byte *buffer, size_t length );
 
+/*** Routines for iterating through a tape ***/
+
 libspectrum_tape_block WIN32_DLL *
 libspectrum_tape_iterator_init( libspectrum_tape_iterator *iterator,
 				libspectrum_tape *tape );
 
 libspectrum_tape_block WIN32_DLL *
 libspectrum_tape_iterator_next( libspectrum_tape_iterator *iterator );
+
+/*** Routines for handling the TZX generalised data block symbol table
+     structure ***/
+
+libspectrum_dword libspectrum_tape_generalised_data_symbol_table_symbols_in_block( const libspectrum_tape_generalised_data_symbol_table *table );
+libspectrum_byte libspectrum_tape_generalised_data_symbol_table_max_pulses( const libspectrum_tape_generalised_data_symbol_table *table );
+libspectrum_byte libspectrum_tape_generalised_data_symbol_table_symbols_in_table( const libspectrum_tape_generalised_data_symbol_table *table );
 
 /*
  * Input recording routines

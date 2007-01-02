@@ -155,7 +155,19 @@ typedef struct libspectrum_tape_raw_data_block {
 
 } libspectrum_tape_raw_data_block;
 
-typedef struct libspectrum_tape_generalised_block {
+struct libspectrum_tape_generalised_data_symbol_table {
+
+  libspectrum_dword symbols_in_block;
+  libspectrum_byte max_pulses;
+  libspectrum_byte symbols_in_table;
+
+};
+
+typedef struct libspectrum_tape_generalised_data_block {
+
+  libspectrum_dword pause;	/* Pause after data (in ms) */
+
+  libspectrum_tape_generalised_data_symbol_table pilot_table, data_table;
 
 } libspectrum_tape_generalised_data_block;
 
