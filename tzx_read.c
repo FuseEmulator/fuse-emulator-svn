@@ -1,5 +1,5 @@
 /* tzx_read.c: Routines for reading .tzx files
-   Copyright (c) 2001-2005 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2007 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -544,6 +544,9 @@ tzx_read_generalised_data( libspectrum_tape *tape,
   libspectrum_tape_block *block;
   libspectrum_dword length;
   libspectrum_error error;
+  libspectrum_tape_generalised_data_symbol_table *table;
+
+  const libspectrum_byte *start = *ptr;
 
   /* Check the length exists */
   if( end - (*ptr) < 4 ) {
@@ -586,11 +589,19 @@ tzx_read_generalised_data( libspectrum_tape *tape,
   error = libspectrum_tape_block_read_symbol_table_parameters( block, 0, ptr );
   if( error ) { free( block ); return error; }
 
+  length -= 14;
+
+  table = libspectrum_tape_block_pilot_table( block );
+  libspectrum_tape_block_read_symbol_table( table, ptr, length );
+
+  table = libspectrum_tape_block_data_table( block );
+  libspectrum_tape_block_read_symbol_table( table, ptr, length );
+
   error = libspectrum_tape_append_block( tape, block );
   if( error ) { libspectrum_tape_block_free( block ); return error; }
 
   /* Skip over the rest of the data for now */
-  (*ptr) += length - 14;
+  (*ptr) = start + 4 + 14 + length;
 
   return LIBSPECTRUM_ERROR_NONE;
 }

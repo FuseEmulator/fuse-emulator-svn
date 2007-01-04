@@ -1,6 +1,6 @@
 /* internals.h: functions which need to be called inter-file by libspectrum
                 routines, but not by user code
-   Copyright (c) 2001-2005 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2007 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -156,6 +156,10 @@ libspectrum_zxs_read( libspectrum_snap *snap,
 libspectrum_error libspectrum_tape_block_read_symbol_table_parameters(
   libspectrum_tape_block *block, int pilot, const libspectrum_byte **ptr );
 
+libspectrum_error
+libspectrum_tape_block_read_symbol_table(
+  libspectrum_tape_generalised_data_symbol_table *table,
+  const libspectrum_byte **ptr, size_t length );
 
 /* Crypto functions */
 
