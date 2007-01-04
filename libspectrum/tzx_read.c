@@ -542,22 +542,25 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 			   const libspectrum_byte *end )
 {
   libspectrum_tape_block *block;
-  libspectrum_dword length;
+  libspectrum_dword length, symbol_count;
   libspectrum_error error;
   libspectrum_tape_generalised_data_symbol_table *table;
+  libspectrum_byte *symbols;
+  libspectrum_word *repeats;
 
-  const libspectrum_byte *start = *ptr;
+  const libspectrum_byte *blockend, *ptr2;
+  size_t i;
 
   /* Check the length exists */
   if( end - (*ptr) < 4 ) {
-    libspectrum_print_error(
-      LIBSPECTRUM_ERROR_CORRUPT,
-      "tzx_read_generalised_data: not enough data in buffer"
-    );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "%s: not enough data in buffer", __func__ );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
   length = libspectrum_read_dword( ptr );
+
+  blockend = *ptr + length;
 
   /* Sanity check */
   if( length < 14 ) {
@@ -568,10 +571,8 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 
   /* Check this much data exists */
   if( end - (*ptr) < length ) {
-    libspectrum_print_error(
-      LIBSPECTRUM_ERROR_CORRUPT,
-      "tzx_read_generalised_data: not enough data in buffer"
-    );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "%s: not enough data in buffer", __func__ );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
@@ -591,11 +592,44 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 
   length -= 14;
 
+  ptr2 = *ptr;
+
   table = libspectrum_tape_block_pilot_table( block );
   libspectrum_tape_block_read_symbol_table( table, ptr, length );
 
-  /* Skip the pilot data for now */
-  (*ptr) += 3 * libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table );
+  length -= ptr2 - *ptr;
+
+  symbol_count = libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table );
+
+  if( length < 3 * symbol_count ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "%s: not enough data in buffer", __func__ );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  symbols = malloc( symbol_count * sizeof( libspectrum_byte ) );
+  if( !symbols ) {
+    /* Unwind */
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s:%d", __func__,
+			     __LINE__ );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  repeats = malloc( symbol_count * sizeof( libspectrum_word ) );
+  if( !repeats ) {
+    /* Unwind */
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s:%d", __func__,
+			     __LINE__ );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  for( i = 0; i < symbol_count; i++ ) {
+    symbols[ i ] = **ptr; (*ptr)++;
+    repeats[ i ] = (*ptr)[0] + 0x100 * (*ptr)[1]; (*ptr) += 2;
+  }
+
+  libspectrum_tape_block_set_pilot_symbols( block, symbols );
+  libspectrum_tape_block_set_pilot_repeats( block, repeats );
 
   table = libspectrum_tape_block_data_table( block );
   libspectrum_tape_block_read_symbol_table( table, ptr, length );
@@ -604,7 +638,7 @@ tzx_read_generalised_data( libspectrum_tape *tape,
   if( error ) { libspectrum_tape_block_free( block ); return error; }
 
   /* Skip over the rest of the data for now */
-  (*ptr) = start + 4 + 14 + length;
+  (*ptr) = blockend;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
