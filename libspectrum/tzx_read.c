@@ -584,27 +584,31 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 				  LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA );
   if( error ) return error;
 
+  libspectrum_tape_block_zero( block );
+
   libspectrum_tape_block_set_pause( block, (*ptr)[0] + (*ptr)[1] * 0x100 );
   (*ptr) += 2;
 
   error = libspectrum_tape_block_read_symbol_table_parameters( block, 1, ptr );
-  if( error ) { free( block ); return error; }
+  if( error ) { libspectrum_tape_block_free( block ); return error; }
 
   error = libspectrum_tape_block_read_symbol_table_parameters( block, 0, ptr );
-  if( error ) { free( block ); return error; }
+  if( error ) { libspectrum_tape_block_free( block ); return error; }
 
   length -= 14;
 
   ptr2 = *ptr;
 
   table = libspectrum_tape_block_pilot_table( block );
-  libspectrum_tape_block_read_symbol_table( table, ptr, length );
+  error = libspectrum_tape_block_read_symbol_table( table, ptr, length );
+  if( error ) { libspectrum_tape_block_free( block ); return error; }
 
   length -= ptr2 - *ptr;
 
   symbol_count = libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table );
 
   if( length < 3 * symbol_count ) {
+    libspectrum_tape_block_free( block );
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "%s: not enough data in buffer", __func__ );
     return LIBSPECTRUM_ERROR_CORRUPT;
@@ -612,7 +616,7 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 
   symbols = malloc( symbol_count * sizeof( *symbols ) );
   if( !symbols ) {
-    /* Unwind */
+    libspectrum_tape_block_free( block );
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s:%d", __func__,
 			     __LINE__ );
     return LIBSPECTRUM_ERROR_MEMORY;
@@ -620,7 +624,7 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 
   repeats = malloc( symbol_count * sizeof( *repeats ) );
   if( !repeats ) {
-    /* Unwind */
+    libspectrum_tape_block_free( block );
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s:%d", __func__,
 			     __LINE__ );
     return LIBSPECTRUM_ERROR_MEMORY;
@@ -653,7 +657,7 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 
   data = malloc( data_count * sizeof( *data ) );
   if( !data ) {
-    /* Unwind */
+    libspectrum_tape_block_free( block );
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s:%d", __func__,
 			     __LINE__ );
     return LIBSPECTRUM_ERROR_MEMORY;

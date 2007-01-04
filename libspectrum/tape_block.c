@@ -65,6 +65,19 @@ libspectrum_tape_block_alloc( libspectrum_tape_block **block,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+static void
+free_symbol_table( libspectrum_tape_generalised_data_symbol_table *table )
+{
+  size_t i;
+
+  if( table->symbols ) {
+    for( i = 0; i < table->symbols_in_table; i++ )
+      free( table->symbols[ i ].lengths );
+
+    free( table->symbols );
+  }
+}
+
 /* Free the memory used by one block */
 libspectrum_error
 libspectrum_tape_block_free( libspectrum_tape_block *block )
@@ -91,6 +104,11 @@ libspectrum_tape_block_free( libspectrum_tape_block *block )
     free( block->types.raw_data.data );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+    free_symbol_table( &block->types.generalised_data.pilot_table );
+    free_symbol_table( &block->types.generalised_data.data_table );
+    free( block->types.generalised_data.pilot_symbols );
+    free( block->types.generalised_data.pilot_repeats );
+    free( block->types.generalised_data.data );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
@@ -374,7 +392,10 @@ libspectrum_tape_block_read_symbol_table(
       symbol->edge_type = **ptr; (*ptr)++;
       symbol->lengths = malloc( table->max_pulses * sizeof( *symbol->lengths ) );
       if( !symbol->lengths ) {
-	/* Aargh. Unwind everything */
+	for( j = 0; j < i; j++ ) free( table->symbols[ j ].lengths );
+	free( table->symbols );
+	libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+				 "%s:%d: out of memory", __func__, __LINE__ );
 	return LIBSPECTRUM_ERROR_MEMORY;
       }
       for( j = 0; j < table->max_pulses; j++ ) {
@@ -386,5 +407,21 @@ libspectrum_tape_block_read_symbol_table(
   }
   
   return LIBSPECTRUM_ERROR_NONE;
+}
+
+void
+libspectrum_tape_block_zero( libspectrum_tape_block *block )
+{
+  switch( block->type ) {
+  case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+    block->types.generalised_data.pilot_table.symbols = NULL;
+    block->types.generalised_data.data_table.symbols = NULL;
+    block->types.generalised_data.pilot_symbols = NULL;
+    block->types.generalised_data.pilot_repeats = NULL;
+    block->types.generalised_data.data = NULL;
+    break;
+  default:
+    break;
+  }
 }
 
