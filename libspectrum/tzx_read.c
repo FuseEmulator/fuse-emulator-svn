@@ -594,6 +594,9 @@ tzx_read_generalised_data( libspectrum_tape *tape,
   table = libspectrum_tape_block_pilot_table( block );
   libspectrum_tape_block_read_symbol_table( table, ptr, length );
 
+  /* Skip the pilot data for now */
+  (*ptr) += 3 * libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table );
+
   table = libspectrum_tape_block_data_table( block );
   libspectrum_tape_block_read_symbol_table( table, ptr, length );
 
