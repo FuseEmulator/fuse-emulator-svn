@@ -333,7 +333,10 @@ libspectrum_tape_block_read_symbol_table_parameters(
 
   table->symbols_in_block = libspectrum_read_dword( ptr );
   table->max_pulses = (*ptr)[0];
+
   table->symbols_in_table = (*ptr)[1];
+  if( !table->symbols_in_table ) table->symbols_in_table = 256;
+
   (*ptr) += 2;
 
   return LIBSPECTRUM_ERROR_NONE;

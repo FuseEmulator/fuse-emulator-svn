@@ -166,7 +166,7 @@ struct libspectrum_tape_generalised_data_symbol_table {
 
   libspectrum_dword symbols_in_block;
   libspectrum_byte max_pulses;
-  libspectrum_byte symbols_in_table;
+  libspectrum_word symbols_in_table;
 
   libspectrum_tape_generalised_data_symbol *symbols;
 
