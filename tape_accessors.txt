@@ -118,6 +118,12 @@ libspectrum_dword	pilot_length		0	-1
 size_t			pilot_pulses		0	-1
 	turbo
 
+libspectrum_word	pilot_repeats		1	-1
+	generalised_data
+
+libspectrum_byte	pilot_symbols		1	-1
+	generalised_data
+
 libspectrum_tape_generalised_data_symbol_table*	pilot_table	0	NULL	1
 	generalised_data
 

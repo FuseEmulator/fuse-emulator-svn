@@ -178,6 +178,9 @@ typedef struct libspectrum_tape_generalised_data_block {
 
   libspectrum_tape_generalised_data_symbol_table pilot_table, data_table;
 
+  libspectrum_byte *pilot_symbols;
+  libspectrum_word *pilot_repeats;
+
 } libspectrum_tape_generalised_data_block;
 
 /* A pause block */

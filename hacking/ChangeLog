@@ -362,3 +362,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 0 => 256 symbols in table.
 20070104 tzx_read.c: generalised data block pilot data comes before the
 	 data symbol table.
+20070104 tape_accessors.c,tape_block.h,tzx_read.c: read pilot data from
+	 generalised data blocks.
