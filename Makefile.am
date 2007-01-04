@@ -58,7 +58,7 @@ libspectrum_la_SOURCES = bzip2.c \
 
 libspectrum_la_LDFLAGS = -version-info 4:0:2 -no-undefined
 
-libspectrum_la_LIBADD = myglib/libmyglib.la
+libspectrum_la_LIBADD = myglib/libmyglib.la -lm
 
 BUILT_SOURCES = libspectrum.h snap_accessors.c tape_accessors.c tape_set.c
 

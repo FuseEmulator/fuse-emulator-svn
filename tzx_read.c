@@ -26,6 +26,7 @@
 
 #include <config.h>
 
+#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -542,14 +543,16 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 			   const libspectrum_byte *end )
 {
   libspectrum_tape_block *block;
-  libspectrum_dword length, symbol_count;
+  libspectrum_dword length, symbol_count, data_count;
+  libspectrum_word symbol_count2;
   libspectrum_error error;
   libspectrum_tape_generalised_data_symbol_table *table;
-  libspectrum_byte *symbols;
+  libspectrum_byte *symbols, *data;
   libspectrum_word *repeats;
 
   const libspectrum_byte *blockend, *ptr2;
   size_t i;
+  int bits_per_symbol;
 
   /* Check the length exists */
   if( end - (*ptr) < 4 ) {
@@ -607,7 +610,7 @@ tzx_read_generalised_data( libspectrum_tape *tape,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  symbols = malloc( symbol_count * sizeof( libspectrum_byte ) );
+  symbols = malloc( symbol_count * sizeof( *symbols ) );
   if( !symbols ) {
     /* Unwind */
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s:%d", __func__,
@@ -615,7 +618,7 @@ tzx_read_generalised_data( libspectrum_tape *tape,
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
-  repeats = malloc( symbol_count * sizeof( libspectrum_word ) );
+  repeats = malloc( symbol_count * sizeof( *repeats ) );
   if( !repeats ) {
     /* Unwind */
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s:%d", __func__,
@@ -631,14 +634,46 @@ tzx_read_generalised_data( libspectrum_tape *tape,
   libspectrum_tape_block_set_pilot_symbols( block, symbols );
   libspectrum_tape_block_set_pilot_repeats( block, repeats );
 
+  length -= 3 * symbol_count;
+
+  ptr2 = *ptr;
+
   table = libspectrum_tape_block_data_table( block );
   libspectrum_tape_block_read_symbol_table( table, ptr, length );
 
+  length -= ptr2 - *ptr;
+
+  symbol_count2 = libspectrum_tape_generalised_data_symbol_table_symbols_in_table( table );
+
+  bits_per_symbol = ceil( log( symbol_count2 ) / M_LN2 );
+
+  symbol_count = libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table );
+
+  data_count = ( ( bits_per_symbol * symbol_count ) + 7 ) / 8;
+
+  data = malloc( data_count * sizeof( *data ) );
+  if( !data ) {
+    /* Unwind */
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s:%d", __func__,
+			     __LINE__ );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  memcpy( data, *ptr, data_count * sizeof( *data ) );
+  *ptr += data_count;
+
+  libspectrum_tape_block_set_data( block, data );
+
+  /* Sanity check */
+  if( *ptr != blockend ) {
+    libspectrum_tape_block_free( block );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "%s: sanity check failed", __func__ );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
   error = libspectrum_tape_append_block( tape, block );
   if( error ) { libspectrum_tape_block_free( block ); return error; }
-
-  /* Skip over the rest of the data for now */
-  (*ptr) = blockend;
 
   return LIBSPECTRUM_ERROR_NONE;
 }

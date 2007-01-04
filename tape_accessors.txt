@@ -78,6 +78,7 @@ size_t			count			0	-1
 
 libspectrum_byte*	data			0	NULL
 	custom
+	generalised_data
 	pure_data
 	raw_data
 	rom
