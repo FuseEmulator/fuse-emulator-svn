@@ -49,7 +49,7 @@ dump_symbol_table( libspectrum_tape_generalised_data_symbol_table *table )
 
   libspectrum_byte pulses = 
     libspectrum_tape_generalised_data_symbol_table_max_pulses( table );
-  libspectrum_byte symbols =
+  libspectrum_word symbols =
     libspectrum_tape_generalised_data_symbol_table_symbols_in_table( table );
 
   printf("    Symbols in block: %ld\n", (unsigned long)libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table ) );
