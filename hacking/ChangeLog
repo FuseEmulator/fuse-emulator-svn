@@ -358,3 +358,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 functionality to allow tzxlist to do something with these blocks.
 20070104 internals.h,libspectrum.h.in,symbol_table.c,tape_block.[ch],
 	 tzx_read.c: next bit of 0x19 functionality.
+20070104 libspectrum.h.in,symbol_table.c,tape_block.[ch]: symbol count of
+	 0 => 256 symbols in table.

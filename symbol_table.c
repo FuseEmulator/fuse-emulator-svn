@@ -41,7 +41,7 @@ libspectrum_tape_generalised_data_symbol_table_max_pulses( const libspectrum_tap
   return table->max_pulses;
 }
 
-libspectrum_byte
+libspectrum_word
 libspectrum_tape_generalised_data_symbol_table_symbols_in_table( const libspectrum_tape_generalised_data_symbol_table *table )
 {
   return table->symbols_in_table;
