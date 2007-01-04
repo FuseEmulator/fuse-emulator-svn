@@ -360,3 +360,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 tzx_read.c: next bit of 0x19 functionality.
 20070104 libspectrum.h.in,symbol_table.c,tape_block.[ch]: symbol count of
 	 0 => 256 symbols in table.
+20070104 tzx_read.c: generalised data block pilot data comes before the
+	 data symbol table.
