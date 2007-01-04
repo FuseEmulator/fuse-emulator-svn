@@ -364,3 +364,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 data symbol table.
 20070104 tape_accessors.c,tape_block.h,tzx_read.c: read pilot data from
 	 generalised data blocks.
+20070104 Makefile.am,tape_accessors.txt,tape_block.h,tzx_read.c: read data
+	 stream from generalised data blocks.
