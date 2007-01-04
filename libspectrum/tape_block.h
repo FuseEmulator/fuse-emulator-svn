@@ -1,5 +1,5 @@
 /* tape_block.h: individual tape block types
-   Copyright (c) 2003 Philip Kendall
+   Copyright (c) 2003-2007 Philip Kendall
 
    $Id$
 
@@ -155,11 +155,20 @@ typedef struct libspectrum_tape_raw_data_block {
 
 } libspectrum_tape_raw_data_block;
 
+struct libspectrum_tape_generalised_data_symbol {
+
+  libspectrum_tape_generalised_data_symbol_edge_type edge_type;
+  libspectrum_word *lengths;
+
+};
+
 struct libspectrum_tape_generalised_data_symbol_table {
 
   libspectrum_dword symbols_in_block;
   libspectrum_byte max_pulses;
   libspectrum_byte symbols_in_table;
+
+  libspectrum_tape_generalised_data_symbol *symbols;
 
 };
 

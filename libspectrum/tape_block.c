@@ -1,5 +1,5 @@
 /* tape_block.c: one tape block
-   Copyright (c) 2003-2006 Philip Kendall
+   Copyright (c) 2003-2007 Philip Kendall
 
    $Id$
 
@@ -338,3 +338,50 @@ libspectrum_tape_block_read_symbol_table_parameters(
 
   return LIBSPECTRUM_ERROR_NONE;
 }
+
+libspectrum_error
+libspectrum_tape_block_read_symbol_table(
+  libspectrum_tape_generalised_data_symbol_table *table,
+  const libspectrum_byte **ptr, size_t length )
+{
+  if( table->symbols_in_block ) {
+    
+    libspectrum_tape_generalised_data_symbol *symbol;
+    size_t i, j;
+
+    /* Sanity check */
+    if( length < ( 2 * table->max_pulses + 1 ) * table->symbols_in_table ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			       "%s: not enough data in buffer", __func__ );
+      return LIBSPECTRUM_ERROR_CORRUPT;
+    }
+
+
+    table->symbols = malloc( table->symbols_in_table *
+			     sizeof( *table->symbols ) );
+    if( !table->symbols ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s: out of memory",
+			       __func__ );
+      return LIBSPECTRUM_ERROR_MEMORY;
+    }
+
+    for( i = 0, symbol = table->symbols;
+	 i < table->symbols_in_table;
+	 i++, symbol++ ) {
+      symbol->edge_type = **ptr; (*ptr)++;
+      symbol->lengths = malloc( table->max_pulses * sizeof( *symbol->lengths ) );
+      if( !symbol->lengths ) {
+	/* Aargh. Unwind everything */
+	return LIBSPECTRUM_ERROR_MEMORY;
+      }
+      for( j = 0; j < table->max_pulses; j++ ) {
+	symbol->lengths[ j ] = (*ptr)[0] + (*ptr)[1] * 0x100;
+	(*ptr) += 2;
+      }
+    }
+
+  }
+  
+  return LIBSPECTRUM_ERROR_NONE;
+}
+

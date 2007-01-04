@@ -1,5 +1,5 @@
 /* libspectrum.h: the library for dealing with ZX Spectrum emulator files
-   Copyright (c) 2001-2006 Philip Kendall, Darren Salt, Fredrick Meunier
+   Copyright (c) 2001-2007 Philip Kendall, Darren Salt, Fredrick Meunier
 
    $Id$
 
@@ -617,9 +617,25 @@ libspectrum_tape_iterator_next( libspectrum_tape_iterator *iterator );
 /*** Routines for handling the TZX generalised data block symbol table
      structure ***/
 
+typedef enum libspectrum_tape_generalised_data_symbol_edge_type {
+
+  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_EGDE = 0x00,
+  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_NO_EGDE,
+  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_LOW,
+  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_HIGH,
+
+} libspectrum_tape_generalised_data_symbol_edge_type;
+
+typedef struct libspectrum_tape_generalised_data_symbol libspectrum_tape_generalised_data_symbol;
+
 libspectrum_dword libspectrum_tape_generalised_data_symbol_table_symbols_in_block( const libspectrum_tape_generalised_data_symbol_table *table );
 libspectrum_byte libspectrum_tape_generalised_data_symbol_table_max_pulses( const libspectrum_tape_generalised_data_symbol_table *table );
 libspectrum_byte libspectrum_tape_generalised_data_symbol_table_symbols_in_table( const libspectrum_tape_generalised_data_symbol_table *table );
+libspectrum_tape_generalised_data_symbol* libspectrum_tape_generalised_data_symbol_table_symbol( const libspectrum_tape_generalised_data_symbol_table *table, size_t which );	
+
+libspectrum_tape_generalised_data_symbol_edge_type libspectrum_tape_generalised_data_symbol_type( const libspectrum_tape_generalised_data_symbol *symbol );
+libspectrum_word libspectrum_tape_generalised_data_symbol_pulse( const libspectrum_tape_generalised_data_symbol *symbol, size_t which );
+
 
 /*
  * Input recording routines
