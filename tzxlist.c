@@ -72,6 +72,21 @@ dump_symbol_table( libspectrum_tape_generalised_data_symbol_table *table )
     
 }
 
+static void
+dump_pilot_repeats( libspectrum_tape_block *block )
+{
+  size_t i;
+
+  libspectrum_tape_generalised_data_symbol_table *pilot =
+    libspectrum_tape_block_pilot_table( block );
+
+  for( i = 0; i < libspectrum_tape_generalised_data_symbol_table_symbols_in_block( pilot ); i++ ) {
+    printf( "    Repeat %2d: symbol %d repeated %d times\n", i,
+	    libspectrum_tape_block_pilot_symbols( block, i ),
+	    libspectrum_tape_block_pilot_repeats( block, i ) );
+  }
+}
+
 static const char*
 hardware_desc( int type, int id )
 {
@@ -208,6 +223,7 @@ process_tape( char *filename )
       printf("  Pause length: %d ms\n", libspectrum_tape_block_pause( block ) );
       printf("  Pilot table:\n");
       dump_symbol_table( libspectrum_tape_block_pilot_table( block ) );
+      dump_pilot_repeats( block );
       printf("  Data table:\n");
       dump_symbol_table( libspectrum_tape_block_data_table( block ) );
       break;
