@@ -153,6 +153,8 @@ libspectrum_zxs_read( libspectrum_snap *snap,
 
 /* Tape routines */
 
+void libspectrum_tape_block_zero( libspectrum_tape_block *block );
+
 libspectrum_error libspectrum_tape_block_read_symbol_table_parameters(
   libspectrum_tape_block *block, int pilot, const libspectrum_byte **ptr );
 
