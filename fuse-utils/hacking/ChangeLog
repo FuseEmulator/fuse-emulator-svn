@@ -132,3 +132,4 @@
 20070102 autogen.sh: add libtoolize
 20070102 tzxlist.c: list some info for TZX generalised data blocks.
 20070104 tzxlist.c: more info for TZX generalised data blocks.
+20070104 tzxlist.c: support 256 symbols in table.
