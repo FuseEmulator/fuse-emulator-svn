@@ -771,6 +771,37 @@ libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block )
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+static libspectrum_byte
+get_generalised_data_bit( libspectrum_tape_generalised_data_block *block )
+{
+  libspectrum_byte r = block->current_byte & 0x80 ? 1 : 0;
+  block->current_byte <<= 1;
+
+  if( ++block->bits_through_byte == 8 ) {
+    block->bits_through_byte = 0;
+    block->bytes_through_stream++;
+    block->current_byte = block->data[ block->bytes_through_stream ];
+  }
+  
+  return r;
+}
+
+static libspectrum_byte
+get_generalised_data_symbol( libspectrum_tape_generalised_data_block *block )
+{
+  libspectrum_byte symbol;
+  size_t i;
+    
+  for( i = 0, symbol = 0;
+       i < block->bits_per_data_symbol;
+       i++ ) {
+    symbol <<= 1;
+    symbol |= get_generalised_data_bit( block );
+  }
+    
+  return symbol;
+}
+
 static libspectrum_error
 generalised_data_edge( libspectrum_tape_generalised_data_block *block,
 		       libspectrum_dword *tstates, int *end_of_block )
@@ -795,11 +826,41 @@ generalised_data_edge( libspectrum_tape_generalised_data_block *block,
 	block->symbols_through_run = 0;
 	if( ++block->run == table->symbols_in_block ) {
 	  block->state = LIBSPECTRUM_TAPE_STATE_DATA1;
+	  block->bits_through_byte = 0;
+	  block->bytes_through_stream = 0;
+	  block->symbols_through_stream = 0;
+	  block->current_byte = block->data[ 0 ];
+	  block->current_symbol = get_generalised_data_symbol( block );
 	}
       }
     }
     break;
-    
+
+  case LIBSPECTRUM_TAPE_STATE_DATA1:
+    table = &( block->data_table );
+    current_lengths = table->symbols[ block->current_symbol ].lengths;
+
+    *tstates = current_lengths[ block->edges_through_symbol ];
+
+    block->edges_through_symbol++;
+    if( block->edges_through_symbol == table->max_pulses    ||
+	current_lengths[ block->edges_through_symbol ] == 0    ) {
+      if( ++block->symbols_through_stream == block->data_table.symbols_in_block ) {
+	block->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
+      } else {
+	block->edges_through_symbol = 0;
+	block->current_symbol = get_generalised_data_symbol( block );
+      }
+    }
+    break;
+
+  case LIBSPECTRUM_TAPE_STATE_PAUSE:
+    /* The pause at the end of the block */
+    *tstates = ( block->pause * 69888 )/20; /* FIXME: should vary with tstates
+					       per frame */
+    *end_of_block = 1;
+    break;
+
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC, "%s: unknown state %d",
 			     __func__, block->state );

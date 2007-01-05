@@ -651,6 +651,8 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 
   bits_per_symbol = ceil( log( symbol_count2 ) / M_LN2 );
 
+  libspectrum_tape_block_set_bits_per_data_symbol( block, bits_per_symbol );
+
   symbol_count = libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table );
 
   data_count = ( ( bits_per_symbol * symbol_count ) + 7 ) / 8;

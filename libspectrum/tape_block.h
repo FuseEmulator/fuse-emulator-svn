@@ -181,6 +181,7 @@ typedef struct libspectrum_tape_generalised_data_block {
   libspectrum_byte *pilot_symbols;
   libspectrum_word *pilot_repeats;
 
+  size_t bits_per_data_symbol;
   libspectrum_byte *data;
 
   /* Private data */
@@ -190,6 +191,13 @@ typedef struct libspectrum_tape_generalised_data_block {
   libspectrum_dword run;
   libspectrum_word symbols_through_run;
   libspectrum_byte edges_through_symbol;
+
+  libspectrum_byte current_symbol;
+  size_t symbols_through_stream;
+
+  libspectrum_byte current_byte;
+  size_t bits_through_byte;
+  size_t bytes_through_stream;
 
 } libspectrum_tape_generalised_data_block;
 
