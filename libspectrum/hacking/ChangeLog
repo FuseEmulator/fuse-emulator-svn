@@ -368,3 +368,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 stream from generalised data blocks.
 20070104 internals.h,tape_block.c,tzx_read.c: free generalised block data
 	 on success (tested) and failure (not tested).
+20070105 tape.c,tape_block.[ch]: start of playback code for generalised
+	 data blocks.

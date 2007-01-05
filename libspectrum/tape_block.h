@@ -183,6 +183,14 @@ typedef struct libspectrum_tape_generalised_data_block {
 
   libspectrum_byte *data;
 
+  /* Private data */
+
+  libspectrum_tape_state_type state;
+
+  libspectrum_dword run;
+  libspectrum_word symbols_through_run;
+  libspectrum_byte edges_through_symbol;
+
 } libspectrum_tape_generalised_data_block;
 
 /* A pause block */
