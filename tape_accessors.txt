@@ -68,6 +68,9 @@ size_t			bits_in_last_byte	0	-1
 	raw_data
 	turbo
 
+size_t			bits_per_data_symbol	0	-1
+	generalised_data
+
 size_t			count			0	-1
 	pure_tone	pulses
 	pulses

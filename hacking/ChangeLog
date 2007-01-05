@@ -370,3 +370,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 on success (tested) and failure (not tested).
 20070105 tape.c,tape_block.[ch]: start of playback code for generalised
 	 data blocks.
+20070105 tape.c,tape_accessors.txt,tape_block.h,tzx_read.c: more playback
+	 code for generalised data blocks; handles symbol type 0 only.
