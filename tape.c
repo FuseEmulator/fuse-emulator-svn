@@ -94,6 +94,10 @@ raw_data_edge( libspectrum_tape_raw_data_block *block,
 	       libspectrum_dword *tstates, int *end_of_block );
 
 static libspectrum_error
+generalised_data_edge( libspectrum_tape_generalised_data_block *block,
+		       libspectrum_dword *tstates, int *end_of_block );
+
+static libspectrum_error
 jump_blocks( libspectrum_tape *tape, int offset );
 
 static libspectrum_error
@@ -313,6 +317,12 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
     break;
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
     error = raw_data_edge( &(block->types.raw_data), tstates, &end_of_block );
+    if( error ) return error;
+    break;
+
+  case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+    error = generalised_data_edge( &(block->types.generalised_data), tstates,
+				   &end_of_block );
     if( error ) return error;
     break;
 
@@ -762,6 +772,44 @@ libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block )
 }
 
 static libspectrum_error
+generalised_data_edge( libspectrum_tape_generalised_data_block *block,
+		       libspectrum_dword *tstates, int *end_of_block )
+{
+  libspectrum_tape_generalised_data_symbol_table *table;
+  size_t current_symbol;
+  libspectrum_word *current_lengths;
+
+  switch( block->state ) {
+  case LIBSPECTRUM_TAPE_STATE_PILOT:
+    table = &( block->pilot_table );
+    current_symbol = block->pilot_symbols[ block->run ];
+    current_lengths = table->symbols[ current_symbol ].lengths;
+
+    *tstates = current_lengths[ block->edges_through_symbol ];
+
+    block->edges_through_symbol++;
+    if( block->edges_through_symbol == table->max_pulses    ||
+	current_lengths[ block->edges_through_symbol ] == 0    ) {
+      block->edges_through_symbol = 0;
+      if( ++block->symbols_through_run == block->pilot_repeats[ block->run ] ) {
+	block->symbols_through_run = 0;
+	if( ++block->run == table->symbols_in_block ) {
+	  block->state = LIBSPECTRUM_TAPE_STATE_DATA1;
+	}
+      }
+    }
+    break;
+    
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC, "%s: unknown state %d",
+			     __func__, block->state );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
 jump_blocks( libspectrum_tape *tape, int offset )
 {
   gint current_position; GSList *new_block;
@@ -776,7 +824,6 @@ jump_blocks( libspectrum_tape *tape, int offset )
 
   return LIBSPECTRUM_ERROR_NONE;
 }
-
 
 /* Extra, non-TZX, blocks which can be handled as if TZX */
 

@@ -48,6 +48,8 @@ static libspectrum_error
 pure_data_init( libspectrum_tape_pure_data_block *block );
 static libspectrum_error
 raw_data_init( libspectrum_tape_raw_data_block *block );
+static libspectrum_error
+generalised_data_init( libspectrum_tape_generalised_data_block *block );
 
 libspectrum_error
 libspectrum_tape_block_alloc( libspectrum_tape_block **block,
@@ -213,6 +215,8 @@ libspectrum_tape_block_init( libspectrum_tape_block *block )
     return pure_data_init( &(block->types.pure_data) );
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
     return raw_data_init( &(block->types.raw_data) );
+  case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+    return generalised_data_init( &(block->types.generalised_data ) );
   case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
     block->types.rle_pulse.index = 0;
     return LIBSPECTRUM_ERROR_NONE;
@@ -299,6 +303,18 @@ raw_data_init( libspectrum_tape_raw_data_block *block )
   /* Set up the next bit */
   error = libspectrum_tape_raw_data_next_bit( block );
   if( error ) return error;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+generalised_data_init( libspectrum_tape_generalised_data_block *block )
+{
+  block->state = LIBSPECTRUM_TAPE_STATE_PILOT;
+
+  block->run = 0;
+  block->symbols_through_run = 0;
+  block->edges_through_symbol = 0;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
