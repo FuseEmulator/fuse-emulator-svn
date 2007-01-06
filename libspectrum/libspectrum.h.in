@@ -480,6 +480,9 @@ typedef struct _GSList *libspectrum_tape_iterator;
 extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_BLOCK;  /* End of block */
 extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_STOP;	  /* Stop tape */
 extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_STOP48; /* Stop tape if in 48K mode */
+extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_NO_EDGE; /* Edge isn't really an edge */
+extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_LEVEL_LOW; /* Set level low */
+extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_LEVEL_HIGH; /* Set level high */
 
 /* The states which a block can be in */
 typedef enum libspectrum_tape_state_type {
@@ -619,8 +622,8 @@ libspectrum_tape_iterator_next( libspectrum_tape_iterator *iterator );
 
 typedef enum libspectrum_tape_generalised_data_symbol_edge_type {
 
-  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_EGDE = 0x00,
-  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_NO_EGDE,
+  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_EDGE = 0x00,
+  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_NO_EDGE,
   LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_LOW,
   LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_HIGH,
 
