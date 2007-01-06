@@ -95,7 +95,8 @@ raw_data_edge( libspectrum_tape_raw_data_block *block,
 
 static libspectrum_error
 generalised_data_edge( libspectrum_tape_generalised_data_block *block,
-		       libspectrum_dword *tstates, int *end_of_block );
+		       libspectrum_dword *tstates, int *end_of_block,
+		       int *flags );
 
 static libspectrum_error
 jump_blocks( libspectrum_tape *tape, int offset );
@@ -268,10 +269,13 @@ libspectrum_tape_present( const libspectrum_tape *tape )
 }
 
 /* Some flags which may be set after calling libspectrum_tape_get_next_edge */
-const int LIBSPECTRUM_TAPE_FLAGS_BLOCK  = 1 << 0; /* End of block */
-const int LIBSPECTRUM_TAPE_FLAGS_STOP   = 1 << 1; /* Stop tape */
-const int LIBSPECTRUM_TAPE_FLAGS_STOP48 = 1 << 2; /* Stop tape if in
+const int LIBSPECTRUM_TAPE_FLAGS_BLOCK      = 1 << 0; /* End of block */
+const int LIBSPECTRUM_TAPE_FLAGS_STOP       = 1 << 1; /* Stop tape */
+const int LIBSPECTRUM_TAPE_FLAGS_STOP48     = 1 << 2; /* Stop tape if in
 						     48K mode */
+const int LIBSPECTRUM_TAPE_FLAGS_NO_EDGE    = 1 << 3; /* Not an edge really */
+const int LIBSPECTRUM_TAPE_FLAGS_LEVEL_LOW  = 1 << 4; /* Set level low */
+const int LIBSPECTRUM_TAPE_FLAGS_LEVEL_HIGH = 1 << 5; /* Set level high */
 
 /* The main function: called with a tape object and returns the number of
    t-states until the next edge, and a marker if this was the last edge
@@ -322,7 +326,7 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
 
   case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
     error = generalised_data_edge( &(block->types.generalised_data), tstates,
-				   &end_of_block );
+				   &end_of_block, flags );
     if( error ) return error;
     break;
 
@@ -804,9 +808,11 @@ get_generalised_data_symbol( libspectrum_tape_generalised_data_block *block )
 
 static libspectrum_error
 generalised_data_edge( libspectrum_tape_generalised_data_block *block,
-		       libspectrum_dword *tstates, int *end_of_block )
+		       libspectrum_dword *tstates, int *end_of_block,
+		       int *flags )
 {
   libspectrum_tape_generalised_data_symbol_table *table;
+  libspectrum_tape_generalised_data_symbol *symbol;
   size_t current_symbol;
   libspectrum_word *current_lengths;
 
@@ -814,9 +820,27 @@ generalised_data_edge( libspectrum_tape_generalised_data_block *block,
   case LIBSPECTRUM_TAPE_STATE_PILOT:
     table = &( block->pilot_table );
     current_symbol = block->pilot_symbols[ block->run ];
-    current_lengths = table->symbols[ current_symbol ].lengths;
+    symbol = &( table->symbols[ current_symbol ] );
+    
+    current_lengths = symbol->lengths;
 
     *tstates = current_lengths[ block->edges_through_symbol ];
+
+    if( !block->edges_through_symbol ) {
+      switch( symbol->edge_type ) {
+      case LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_EDGE:
+	break;
+      case LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_NO_EDGE:
+	*flags |= LIBSPECTRUM_TAPE_FLAGS_NO_EDGE;
+	break;
+      case LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_LOW:
+	*flags |= LIBSPECTRUM_TAPE_FLAGS_LEVEL_LOW;
+	break;
+      case LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_HIGH:
+	*flags |= LIBSPECTRUM_TAPE_FLAGS_LEVEL_HIGH;
+	break;
+      }
+    }
 
     block->edges_through_symbol++;
     if( block->edges_through_symbol == table->max_pulses    ||
