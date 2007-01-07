@@ -374,3 +374,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 code for generalised data blocks; handles symbol type 0 only.
 20070106 libspectrum.h.in,tape.c: playback for other generalised data
 	 symbol types.
+20070107 tape.c: set flags when playing back generalised data symbols as
+	 well as the pilot.
