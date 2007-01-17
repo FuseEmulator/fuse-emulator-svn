@@ -376,3 +376,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 symbol types.
 20070107 tape.c: set flags when playing back generalised data symbols as
 	 well as the pilot.
+20070117 microdrive.c: fix up checksum calculation (patch #1637011)
+         (Gergely Szasz).

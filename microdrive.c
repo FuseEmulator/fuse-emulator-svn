@@ -191,14 +191,8 @@ libspectrum_microdrive_checksum( libspectrum_microdrive *microdrive,
 				 libspectrum_byte what )
 {
   libspectrum_byte *data;
-  libspectrum_microdrive_block b;
   unsigned int checksum, carry;
   int i;
-
-  libspectrum_microdrive_get_block( microdrive, 0, &b );
-
-  if( ( b.recflg & 0x02 ) && b.reclen == 0 )
-    return -1;		/* BAD_BLOCK */
 
 #define DO_CHECK \
     checksum += *data;		/* LD    A,E */ \
@@ -239,24 +233,29 @@ LSTCHK   LD      E,A             ; update the 8-bit sum.
     return -1;		/* PRESET BAD BLOCK */
   }
 
-  checksum = 0;
+  checksum = 0;			/* Block header */
   for( i = LIBSPECTRUM_MICRODRIVE_HEAD_LEN; i > 1; i-- ) {
     DO_CHECK;
   }
   if( *(data++) != checksum ) 
     return 1;
 
-  checksum = 0;
+  checksum = 0;			/* Record header */
   for( i = LIBSPECTRUM_MICRODRIVE_HEAD_LEN; i > 1; i-- ) {
     DO_CHECK;
   }
   if( *(data++) != checksum ) 
     return 2;
 
+  if( ( *( data - 13 ) == 0 ) && ( *( data - 12 ) == 0 ) ) {
+    return 0;		/* Erased / empty block: data checksum irrelevant */
+  }
+
+  checksum = 0;			/* Data */
   for( i = LIBSPECTRUM_MICRODRIVE_DATA_LEN; i > 0; i-- ) {
     DO_CHECK;
   }
-  if( *(data++) != checksum )
+  if( *data != checksum )
     return 3;
 
   return 0;
