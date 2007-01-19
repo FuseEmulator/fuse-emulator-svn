@@ -1,4 +1,4 @@
-libspectrum 0.2.2
+libspectrum 0.3.0
 =================
 
 libspectrum is a fairly simple library designed to make the handling
@@ -29,6 +29,15 @@ Calling conventions:
 
 * In general, all output parameters (those which may be changed by
   the function) should be before all input parameters
+
+Library capabilities
+====================
+
+If the library supports zlib compression (as is used, for instance in
+SZX snapshots), then then the constant
+LIBSPECTRUM_SUPPORTS_ZLIB_COMPRESSION will be defined and non-zero. If
+the library does not support zlib compression, then the constant will
+not be defined.
 
 Defined types
 =============
@@ -88,6 +97,8 @@ LIBSPECTRUM_ERROR_CORRUPT	Invalid data
 LIBSPECTRUM_ERROR_SIGNATURE	File does not have the right signature
 LIBSPECTRUM_ERROR_SLT		Ugly kludge used to indicate that a .z80
 				file contains .slt data
+LIBSPECTRUM_ERROR_INVALID	An invalid parameter was supplied to a
+				function
 LIBSPECTRUM_ERROR_LOGIC		An internal logic error has occured;
 				should never be seen
 
@@ -130,6 +141,7 @@ LIBSPECTRUM_MACHINE_PLUS3	Spectrum +3
 LIBSPECTRUM_MACHINE_PLUS3E	Spectrum +3e
 LIBSPECTRUM_MACHINE_TC2048	Timex TC2048
 LIBSPECTRUM_MACHINE_TC2068	Timex TC2068
+LIBSPECTRUM_MACHINE_TS2068	Timex TS2068
 LIBSPECTRUM_MACHINE_PENT	Pentagon 128
 LIBSPECTRUM_MACHINE_SCORP	Scorpion ZS 256
 LIBSPECTRUM_MACHINE_SE		Spectrum SE
@@ -163,6 +175,9 @@ LIBSPECTRUM_MACHINE_CAPABILITY_EVEN_M1
 
 LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK
   This machine has built-in Kempston joystick ports as on the TC2048.
+
+LIBSPECTRUM_MACHINE_CAPABILITY_NTSC
+  This machine has an NTSC video output.
 
 LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY
   This machine can change into all-RAM configurations as the +2A/+3.
@@ -228,6 +243,8 @@ LIBSPECTRUM_ID_DISK_TRD		A .trd TRDOS disk file
 
 LIBSPECTRUM_ID_HARDDISK_HDF	A .hdf IDE hard disk image
 
+LIBSPECTRUM_ID_MICRODRIVE_MDR	A .mdf microdrive cartridge
+
 LIBSPECTRUM_ID_RECORDING_RZX	A .rzx input recording
 
 LIBSPECTRUM_ID_SNAPSHOT_PLUSD   A +D snapshot 
@@ -238,9 +255,11 @@ LIBSPECTRUM_ID_SNAPSHOT_SZX     A .szx snapshot (as used by Spectaculator)
 LIBSPECTRUM_ID_SNAPSHOT_Z80	A .z80 snapshot
 LIBSPECTRUM_ID_SNAPSHOT_ZXS	A .zxs snapshot (as used by zx32)
 
+LIBSPECTRUM_ID_TAPE_CSW		A .csw tape image
 LIBSPECTRUM_ID_TAPE_TAP		A `normal' (Z80-style) .tap tape image
 LIBSPECTRUM_ID_TAPE_TZX		A .tzx tape image
 LIBSPECTRUM_ID_TAPE_WARAJEVO	A Warajevo-style .tap tape image
+LIBSPECTRUM_ID_TAPE_Z80EM	A Z80Em tape image
 
 `libspectrum_identify_file_raw' looks for defined signatures in the
 file as well as the extension of the filename and a couple of
@@ -275,6 +294,7 @@ LIBSPECTRUM_CLASS_CARTRIDGE_IF2		An Interface II cartridge
 LIBSPECTRUM_CLASS_DISK_PLUS3		A +3 disk image
 LIBSPECTRUM_CLASS_DISK_TRDOS		A TRDOS disk image
 LIBSPECTRUM_CLASS_HARDDISK		An IDE hard disk image
+LIBSPECTRUM_CLASS_MICRODRIVE		A microdrive cartridge
 LIBSPECTRUM_CLASS_RECORDING		An input recording
 LIBSPECTRUM_CLASS_SNAPSHOT		A snapshot
 LIBSPECTRUM_CLASS_TAPE			A tape image
@@ -350,6 +370,12 @@ libspectrum_timings_top_left_pixel( libspectrum_machine machine )
 How many tstates after interrupt is the top-left pixel of the screen
 displayed.
 
+libspectrum_word
+libspectrum_timings_interrupt_length( libspectrum_machine machine )
+
+How about t-states the machine holds /INT low for on a maskable
+interrupt.
+
 Creator information
 -------------------
 
@@ -358,49 +384,58 @@ utilities to store some information regarding the creator of the file.
 libspectrum provides a `libspectrum_creator' structure to store this
 information.
 
-libspectrum_error libspectrum_creator_alloc( libspectrum_creator **creator );
+libspectrum_error libspectrum_creator_alloc( libspectrum_creator **creator )
 
 Allocate a new `libspectrum_creator' structure.
 
-libspectrum_error libspectrum_creator_free( libspectrum_creator *creator );
+libspectrum_error libspectrum_creator_free( libspectrum_creator *creator )
 
 Free the memory used by a `libspectrum_creator' structure.
 
 libspectrum_error
 libspectrum_creator_set_program( libspectrum_creator *creator,
-				 const char *program );
+				 const char *program )
 const libspectrum_byte*
-libspectrum_creator_program( libspectrum_creator *creator );
+libspectrum_creator_program( libspectrum_creator *creator )
 
 Set and retrieve the name of the program which created this file.
 
 libspectrum_error libspectrum_creator_set_major( libspectrum_creator *creator,
-						 libspectrum_word major );
+						 libspectrum_word major )
 libspectrum_word
-libspectrum_creator_major( libspectrum_creator *creator );
+libspectrum_creator_major( libspectrum_creator *creator )
 
 Set and retrieve the major version number of the program which created
 this file.
 
 libspectrum_error libspectrum_creator_set_minor( libspectrum_creator *creator,
-						 libspectrum_word minor );
+						 libspectrum_word minor )
 libspectrum_word
-libspectrum_creator_minor( libspectrum_creator *creator );
+libspectrum_creator_minor( libspectrum_creator *creator )
 
 Set and retrieve the minor version number of the program which created
 this file.
 
 libspectrum_error
 libspectrum_creator_set_competition_code( libspectrum_creator *creator,
-					  libspectrum_dword competition_code );
+					  libspectrum_dword competition_code )
 libspectrum_dword
-libspectrum_creator_competition_code( libspectrum_creator *creator );
+libspectrum_creator_competition_code( libspectrum_creator *creator )
 
 Set and retrieve the `competition code' of the program which created
 this file. The competition code can be used for on-line tournaments to
 determine that a certain file was made after a specific code was
 released. If you don't understand the previous, you almost certainly
 don't need to worry about it!
+
+libspectrum_error
+libspectrum_creator_set_custom( libspectrum_creator *creator,
+                                libspectrum_byte *data, size_t length )
+libspectrum_byte* libspectrum_creator_custom( libspectrum_creator *creator )
+size_t libspectrum_creator_custom_length( libspectrum_creator *creator )
+
+Set and retrieve the (arbitrary) custom data from the program which
+created this file.
 
 Snapshot functions
 ==================
@@ -520,9 +555,9 @@ The available properties (along with their types) are:
 * libspectrum_byte dock_ram[8]
 * libspectrum_byte* dock_cart[8]
 
-* size_t joystick_active_count;
-* libspectrum_joystick joystick_list[ SNAPSHOT_JOYSTICKS ];
-* int joystick_inputs[ SNAPSHOT_JOYSTICKS ];
+* size_t joystick_active_count
+* libspectrum_joystick joystick_list[ SNAPSHOT_JOYSTICKS ]
+* int joystick_inputs[ SNAPSHOT_JOYSTICKS ]
 
 Most of those should be fairly self-explanatory; those which may not
 be are:
@@ -562,6 +597,26 @@ be are:
   `joystick_inputs' gives the corresponding connections to the real machines
   keyboard and joysticks.
 
+  The available joystick types are defined by the libspectrum_joystick
+  enum, which can take the following values:
+
+  LIBSPECTRUM_JOYSTICK_NONE		No joystick connected
+
+  LIBSPECTRUM_JOYSTICK_CURSOR		Cursor joystick
+  LIBSPECTRUM_JOYSTICK_KEMPSTON		Kempston joystick
+  LIBSPECTRUM_JOYSTICK_SINCLAIR_1	Sinclair joystick 1
+  LIBSPECTRUM_JOYSTICK_SINCLAIR_2	Sinclair joystick 2
+  LIBSPECTRUM_JOYSTICK_TIMEX_1		Timex joystick 1
+  LIBSPECTRUM_JOYSTICK_TIMEX_2		Timex joystick 2
+  LIBSPECTRUM_JOYSTICK_FULLER		Fuller joystick
+
+  The joystick input values can be any of:
+
+  LIBSPECTRUM_JOYSTICK_INPUT_NONE	Not connected
+  LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD	Input from the real keyboard
+  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1	Input from real joystick 1
+  LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2	Input from real joystick 2
+
 With all those housekeeping routines out of the way, there are two
 main workhorses of the snapshot routines:
 
@@ -582,7 +637,7 @@ libspectrum_error
 libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
 			int *out_flags, libspectrum_snap *snap,
 	 		libspectrum_id_t type, libspectrum_creator *creator,
-			int in_flags );
+			int in_flags )
 
 Take the snapshot in `snap' and serialise it into `*buffer' as a
 snapshot of `type'. On entry, '*buffer' is assumed to be allocated
@@ -711,6 +766,12 @@ LIBSPECTRUM_TAPE_FLAGS_STOP48   User code should stop playing the tape
 				48K machine. The desired behaviour for
 				things like the TC2048 is undefined in
 				the .tzx format :-(
+LIBSPECTRUM_TAPE_FLAGS_LEVEL_LOW The input signal from the tape should be
+				 forced low at this edge
+LIBSPECTRUM_TAPE_FLAGS_LEVEL_HIGH The input signal from the tape should be
+				  forced high at this edge
+LIBSPECTRUM_TAPE_FLAGS_NO_EDGE	This "edge" isn't really an edge and doesn't
+				change the input signal from the tape.
 
 int libspectrum_tape_present( libspectrum_tape *tape )
 
@@ -739,13 +800,13 @@ libspectrum_tape_current_block( libspectrum_tape *tape )
 Get the currently active block on the tape.
 
 libspectrum_tape_block*
-libspectrum_tape_peek_next_block( libspectrum_tape *tape );
+libspectrum_tape_peek_next_block( libspectrum_tape *tape )
 
 Get the next block on the tape, but don't move the tape along or
 initialise the block.
 
 libspectrum_tape_block*
-libspectrum_tape_select_next_block( libspectrum_tape *tape );
+libspectrum_tape_select_next_block( libspectrum_tape *tape )
 
 Move the tape along so it points to the next block, initialise that
 block and return it.
@@ -832,6 +893,8 @@ LIBSPECTRUM_TAPE_BLOCK_PULSES		0x13
 LIBSPECTRUM_TAPE_BLOCK_PURE_DATA	0x14
 LIBSPECTRUM_TAPE_BLOCK_RAW_DATA		0x15
 
+LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA 0x19
+
 LIBSPECTRUM_TAPE_BLOCK_PAUSE		0x20
 LIBSPECTRUM_TAPE_BLOCK_GROUP_START	0x21
 LIBSPECTRUM_TAPE_BLOCK_GROUP_END	0x22
@@ -851,6 +914,10 @@ LIBSPECTRUM_TAPE_BLOCK_HARDWARE		0x33
 LIBSPECTRUM_TAPE_BLOCK_CUSTOM		0x35
 
 LIBSPECTRUM_TAPE_BLOCK_CONCAT		0x5a
+
+The following block is not defined in the TZX format
+
+LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE	A run-length encoded list of pulses
 
 These values are defined in the `libspectrum_tape_type' enumeration.
 The `concatenation' block (0x5a) is recognised on input, but just
@@ -962,6 +1029,9 @@ size_t data_length			CUSTOM
 					ROM
 					TURBO
 
+libspectrum_tape_generalised_data_symbol_table
+data_table				GENERALISED_DATA
+
 int ids[]				ARCHIVE_INFO
 					HARDWARE
 
@@ -979,6 +1049,13 @@ libspectrum_dword pause			MESSAGE
 libspectrum_dword pilot_length		TURBO
 
 size_t pilot_pulses			TURBO
+
+libspectrum_word pilot_repeats		GENERALISED_DATA
+
+libspectrum_word pilot_symbols		GENERALISED_DATA
+
+libspectrum_tape_generalised_data_symbol_table
+pilot_table				GENERALISED_DATA
 
 libspectrum_dword pulse_length		LENGTH
 
@@ -1020,6 +1097,36 @@ Exposing this parameter is an ugly hack needed by Fuse to allow for
 flash-loading of tape blocks, and setting it should not be used unless
 absolutely necessary.
 
+The libspectrum_tape_generalised_data_symbol_table is an opaque data
+structure which represents the "symbol table" used in the TZX
+generalised data block (ID 0x19). It can be accessed with the
+following routines:
+
+libspectrum_dword libspectrum_tape_generalised_data_symbol_table_symbols_in_block( const libspectrum_tape_generalised_data_symbol_table *table )
+libspectrum_byte libspectrum_tape_generalised_data_symbol_table_max_pulses( cons
+t libspectrum_tape_generalised_data_symbol_table *table )
+libspectrum_word libspectrum_tape_generalised_data_symbol_table_symbols_in_table
+( const libspectrum_tape_generalised_data_symbol_table *table )
+libspectrum_tape_generalised_data_symbol* libspectrum_tape_generalised_data_symb
+ol_table_symbol( const libspectrum_tape_generalised_data_symbol_table *table, si
+ze_t which )
+
+The libspectrum_tape_generalised_data_symbol represents one of the
+symbols used in the generalised data block and can be accessed with
+the following routines:
+
+libspectrum_tape_generalised_data_symbol_edge_type libspectrum_tape_generalised_
+data_symbol_type( const libspectrum_tape_generalised_data_symbol *symbol )
+libspectrum_word libspectrum_tape_generalised_data_symbol_pulse( const libspectr
+um_tape_generalised_data_symbol *symbol, size_t which )
+
+The following edge types are available:
+
+  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_EDGE		Invert signal polarity
+  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_NO_EDGE	No polarity change
+  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_LOW		Set signal low
+  LIBSPECTRUM_TAPE_GENERALISED_DATA_SYMBOL_HIGH		Set signal high
+
 Input recording functions
 =========================
 
@@ -1034,6 +1141,34 @@ libspectrum_error libspectrum_rzx_free( libspectrum_rzx *rzx )
 
 Free the memory used by an input recording object as allocated by
 `libspectrum_rzx_alloc'.
+
+libspectrum_error
+libspectrum_rzx_start_input( libspectrum_rzx *rzx, libspectrum_dword tstates )
+
+Start an input recording block int the object.
+
+libspectrum_error libspectrum_rzx_stop_input( libspectrum_rzx *rzx )
+
+Stop the current input recording block.
+
+libspectrum_error
+libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap )
+
+Add `snap' to the input recording at this point.
+
+libspectrum_error
+libspectrum_rzx_rollback( libspectrum_rzx *rzx, libspectrum_snap **snap )
+
+Return the input recording to the state it was at which the last
+snapshot was inserted. That state is set up in `snap'.
+
+libspectrum_error
+libspectrum_rzx_rollback_to( libspectrum_rzx *rzx, libspectrum_snap **snap,
+                             size_t which )
+
+Return the input recording to the state it was at which the <n>th
+snapshot was inserted, where n is specified by `which'. That state is
+set up in `snap'.
 
 libspectrum_error libspectrum_rzx_store_frame( libspectrum_rzx *rzx,
 					       size_t instructions, 
@@ -1064,7 +1199,7 @@ libspectrum_error libspectrum_rzx_playback( libspectrum_rzx *rzx,
 Return in `*byte' the next byte to be read from the IO ports from the
 current frame of `rzx'.
 
-size_t libspectrum_rzx_tstates( libspectrum_rzx *rzx );
+size_t libspectrum_rzx_tstates( libspectrum_rzx *rzx )
 
 Return the 'starting tstates' field of `rzx'.
 
@@ -1255,7 +1390,7 @@ libspectrum_error libspectrum_dck_alloc( libspectrum_dck **dck )
 
 Allocate a dock structure.
 
-libspectrum_error libspectrum_dck_free( libspectrum_dck *dck, int keep_pages );
+libspectrum_error libspectrum_dck_free( libspectrum_dck *dck, int keep_pages )
 
 Free a dock structure; if `keep_pages' is non-zero, any memory
 allocated to the structure will not be freed and can then be used by
@@ -1263,7 +1398,7 @@ the calling program. Do remember to free it when you're finished with it!
 
 libspectrum_error
 libspectrum_dck_read( libspectrum_dck *dck, const libspectrum_byte *buffer,
-                      size_t length );
+                      size_t length )
 
 Read in a dock structure from the `length' byte long `buffer'. Images
 compressed with bzip2 or gzip will be automatically and transparently
