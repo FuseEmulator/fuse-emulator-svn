@@ -39,7 +39,7 @@ struct libspectrum_microdrive {
 
 };
 
-struct libspectrum_microdrive_block {
+typedef struct libspectrum_microdrive_block {
 
   libspectrum_byte hdflag;		/* bit0 = 1-head, ( 0 - data ) */
   libspectrum_byte hdbnum;		/* block num 1 -- 254 */
@@ -56,7 +56,7 @@ struct libspectrum_microdrive_block {
   libspectrum_byte data[512];		/* data bytes */
   libspectrum_byte datchk;		/* data checksum */
 
-};
+} libspectrum_microdrive_block;
 
 const static size_t MDR_LENGTH = LIBSPECTRUM_MICRODRIVE_CARTRIDGE_LENGTH + 1;
 

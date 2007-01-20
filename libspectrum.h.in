@@ -746,7 +746,6 @@ libspectrum_rzx_iterator_get_frames( libspectrum_rzx_iterator it );
  */
 
 typedef struct libspectrum_microdrive libspectrum_microdrive;
-typedef struct libspectrum_microdrive_block libspectrum_microdrive_block;
 
 #define LIBSPECTRUM_MICRODRIVE_BLOCK_MAX 254
 #define LIBSPECTRUM_MICRODRIVE_HEAD_LEN 15
@@ -784,15 +783,6 @@ libspectrum_microdrive_cartridge_len( const libspectrum_microdrive *microdrive )
 void WIN32_DLL
 libspectrum_microdrive_set_cartridge_len( libspectrum_microdrive *microdrive,
 					  libspectrum_byte len );
-
-void WIN32_DLL
-libspectrum_microdrive_get_block( const libspectrum_microdrive *microdrive,
-				  libspectrum_byte which,
-				  libspectrum_microdrive_block *block );
-void WIN32_DLL
-libspectrum_microdrive_set_block( libspectrum_microdrive *microdrive,
-				  libspectrum_byte which,
-				  libspectrum_microdrive_block *block );
 
 /* .mdr format routines */
 
