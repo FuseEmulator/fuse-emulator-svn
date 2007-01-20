@@ -1249,6 +1249,41 @@ into the RZX file. If `key' is non-NULL, the RZX file will be
 digitally signed using the specified DSA key; see below for more
 details.
 
+Input recording iterators
+-------------------------
+
+As with tapes, iterators are available to allow an application to
+examine the structure of an input recording file.
+
+Such an iterator is initialised via
+
+libspectrum_rzx_iterator libspectrum_rzx_iterator_begin( libspectrum_rzx *rzx )
+
+and moved to the next block via
+
+libspectrum_rzx_iterator
+libspectrum_rzx_iterator_next( libspectrum_rzx_iterator it )
+
+The type of block pointed to by the iterator can be obtained via the
+
+libspectrum_rzx_block_id
+libspectrum_rzx_iterator_get_type( libspectrum_rzx_iterator it )
+
+function. The return value will be one of:
+
+  LIBSPECTRUM_RZX_CREATOR_BLOCK		Creator information
+  LIBSPECTRUM_RZX_SIGN_START_BLOCK	Start of signed information
+  LIBSPECTRUM_RZX_SIGN_END_BLOCK	End of signed information
+  LIBSPECTRUM_RZX_SNAPSHOT_BLOCK	Snapshot
+  LIBSPECTRUM_RZX_INPUT_BLOCK		Input recording block
+
+If the iterator is pointing to a block of type LIBSPECTRUM_RZX_INPUT_BLOCK,
+then the function
+
+size_t libspectrum_rzx_iterator_get_frames( libspectrum_rzx_iterator it )
+
+can be used to obtain the number of frames stored in the block.
+
 Digital signatures in RZX files
 -------------------------------
 
