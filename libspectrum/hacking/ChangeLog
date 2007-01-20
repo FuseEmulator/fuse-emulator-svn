@@ -381,3 +381,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070119 libspectrum.h.in,doc/libspectrum.txt: tidy up and document in
 	 preparation for a release.
 20070120 doc/libspectrum.txt: document RZX iterators.
+20070120 libspectrum.h.in,microdrive.c,doc/libspectrum.txt: tidy up and
+	 document microdrive routines.

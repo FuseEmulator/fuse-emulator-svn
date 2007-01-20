@@ -1378,14 +1378,110 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 Exactly equivalent to libspectrum_rzx_write2( buffer, length, rzx,
 snap, LIBSPECTRUM_ID_SNAPSHOT_Z80, creator, compress, key ).
 
+Microdrive handling functions
+=============================
+
+Constants
+---------
+
+These are all #defines.
+
+LIBSPECTRUM_MICRODRIVE_BLOCK_MAX
+
+The maximum number of blocks which can be on a microdrive (254).
+
+LIBSPECTRUM_MICRODRIVE_HEAD_LEN
+
+The length in bytes of the header for a microdrive block in bytes
+(15).
+
+LIBSPECTRUM_MICRODRIVE_DATA_LEN
+
+The length in bytes of the data for a microdrive block (512).
+
+LIBSPECTRUM_MICRODRIVE_BLOCK_LEN
+
+The total length in bytes of a microdrive block (2 *
+LIBSPECTRUM_MICRODRIVE_HEAD_LEN + LISPECTRUM_MICRODRIVE_DATA_LEN + 1 =
+543).
+
+LIBSPECTRUM_MICRODRIVE_CARTRIDGE_LENGTH
+
+The maximum length in bytes of a microdrive cartridge
+(LIBSPECTRUM_MICRODRIVE_BLOCK_MAX * LIBSPECTRUM_MICRODRIVE_BLOCK_LEN =
+137922).
+
+Routines
+--------
+
+Routines for handling images of microdrive cartridges. As usual, these
+are accessed through an opaque structure, libspectrum_microdrive.
+
+libspectrum_error
+libspectrum_microdrive_alloc( libspectrum_microdrive **microdrive )
+
+Allocate a microdrive structure.
+
+libspectrum_error
+libspectrum_microdrive_free( libspectrum_microdrive *microdrive )
+
+Free a microdrive structure.
+
+libspectrum_byte
+libspectrum_microdrive_data( const libspectrum_microdrive *microdrive,
+                             size_t which )
+void
+libspectrum_microdrive_set_data( libspectrum_microdrive *microdrive,
+                                 size_t which, libspectrum_byte data )
+
+Return or set (respectively) the byte of data at offset `which' into
+the cartridge.
+
+libspectrum_byte
+libspectrum_microdrive_write_protect( const libspectrum_microdrive *microdrive )
+void WIN32_DLL
+libspectrum_microdrive_set_write_protect( libspectrum_microdrive *microdrive,
+                                          int write_protect )
+
+Return or set the state of the write protect tab of the microdrive.
+
+libspectrum_byte
+libspectrum_microdrive_cartridge_len( const libspectrum_microdrive *microdrive )
+
+void
+libspectrum_microdrive_set_cartridge_len( libspectrum_microdrive *microdrive,
+                                          libspectrum_byte len )
+
+Return or set the length in bytes of the cartridge in the drive.
+
+int
+libspectrum_microdrive_checksum( libspectrum_microdrive *microdrive,
+                                 libspectrum_byte which )
+
+Check whether the checksum for the <n>th block on the microdrive is
+correct, where <n> is specified by `which'.
+
+.mdr file handling
+------------------
+
+libspectrum_error
+libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
+                                 libspectrum_byte *buffer, size_t length )
+libspectrum_error
+libspectrum_microdrive_mdr_write( const libspectrum_microdrive *microdrive,
+                                  libspectrum_byte **buffer, size_t *length )
+
+Read and write an image of a microdrive cartridge to a .mdr file.
+
 Timex dock/exrom handling functions
 ===================================
 
-The Timex TC2068 featured a cartridge port (the `dock') for which a
-few pieces of software were made available. The Warajevo emulator
-includes support for this feature, and uses the `.dck' extension for
-images of these cartridges. Documentation on this format is available
-at http://www.worldofspectrum.org/warajevo/Fformats.html#dck
+The Timex TS2068 and TC2068 featured a cartridge port (the `dock') for
+which a few pieces of software were made available. The Warajevo
+emulator includes support for this feature, and uses the `.dck'
+extension for images of these cartridges. Documentation on this format
+is available at
+http://www.worldofspectrum.org/warajevo/Fformats.html#dck
 
 Each .dck file can hold multiple 64Kb RAM banks, which are stored in a
 `libspectrum_dck' structure:
