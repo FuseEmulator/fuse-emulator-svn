@@ -378,5 +378,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 well as the pilot.
 20070117 microdrive.c: fix up checksum calculation (patch #1637011)
          (Gergely Szasz).
-20070119 libspectrum.h.in,libspectrum.txt: tidy up and document in
+20070119 libspectrum.h.in,doc/libspectrum.txt: tidy up and document in
 	 preparation for a release.
+20070120 doc/libspectrum.txt: document RZX iterators.
