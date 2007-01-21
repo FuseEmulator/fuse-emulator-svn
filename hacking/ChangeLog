@@ -134,3 +134,4 @@
 20070104 tzxlist.c: more info for TZX generalised data blocks.
 20070104 tzxlist.c: support 256 symbols in table.
 20070104 tzxlist.c: dump pilot data from generalised data blocks.
+20070121 scl2trd.c,utils.c: warnings removal.

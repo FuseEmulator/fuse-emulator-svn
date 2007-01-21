@@ -1,5 +1,5 @@
 /* scl2trd.c: Convert .SCL disk images to .TRD disk images
-   Copyright (c) 2002-2004 Dmitry Sanarin, Philip Kendall and Fredrick Meunier
+   Copyright (c) 2002-2007 Dmitry Sanarin, Philip Kendall and Fredrick Meunier
 
    $Id$
 
@@ -127,7 +127,7 @@ Scl2Trd(char *oldname, char *newname)
 
     if (mem) {
       memcpy(&mem[TRD_DIRSTART], template, TRD_DIRLEN);
-      strncpy(&mem[TRD_NAMEOFFSET], "Fuse", TRD_MAXNAMELENGTH);
+      strncpy((char*)&mem[TRD_NAMEOFFSET], "Fuse", TRD_MAXNAMELENGTH);
       fwrite((void *) mem, 1, BLOCKSIZE, fh);
       memset(mem, 0, BLOCKSIZE);
 

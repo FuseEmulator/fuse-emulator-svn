@@ -1,5 +1,5 @@
 /* utils.c: useful utility functions
-   Copyright (c) 2002-2003 Philip Kendall
+   Copyright (c) 2002-2007 Philip Kendall
 
    $Id$
 
@@ -106,7 +106,8 @@ get_creator( libspectrum_creator **creator, const char *program )
 	    buf.sysname, buf.machine, buf.release );
 
   error = libspectrum_creator_set_custom( *creator,
-					  custom, strlen( custom ) );
+					  (libspectrum_byte*)custom,
+					  strlen( custom ) );
   if( error ) {
     free( custom ); libspectrum_creator_free( *creator );
     return error;
