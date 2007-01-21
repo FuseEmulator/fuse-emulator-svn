@@ -678,15 +678,15 @@ tzx_write_archive_info( libspectrum_tape_block *block,
 
   count = libspectrum_tape_block_count( block );
 
-  /* ID byte, 1 count byte, 2 bytes (ID and length) for
-     every string */
-  total_length = 2 + 2 * count;
+  /* 1 count byte, 2 bytes (ID and length) for every string */
+  total_length = 1 + 2 * count;
   /* And then the length of all the strings */
   for( i = 0; i < count; i++ )
     total_length += strlen( (char*)libspectrum_tape_block_texts( block, i ) );
 
-  /* Make room for all that, and two bytes storing the length */
-  error = libspectrum_make_room( buffer, total_length + 2, ptr, length );
+  /* Make room for all that, along with ID byte and two bytes storing the
+     total length */
+  error = libspectrum_make_room( buffer, total_length + 3, ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   /* Write out the metadata */
