@@ -122,7 +122,7 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
   ptr += signature_length;
 
   *ptr++ = 1;		/* Major version number */
-  *ptr++ = 13;		/* Minor version number */
+  *ptr++ = 20;		/* Minor version number */
 
   for( block = libspectrum_tape_iterator_init( &iterator, tape );
        block;
