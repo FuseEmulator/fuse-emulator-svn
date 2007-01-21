@@ -1,3 +1,55 @@
+2007-07-16  Philip Kendall  <philip-spectrum@shadowmagic.org.uk>
+
+	* libspectrum 0.3.0 released.
+
+	* Support for RZX rollback, including having snapshots and
+	  multiple input recording blocks in input recording files (Philip
+	  Kendall).
+
+	* Improved IDE emulation (Matthew Westcott).
+
+	* Support for microdrive images (Philip Kendall, Gergely Szasz).
+
+	* TZX Generalized Data Block support. (Philip Kendall).
+
+	* Support for Z80Em and CSW tape files (Darren Salt, Fredrick Meunier).
+
+	* Support for the TS2068 (Fredrick Meunier).
+
+	* Support for connected joystick information in snapshots (Philip
+	  Kendall).
+
+	* Add interrupt length to timing information (Philip Kendall).
+
+	* Routines to add and remove a block from a tape image (Philip
+	  Kendall).
+
+	* Minor feature enhancements:
+	  * Support for saving the Issue 2/3 keyboard state in snapshots
+	    (Philip Kendall).
+	  * Support for always compressing snapshots, even if this makes the
+	    snapshot bigger (Philip Kendall).
+	  * New function to indicate if an IDE image has been
+	    modified (Philip Kendall).
+	  * New function to indicate if a tape block consists solely of
+	    metadata (Philip Kendall).
+	  * Warn about deprecated interfaces when using gcc (Fredrick Meunier).
+	  * Build process improvements (Fredrick Meunier, Markus Obermuller).
+	  * Advertise if we support zlib (Fredrick Meunier).
+	  * Fix gcc 4.x signedness warnings (Fredrick Meunier).
+	  * Improvements to the glib emulation layer (Fredrick Meunier).
+
+	* Minor bugfixes:
+	  * Fix compilation when libgcrypt not present (thanks, Erik Kunze).
+	  * Declare libspectrum_default_error_function before referring to it
+	    (Fredrick Meunier).
+	  * Fix Pentagon and Scorpion CPU speeds to give them 50Hz frame
+	    rate (Fredrick Meunier).
+	  * Fix compilation when zlib not present (Philip Kendall,
+	    Fredrick Meunier).
+	  * Two .szx snapshot fixes (Philip Kendall).
+	  * Two .tzx tape image fixes (Philip Kendall).
+
 2004-07-16  Philip Kendall  <pak21-spectrum@srcf.ucam.org>
 
 	* libspectrum 0.2.2 released.
