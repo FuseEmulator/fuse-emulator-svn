@@ -46,6 +46,10 @@ static libspectrum_error
 tzx_write_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
 		libspectrum_byte **ptr, size_t *length );
 static libspectrum_error
+tzx_write_generalised_data( libspectrum_tape_block *block,
+			    libspectrum_byte **buffer,
+			    libspectrum_byte **ptr, size_t *length );
+static libspectrum_error
 tzx_write_pulses( libspectrum_tape_block *block, libspectrum_byte **buffer,
 		  libspectrum_byte **ptr, size_t *length );
 static libspectrum_error
@@ -144,6 +148,11 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
       break;
     case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
       error = tzx_write_data( block, buffer, &ptr, length);
+      if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
+      break;
+
+    case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+      error = tzx_write_generalised_data( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
 
@@ -342,6 +351,153 @@ tzx_write_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
   error = tzx_write_bytes( ptr, data_length, 3,
 			   libspectrum_tape_block_data( block ) );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static size_t
+generalised_data_length( libspectrum_tape_block *block )
+{
+  libspectrum_tape_generalised_data_symbol_table *table;
+  size_t symbol_count;
+
+  size_t data_length = 14;	/* Minimum if no tables or symbols present */
+
+  table = libspectrum_tape_block_pilot_table( block );
+  
+  symbol_count = libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table );
+  if( symbol_count ) {
+
+    size_t max_pulses = libspectrum_tape_generalised_data_symbol_table_max_pulses( table );
+    size_t symbols_in_table = libspectrum_tape_generalised_data_symbol_table_symbols_in_table( table );
+
+    data_length += ( 2 * max_pulses + 1 ) * symbols_in_table;
+    data_length += 3 * symbol_count;
+
+  }
+
+  table = libspectrum_tape_block_data_table( block );
+
+  symbol_count = libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table );
+  if( symbol_count ) {
+
+    size_t max_pulses = libspectrum_tape_generalised_data_symbol_table_max_pulses( table );
+    size_t symbols_in_table = libspectrum_tape_generalised_data_symbol_table_symbols_in_table( table );
+
+    size_t bits_per_symbol;
+
+    data_length += ( 2 * max_pulses + 1 ) * symbols_in_table;
+
+    bits_per_symbol = libspectrum_tape_block_bits_per_data_symbol( block );
+    
+    data_length += ( ( bits_per_symbol * symbol_count ) + 7 ) / 8;
+
+  }
+
+  return data_length;
+}
+
+static libspectrum_error
+serialise_generalised_data_table( libspectrum_byte **ptr, libspectrum_tape_generalised_data_symbol_table *table )
+{
+  libspectrum_dword symbols_in_block;
+  libspectrum_word symbols_in_table;
+
+  symbols_in_block = libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table );
+
+  if( !symbols_in_block ) return LIBSPECTRUM_ERROR_NONE;
+
+  libspectrum_write_dword( ptr, symbols_in_block );
+  *(*ptr)++ = libspectrum_tape_generalised_data_symbol_table_max_pulses( table );
+
+  symbols_in_table = libspectrum_tape_generalised_data_symbol_table_symbols_in_table( table );
+
+  if( symbols_in_table == 0 || symbols_in_table > 256 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_INVALID, "%s: invalid number of symbols in table: %d", __func__, symbols_in_table );
+    return LIBSPECTRUM_ERROR_INVALID;
+  } else if( symbols_in_table == 256 ) {
+    symbols_in_table = 0;
+  }
+
+  *(*ptr)++ = symbols_in_table;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+serialise_generalised_data_symbols( libspectrum_byte **ptr, libspectrum_tape_generalised_data_symbol_table *table )
+{
+  libspectrum_word symbols_in_table = libspectrum_tape_generalised_data_symbol_table_symbols_in_table( table );
+  libspectrum_byte max_pulses = libspectrum_tape_generalised_data_symbol_table_max_pulses( table );
+
+  libspectrum_word i;
+  libspectrum_byte j;
+
+  if( !libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table ) ) return LIBSPECTRUM_ERROR_NONE;
+
+  for( i = 0; i < symbols_in_table; i++ ) {
+
+    libspectrum_tape_generalised_data_symbol *symbol = libspectrum_tape_generalised_data_symbol_table_symbol( table, i );
+
+    *(*ptr)++ = libspectrum_tape_generalised_data_symbol_type( symbol );
+
+    for( j = 0; j < max_pulses; j++ )
+      libspectrum_write_word( ptr, libspectrum_tape_generalised_data_symbol_pulse( symbol, j ) );
+
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+tzx_write_generalised_data( libspectrum_tape_block *block,
+			    libspectrum_byte **buffer, libspectrum_byte **ptr,
+			    size_t *length )
+{
+  size_t data_length, bits_per_symbol;
+  libspectrum_error error;
+  libspectrum_tape_generalised_data_symbol_table *pilot_table, *data_table;
+  libspectrum_dword pilot_symbol_count, data_symbol_count, i;
+
+  data_length = generalised_data_length( block );
+
+  error = libspectrum_make_room( buffer, 5 + data_length, ptr, length );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  *(*ptr)++ = LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA;
+  libspectrum_write_dword( ptr, data_length );
+
+  libspectrum_write_word( ptr, libspectrum_tape_block_pause( block ) );
+
+  pilot_table = libspectrum_tape_block_pilot_table( block );
+  data_table = libspectrum_tape_block_data_table( block );
+
+  error = serialise_generalised_data_table( ptr, pilot_table );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  error = serialise_generalised_data_table( ptr, data_table );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  error = serialise_generalised_data_symbols( ptr, pilot_table );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  pilot_symbol_count = libspectrum_tape_generalised_data_symbol_table_symbols_in_block( pilot_table );
+
+  for( i = 0; i < pilot_symbol_count; i++ ) {
+    *(*ptr)++ = libspectrum_tape_block_pilot_symbols( block, i );
+    libspectrum_write_word( ptr, libspectrum_tape_block_pilot_repeats( block, i ) );
+  }
+
+  error = serialise_generalised_data_symbols( ptr, data_table );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  bits_per_symbol = libspectrum_tape_block_bits_per_data_symbol( block );
+  data_symbol_count = libspectrum_tape_generalised_data_symbol_table_symbols_in_block( data_table );
+
+  data_length = ( ( bits_per_symbol * data_symbol_count ) + 7 ) / 8;
+
+  memcpy( *ptr, libspectrum_tape_block_data( block ), data_length );
+  (*ptr) += data_length;
 
   return LIBSPECTRUM_ERROR_NONE;
 }

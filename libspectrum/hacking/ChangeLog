@@ -384,3 +384,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070120 libspectrum.h.in,microdrive.c,doc/libspectrum.txt: tidy up and
 	 document microdrive routines.
 20070121 ChangeLog: bring up to date.
+20070121 tzx_write.c: support for writing 0x19 blocks.
