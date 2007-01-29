@@ -58,21 +58,21 @@
             <QPM:ProductDescription>
                <QPM:ProductName>fuse-utils</QPM:ProductName>
                <QPM:ProductIdentifier>fuse-utils</QPM:ProductIdentifier>
-               <QPM:ProductEmail>pak21-fuse@srcf.ucam.org</QPM:ProductEmail>
+               <QPM:ProductEmail>philip-fuse@shadowmagic.org.uk</QPM:ProductEmail>
                <QPM:VendorName>public</QPM:VendorName>
                <QPM:VendorInstallName>public</QPM:VendorInstallName>
-               <QPM:VendorURL>http://www.srcf.ucam.org/~pak21/spectrum/fuse.html</QPM:VendorURL>
+               <QPM:VendorURL>http://fuse-emulator.sourceforge.net/</QPM:VendorURL>
                <QPM:VendorEmbedURL/>
-               <QPM:VendorEmail>pak21-fuse@srcf.ucam.org</QPM:VendorEmail>
+               <QPM:VendorEmail>philip-fuse@shadowmagic.org.uk</QPM:VendorEmail>
                <QPM:AuthorName>Philip Kendall</QPM:AuthorName>
-               <QPM:AuthorURL>http://www.srcf.ucam.org/~pak21/spectrum/fuse.html</QPM:AuthorURL>
+               <QPM:AuthorURL>http://fuse-emulator.sourceforge.net</QPM:AuthorURL>
                <QPM:AuthorEmbedURL/>
-               <QPM:AuthorEmail>pak21-fuse@srcf.ucam.org</QPM:AuthorEmail>
+               <QPM:AuthorEmail>philip-fuse@shadowmagic.org.uk</QPM:AuthorEmail>
                <QPM:ProductIconSmall/>
                <QPM:ProductIconLarge/>
                <QPM:ProductDescriptionShort>The Fuse utilities are a few tools which may be of occasional use when dealing with ZX Spectrum emulator files.</QPM:ProductDescriptionShort>
                <QPM:ProductDescriptionLong>The Fuse utilities are a few tools which may be of occasional use when dealing with ZX Spectrum emulator files. They were originally distributed with Fuse, the Free Unix Spectrum Emulator, but are now independent of Fuse and can be used on their own.</QPM:ProductDescriptionLong>
-               <QPM:ProductDescriptionURL>http://www.srcf.ucam.org/~pak21/spectrum/fuse.html</QPM:ProductDescriptionURL>
+               <QPM:ProductDescriptionURL>http://fuse-emulator.sourceforge.net/</QPM:ProductDescriptionURL>
                <QPM:ProductDescriptionEmbedURL/>
             </QPM:ProductDescription>
 

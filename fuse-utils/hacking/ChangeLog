@@ -136,3 +136,5 @@
 20070104 tzxlist.c: dump pilot data from generalised data blocks.
 20070121 scl2trd.c,utils.c: warnings removal.
 20070129 ChangeLog: bring up to date.
+20070129 <almost everything>: change URLs to Sourceforge, my e-mail address
+	 to @shadowmagic and remove my postal address.
