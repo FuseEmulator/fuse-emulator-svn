@@ -1,3 +1,17 @@
+2007-??-??  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+	* Add raw2hdf utility for creating HDF hard disk images from
+	  other data (Matthew Westcott).
+
+	* Allow tzxlist to handle all tape types supported by libspectrum
+	  (Fredrick Meunier).
+
+	* Allow tzxlist to support the TZX generalised data block (Philip
+	  Kendall).
+	
+	* Add -c and -n options to snapconv allowing for writing of always
+	  compressed and never compressed snapshots (Philip Kendall).
+
 2004-07-16  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 
 	* Version 0.7.0 released.
