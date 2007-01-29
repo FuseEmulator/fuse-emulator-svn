@@ -23,7 +23,7 @@ The available utilities are:
 In order to use the utilities, you'll need `libspectrum' installed;
 this is available from:
 
-http://www.srcf.ucam.org/~pak21/spectrum/libspectrum.html
+http://fuse-emulator.sourceforge.net/libspectrum.php
 
 If you want to deal with compressed RZX files, you'll also need `zlib'
 installed.
@@ -55,7 +55,7 @@ If you're using version of fuse-utils from CVS rather than one of the
 released tarballs, you'll need to run `autogen.sh' before running
 'configure' for the first time.
 
-Philip Kendall <pak21-fuse@srcf.ucam.org>
+Philip Kendall <philip-fuse@shadowmagic.org.uk>
 16 July 2004
 
 $Id$
