@@ -21,8 +21,7 @@
 
    Darren: E-mail: linux@youmustbejoking.demon.co.uk
 
-   Philip: E-mail: pak21-fuse@srcf.ucam.org
-             Post: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
+   Philip: E-mail: philip-fuse@shadowmagic.org.uk
 
 */
 

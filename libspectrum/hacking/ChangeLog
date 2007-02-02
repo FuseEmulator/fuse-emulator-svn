@@ -388,3 +388,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070121 tzx_write.c: we now write TZX v1.20 files.
 20070121 ChangeLog,tzx_write.c: length for archive info blocks was being
 	 written out one byte too long.
+20070202 <almost everything>: change URLs to sourceforge, my e-mail address
+	 to @shadowmagic and remove my postal address.
