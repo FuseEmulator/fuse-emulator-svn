@@ -50,21 +50,21 @@
             <QPM:ProductDescription>
                <QPM:ProductName>libspectrum</QPM:ProductName>
                <QPM:ProductIdentifier>libspectrum</QPM:ProductIdentifier>
-               <QPM:ProductEmail>pak21-fuse@srcf.ucam.org</QPM:ProductEmail>
+               <QPM:ProductEmail>philip-fuse@shadowmagic.org.uk</QPM:ProductEmail>
                <QPM:VendorName>public</QPM:VendorName>
                <QPM:VendorInstallName>public</QPM:VendorInstallName>
-               <QPM:VendorURL>http://www.srcf.ucam.org/~pak21/spectrum/libspectrum.html</QPM:VendorURL>
+               <QPM:VendorURL>http://fuse-emulator.sourceforge.net/libspectrum.php</QPM:VendorURL>
                <QPM:VendorEmbedURL/>
-               <QPM:VendorEmail>pak21-fuse@srcf.ucam.org</QPM:VendorEmail>
+               <QPM:VendorEmail>philip-fuse@shadowmagic.org.uk</QPM:VendorEmail>
                <QPM:AuthorName>Philip Kendall</QPM:AuthorName>
-               <QPM:AuthorURL>http://www.srcf.ucam.org/~pak21/spectrum/libspectrum.html</QPM:AuthorURL>
+               <QPM:AuthorURL>http://fuse-emulator.sourceforge.net/libspectrum.php</QPM:AuthorURL>
                <QPM:AuthorEmbedURL/>
-               <QPM:AuthorEmail>pak21-fuse@srcf.ucam.org</QPM:AuthorEmail>
+               <QPM:AuthorEmail>philip-fuse@shadowmagic.org.uk</QPM:AuthorEmail>
                <QPM:ProductIconSmall/>
                <QPM:ProductIconLarge/>
                <QPM:ProductDescriptionShort>libspectrum is a library which is designed to make the input and output of ZX Spectrum emulator files slightly easier than it would be otherwise.</QPM:ProductDescriptionShort>
                <QPM:ProductDescriptionLong>libspectrum is a library which is designed to make the input and output of ZX Spectrum emulator files slightly easier than it would be otherwise. Currently supported are: .z80, .szx, .sna, .zxs, .sp, .snp, .tzx, .tap, .rzx, .dck.</QPM:ProductDescriptionLong>
-               <QPM:ProductDescriptionURL>http://www.srcf.ucam.org/~pak21/spectrum/libspectrum.html</QPM:ProductDescriptionURL>
+               <QPM:ProductDescriptionURL>http://fuse-emulator.sourceforge.net/libspectrum.php</QPM:ProductDescriptionURL>
                <QPM:ProductDescriptionEmbedURL/>
             </QPM:ProductDescription>
 

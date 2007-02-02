@@ -46,5 +46,5 @@ If you're using version of libspectrum from CVS rather than one of the
 released tarballs, you'll need to run `autogen.sh' before running
 'configure' for the first time.
 
-Philip Kendall <pak21-fuse@srcf.ucam.org>
+Philip Kendall <philip-fuse@shadowmagic.org.uk>
 16 July 2004
