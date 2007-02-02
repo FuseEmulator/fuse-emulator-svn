@@ -390,3 +390,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 written out one byte too long.
 20070202 <almost everything>: change URLs to sourceforge, my e-mail address
 	 to @shadowmagic and remove my postal address.
+20070202 TAG: libspectrum_0_3_0-trunk
+20070202 BRANCH: libspectrum_0_3_0-branch
+20070202 TAG: libspectrum_0_3_0-pre1 (libspectrum_0_3_0-branch)
