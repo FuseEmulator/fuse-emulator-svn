@@ -393,3 +393,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070202 TAG: libspectrum_0_3_0-trunk
 20070202 BRANCH: libspectrum_0_3_0-branch
 20070202 TAG: libspectrum_0_3_0-pre1 (libspectrum_0_3_0-branch)
+20070204 ChangeLog: fix some attributions (Fred).
