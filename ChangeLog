@@ -12,12 +12,12 @@
 
 	* TZX Generalized Data Block support. (Philip Kendall).
 
-	* Support for Z80Em and CSW tape files (Darren Salt, Fredrick Meunier).
+	* Support for Z80Em and CSW tape files (Darren Salt).
 
 	* Support for the TS2068 (Fredrick Meunier).
 
-	* Support for connected joystick information in snapshots (Philip
-	  Kendall).
+	* Support for connected joystick information in snapshots (Fredrick
+	  Meunier).
 
 	* Add interrupt length to timing information (Philip Kendall).
 
