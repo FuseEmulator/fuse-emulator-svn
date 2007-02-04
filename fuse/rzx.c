@@ -360,13 +360,19 @@ static int recording_frame( void )
 static int playback_frame( void )
 {
   int error, finished;
+  libspectrum_snap *snap;
 
-  error = libspectrum_rzx_playback_frame( rzx, &finished );
+  error = libspectrum_rzx_playback_frame( rzx, &finished, &snap );
   if( error ) return rzx_stop_playback( 0 );
 
   if( finished ) {
     ui_error( UI_ERROR_INFO, "Finished RZX playback" );
     return rzx_stop_playback( 0 );
+  }
+
+  if( snap ) {
+    error = snapshot_copy_from( snap );
+    if( error ) return rzx_stop_playback( 0 );
   }
 
   /* If we've got another frame to do, fetch the new instruction count and
