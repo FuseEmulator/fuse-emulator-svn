@@ -1528,3 +1528,5 @@
 20070204 rzx.c: use new libspectrum_rzx_playback_frame() API to allow
 	 loading of snapshots (necessary for playing back RZX files made with
 	 SPIN's "RZX Pause" feature).
+20070207 man/fuse.1: document that metacity needs --no-aspect-hint
+	 (Thanks, Stuart Brady and dave in #spin) (Release-0_8_0-branch).
