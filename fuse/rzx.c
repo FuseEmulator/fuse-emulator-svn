@@ -307,9 +307,17 @@ int rzx_stop_playback( int add_interrupt )
      out of frames, as this occurs just before a normal end of frame
      and everything works normally as rzx_playback is now zero again */
   if( add_interrupt ) {
+
     error = event_add( machine_current->timings.tstates_per_frame,
 		       EVENT_TYPE_FRAME );
     if( error ) return error;
+
+  } else {
+
+    /* Ensure that tstates will be zero after it is reduced in
+       spectrum_frame() */
+    tstates = machine_current->timings.tstates_per_frame;
+
   }
 
   libspec_error = libspectrum_rzx_free( rzx );

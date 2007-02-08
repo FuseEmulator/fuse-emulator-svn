@@ -1530,3 +1530,5 @@
 	 SPIN's "RZX Pause" feature).
 20070207 man/fuse.1: document that metacity needs --no-aspect-hint
 	 (Thanks, Stuart Brady and dave in #spin) (Release-0_8_0-branch).
+20070208 rzx.c: ensure tstates is sane after RZX completion
+	 (bug #1654165) (Release-0_8_0-branch).
