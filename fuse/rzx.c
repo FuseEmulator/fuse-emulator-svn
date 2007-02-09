@@ -312,6 +312,11 @@ int rzx_stop_playback( int add_interrupt )
 		       EVENT_TYPE_FRAME );
     if( error ) return error;
 
+    /* We're no longer doing RZX playback, so tstates now be <= the
+       normal frame count */
+    if( tstates > machine_current->timings.tstates_per_frame )
+      tstates = machine_current->timings.tstates_per_frame;
+
   } else {
 
     /* Ensure that tstates will be zero after it is reduced in

@@ -1532,3 +1532,5 @@
 	 (Thanks, Stuart Brady and dave in #spin) (Release-0_8_0-branch).
 20070208 rzx.c: ensure tstates is sane after RZX completion
 	 (bug #1654165) (Release-0_8_0-branch).
+20070209 rzx.c: ensure tstates is sane after RZX desync
+	 (Release-0_8_0-branch).
