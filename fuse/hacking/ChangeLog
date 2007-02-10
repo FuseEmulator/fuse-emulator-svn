@@ -1524,13 +1524,9 @@
 20070202 BRANCH: Release-0_8_0-branch
 20070202 TAG: Release-0_8_0-pre1 (Release-0_8_0-branch)
 20070204 sound.c: don't disable sound completely if we don't enable sound
-         after an unpause (fixes bug #1648246) (Fred).
-20070204 rzx.c: use new libspectrum_rzx_playback_frame() API to allow
-	 loading of snapshots (necessary for playing back RZX files made with
-	 SPIN's "RZX Pause" feature).
-20070207 man/fuse.1: document that metacity needs --no-aspect-hint
-	 (Thanks, Stuart Brady and dave in #spin) (Release-0_8_0-branch).
-20070208 rzx.c: ensure tstates is sane after RZX completion
-	 (bug #1654165) (Release-0_8_0-branch).
-20070209 rzx.c: ensure tstates is sane after RZX desync
-	 (Release-0_8_0-branch).
+         after an unpause (fixes bug #1648246) (Release-0_8_0-branch) (Fred).
+20070210 sound/{coreaudiosound.c,sdlsound.c}: make sound fifo two frames in
+         size rather than a multiple of the sound fragment size, make sound
+         callbacks run after some sound is available, calculate SDL fragment
+         size based on machine speed and output frequency
+	 (Release-0_8_0-branch) (Fred).
