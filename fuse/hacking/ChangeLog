@@ -1545,3 +1545,6 @@
 	 (Release-0_8_0-branch) (Gergely Szasz).
 20070217 man/fuse.1: small ao improvements (rest of bug #1659865)
 	 (Release-0_8_0-branch) (Gergely Szasz).
+20070217 fuse.c,if1.c,settings.dat,utils.c: allow microdrive cartridge images
+	 to be used on startup (bug #1660099) (Release-0_8_0-branch)
+	 (Gergely Szasz).
