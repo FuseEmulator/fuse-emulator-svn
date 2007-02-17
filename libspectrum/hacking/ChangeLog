@@ -398,3 +398,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 libspectrum_rzx_playback_frame able to return a snap (necessary
 	 for supporting RZXs made with SPIN's "RZX Pause" feature)
 	 (libspectrum_0_3_0-branch).
+20070217 tzx_read.c: do allocate memory if we have no data but some padding
+	 in tzx_read_data() (libspectrum_0_3_0-branch).
+
