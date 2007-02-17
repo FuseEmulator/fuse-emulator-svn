@@ -1541,3 +1541,5 @@
 	 (Release-0_8_0-branch) (Fred).
 20070217 widget/filesel.c: allow absolute pathnames to be used (fixes bug
 	 #1651433) (Release-0_8_0-branch) (Gergely Szasz).
+20070217 sound/aosound.c: stop possible segfaults (part of bug #1659865)
+	 (Release-0_8_0-branch) (Gergely Szasz).
