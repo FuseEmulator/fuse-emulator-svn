@@ -1543,3 +1543,5 @@
 	 #1651433) (Release-0_8_0-branch) (Gergely Szasz).
 20070217 sound/aosound.c: stop possible segfaults (part of bug #1659865)
 	 (Release-0_8_0-branch) (Gergely Szasz).
+20070217 man/fuse.1: small ao improvements (rest of bug #1659865)
+	 (Release-0_8_0-branch) (Gergely Szasz).

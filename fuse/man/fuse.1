@@ -558,12 +558,16 @@ specfies the ALSA device e.g. hw:1.2
 .RI buffer_time= num
 .br
 .RI ` num '
-gives the ALSA buffer time.
+gives the ALSA buffer time in microseconds.
 .IP \[bu]
 .RI period_time= num
 .br
 .RI ` num '
-gives the ALSA period time.
+gives the ALSA period time in microseconds.
+.IP \[bu]
+.RI use_mmap= yes|y|true|t|1
+.br
+specifies that libao use memory mapped transfer.
 .RE
 .IP \[bu]
 .IR arts :
