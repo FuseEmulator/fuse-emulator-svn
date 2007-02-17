@@ -1539,3 +1539,5 @@
          callbacks run after some sound is available, calculate SDL fragment
          size based on machine speed and output frequency
 	 (Release-0_8_0-branch) (Fred).
+20070217 widget/filesel.c: allow absolute pathnames to be used (fixes bug
+	 #1651433) (Release-0_8_0-branch) (Gergely Szasz).
