@@ -307,9 +307,22 @@ int rzx_stop_playback( int add_interrupt )
      out of frames, as this occurs just before a normal end of frame
      and everything works normally as rzx_playback is now zero again */
   if( add_interrupt ) {
+
     error = event_add( machine_current->timings.tstates_per_frame,
 		       EVENT_TYPE_FRAME );
     if( error ) return error;
+
+    /* We're no longer doing RZX playback, so tstates now be <= the
+       normal frame count */
+    if( tstates > machine_current->timings.tstates_per_frame )
+      tstates = machine_current->timings.tstates_per_frame;
+
+  } else {
+
+    /* Ensure that tstates will be zero after it is reduced in
+       spectrum_frame() */
+    tstates = machine_current->timings.tstates_per_frame;
+
   }
 
   libspec_error = libspectrum_rzx_free( rzx );
@@ -360,13 +373,19 @@ static int recording_frame( void )
 static int playback_frame( void )
 {
   int error, finished;
+  libspectrum_snap *snap;
 
-  error = libspectrum_rzx_playback_frame( rzx, &finished );
+  error = libspectrum_rzx_playback_frame( rzx, &finished, &snap );
   if( error ) return rzx_stop_playback( 0 );
 
   if( finished ) {
     ui_error( UI_ERROR_INFO, "Finished RZX playback" );
     return rzx_stop_playback( 0 );
+  }
+
+  if( snap ) {
+    error = snapshot_copy_from( snap );
+    if( error ) return rzx_stop_playback( 0 );
   }
 
   /* If we've got another frame to do, fetch the new instruction count and

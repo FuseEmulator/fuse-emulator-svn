@@ -1520,3 +1520,37 @@
          (more from patch #1537920) (Gergely Szasz).
 20070202 <almost everything>: change my e-mail address to @shadowmagic and
 	 remove my postal address.
+20070202 TAG: Release-0_8_0-trunk
+20070202 BRANCH: Release-0_8_0-branch
+20070202 TAG: Release-0_8_0-pre1 (Release-0_8_0-branch)
+20070204 sound.c: don't disable sound completely if we don't enable sound
+         after an unpause (fixes bug #1648246) (Release-0_8_0-branch) (Fred).
+20070204 rzx.c: use new libspectrum_rzx_playback_frame() API to allow
+	 loading of snapshots (necessary for playing back RZX files made with
+	 SPIN's "RZX Pause" feature).
+20070207 man/fuse.1: document that metacity needs --no-aspect-hint
+	 (Thanks, Stuart Brady and dave in #spin) (Release-0_8_0-branch).
+20070208 rzx.c: ensure tstates is sane after RZX completion
+	 (bug #1654165) (Release-0_8_0-branch).
+20070209 rzx.c: ensure tstates is sane after RZX desync
+	 (Release-0_8_0-branch).
+20070210 sound/{coreaudiosound.c,sdlsound.c}: make sound fifo two frames in
+         size rather than a multiple of the sound fragment size, make sound
+         callbacks run after some sound is available, calculate SDL fragment
+         size based on machine speed and output frequency
+	 (Release-0_8_0-branch) (Fred).
+20070217 widget/filesel.c: allow absolute pathnames to be used (fixes bug
+	 #1651433) (Release-0_8_0-branch) (Gergely Szasz).
+20070217 sound/aosound.c: stop possible segfaults (part of bug #1659865)
+	 (Release-0_8_0-branch) (Gergely Szasz).
+20070217 man/fuse.1: small ao improvements (rest of bug #1659865)
+	 (Release-0_8_0-branch) (Gergely Szasz).
+20070217 fuse.c,if1.c,settings.dat,utils.c: allow microdrive cartridge images
+	 to be used on startup (bug #1660099) (Release-0_8_0-branch)
+	 (Gergely Szasz).
+20070303 settings.dat,man/fuse.1,ui/gtk/gtkui.c: new --strict-aspect-hint
+	 option to improve situation with Metacity not being able to resize
+	 or move GTK+ window (bug #1539655) (Release-0_8_0-branch).
+20070303 configure.in: don't use libao by default (bug #1668916)
+	 (Release-0_8_0-branch).
+20070303 TAG: Release-0_8_0-pre2 (Release-0_8_0-branch)
