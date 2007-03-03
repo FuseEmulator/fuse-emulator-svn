@@ -135,6 +135,7 @@ printer_graphics_filename, string, "printout.pbm",, graphicsfile
 printer_text_filename, string, "printout.txt",, textfile
 
 aspect_hint, boolean, 1
+strict_aspect_hint, boolean, 0
 svga_mode, numeric, 320, 'v', svgamode
 doublescan_mode, numeric, 1, 'D', doublescan-mode
 
