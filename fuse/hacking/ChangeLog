@@ -1553,3 +1553,4 @@
 	 or move GTK+ window (bug #1539655) (Release-0_8_0-branch).
 20070303 configure.in: don't use libao by default (bug #1668916)
 	 (Release-0_8_0-branch).
+20070303 TAG: Release-0_8_0-pre2 (Release-0_8_0-branch)
