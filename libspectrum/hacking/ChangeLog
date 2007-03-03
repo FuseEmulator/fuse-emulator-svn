@@ -400,4 +400,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (libspectrum_0_3_0-branch).
 20070217 tzx_read.c: do allocate memory if we have no data but some padding
 	 in tzx_read_data() (libspectrum_0_3_0-branch).
-
+20070303 TAG: libspectrum_0_3_0-pre2 (libspectrum_0_3_0-branch)
