@@ -1548,3 +1548,6 @@
 20070217 fuse.c,if1.c,settings.dat,utils.c: allow microdrive cartridge images
 	 to be used on startup (bug #1660099) (Release-0_8_0-branch)
 	 (Gergely Szasz).
+20070303 settings.dat,man/fuse.1,ui/gtk/gtkui.c: new --strict-aspect-hint
+	 option to improve situation with Metacity not being able to resize
+	 or move GTK+ window (bug #1539655) (Release-0_8_0-branch).
