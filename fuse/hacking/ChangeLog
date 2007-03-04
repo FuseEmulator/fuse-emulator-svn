@@ -1556,4 +1556,5 @@
 20070303 TAG: Release-0_8_0-pre2 (Release-0_8_0-branch)
 20070303 man/fuse.1: document --rom-* options (bug #1262547)
 	 (Release-0_8_0-branch).
-
+20070304 ui.c: swap Kempston mouse buttons (bug #1507684)
+	 (Release-0_8_0-branch).
