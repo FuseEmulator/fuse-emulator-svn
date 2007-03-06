@@ -1558,3 +1558,4 @@
 	 (Release-0_8_0-branch).
 20070304 ui.c: swap Kempston mouse buttons (bug #1507684)
 	 (Release-0_8_0-branch).
+20070306 sound.c: don't leak memory for tape_buf (Release-0_8_0-branch) (Fred).
