@@ -401,3 +401,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070217 tzx_read.c: do allocate memory if we have no data but some padding
 	 in tzx_read_data() (libspectrum_0_3_0-branch).
 20070303 TAG: libspectrum_0_3_0-pre2 (libspectrum_0_3_0-branch)
+20070310 internals.h: add prototypes for libspectrum_z80em_read and
+         libspectrum_csw_read (libspectrum_0_3_0-branch) (Fred).
