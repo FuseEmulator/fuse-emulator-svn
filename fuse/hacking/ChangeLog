@@ -1561,3 +1561,4 @@
 20070306 sound.c: don't leak memory for tape_buf (Release-0_8_0-branch) (Fred).
 20070306 display.c: don't overrun line_times array (Release-0_8_0-branch)
 	 (Fred).
+20070310 man/fuse.1: add divide url (Release-0_8_0-branch) (Fred).
