@@ -1562,3 +1562,5 @@
 20070306 display.c: don't overrun line_times array (Release-0_8_0-branch)
 	 (Fred).
 20070310 man/fuse.1: add divide url (Release-0_8_0-branch) (Fred).
+20070311 machines/spec_se.c: fix marking Dock and EXROM banks as writable in
+         the SE (Release-0_8_0-branch) (thanks, Andrew Owen) (Fred).
