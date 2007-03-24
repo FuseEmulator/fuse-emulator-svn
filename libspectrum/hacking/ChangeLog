@@ -403,3 +403,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070303 TAG: libspectrum_0_3_0-pre2 (libspectrum_0_3_0-branch)
 20070310 internals.h: add prototypes for libspectrum_z80em_read and
          libspectrum_csw_read (libspectrum_0_3_0-branch) (Fred).
+20070324 z80.c: initialise snap->beta_paged (fixes Action Farce II RZX
+	 playback; see bug #1654105) (thanks, Jon Needle)
+	 (libspectrum_0_3_0-branch).

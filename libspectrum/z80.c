@@ -212,6 +212,8 @@ internal_z80_read( libspectrum_snap *snap,
 		       version, compressed );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
+  libspectrum_snap_set_beta_paged( snap, 0 );
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 
