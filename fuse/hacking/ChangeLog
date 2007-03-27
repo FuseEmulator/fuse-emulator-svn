@@ -1569,3 +1569,6 @@
 20070321 periph.c: when stopping RZX playback due to overrun, ensure the
 	 change is picked up in z80_do_opcodes() (thanks, Julian Wiseman)
 	 (Release-0_8_0-branch).
+20070327 joystick.c: don't prompt for joystick config changes when loading a
+         snap during RZX playback (Release-0_8_0-branch)
+	 (thanks, Julian Wiseman) (Fred).
