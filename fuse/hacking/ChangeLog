@@ -1572,3 +1572,5 @@
 20070327 joystick.c: don't prompt for joystick config changes when loading a
          snap during RZX playback (Release-0_8_0-branch)
 	 (thanks, Julian Wiseman) (Fred).
+20070404 printer.c: don't buffer output so text is available as it is
+         printed (Release-0_8_0-branch) (Fred).
