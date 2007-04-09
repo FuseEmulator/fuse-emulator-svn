@@ -1574,3 +1574,5 @@
 	 (thanks, Julian Wiseman) (Fred).
 20070404 printer.c: don't buffer output so text is available as it is
          printed (Release-0_8_0-branch) (Fred).
+20070411 ChangeLog,README,configure.in,man/fuse.1: updates for 0.8 release
+	 (Release-0_8_0-branch).
