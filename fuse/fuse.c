@@ -305,9 +305,7 @@ int creator_init( void )
 
   error = libspectrum_creator_alloc( &fuse_creator ); if( error ) return error;
 
-  error = libspectrum_creator_set_program(
-    fuse_creator, (const libspectrum_byte*)"Fuse"
-  );
+  error = libspectrum_creator_set_program( fuse_creator, "Fuse" );
   if( error ) { libspectrum_creator_free( fuse_creator ); return error; }
 
   error = libspectrum_creator_set_major( fuse_creator,
