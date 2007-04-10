@@ -288,7 +288,7 @@ start_playback( libspectrum_rzx *rzx )
   counter_reset();
 
   ui_menu_activate( UI_MENU_ITEM_RECORDING, 1 );
-  ui_menu_activate( UI_MENU_ITEM_RECORDING_ROLLBACK, 1 );
+  ui_menu_activate( UI_MENU_ITEM_RECORDING_ROLLBACK, 0 );
 
   return 0;
 }
