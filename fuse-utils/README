@@ -1,4 +1,4 @@
-The Fuse utilities version 0.7.0
+The Fuse utilities version 0.8.0
 ================================
 
 The Fuse utilities are a few tools which may be of occasional use when
@@ -10,6 +10,7 @@ The available utilities are:
 
 * createhdf: create an empty .hdf IDE hard disk image.
 * listbasic: list the BASIC in a snapshot or tape file.
+* raw2hdf: create a .hdf IDE hard disk image from another file.
 * rzxcheck: verify the digital signature in an RZX file.
 * rzxdump: list the contents of an RZX input recording file.
 * rzxtool: add, extract or remove the embedded snapshot from an RZX file,
@@ -56,6 +57,6 @@ released tarballs, you'll need to run `autogen.sh' before running
 'configure' for the first time.
 
 Philip Kendall <philip-fuse@shadowmagic.org.uk>
-16 July 2004
+11 April 2004
 
 $Id$

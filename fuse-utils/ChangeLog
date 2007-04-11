@@ -1,4 +1,4 @@
-2007-??-??  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+2007-04-11  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
 	* Add raw2hdf utility for creating HDF hard disk images from
 	  other data (Matthew Westcott).
