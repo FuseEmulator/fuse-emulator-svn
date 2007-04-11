@@ -406,4 +406,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070324 z80.c: initialise snap->beta_paged (fixes Action Farce II RZX
 	 playback; see bug #1654105) (thanks, Jon Needle)
 	 (libspectrum_0_3_0-branch).
-20070411 z80.c: remove warning (libspectrum_0_3_0-branch).
+20070409 z80.c: remove warning (libspectrum_0_3_0-branch).
+20070411 ChangeLog,Makefile.am,README,configure.in,doc/libspectrum.3: update
+	 for 0.3.0 release (libspectrum_0_3_0-branch).
