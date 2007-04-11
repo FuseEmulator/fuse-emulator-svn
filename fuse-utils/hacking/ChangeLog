@@ -145,3 +145,4 @@
 20070411 ChangeLog,README,configure.in,man/{createhdf,fuse-utils,listbasic,
 	 raw2hdf,rzxcheck,rzxdump,rzxtool,scl2trd,snap2tzx,snapconv,tapeconv,
 	 tzxlist}.1: updates for 0.8 release (fuse-utils_0_8_0-branch).
+20070411 TAG: fuse-utils_0_8_0 (fuse-utils_0_8_0-branch)
