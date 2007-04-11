@@ -1581,3 +1581,4 @@
 20070410 rzx.c: don't allow use of rollback commands during playback (thanks,
 	 Julian Wiseman) (Release-0_8_0-branch).
 20070411 README: these aren't all IDE interfaces (Release-0_8_0-branch).
+20070411 fuse.c: update copyright date to 2007 (Release-0_8_0-branch).

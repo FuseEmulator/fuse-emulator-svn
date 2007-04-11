@@ -1,5 +1,5 @@
 /* fuse.c: The Free Unix Spectrum Emulator
-   Copyright (c) 1999-2005 Philip Kendall
+   Copyright (c) 1999-2007 Philip Kendall
 
    $Id$
 
@@ -365,7 +365,7 @@ static void fuse_show_copyright(void)
   printf( "\n" );
   fuse_show_version();
   printf(
-   "Copyright (c) 1999-2005 Philip Kendall <philip-fuse@shadowmagic.org.uk>\n"
+   "Copyright (c) 1999-2007 Philip Kendall <philip-fuse@shadowmagic.org.uk>\n"
    "and others; see the file 'AUTHORS' for more details.\n"
    "\n"
    "This program is distributed in the hope that it will be useful,\n"
