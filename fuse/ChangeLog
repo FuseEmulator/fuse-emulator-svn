@@ -1,4 +1,4 @@
-2007-??-??  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+2007-04-11  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
 	* Fuse 0.8.0 released
 
@@ -80,6 +80,11 @@
 	  Jon Needle, Markus Oberhumer, Mark Round, Darren Salt, Gergely
 	  Szasz, Paul van der Laan and other people to whom I apologise
 	  for forgetting).
+
+	* On a personal note, I (Philip) would like to dedicate the 0.8
+	  release of Fuse to the memory of Chris "Oggie" Lightfoot. I
+	  don't know whether he would have loved or hated some of the code
+	  in Fuse, but I'm sure he would have expressed his opinion.
 
 2004-07-16  Philip Kendall  <pak21-fuse@srcf.ucam.org>
 
