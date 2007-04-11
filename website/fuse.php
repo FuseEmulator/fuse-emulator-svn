@@ -1,7 +1,7 @@
 <?php
 
 /* fuse.php: the main Fuse homepage
-   Copyright (c) 1999-2005 Darren Salt, Philip Kendall
+   Copyright (c) 1999-2007 Darren Salt, Philip Kendall
 
    $Id$
 
@@ -38,12 +38,6 @@ fuse_section (NULL, "What is it?", <<<END_SECTION
   $img
   <p>Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat unsurprisingly, a Spectrum emulator for Unix. However, it has now also been ported to Mac OS X, which may or may not count as a Unix variant depending on your advocacy position.</p>
 
-  <ul>
-   <li>A "buggy snapshot" of a Win32 port is available; see the <a href="#What_s_new">What's New</a> section for more details.</li>
-   <li>Fuse 0.4.0 was ported to the PocketPC by Anders Holmberg as <a href="http://pocketclive.emuunlim.com/">PocketClive</a>.</li>
-   <li>And PocketClive has been ported to the both the <a href="http://www.surrealservices.dsl.pipex.com/PocketClive.html">Nokia Smartphone 2002</a> and <a href="http://www.aooa27.dsl.pipex.com/FuseSP.htm">Smartphone 2003 SE</a>.</li>
-  </ul>
-
 END_SECTION
 );
 
@@ -53,13 +47,13 @@ $img = mk_image('screens/f-large.png', 650, 532, 4);
 fuse_section ("Features", "What features does it have?", <<<END_SECTION
   $img
   <ul>
-   <li>Working 16K, 48K, 128K, +2, +2A, +3, +3e, SE, TC2048, TC2068, Pentagon 128 and Scorpion ZS 256 emulation, running at true Speccy speed on any computer you're likely to try it on.</li>
+   <li>Working 16K, 48K, 128K, +2, +2A, +3, +3e, SE, TC2048, TC2068, TS2068, Pentagon 128 and Scorpion ZS 256 emulation, running at true Speccy speed on any computer you're likely to try it on.</li>
    <li>Support for loading from .tzx files.</li>
    <li>Sound (on systems supporting the Open Sound System, SDL or OpenBSD/Solaris's <tt>/dev/audio</tt>).</li>
    <li>Kempston joystick emulation.</li>
    <li>Emulation of the various printers you could attach to the Spectrum.</li>
    <li>Support for the RZX input recording file format, including 'competition mode'.</li>
-   <li>Emulation of the Spectrum +3e, ZXATASP and ZXCF IDE interfaces.</li>
+   <li>Emulation of the DivIDE, Interface I, Kempston mouse, Spectrum +3e, ZXATASP and ZXCF interfaces.</li>
   </ul>
 
 END_SECTION
@@ -116,20 +110,20 @@ fuse_section ("Download", "Where can I get it from?", <<<END_SECTION
   <h3>Source</h3>
   $img
   <ul>
-   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.7.0.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.7.0.tar.gz.sig?download">PGP signature</a>).</li>
-   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.7.0.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.7.0.tar.gz.sig?download">PGP signature</a>). Note that
+   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.8.0.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.8.0.tar.gz.sig?download">PGP signature</a>).</li>
+   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.8.0.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.8.0.tar.gz.sig?download">PGP signature</a>). Note that
 you'll still need <a href="libspectrum.php">libspectrum</a> installed to run these.</li>
    <li>The above are also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.7.0.tar.gz">Fuse source</a> (<a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.7.0.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.7.0.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.7.0.tar.gz.sig">signature</a>).</li>
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.8.0.tar.gz">Fuse source</a> (<a
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.8.0.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.8.0.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.8.0.tar.gz.sig">signature</a>).</li>
    <li>The source code releases above are signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.6.0(.1) releases as I forgot the passphrase for that key <tt>:-(</tt>.</li>
   </ul>
 
   <h3>Binaries</h3>
   <p>Packages are available for some Unix distributions; in general, any problems which are specific to the packages should be sent to the package maintainer.</p>
   <ul>
-   <li>Unofficial packages for <a href="http://www.debian.org/">Debian</a>, by Darren Salt: <a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">stable</a> (Debian 3.1, "Sarge"), <a href="http://www.youmustbejoking.demon.co.uk/progs.testing.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a> (all 0.7.0) or <a href="http://www.youmustbejoking.demon.co.uk/progs.woody.html">old stable</a> (Debian 3.0, "Woody") (0.6.1.1).</li>
-   <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.7.0 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a> (but the utilities aren't available?).</li>
+   <li>Unofficial packages for <a href="http://www.debian.org/">Debian</a>, by Darren Salt: <a href="http://www.youmustbejoking.demon.co.uk/progs.etch.html">stable</a> (Debian 4.0, "Etch"), <a href="http://www.youmustbejoking.demon.co.uk/progs.lenny.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.sid.html">unstable</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.sarge.html">Debian 3.1 ("Sarge")</a> (all 0.7.0) or <a href="http://www.youmustbejoking.demon.co.uk/progs.woody.html">Debian 3.0 ("Woody")</a> (0.6.1.1).</li>
+   <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.7.0 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a>.</li>
    <li><a href="http://www.gentoo.org/">Gentoo</a> users have an <a href="http://packages.gentoo.org/packages/?category=app-emulation;name=fuse">ebuild</a> of 0.7.0 available.</li>
    <li><a href="http://www.mandrake.org/">Mandrake</a> 10.0 packages of 0.7.0 are available from the <a href="http://plf.zarb.org/">PLF</a>, or Miguel Barrio Orsikowsky has some <a href="http://www.speccy.org/sinclairmania/arch/emu/mandrake/">older versions</a> available.</li>
    <li>Mac OS X: <a href="http://prdownloads.sourceforge.net/fuse-emulator/Fuse-0.7.0.1.dmg?download">Fuse binaries</a>, the slightly <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-macosx-0.7.0.1.tar.bz2?download">modified Fuse source</a>, or the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-macosx-0.7.0.tar.bz2?download">utilities binaries</a>. These are also mirrored at WoS: <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/mac/osx/Fuse-0.7.0.1.dmg">Fuse</a>, <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/mac/osx/Fuse-0.7.0.1-src.tar.bz2">Fuse source</a> or <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/mac/osx/fuse-utils-0.7.0.tar.bz2">utilities</a>. These require OS X 10.3 or later; if you're using an earlier version of OS X, Fuse 0.6.1.1 will work there: <a href="http://prdownloads.sourceforge.net/fuse-emulator/Fuse-0.6.1.1.dmg?download">Fuse binary</a>, <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-macosx-0.6.1.1.tar.gz?download">Fuse source</a> and <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-macosx-0.6.1.tar.gz?download">utilities binaries</a>. Mac OS X 10.4 users can also use the <a href="http://prdownloads.sourceforge.net/fuse-emulator/FuseImporter1.0.dmg?download">Fuse Spotlight Importer</a> which allows Spotlight to find ZX Spectrum emulation related files based on metadata in the files. The <a href="http://prdownloads.sourceforge.net/fuse-emulator/FuseImporter1.0.tar.bz2?download">source</a> is also available.</li>
@@ -148,20 +142,17 @@ END_SECTION
 #<!-- ======================================================= -->
 
 fuse_section (NULL, "What's new?", <<<END_SECTION
-  <h3>Fuse Spotlight Importer for Mac OS X 10.4 Tiger</h3>
-  <p>The <a href="http://prdownloads.sourceforge.net/fuse-emulator/FuseImporter1.0.dmg?download">Fuse Spotlight Importer</a> allows Spotlight to find ZX Spectrum emulation related files based on metadata in the files. The <a href="http://prdownloads.sourceforge.net/fuse-emulator/FuseImporter1.0.tar.bz2?download">source</a> is also available.</p>
-   <h3>0.7.0.1 for Mac OS X</h3>
-  <p>This is a minor revision that resolves issues with saving .sna snapshots, TR-DOS disk ejection and autoloading TR-DOS and +3 disks.</p>
-  <h3>0.7.0</h3>
+  <h3>0.8.0</h3>
   <ul>
-    <li>Scorpion ZS 256, Spectrum +3e and Spectrum SE support.</li>
-    <li>Interface II, ZXATASP and ZXCF support.</li>
-    <li>Much improved contended memory and floating bus emulation.</li>
-    <li>Improved display timings.</li>
-    <li>(fuse-utils) New createhdf utility for creating blank .hdf IDE hard disk images.</li>
+    <li>Loader improvements to automatically run at full speed while loading, and to automatically start/stop the tape when a loader is detected</li>
+    <li>Improved screen rendering code</li>
+    <li>RZX 'rollback' support</li>
+    <li>DivIDE support</li>
+    <li>Interface I and microdrive emulation</li>
+    <li>TS2068 support</li>
+    <li>Kempston mouse emulation</li>
   </ul>
   <p>See the <a href="http://fuse-emulator.sourceforge.net/fuse.ChangeLog">ChangeLog</a> for full details.</p>
-  <p>A "buggy Win32 snapshot missing a lot of functionality" is also <a href="http://www.castlesofpoland.com/fuse-win32-snapshot.zip">available</a>, with thanks to Marek Januszewski.</p>
 
 END_SECTION
 );
@@ -173,7 +164,7 @@ fuse_section (NULL, "Development", <<<END_SECTION
 
   <p>The latest version of Fuse is always available by checking out the 'fuse' module from the <a href="http://sourceforge.net/cvs/?group_id=91293">CVS repository</a> on SourceForge. Note that this isn't guaranteed to compile, let alone work properly. Also, don't expect any support for this version! (You'll also need libspectrum from CVS; this is in the 'libspectrum' module). Similarly, the utilities are available in the 'fuse-utils' module.</p>
 
-  <p>One thing which isn't in the SourceForge tracking system:</p>
+  <p>One thing which isn't in the SourceForge tracking system (and is now very outdated):</p>
 
   <ul>
    <li>David Gardner has produced a patch to give <a href="fuse-xvideo.patch.bz2">XVideo support</a> for the Xlib UI, allowing arbitrary sized windows.</li>
