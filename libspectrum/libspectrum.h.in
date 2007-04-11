@@ -668,7 +668,7 @@ libspectrum_error WIN32_DLL
 libspectrum_rzx_start_playback( libspectrum_rzx *rzx, int which,
 				libspectrum_snap **snap );
 libspectrum_error WIN32_DLL
-libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished );
+libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished, libspectrum_snap **snap );
 libspectrum_error WIN32_DLL
 libspectrum_rzx_playback( libspectrum_rzx *rzx, libspectrum_byte *byte );
 

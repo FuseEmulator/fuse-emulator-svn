@@ -1258,7 +1258,7 @@ tzx_read_data( const libspectrum_byte **ptr, const libspectrum_byte *end,
 
   /* Allocate memory for the data; the check for *length is to avoid
      the implementation-defined of malloc( 0 ) */
-  if( *length ) {
+  if( *length || padding ) {
 
     *data = malloc( ( *length + padding ) * sizeof( libspectrum_byte ) );
     if( !*data ) {

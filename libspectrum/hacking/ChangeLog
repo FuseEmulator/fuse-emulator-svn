@@ -390,3 +390,23 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 written out one byte too long.
 20070202 <almost everything>: change URLs to sourceforge, my e-mail address
 	 to @shadowmagic and remove my postal address.
+20070202 TAG: libspectrum_0_3_0-trunk
+20070202 BRANCH: libspectrum_0_3_0-branch
+20070202 TAG: libspectrum_0_3_0-pre1 (libspectrum_0_3_0-branch)
+20070204 ChangeLog: fix some attributions (Fred).
+20070204 libspectrum.h.in,rzx.c,doc/libspectrum.txt: make
+	 libspectrum_rzx_playback_frame able to return a snap (necessary
+	 for supporting RZXs made with SPIN's "RZX Pause" feature)
+	 (libspectrum_0_3_0-branch).
+20070217 tzx_read.c: do allocate memory if we have no data but some padding
+	 in tzx_read_data() (libspectrum_0_3_0-branch).
+20070303 TAG: libspectrum_0_3_0-pre2 (libspectrum_0_3_0-branch)
+20070310 internals.h: add prototypes for libspectrum_z80em_read and
+         libspectrum_csw_read (libspectrum_0_3_0-branch) (Fred).
+20070324 z80.c: initialise snap->beta_paged (fixes Action Farce II RZX
+	 playback; see bug #1654105) (thanks, Jon Needle)
+	 (libspectrum_0_3_0-branch).
+20070409 z80.c: remove warning (libspectrum_0_3_0-branch).
+20070411 ChangeLog,Makefile.am,README,configure.in,doc/libspectrum.3: update
+	 for 0.3.0 release (libspectrum_0_3_0-branch).
+20070411 TAG: libspectrum_0_3_0

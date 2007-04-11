@@ -47,5 +47,15 @@ CVS tags for libspectrum
 |
 | libspectrum_0_2_1-merge-1
 | libspectrum_0_2_2pre1
+| libspectrum_0_2_2
+|
+| libspectrum_0_3_0-trunk
+|
++-\
+| | libspectrum_0_3_0pre1
+| | libspectrum_0_3_0pre2
+| | libspectrum_0_3_0
+| |
+| | libspectrum_0_3_0-branch
 |
 HEAD
