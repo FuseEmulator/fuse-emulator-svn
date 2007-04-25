@@ -1584,7 +1584,9 @@
 20070411 fuse.c: update copyright date to 2007 (Release-0_8_0-branch).
 20070416 widget/Makefile.am: distribute fuse.font.sbf and mkfusefont.pl
          (Release-0_8_0-branch) (Fred).
-20070411 TAG: Release-0_8_0 (Release-0_8_0-branch).
+20070424 TAG: Release-0_8_0 (Release-0_8_0-branch).
 20070425 uidisplay.c,widget/menu.c: initialise border in help screen and
          center keyboard picture on help screen (thanks, Alberto Garcia)
          (Release-0_8_0-branch).
+20070425 widget/pokefinder.c: fix up for non-proportional display
+	 (thanks, Alberto Garcia) (Release-0_8_0-branch).
