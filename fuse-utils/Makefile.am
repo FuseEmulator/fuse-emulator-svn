@@ -26,6 +26,7 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = man
 
 bin_PROGRAMS = createhdf \
+	       dump_metadata \
 	       listbasic \
 	       raw2hdf \
 	       @RZXCHECK@ \
@@ -34,12 +35,14 @@ bin_PROGRAMS = createhdf \
 	       scl2trd \
 	       snap2tzx \
 	       snapconv \
+	       snaplist \
 	       tapeconv \
-	       tzxlist
+	       tzxlist \
+               ula_read_list
 
 EXTRA_PROGRAMS = rzxcheck
 
-INCLUDES = @LIBSPEC_CFLAGS@
+INCLUDES = @LIBSPEC_CFLAGS@ @GLIB_CFLAGS@
 
 createhdf_SOURCES = ide.c createhdf.c
 
@@ -65,10 +68,19 @@ snap2tzx_LDADD = @LIBSPEC_LIBS@
 snapconv_SOURCES = snapconv.c utils.c
 snapconv_LDADD = @LIBSPEC_LIBS@
 
+snaplist_SOURCES = snaplist.c utils.c
+snaplist_LDADD = @LIBSPEC_LIBS@
+
 tapeconv_SOURCES = tapeconv.c utils.c
 tapeconv_LDADD = @LIBSPEC_LIBS@
 
 tzxlist_SOURCES = tzxlist.c utils.c
 tzxlist_LDADD = @LIBSPEC_LIBS@
 
-noinst_HEADERS = utils.h
+dump_metadata_SOURCES = dump_metadata.c utils.c
+dump_metadata_LDADD = @LIBSPEC_LIBS@
+
+ula_read_list_SOURCES = ula_read_list.c utils.c
+ula_read_list_LDADD = @LIBSPEC_LIBS@
+
+noinst_HEADERS = ide.h utils.h
