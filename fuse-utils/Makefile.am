@@ -71,4 +71,4 @@ tapeconv_LDADD = @LIBSPEC_LIBS@
 tzxlist_SOURCES = tzxlist.c utils.c
 tzxlist_LDADD = @LIBSPEC_LIBS@
 
-noinst_HEADERS = utils.h
+noinst_HEADERS = ide.h utils.h
