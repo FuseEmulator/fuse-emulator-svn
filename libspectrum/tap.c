@@ -65,7 +65,7 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
     /* If we've got less than two bytes for the length, something's
        gone wrong, so gone home */
     if( ( end - ptr ) < 2 ) {
-      libspectrum_tape_free( tape );
+      libspectrum_tape_clear( tape );
       libspectrum_print_error(
         LIBSPECTRUM_ERROR_CORRUPT,
         "libspectrum_tap_read: not enough data in buffer"
@@ -84,7 +84,7 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 
     /* Have we got enough bytes left in buffer? */
     if( end - ptr < (ptrdiff_t)data_length ) {
-      libspectrum_tape_free( tape );
+      libspectrum_tape_clear( tape );
       free( block );
       libspectrum_print_error(
         LIBSPECTRUM_ERROR_CORRUPT,
@@ -96,7 +96,7 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
     /* Allocate memory for the data */
     data = malloc( data_length * sizeof( libspectrum_byte ) );
     if( !data ) {
-      libspectrum_tape_free( tape );
+      libspectrum_tape_clear( tape );
       free( block );
       libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 			       "libspectrum_tap_create: out of memory" );

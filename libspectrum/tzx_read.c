@@ -150,98 +150,98 @@ libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
     switch( id ) {
     case LIBSPECTRUM_TAPE_BLOCK_ROM:
       error = tzx_read_rom_block( tape, &ptr, end );
-       if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_TURBO:
       error = tzx_read_turbo_block( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
       error = tzx_read_pure_tone( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_PULSES:
       error = tzx_read_pulses_block( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
       error = tzx_read_pure_data( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
       error = tzx_read_raw_data( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
       error = tzx_read_generalised_data( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
       error = tzx_read_pause( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
       error = tzx_read_group_start( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
       error = tzx_read_empty_block( tape, id );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_JUMP:
       error = tzx_read_jump( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
       error = tzx_read_loop_start( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
       error = tzx_read_empty_block( tape, id );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_SELECT:
       error = tzx_read_select( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_STOP48:
       error = tzx_read_stop( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
       error = tzx_read_comment( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
       error = tzx_read_message( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
       error = tzx_read_archive_info( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
       error = tzx_read_hardware( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
       error = tzx_read_custom( tape, &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_CONCAT:
       error = tzx_read_concat( &ptr, end );
-      if( error ) { libspectrum_tape_free( tape ); return error; }
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
 
     default:	/* For now, don't handle anything else */
-      libspectrum_tape_free( tape );
+      libspectrum_tape_clear( tape );
       libspectrum_print_error(
         LIBSPECTRUM_ERROR_UNKNOWN,
         "libspectrum_tzx_create: unknown block type 0x%02x", id

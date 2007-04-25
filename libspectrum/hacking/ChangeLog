@@ -410,3 +410,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070411 ChangeLog,Makefile.am,README,configure.in,doc/libspectrum.3: update
 	 for 0.3.0 release (libspectrum_0_3_0-branch).
 20070411 TAG: libspectrum_0_3_0
+20070425 tap.c,tzx_read.c: call libspectrum_tape_clear() on error rather than
+	 libspectrum_tape_free() to avoid double free bug (fixes bugs #1479451
+	 and #1706994; thanks, crabfists) (libspectrum_0_3_0-branch).
