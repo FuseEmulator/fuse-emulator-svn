@@ -1590,3 +1590,10 @@
          (Release-0_8_0-branch).
 20070425 widget/pokefinder.c: fix up for non-proportional display
 	 (thanks, Alberto Garcia) (Release-0_8_0-branch).
+20070428 hacking/ui.txt,ui/{uidisplay.h,fb/fbdisplay.c,ggi/ggidisplay.c,
+         gtk/gtkdisplay.c,scaler/scaler.c,sdl/sdldisplay.c,
+         svga/svgadisplay.c,win32/win32display.c,xlib/xdisplay.c}:
+         check that we don't exceed maximum fullscreen dimensions with
+         SDL UI and attempt a more graceful failure if things go wrong
+         (fixes bug #1708636; thanks Alberto Garcia) (Release-0_8_0-branch)
+         (Fred).
