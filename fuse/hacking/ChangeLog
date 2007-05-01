@@ -1599,3 +1599,5 @@
          (Fred).
 20070501 screenshot.c: include limits.h for PATH_MAX (Release-0_8_0-branch)
          (Fred).
+20070501 ui/scaler/scalers.c: make sure MIN and ABS are defined
+         (Release-0_8_0-branch) (Fred).
