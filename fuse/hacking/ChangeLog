@@ -1597,3 +1597,5 @@
          SDL UI and attempt a more graceful failure if things go wrong
          (fixes bug #1708636; thanks Alberto Garcia) (Release-0_8_0-branch)
          (Fred).
+20070501 screenshot.c: include limits.h for PATH_MAX (Release-0_8_0-branch)
+         (Fred).
