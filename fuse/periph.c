@@ -168,9 +168,10 @@ readport( libspectrum_word port )
 {
   libspectrum_byte b;
 
-  ula_contend_port_preio( port );
+  ula_contend_port_early( port );
+  ula_contend_port_late( port );
   b = readport_internal( port );
-  ula_contend_port_postio( port );
+  tstates++;
 
   return b;
 }
@@ -240,9 +241,9 @@ read_peripheral( gpointer data, gpointer user_data )
 void
 writeport( libspectrum_word port, libspectrum_byte b )
 {
-  ula_contend_port_preio( port );
+  ula_contend_port_early( port );
   writeport_internal( port, b );
-  ula_contend_port_postio( port );
+  ula_contend_port_late( port ); tstates++;
 }
 
 void

@@ -1601,3 +1601,7 @@
          (Fred).
 20070501 ui/scaler/scalers.c: make sure MIN and ABS are defined
          (Release-0_8_0-branch) (Fred).
+20070503 periph.c,spectrum.[ch],ula.[ch],machines/{pentagon.c,scorpion.c,
+	 spec128.c,spec16.c,spec48.c}: fix IN timings and consequent fixes
+	 to floating bus behaviour (fixes bug #1708597) (thanks, Pegaz and
+	 Mark Woodmass) (Release-0_8_0-branch).
