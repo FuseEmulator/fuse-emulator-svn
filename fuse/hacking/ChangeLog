@@ -1605,3 +1605,6 @@
 	 spec128.c,spec16.c,spec48.c}: fix IN timings and consequent fixes
 	 to floating bus behaviour (fixes bug #1708597) (thanks, Pegaz and
 	 Mark Woodmass) (Release-0_8_0-branch).
+20070507 lib/Makefile.am: distribute autoload snapshots
+         (thanks Stuart Brady and Arda Erdikmen) (Release-0_8_0-branch)
+         (Fred).
