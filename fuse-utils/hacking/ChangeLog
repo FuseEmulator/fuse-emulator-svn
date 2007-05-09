@@ -147,4 +147,6 @@
 	 tzxlist}.1: updates for 0.8 release (fuse-utils_0_8_0-branch).
 20070411 TAG: fuse-utils_0_8_0 (fuse-utils_0_8_0-branch)
 20070425 Makefile.am: add ide.h to noinst_HEADERS so it will be distributed
-         (thanks, Alberto Garcia) (Fred).
+         (thanks, Alberto Garcia) (fuse-utils_0_8_0-branch) (Fred).
+20070509 Makefile.am,configure.in,hacking/{.cvsignore,Makefile.am}: distribute
+	 the hacking/ subdir (thanks, Stuart Brady) (fuse-utils_0_8_0-branch)

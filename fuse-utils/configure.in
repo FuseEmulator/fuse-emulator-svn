@@ -88,4 +88,5 @@ fi
 
 AC_OUTPUT(Makefile \
 fuse-utils.qpg \
+hacking/Makefile \
 man/Makefile)
