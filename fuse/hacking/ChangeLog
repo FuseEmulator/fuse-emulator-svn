@@ -1608,3 +1608,6 @@
 20070507 lib/Makefile.am: distribute autoload snapshots
          (thanks Stuart Brady and Arda Erdikmen) (Release-0_8_0-branch)
          (Fred).
+20070509 snapshot.c: call machine_select() only if the machine has changed
+	 (fixes bug #1701246) (thanks, Julian Wiseman) (Release-0_8_0-branch)
+	 (Fred).
