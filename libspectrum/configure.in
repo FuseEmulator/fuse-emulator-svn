@@ -127,6 +127,7 @@ fi
 AC_OUTPUT(
   Makefile
   doc/Makefile
+  hacking/Makefile
   libspectrum.qpg
   myglib/Makefile
 )

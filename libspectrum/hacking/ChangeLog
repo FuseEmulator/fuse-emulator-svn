@@ -415,3 +415,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 and #1706994; thanks, crabfists) (libspectrum_0_3_0-branch).
 20070509 libspectrum.in: add WIN32_DLL to Generalised Data Block functions
 	 (part of patch 1711412) (libspectrum_0_3_0-branch) (Stuart Brady).
+20070509 Makefile.am,configure.in,hacking/{.cvsignore,Makefile.am}: distribute
+	 the hacking/ subdir (thanks, Stuart Brady) (libspectrum_0_3_0-branch).
