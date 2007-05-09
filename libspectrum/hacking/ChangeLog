@@ -417,3 +417,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (part of patch 1711412) (libspectrum_0_3_0-branch) (Stuart Brady).
 20070509 Makefile.am,configure.in,hacking/{.cvsignore,Makefile.am}: distribute
 	 the hacking/ subdir (thanks, Stuart Brady) (libspectrum_0_3_0-branch).
+20070509 acinclude.m4: fix underquoted macro (thanks, Stuart Brady)
+	 (libspectrum_0_3_0-branch).
