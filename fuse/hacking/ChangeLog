@@ -1611,3 +1611,6 @@
 20070509 snapshot.c: call machine_select() only if the machine has changed
 	 (fixes bug #1701246) (thanks, Julian Wiseman) (Release-0_8_0-branch)
 	 (Fred).
+20070509 acinclude.m4: remove warnings about underquoted definitions
+	 (Release-0_8_0-branch) (Stuart Brady).
+
