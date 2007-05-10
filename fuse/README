@@ -1,5 +1,5 @@
-The Free Unix Spectrum Emulator (Fuse) 0.8.0
-============================================
+The Free Unix Spectrum Emulator (Fuse) 0.8.0.1
+==============================================
 
 Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat
 unsurprisingly, an emulator of the ZX Spectrum (a popular 1980s home
@@ -139,6 +139,6 @@ the Usenet group 'comp.sys.sinclair', but do read the FAQ
 ( http://www.worldofspectrum.org/faq/index.html ) first!
 
 Philip Kendall <philip-fuse@shadowmagic.org.uk>
-11 April 2007
+11 May 2007
 
 $Id$
