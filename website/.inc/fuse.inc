@@ -1,7 +1,7 @@
 <?php // -*- Mode: perl -*-
 
 /* fuse.inc: shared routines for the Fuse and libspectrum webpages
-   Copyright (c) 1999-2003 Darren Salt, Philip Kendall
+   Copyright (c) 1999-2007 Darren Salt, Philip Kendall
 
    $Id$
 
@@ -21,7 +21,7 @@
 
    Author contact information:
 
-   E-mail: pak21-fuse@srcf.ucam.org
+   E-mail: philip-fuse@shadowmagic.org.uk
    Postal address: 15 Crescent Road, Wokingham, Berks, RG40 2DB, England
 
 */
@@ -166,7 +166,7 @@ END_IMGSCRIPT;
 
  <div id="header" class="header"><div class="header-div">
   <span class="menuhover">
-   <a href="http://www.srcf.ucam.org/~pak21/spectrum/"><img src="images/grey.png" width="12" height="12" alt="&middot;" />Sinclair Spectrum</a>
+   <a href="http://www.shadowmagic.org.uk/spectrum/"><img src="images/grey.png" width="12" height="12" alt="&middot;" />Sinclair Spectrum</a>
   </span>
   <div class="logo"><img src="logo/fuse.jpeg" alt="Fuse" /></div>
   <span class="x">&bull;</span>
@@ -239,7 +239,7 @@ END_MENU;
 
   <hr />
 
-  <p class="footer">Any comments, etc to <a href="mailto:pak21-fuse@srcf.ucam.org">Philip Kendall</a>. This page was last updated on $lastmod GMT.</p>
+  <p class="footer">Any comments, etc to <a href="mailto:philip-fuse@shadowmagic.org.uk">Philip Kendall</a>. This page was last updated on $lastmod GMT.</p>
   <p class="footer">URL for this page: <a href="$canonical_url">$canonical_url</a>; the <a href="fuse-website.tar.gz">full source</a> is available.</p>
 
   <hr />
