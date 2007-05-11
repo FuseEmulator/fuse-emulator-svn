@@ -422,3 +422,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070510 ChangeLog,Makefile.am,README,configure.in,doc/{libspectrum.3,
 	 libspectrum.txt}: updates for 0.3.0.1 release
 	 (libspectrum_0_3_0-branch).
+20070511 TAG: libspectrum_0_3_0_1 (libspectrum_0_3_0-branch)
