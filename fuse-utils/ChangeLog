@@ -1,4 +1,15 @@
+2007-05-11  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+	* Version 0.8.0.1 released (bug fix release)
+
+	* Distribute ide.h (thanks, Alberto Garcia) (Fredrick Meunier).
+
+	* Distribute the hacking/ directory (thanks, Stuart Brady) (Philip
+	  Kendall).
+
 2007-04-11  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+	* Version 0.8.0 released
 
 	* Add raw2hdf utility for creating HDF hard disk images from
 	  other data (Matthew Westcott).

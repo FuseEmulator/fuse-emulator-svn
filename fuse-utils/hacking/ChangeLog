@@ -150,3 +150,6 @@
          (thanks, Alberto Garcia) (fuse-utils_0_8_0-branch) (Fred).
 20070509 Makefile.am,configure.in,hacking/{.cvsignore,Makefile.am}: distribute
 	 the hacking/ subdir (thanks, Stuart Brady) (fuse-utils_0_8_0-branch)
+20070510 ChangeLog,README,configure.in,man/{createhdf,fuse-utils,listbasic,
+	 raw2hdf,rzxcheck,rzxdump,rzxtool,scl2trd,snap2tzx,snapconv,tapeconv,
+	 tzxlist}.1: updates for 0.8.0.1 release (fuse-utils_0_8_0-branch).

@@ -1,5 +1,5 @@
-The Fuse utilities version 0.8.0
-================================
+The Fuse utilities version 0.8.0.1
+==================================
 
 The Fuse utilities are a few tools which may be of occasional use when
 dealing with ZX Spectrum emulator files. They were originally
@@ -57,6 +57,6 @@ released tarballs, you'll need to run `autogen.sh' before running
 'configure' for the first time.
 
 Philip Kendall <philip-fuse@shadowmagic.org.uk>
-11 April 2004
+11 May 2004
 
 $Id$
