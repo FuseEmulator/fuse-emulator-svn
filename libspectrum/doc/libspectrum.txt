@@ -1,5 +1,5 @@
-libspectrum 0.3.0
-=================
+libspectrum 0.3.0.1
+===================
 
 libspectrum is a fairly simple library designed to make the handling
 of various ZX Spectrum emulator-related file formats easy.  So far it
