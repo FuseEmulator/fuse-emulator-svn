@@ -155,3 +155,4 @@
 	 tzxlist}.1: updates for 0.8.0.1 release (fuse-utils_0_8_0-branch).
 20070511 man/{createhdf.1,raw2hdf.1}: update pointers to HDF spec to point to
 	 v1.1 (patch #1716433) (fuse-utils_0_8_0-branch) (Stuart Brady).
+20070511 TAG: fuse-utils_0_8_0_1 (fuse-utils_0_8_0-branch)
