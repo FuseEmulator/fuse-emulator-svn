@@ -7,6 +7,9 @@
 	* Distribute the hacking/ directory (thanks, Stuart Brady) (Philip
 	  Kendall).
 
+	* Update the pointers to the HDF specification to point to v1.1
+	  (Stuart Brady).
+
 2007-04-11  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
 	* Version 0.8.0 released
