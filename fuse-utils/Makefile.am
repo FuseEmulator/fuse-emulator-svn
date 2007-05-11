@@ -23,7 +23,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = man
+SUBDIRS = hacking \
+	man
 
 bin_PROGRAMS = createhdf \
 	       listbasic \
@@ -71,4 +72,4 @@ tapeconv_LDADD = @LIBSPEC_LIBS@
 tzxlist_SOURCES = tzxlist.c utils.c
 tzxlist_LDADD = @LIBSPEC_LIBS@
 
-noinst_HEADERS = utils.h
+noinst_HEADERS = ide.h utils.h
