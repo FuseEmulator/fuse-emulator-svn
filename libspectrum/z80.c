@@ -203,7 +203,7 @@ internal_z80_read( libspectrum_snap *snap,
 {
   libspectrum_error error;
   const libspectrum_byte *data;
-  int version, compressed;
+  int version, compressed = 1;
 
   error = read_header( buffer, snap, &data, &version, &compressed );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
@@ -211,6 +211,8 @@ internal_z80_read( libspectrum_snap *snap,
   error = read_blocks( data, buffer_length - (data - buffer), snap,
 		       version, compressed );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  libspectrum_snap_set_beta_paged( snap, 0 );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
