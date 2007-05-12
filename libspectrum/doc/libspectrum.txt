@@ -1,5 +1,5 @@
-libspectrum 0.3.0
-=================
+libspectrum 0.3.0.1
+===================
 
 libspectrum is a fairly simple library designed to make the handling
 of various ZX Spectrum emulator-related file formats easy.  So far it
@@ -1184,11 +1184,14 @@ libspectrum_error libspectrum_rzx_start_playback( libspectrum_rzx *rzx )
 Prepare to start playback of the input recording `rzx'.
 
 libspectrum_error libspectrum_rzx_playback_frame( libspectrum_rzx *rzx,
-                                                  int *finished )
+                                                  int *finished,
+						  libspectrum_snap **snap )
 
 Move onto the next frame of playback from the input recording
 `rzx'. If the last frame has now been played, `*finished' will be
-non-zero, otherwise it will be zero.
+non-zero, otherwise it will be zero. If a snap is present in the input
+recording before the next frame, this will be returned in `*snap',
+otherwise `*snap' will be NULL.
 
 If the correct number of bytes were not read from `rzx' during the
 frame via `libspectrum_rzx_playback', an error will be given.
