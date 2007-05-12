@@ -423,3 +423,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 libspectrum.txt}: updates for 0.3.0.1 release
 	 (libspectrum_0_3_0-branch).
 20070511 TAG: libspectrum_0_3_0_1 (libspectrum_0_3_0-branch)
+20070512 doc/cvs-tags: document merge back to trunk (libspectrum_0_3_0-branch)
+20070512 TAG: libspectrum_0_3_0-merge-1
