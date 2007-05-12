@@ -530,8 +530,10 @@ libspectrum_rzx_start_playback( libspectrum_rzx *rzx, int which,
 }
 
 libspectrum_error
-libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished )
+libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished,
+				libspectrum_snap **snap )
 {
+  *snap = NULL;
   *finished = 0;
 
   /* Check we read the correct number of INs during this frame */
@@ -548,11 +550,22 @@ libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished )
   /* Increment the frame count and see if we've finished with this file */
   if( ++rzx->current_frame >= rzx->current_input->count ) {
 
-    rzx->current_block =
-      g_slist_find_custom( rzx->current_block->next,
-			   GINT_TO_POINTER( LIBSPECTRUM_RZX_INPUT_BLOCK ),
-			   find_block );
-    
+    GSList *it = rzx->current_block->next;
+    rzx->current_block = NULL;
+
+    for( ; it; it = it->next ) {
+
+      rzx_block_t *block = it->data;
+
+      if( block->type == LIBSPECTRUM_RZX_INPUT_BLOCK ) {
+	rzx->current_block = it;
+	break;
+      } else if( block->type == LIBSPECTRUM_RZX_SNAPSHOT_BLOCK ) {
+	*snap = block->types.snap;
+      }
+
+    }
+
     if( rzx->current_block ) {
     
       rzx_block_t *block = rzx->current_block->data;

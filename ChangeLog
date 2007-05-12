@@ -1,4 +1,19 @@
-2007-07-16  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+2007-05-11  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+	* libspectrum 0.3.0.1 released (bug fix release).
+
+	* Avoid crash when reading an invalid TZX file (thanks, crabfists).
+	  (Philip Kendall).
+
+	* Export the TZX Generalized Data Block functions when building a
+	  Win32 DLL (Stuart Brady).
+
+	* Distribute the hacking/ directory (thanks, Stuart Brady) (Philip
+	  Kendall).
+
+	* Remove warning when building from CVS (Stuart Brady).
+
+2007-04-11  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
 	* libspectrum 0.3.0 released.
 
@@ -189,3 +204,4 @@
 	  Fuse; see Fuse's ChangeLog for changes up to this point
 
 $Id$
+

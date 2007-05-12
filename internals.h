@@ -162,6 +162,16 @@ libspectrum_tape_block_read_symbol_table(
   libspectrum_tape_generalised_data_symbol_table *table,
   const libspectrum_byte **ptr, size_t length );
 
+/* Format specific tape routines */
+  
+libspectrum_error
+libspectrum_z80em_read( libspectrum_tape *tape,
+                        const libspectrum_byte *buffer, size_t length );
+
+libspectrum_error
+libspectrum_csw_read( libspectrum_tape *tape,
+                      const libspectrum_byte *buffer, size_t length );
+
 /* Crypto functions */
 
 libspectrum_error

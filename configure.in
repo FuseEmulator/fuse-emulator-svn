@@ -25,7 +25,7 @@ AC_INIT(libspectrum.c)
 AM_CONFIG_HEADER(config.h)
 
 dnl Use automake to produce `Makefile.in'
-AM_INIT_AUTOMAKE(libspectrum, 0.2.2)
+AM_INIT_AUTOMAKE(libspectrum, 0.3.0.1)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -127,6 +127,7 @@ fi
 AC_OUTPUT(
   Makefile
   doc/Makefile
+  hacking/Makefile
   libspectrum.qpg
   myglib/Makefile
 )
