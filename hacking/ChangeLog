@@ -142,5 +142,22 @@
 20070202 BRANCH: fuse-utils_0_8_0-branch
 20070202 TAG: fuse-utils_0_8_0-pre1 (fuse-utils_0_8_0-branch)
 20070303 TAG: fuse-utils_0_8_0-pre2 (fuse-utils_0_8_0-branch)
+20070411 ChangeLog,README,configure.in,man/{createhdf,fuse-utils,listbasic,
+	 raw2hdf,rzxcheck,rzxdump,rzxtool,scl2trd,snap2tzx,snapconv,tapeconv,
+	 tzxlist}.1: updates for 0.8 release (fuse-utils_0_8_0-branch).
+20070411 TAG: fuse-utils_0_8_0 (fuse-utils_0_8_0-branch)
 20070425 Makefile.am: add ide.h to noinst_HEADERS so it will be distributed
-         (thanks, Alberto Garcia) (Fred).
+         (thanks, Alberto Garcia) (fuse-utils_0_8_0-branch) (Fred).
+20070509 Makefile.am,configure.in,hacking/{.cvsignore,Makefile.am}: distribute
+	 the hacking/ subdir (thanks, Stuart Brady) (fuse-utils_0_8_0-branch)
+20070510 ChangeLog,README,configure.in,man/{createhdf,fuse-utils,listbasic,
+	 raw2hdf,rzxcheck,rzxdump,rzxtool,scl2trd,snap2tzx,snapconv,tapeconv,
+	 tzxlist}.1: updates for 0.8.0.1 release (fuse-utils_0_8_0-branch).
+20070511 man/{createhdf.1,raw2hdf.1}: update pointers to HDF spec to point to
+	 v1.1 (patch #1716433) (fuse-utils_0_8_0-branch) (Stuart Brady).
+20070511 TAG: fuse-utils_0_8_0_1 (fuse-utils_0_8_0-branch)
+20070512 hacking/cvs-tags: document merge back to trunk
+	 (fuse-utils_0_8_0-branch).
+20070512 Merge changes from fuse-utils_0_8_0-branch to HEAD.
+20070512 TAG: fuse-utils_0_8_0-merge-1
+

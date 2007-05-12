@@ -23,7 +23,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = man
+SUBDIRS = hacking \
+	man
 
 bin_PROGRAMS = createhdf \
 	       listbasic \
