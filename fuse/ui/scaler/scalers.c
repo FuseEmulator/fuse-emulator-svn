@@ -40,7 +40,7 @@
 #endif
 
 #ifndef ABS
-#define ABS(a)     ((x)>=0?(x):-(x))
+#define ABS(x)     ((x)>=0?(x):-(x))
 #endif
 
 /* The actual code for the scalers starts here */
