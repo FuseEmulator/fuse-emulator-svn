@@ -1618,3 +1618,7 @@
 20070511 TAG: Release-0_8_0_1 (Release-0_8_0-branch).
 20070512 ui/scaler/scalers.c: make sure ABS is correctly defined
          (Release-0_8_0-branch) (Fred).
+20070512 hacking/cvs-tags: document merge to trunk (Release-0_8_0-branch).
+20070512 Merge from Release-0_8_0-branch).
+20070512 TAG: Release-0_8_0-merge-1
+
