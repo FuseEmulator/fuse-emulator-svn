@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# accessor.pl: generate accessor functions for libspectrum_tape_block
+# tape_accessors.pl: generate accessor functions for libspectrum_tape_block
 # Copyright (c) 2003 Philip Kendall
 
 # $Id$

@@ -1,4 +1,4 @@
-/* tape.c: Routines for handling .tap files
+/* tap.c: Routines for handling .tap files
    Copyright (c) 2001-2003 Philip Kendall
 
    $Id$
