@@ -1,4 +1,4 @@
-/* listbasic: extract the BASIC listing from a snapshot or tape file
+/* listbasic.c: extract the BASIC listing from a snapshot or tape file
    Copyright (c) 2002 Chris Cowley
                  2003 Philip Kendall, Darren Salt
 
