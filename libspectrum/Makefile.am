@@ -100,4 +100,5 @@ EXTRA_DIST = accessor.pl \
 
 SUBDIRS = doc \
 	  hacking \
-	  myglib
+	  myglib \
+	  test

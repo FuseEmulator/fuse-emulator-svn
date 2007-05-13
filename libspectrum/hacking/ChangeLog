@@ -428,3 +428,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070512 TAG: libspectrum_0_3_0-merge-1
 20070513 make-perl.c,tap.c,tape_accessors.pl: Fix filenames in comments
          (patch #1716201) (Stuart Brady).
+20070513 Makefile.am,configure.in,test/{.cvsignore,Makefile.am,invalid.tzx,
+	 test.c}: add first automated test for bugs #1479451 and #1706994
+	 (Philip Kendall).

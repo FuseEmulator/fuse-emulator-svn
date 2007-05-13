@@ -130,4 +130,5 @@ AC_OUTPUT(
   hacking/Makefile
   libspectrum.qpg
   myglib/Makefile
+  test/Makefile
 )
