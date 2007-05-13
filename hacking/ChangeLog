@@ -426,3 +426,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070512 doc/cvs-tags: document merge back to trunk (libspectrum_0_3_0-branch)
 20070512 Merge changes from libspectrum_0_3_0-branch to HEAD.
 20070512 TAG: libspectrum_0_3_0-merge-1
+20070513 make-perl.c,tap.c,tape_accessors.pl: Fix filenames in comments
+         (patch #1716201) (Stuart Brady).
