@@ -517,12 +517,12 @@ turbo_edge( libspectrum_tape_turbo_block *block, libspectrum_dword *tstates,
   switch( block->state ) {
 
   case LIBSPECTRUM_TAPE_STATE_PILOT:
-    /* The next edge occurs in one pilot edge timing */
-    *tstates = block->pilot_length;
-    /* If that was the last pilot edge, change state */
-    if( --(block->edge_count) == 0 )
-      block->state = LIBSPECTRUM_TAPE_STATE_SYNC1;
-    break;
+    /* Check we actually have some edges */
+    if( block->edge_count-- != 0 ) {
+      *tstates = block->pilot_length;
+      break;
+    }
+    /* Fall through */
 
   case LIBSPECTRUM_TAPE_STATE_SYNC1:
     /* The first short sync pulse */

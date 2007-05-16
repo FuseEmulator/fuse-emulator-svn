@@ -431,3 +431,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070513 Makefile.am,configure.in,test/{.cvsignore,Makefile.am,invalid.tzx,
 	 test.c}: add first automated test for bugs #1479451 and #1706994
 	 (Philip Kendall).
+20070516 tape.c,tzx_read.c,test/{test.c,turbo-zeropilot.tzx}: don't produce
+	 a pilot if none present in TZX turbo block, and free a TZX turbo
+	 block with no data correctly (fixes bugs #1720238 and #1720270).
