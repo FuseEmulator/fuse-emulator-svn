@@ -98,8 +98,50 @@ test_1( void )
   return 0;
 }
 
+/* Test for bugs #1720238: TZX turbo blocks with zero pilot pulses and
+   #1720270: freeing a turbo block with no data produces segfault */
+static test_return_t
+test_2( void )
+{
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0;
+  libspectrum_tape *tape;
+  const char *filename = "turbo-zeropilot.tzx";
+  libspectrum_dword tstates;
+  int flags;
+
+  if( read_file( &buffer, &filesize, filename ) ) return 2;
+
+  if( libspectrum_tape_alloc( &tape ) ) return 2;
+
+  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename ) )
+    return 2;
+
+  free( buffer );
+
+  if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) return 2;
+
+  if( flags ) {
+    fprintf( stderr, "%s: reading first edge of `%s' gave unexpected flags 0x%04x; expected 0x0000\n",
+	     progname, filename, flags );
+    return 1;
+  }
+
+  if( tstates != 667 ) {
+    fprintf( stderr, "%s: first edge of `%s' was %d tstates; expected 667\n",
+	     progname, filename, tstates );
+    return 1;
+  }
+
+  if( libspectrum_tape_free( tape ) ) return 2;
+
+  return 0;
+}
+
 static test_fn tests[] = {
   test_1,
+  test_2,
   NULL
 };
 

@@ -1269,6 +1269,8 @@ tzx_read_data( const libspectrum_byte **ptr, const libspectrum_byte *end,
 
     /* Copy the block data across, and move along */
     memcpy( *data, *ptr, *length ); *ptr += *length;
+  } else {
+    *data = NULL;
   }
 
   return LIBSPECTRUM_ERROR_NONE;
