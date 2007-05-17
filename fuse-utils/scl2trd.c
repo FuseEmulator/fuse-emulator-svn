@@ -34,6 +34,7 @@
 #endif				/* #ifdef HAVE_STRINGS_H */
 #include <fcntl.h>
 
+#include "compat.h"
 #include "libspectrum.h"
 
 struct options {
@@ -119,7 +120,7 @@ Scl2Trd(char *oldname, char *newname)
 
   unlink(newname);
 
-  fh = fopen(newname, "w");
+  fh = fopen(newname, "wb");
   if (fh) {
     mem = (unsigned char *) malloc(BLOCKSIZE);
     memset(mem, 0, BLOCKSIZE);
@@ -138,7 +139,7 @@ Scl2Trd(char *oldname, char *newname)
     }
   }
 
-  if ((TRD = open(newname, O_RDWR)) == -1) {
+  if ((TRD = open(newname, O_RDWR | O_BINARY)) == -1) {
     printf("Error - cannot open TRD disk image %s !\n", newname);
     return;
   }
@@ -152,7 +153,7 @@ Scl2Trd(char *oldname, char *newname)
   trd_fsec = (unsigned char *) TRDh + 0x8E1;
   trd_ftrk = (unsigned char *) TRDh + 0x8E2;
 
-  if ((SCL = open(oldname, O_RDONLY)) == -1) {
+  if ((SCL = open(oldname, O_RDONLY | O_BINARY)) == -1) {
     printf("Can't open SCL file %s.\n", oldname);
     close(TRD);
     close(SCL);

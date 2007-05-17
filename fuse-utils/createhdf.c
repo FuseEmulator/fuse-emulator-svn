@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "compat.h"
 #include "ide.h"
 
 const char *progname;
@@ -192,7 +193,8 @@ main( int argc, char **argv )
 			 &sparse, &filename, &version );
   if( error ) return error;
 
-  fd = creat( filename, S_IRUSR | S_IWUSR |
+  fd = open( filename, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY,
+			S_IRUSR | S_IWUSR |
 			S_IRGRP | S_IWGRP |
 			S_IROTH | S_IWOTH   );
   if( fd == -1 ) {

@@ -160,5 +160,7 @@
 	 (fuse-utils_0_8_0-branch).
 20070512 Merge changes from fuse-utils_0_8_0-branch to HEAD.
 20070512 TAG: fuse-utils_0_8_0-merge-1
-20070513 listbasic.c,utils.h: Fix filenames in comments (patch #1716201)
+20070513 listbasic.c,utils.h: fix filenames in comments (patch #1716201)
          (Stuart Brady).
+20070517 compat.h,createhdf.c,scl2trd.c,snapconv.c,utils.c: add O_BINARY
+         for fuse-utils (patch #1718168) (Stuart Brady).

@@ -34,6 +34,7 @@
 
 #include <libspectrum.h>
 
+#include "compat.h"
 #include "utils.h"
 
 char *progname;
@@ -134,7 +135,7 @@ main( int argc, char **argv )
   error = libspectrum_snap_free( snap );
   if( error ) { free( buffer ); return error; }
 
-  f = fopen( argv[1], "w" );
+  f = fopen( argv[1], "wb" );
   if( !f ) {
     fprintf( stderr, "%s: couldn't open '%s': %s\n", progname, argv[1],
 	     strerror( errno ) );
