@@ -45,6 +45,9 @@ static libspectrum_error
 tzx_write_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
 		libspectrum_byte **ptr, size_t *length );
 static libspectrum_error
+tzx_write_raw_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
+		libspectrum_byte **ptr, size_t *length );
+static libspectrum_error
 tzx_write_generalised_data( libspectrum_tape_block *block,
 			    libspectrum_byte **buffer,
 			    libspectrum_byte **ptr, size_t *length );
@@ -147,6 +150,10 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
       break;
     case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
       error = tzx_write_data( block, buffer, &ptr, length);
+      if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
+      break;
+    case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
+      error = tzx_write_raw_data( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
 
@@ -345,6 +352,32 @@ tzx_write_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
   libspectrum_write_word( ptr, libspectrum_tape_block_bit1_length( block ) );
   *(*ptr)++ = libspectrum_tape_block_bits_in_last_byte( block );
   libspectrum_write_word( ptr, libspectrum_tape_block_pause( block ) );
+
+  /* Copy the data across */
+  error = tzx_write_bytes( ptr, data_length, 3,
+			   libspectrum_tape_block_data( block ) );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+tzx_write_raw_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
+		libspectrum_byte **ptr, size_t *length )
+{
+  libspectrum_error error;
+  size_t data_length;
+
+  /* Make room for the ID byte, the metadata and the actual data */
+  data_length = libspectrum_tape_block_data_length( block );
+  error = libspectrum_make_room( buffer, 8 + data_length, ptr, length );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  /* Write the ID byte and the metadata */
+  *(*ptr)++ = LIBSPECTRUM_TAPE_BLOCK_RAW_DATA;
+  libspectrum_write_word( ptr, libspectrum_tape_block_bit_length( block ) );
+  libspectrum_write_word( ptr, libspectrum_tape_block_pause( block ) );
+  *(*ptr)++ = libspectrum_tape_block_bits_in_last_byte( block );
 
   /* Copy the data across */
   error = tzx_write_bytes( ptr, data_length, 3,
