@@ -37,6 +37,7 @@
 
 #include <libspectrum.h>
 
+#include "compat.h"
 #include "utils.h"
 
 extern char *progname;
@@ -120,7 +121,7 @@ mmap_file( const char *filename, unsigned char **buffer, size_t *length )
 {
   int fd; struct stat file_info;
   
-  if( ( fd = open( filename, O_RDONLY ) ) == -1 ) {
+  if( ( fd = open( filename, O_RDONLY | O_BINARY ) ) == -1 ) {
     fprintf( stderr, "%s: couldn't open `%s': %s\n", progname, filename,
 	     strerror( errno ) );
     return 1;
