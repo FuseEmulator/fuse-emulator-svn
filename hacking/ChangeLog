@@ -435,3 +435,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 a pilot if none present in TZX turbo block, and free a TZX turbo
 	 block with no data correctly (fixes bugs #1720238 and #1720270).
 20070518 tzx_write.c: add write support for TZX direct recording block (Fred).
+20070518 Makefile.am,configure.in,doc/Makefile.am,hacking/Makefile.am,
+         myglib/{.cvsignore,Makefile.am},test/{.cvsignore,Makefile.am}:
+         make sure libspectrum is built before test by switching to a 
+         non-recursive make with full dependency graph (Fred).

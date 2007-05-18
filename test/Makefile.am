@@ -21,10 +21,9 @@
 ##
 ## E-mail: philip-fuse@shadowmagic.org.uk
 
-AUTOMAKE_OPTIONS = foreign
+noinst_PROGRAMS += test/test
 
-noinst_PROGRAMS = test
+test_test_LDADD = libspectrum.la
 
-LDFLAGS = -L../.libs
-
-test_LDADD = -lspectrum
+EXTRA_DIST += \
+	test/Makefile.am
