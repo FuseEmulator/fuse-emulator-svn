@@ -21,9 +21,10 @@
 ##
 ## E-mail: philip-fuse@shadowmagic.org.uk
 
-AUTOMAKE_OPTIONS = foreign
+noinst_LTLIBRARIES = myglib/libmyglib.la
 
-noinst_LTLIBRARIES = libmyglib.la
+myglib_libmyglib_la_SOURCES = \
+	myglib/ghash.c \
+	myglib/gslist.c
 
-libmyglib_la_SOURCES = ghash.c \
-		       gslist.c
+EXTRA_DIST += myglib/Makefile.am

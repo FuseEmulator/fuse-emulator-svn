@@ -21,9 +21,9 @@
 ##
 ## E-mail: philip-fuse@shadowmagic.org.uk
 
-AUTOMAKE_OPTIONS = foreign
+man_MANS = doc/libspectrum.3
 
-man_MANS = libspectrum.3
-
-EXTRA_DIST = $(man_MANS) \
-	     libspectrum.txt
+EXTRA_DIST += \
+	$(man_MANS) \
+	doc/libspectrum.txt \
+	doc/Makefile.am

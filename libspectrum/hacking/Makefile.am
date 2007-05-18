@@ -21,6 +21,4 @@
 ##
 ## E-mail: philip-fuse@shadowmagic.org.uk
 
-AUTOMAKE_OPTIONS = foreign
-
-EXTRA_DIST = ChangeLog
+EXTRA_DIST += hacking/ChangeLog
