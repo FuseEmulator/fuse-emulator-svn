@@ -172,7 +172,7 @@ END_SECTION
 fuse_section (NULL, "Development", <<<END_SECTION
   <p>If you're just want news of new versions and the like, the (low volume) <a href="http://lists.sourceforge.net/lists/listinfo/fuse-emulator-announce">fuse-emulator-announce</a> list is available. If you're interested in the development of Fuse, this is coordinated via the <a href="http://lists.sourceforge.net/lists/listinfo/fuse-emulator-devel">fuse-emulator-devel</a> list and the <a href="http://sourceforge.net/projects/fuse-emulator/">project page</a> on SourceForge.</p>
 
-  <p>The latest version of Fuse is always available by checking out the 'fuse' module from the <a href="http://sourceforge.net/cvs/?group_id=91293">CVS repository</a> on SourceForge. Note that this isn't guaranteed to compile, let alone work properly. Also, don't expect any support for this version! (You'll also need libspectrum from CVS; this is in the 'libspectrum' module). Similarly, the utilities are available in the 'fuse-utils' module.</p>
+  <p>The latest version of Fuse is always available by checking out the 'trunk/fuse' directory from the <a href="http://sourceforge.net/svn/?group_id=91293">Subversion repository</a> on SourceForge. Note that this isn't guaranteed to compile, let alone work properly. Also, don't expect any support for this version! (You'll also need libspectrum from Subversion; this is in the 'trunk/libspectrum' directory). Similarly, the utilities are available in the 'trunk/fuse-utils' directory.</p>
 
   <p>One thing which isn't in the SourceForge tracking system (and is now very outdated):</p>
 

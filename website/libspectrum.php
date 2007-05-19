@@ -109,7 +109,7 @@ END_SECTION
 fuse_section (NULL, "Development", <<<END_SECTION
   <p>If you're interested in working on libspectrum, subscribe to the <a href="http://lists.sourceforge.net/lists/listinfo/fuse-emulator-devel">fuse-emulator-devel</a> mailing list and/or see the <a href="http://sourceforge.net/projects/fuse-emulator/">project page</a> on SourceForge. If you just want news of new versions, you probably want the (low volume) <a href="http://lists.sourceforge.net/lists/listinfo/fuse-emulator-announce">fuse-emulator-announce</a> list instead.</p>
 
-  <p>Finally, the latest development version should always be available as the 'libspectrum' module from the <a href="http://sourceforge.net/cvs/?group_id=91293">CVS repository</a> on SourceForge. Don't expect any support for this, or even that it can be compiled...</p>
+  <p>Finally, the latest development version should always be available as the 'trunk/libspectrum' directory from the <a href="http://sourceforge.net/svn/?group_id=91293">Subversion repository</a> on SourceForge. Don't expect any support for this, or even that it can be compiled...</p>
 
 END_SECTION
 );
