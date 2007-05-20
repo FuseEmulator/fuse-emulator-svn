@@ -1,7 +1,0 @@
-*.lo
-.deps
-.dirstamp
-.libs
-Makefile
-Makefile.in
-libmyglib.la

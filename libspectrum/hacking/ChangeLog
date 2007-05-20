@@ -440,3 +440,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          make sure libspectrum is built before test by switching to a 
          non-recursive make with full dependency graph (Fred).
 20070520 test/test.c: fix warnings in test build (Fred).
+20070520 Remove .cvsignore files.
+
