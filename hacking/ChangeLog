@@ -439,3 +439,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          myglib/{.cvsignore,Makefile.am},test/{.cvsignore,Makefile.am}:
          make sure libspectrum is built before test by switching to a 
          non-recursive make with full dependency graph (Fred).
+20070520 test/test.c: fix warnings in test build (Fred).
