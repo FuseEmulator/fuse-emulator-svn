@@ -441,4 +441,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          non-recursive make with full dependency graph (Fred).
 20070520 test/test.c: fix warnings in test build (Fred).
 20070520 Remove .cvsignore files.
-
+20070522 internals.h,libspectrum.h.in,tap.c,tape.c,tzx_read.c,tzx_write.c,
+         warajevo_read.c: mark deprecated tape functions as such and add
+         wrappers so that libspectrum_tape_read doesn't have to call
+         deprecated functions (Fred).

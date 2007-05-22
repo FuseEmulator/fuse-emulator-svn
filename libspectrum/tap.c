@@ -49,8 +49,8 @@ static libspectrum_error
 skip_block( libspectrum_tape_block *block, const char *message );
 
 libspectrum_error
-libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-		      const size_t length )
+internal_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		   const size_t length )
 {
   libspectrum_tape_block *block;
   libspectrum_error error;
@@ -120,8 +120,15 @@ libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 }
 
 libspectrum_error
-libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_tape *tape )
+libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		      const size_t length )
+{
+  return internal_tap_read( tape, buffer, length );
+}
+
+libspectrum_error
+internal_tap_write( libspectrum_byte **buffer, size_t *length,
+		    libspectrum_tape *tape )
 {
   libspectrum_tape_iterator iterator;
   libspectrum_tape_block *block;
@@ -188,6 +195,13 @@ libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
   (*length) = ptr - *buffer;
 
   return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_tape *tape )
+{
+  return internal_tap_write( buffer, length, tape );
 }
 
 static libspectrum_error

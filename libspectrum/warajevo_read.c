@@ -167,8 +167,8 @@ lsb2word( const libspectrum_byte *mem )
 /* The main load function */
 
 libspectrum_error
-libspectrum_warajevo_read( libspectrum_tape *tape,
-			   const libspectrum_byte *buffer, size_t length )
+internal_warajevo_read( libspectrum_tape *tape,
+			const libspectrum_byte *buffer, size_t length )
 {
   libspectrum_error error;
   const libspectrum_byte *ptr, *end;
@@ -203,6 +203,13 @@ libspectrum_warajevo_read( libspectrum_tape *tape,
   }
   
   return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_warajevo_read( libspectrum_tape *tape,
+			   const libspectrum_byte *buffer, size_t length )
+{
+  return internal_warajevo_read( tape, buffer, length );
 }
 
 static libspectrum_error
