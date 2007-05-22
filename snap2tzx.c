@@ -1460,7 +1460,8 @@ write_tape( libspectrum_tape *tape, const char *filename )
 
   length = 0;
 
-  error = libspectrum_tzx_write( &buffer, &length, tape );
+  error = libspectrum_tape_write( &buffer, &length, tape,
+                                  LIBSPECTRUM_ID_TAPE_TZX );
   if( error ) return error;
 
   f = fopen( filename, "wb" );

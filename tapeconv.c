@@ -36,57 +36,32 @@
 #include "utils.h"
 
 static int get_type_from_string( libspectrum_id_t *type, const char *string );
-static int read_tape( char *filename, libspectrum_id_t type,
-		      libspectrum_tape **tape );
-static int write_tape( libspectrum_id_t type, libspectrum_tape *tape );
+static int read_tape( char *filename, libspectrum_tape **tape );
+static int write_tape( char *filename, libspectrum_tape *tape );
 
 char *progname;
 
 int
 main( int argc, char **argv )
 {
-  int c, error;
-  char *input_type_string = NULL; libspectrum_id_t input_type;
-  char *output_type_string = NULL; libspectrum_id_t output_type;
+  int error;
   libspectrum_tape *tzx;
 
   progname = argv[0];
 
   error = init_libspectrum(); if( error ) return error;
 
-  /* Don't screw up people's terminals */
-  if( isatty( STDOUT_FILENO ) ) {
-    fprintf( stderr, "%s: won't output binary data to a terminal\n",
+  if( argc < 2 ) {
+    fprintf( stderr,
+             "%s: usage: %s <infile> <outfile>\n",
+             progname,
 	     progname );
     return 1;
   }
 
-  while( ( c = getopt( argc, argv, "i:o:" ) ) != -1 ) {
+  if( read_tape( argv[1], &tzx ) ) return 1;
 
-    switch( c ) {
-
-    case 'i': input_type_string = optarg; break;
-    case 'o': output_type_string = optarg; break;
-
-    }
-  }
-
-  input_type = LIBSPECTRUM_ID_UNKNOWN;
-  if( input_type_string &&
-      get_type_from_string( &input_type, input_type_string ) ) return 1;
-
-  output_type = LIBSPECTRUM_ID_TAPE_TZX;
-  if( output_type_string &&
-      get_type_from_string( &output_type, output_type_string ) ) return 1;
-
-  if( argv[optind] == NULL ) {
-    fprintf( stderr, "%s: no tape file given\n", progname );
-    return 1;
-  }
-
-  if( read_tape( argv[optind], input_type, &tzx ) ) return 1;
-
-  if( write_tape( output_type, tzx ) ) {
+  if( write_tape( argv[2], tzx ) ) {
     libspectrum_tape_free( tzx );
     return 1;
   }
@@ -99,20 +74,23 @@ main( int argc, char **argv )
 static int
 get_type_from_string( libspectrum_id_t *type, const char *string )
 {
-  if( !strcmp( string, "tap" ) ) {
-    *type = LIBSPECTRUM_ID_TAPE_TAP;
-  } else if( !strcmp( string, "tzx" ) ) {
+  libspectrum_class_t class;
+  int error;
+
+  /* Work out what sort of file we want from the filename; default to
+     .tzx if we couldn't guess */
+  error = libspectrum_identify_file_with_class( type, &class, string, NULL,
+						0 );
+  if( error ) return error;
+
+  if( class != LIBSPECTRUM_CLASS_TAPE || type == LIBSPECTRUM_ID_UNKNOWN )
     *type = LIBSPECTRUM_ID_TAPE_TZX;
-  } else {
-    fprintf( stderr, "%s: unknown format `%s'\n", progname, string );
-    return 1;
-  }
-  
+
   return 0;
 }
   
 static int
-read_tape( char *filename, libspectrum_id_t type, libspectrum_tape **tape )
+read_tape( char *filename, libspectrum_tape **tape )
 {
   libspectrum_byte *buffer; size_t length;
 
@@ -123,7 +101,8 @@ read_tape( char *filename, libspectrum_id_t type, libspectrum_tape **tape )
     return 1;
   }
 
-  if( libspectrum_tape_read( *tape, buffer, length, type, filename ) ) {
+  if( libspectrum_tape_read( *tape, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
+                             filename ) ) {
     munmap( buffer, length );
     return 1;
   }
@@ -139,34 +118,40 @@ read_tape( char *filename, libspectrum_id_t type, libspectrum_tape **tape )
 }
 
 static int
-write_tape( libspectrum_id_t type, libspectrum_tape *tape )
+write_tape( char *filename, libspectrum_tape *tape )
 {
   libspectrum_byte *buffer; size_t length;
+  FILE *f;
+  libspectrum_id_t type;
+
+  if( get_type_from_string( &type, filename ) ) return 1;
 
   length = 0;
 
-  switch( type ) {
+  if( libspectrum_tape_write( &buffer, &length, tape, type ) ) return 1;
 
-  case LIBSPECTRUM_ID_TAPE_TAP:
-    if( libspectrum_tap_write( &buffer, &length, tape ) ) return 1;
-    break;
-
-  case LIBSPECTRUM_ID_TAPE_TZX:
-    if( libspectrum_tzx_write( &buffer, &length, tape ) ) return 1;
-    break;
-    
-  default:
-    fprintf( stderr, "%s: unknown output format %d\n", progname, type );
-    return 1;
-
-  }
-
-  if( fwrite( buffer, 1, length, stdout ) != length ) {
+  f = fopen( filename, "wb" );
+  if( !f ) {
+    fprintf( stderr, "%s: couldn't open '%s': %s\n", progname, filename,
+	     strerror( errno ) );
     free( buffer );
+    return 1;
+  }
+    
+  if( fwrite( buffer, 1, length, f ) != length ) {
+    fprintf( stderr, "%s: error writing to '%s'\n", progname, filename );
+    free( buffer );
+    fclose( f );
     return 1;
   }
 
   free( buffer );
+
+  if( fclose( f ) ) {
+    fprintf( stderr, "%s: couldn't close '%s': %s\n", progname, filename,
+	     strerror( errno ) );
+    return 1;
+  }
 
   return 0;
 }
