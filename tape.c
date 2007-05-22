@@ -203,13 +203,13 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   switch( type ) {
 
   case LIBSPECTRUM_ID_TAPE_TAP:
-    error = libspectrum_tap_read( tape, buffer, length ); break;
+    error = internal_tap_read( tape, buffer, length ); break;
 
   case LIBSPECTRUM_ID_TAPE_TZX:
-    error = libspectrum_tzx_read( tape, buffer, length ); break;
+    error = internal_tzx_read( tape, buffer, length ); break;
 
   case LIBSPECTRUM_ID_TAPE_WARAJEVO:
-    error = libspectrum_warajevo_read( tape, buffer, length ); break;
+    error = internal_warajevo_read( tape, buffer, length ); break;
 
   case LIBSPECTRUM_ID_TAPE_Z80EM:
     error = libspectrum_z80em_read( tape, buffer, length ); break;
@@ -247,10 +247,10 @@ libspectrum_tape_write( libspectrum_byte **buffer, size_t *length,
   switch( type ) {
 
   case LIBSPECTRUM_ID_TAPE_TAP:
-    return libspectrum_tap_write( buffer, length, tape );
+    return internal_tap_write( buffer, length, tape );
 
   case LIBSPECTRUM_ID_TAPE_TZX:
-    return libspectrum_tzx_write( buffer, length, tape );
+    return internal_tzx_write( buffer, length, tape );
 
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,

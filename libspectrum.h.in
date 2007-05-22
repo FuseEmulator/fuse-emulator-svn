@@ -584,25 +584,36 @@ libspectrum_tape_insert_block( libspectrum_tape *tape,
 
 /*** Routines for .tap format files ***/
 
+/* DEPRECATED: use libspectrum_tape_read() instead */
+DEPRECATED
 libspectrum_error WIN32_DLL
 libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 		      const size_t length );
+
+/* DEPRECATED: use libspectrum_tape_write() instead */
+DEPRECATED
 libspectrum_error WIN32_DLL
 libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_tape *tape );
 
 /*** Routines for .tzx format files ***/
 
+/* DEPRECATED: use libspectrum_tape_read() instead */
+DEPRECATED
 libspectrum_error WIN32_DLL
 libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 		      const size_t length );
 
+/* DEPRECATED: use libspectrum_tape_write() instead */
+DEPRECATED
 libspectrum_error WIN32_DLL
 libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_tape *tape );
 
 /*** Routines for Warajevo .tap format files ***/
 
+/* DEPRECATED: use libspectrum_tape_read() instead */
+DEPRECATED
 libspectrum_error WIN32_DLL
 libspectrum_warajevo_read( libspectrum_tape *tape,
 			   const libspectrum_byte *buffer, size_t length );

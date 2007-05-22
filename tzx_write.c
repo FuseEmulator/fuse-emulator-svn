@@ -106,8 +106,8 @@ tzx_write_string( libspectrum_byte **ptr, char *string );
 /* The main write function */
 
 libspectrum_error
-libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_tape *tape )
+internal_tzx_write( libspectrum_byte **buffer, size_t *length,
+		    libspectrum_tape *tape )
 {
   libspectrum_error error;
   libspectrum_tape_iterator iterator;
@@ -235,6 +235,13 @@ libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
   (*length) = ptr - *buffer;
 
   return LIBSPECTRUM_ERROR_NONE;
+}
+
+libspectrum_error
+libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_tape *tape )
+{
+  return internal_tzx_write( buffer, length, tape );
 }
 
 static libspectrum_error

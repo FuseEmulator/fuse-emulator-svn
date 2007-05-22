@@ -165,6 +165,26 @@ libspectrum_tape_block_read_symbol_table(
 /* Format specific tape routines */
   
 libspectrum_error
+internal_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		   const size_t length );
+
+libspectrum_error
+internal_tap_write( libspectrum_byte **buffer, size_t *length,
+		    libspectrum_tape *tape );
+
+libspectrum_error
+internal_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+		   const size_t length );
+
+libspectrum_error
+internal_tzx_write( libspectrum_byte **buffer, size_t *length,
+		    libspectrum_tape *tape );
+
+libspectrum_error
+internal_warajevo_read( libspectrum_tape *tape,
+			const libspectrum_byte *buffer, size_t length );
+
+libspectrum_error
 libspectrum_z80em_read( libspectrum_tape *tape,
                         const libspectrum_byte *buffer, size_t length );
 
