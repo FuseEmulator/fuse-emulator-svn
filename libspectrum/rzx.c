@@ -382,7 +382,7 @@ libspectrum_rzx_rollback_to( libspectrum_rzx *rzx, libspectrum_snap **snap,
 			   find_block );
     if( !list ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
-			       "snapshot block %d not found in recording",
+			       "snapshot block %ld not found in recording",
 			       which );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
@@ -1536,7 +1536,7 @@ rzx_write_input( input_block_t *block, libspectrum_byte **buffer,
      overwritten with the compressed length */
   size = 18 + 4 * block->count;
 
-  /* Store where the length will be written, and skip over those byes */
+  /* Store where the length will be written, and skip over those bytes */
   length_offset = *ptr - *buffer; (*ptr) += 4;
 
   /* How many frames? */
