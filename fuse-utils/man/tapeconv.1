@@ -34,40 +34,28 @@ tapeconv \- Sinclair ZX Spectrum tape file convertor
 .SH SYNOPSIS
 .PD 0
 .B tapeconv
-.RI "[-i " format ]
-.RI "[-o " format ]
-.I tapefile
+.I infile outfile
 .PD 1
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH DESCRIPTION
-Tapeconv converts between ZX Spectrum tape images. It reads in one
-tape file and writes the converted file to standard output.
+Tapeconv converts between ZX Spectrum tape images.
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH OPTIONS
 .TP
-.I -i format
-specifies the format of the input tape file. Generally, this will be
-autodetcted but you can use
-.RI ` tzx '
-or
-.RI ` tap '
-to force .tzx or .tap format respectively.
+.I infile
+specifies the tape file to be converted. This file can be in any of the
+tape formats supported by
+.IR libspectrum "(3)."
 .TP
-.I -o format
-specifies the format of the output tape file in the same way as the
-.I -i
-option. This will default to .tzx format if it is not specified. Note
-that .tap format is a subset of .tzx format, and hence the conversion
-may not succeed. Warning messages will be given in this case.
-.TP
-.I tapefile
-specifies a tape file (in a format supported by
-.IR libspectrum "(3))"
-to be converted.
+.I outfile
+specifies the output tape file. The format will be determined by the
+file extension and can be in any of the formats
+.IR libspectrum "(3)"
+supports for output.
 .\"
 .\"------------------------------------------------------------------
 .\"

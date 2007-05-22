@@ -167,3 +167,5 @@
 20070520 Remove .cvsignore files and ignore files not automatically ignored
 	 by Subversion.
 20070522 tzxlist.c: remove warnings in printfs (Fred).
+20070522 snap2tzx.c,tapeconv.c,man/tapeconv.1: don't call deprecated tape API
+         functions (Fred).
