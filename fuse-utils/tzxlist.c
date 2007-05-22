@@ -60,7 +60,7 @@ dump_symbol_table( libspectrum_tape_generalised_data_symbol_table *table )
     libspectrum_tape_generalised_data_symbol *symbol =
       libspectrum_tape_generalised_data_symbol_table_symbol( table, i );
 
-    printf("      Symbol %d: type %d; pulse lengths: ", i, libspectrum_tape_generalised_data_symbol_type( symbol ) );
+    printf("      Symbol %ld: type %d; pulse lengths: ", i, libspectrum_tape_generalised_data_symbol_type( symbol ) );
 
     for( j = 0; j < pulses; j++ )
       printf( "%d ", libspectrum_tape_generalised_data_symbol_pulse( symbol, j ) );
@@ -80,7 +80,7 @@ dump_pilot_repeats( libspectrum_tape_block *block )
     libspectrum_tape_block_pilot_table( block );
 
   for( i = 0; i < libspectrum_tape_generalised_data_symbol_table_symbols_in_block( pilot ); i++ ) {
-    printf( "    Repeat %2d: symbol %d repeated %d times\n", i,
+    printf( "    Repeat %2ld: symbol %d repeated %d times\n", i,
 	    libspectrum_tape_block_pilot_symbols( block, i ),
 	    libspectrum_tape_block_pilot_repeats( block, i ) );
   }
