@@ -166,3 +166,4 @@
          for fuse-utils (patch #1718168) (Stuart Brady).
 20070520 Remove .cvsignore files and ignore files not automatically ignored
 	 by Subversion.
+20070522 tzxlist.c: remove warnings in printfs (Fred).
