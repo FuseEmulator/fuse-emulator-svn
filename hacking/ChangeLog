@@ -445,3 +445,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          warajevo_read.c: mark deprecated tape functions as such and add
          wrappers so that libspectrum_tape_read doesn't have to call
          deprecated functions (Fred).
+20070522 Mark mkinstalldirs as an ignored file (Fred).
