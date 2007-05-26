@@ -82,22 +82,27 @@ test_1( void )
   libspectrum_tape *tape;
   const char *filename = "invalid.tzx";
 
-  if( read_file( &buffer, &filesize, filename ) ) return 2;
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  if( libspectrum_tape_alloc( &tape ) ) return 2;
+  if( libspectrum_tape_alloc( &tape ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) != LIBSPECTRUM_ERROR_UNKNOWN ) {
     fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_UNKNOWN\n",
 	     progname, filename );
-    return 2;
+    libspectrum_tape_free( tape );
+    free( buffer );
+    return TEST_INCOMPLETE;
   }
 
   free( buffer );
 
-  if( libspectrum_tape_free( tape ) ) return 2;
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
 
-  return 0;
+  return TEST_PASS;
 }
 
 /* Test for bugs #1720238: TZX turbo blocks with zero pilot pulses and
@@ -112,38 +117,77 @@ test_2( void )
   libspectrum_dword tstates;
   int flags;
 
-  if( read_file( &buffer, &filesize, filename ) ) return 2;
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  if( libspectrum_tape_alloc( &tape ) ) return 2;
+  if( libspectrum_tape_alloc( &tape ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
-			     filename ) )
-    return 2;
+			     filename ) ) {
+    libspectrum_tape_free( tape );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
 
   free( buffer );
 
-  if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) return 2;
+  if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) {
+    libspectrum_tape_free( tape );
+    return TEST_INCOMPLETE;
+  }
 
   if( flags ) {
     fprintf( stderr, "%s: reading first edge of `%s' gave unexpected flags 0x%04x; expected 0x0000\n",
 	     progname, filename, flags );
-    return 1;
+    libspectrum_tape_free( tape );
+    return TEST_FAIL;
   }
 
   if( tstates != 667 ) {
     fprintf( stderr, "%s: first edge of `%s' was %d tstates; expected 667\n",
 	     progname, filename, tstates );
-    return 1;
+    libspectrum_tape_free( tape );
+    return TEST_FAIL;
   }
 
-  if( libspectrum_tape_free( tape ) ) return 2;
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
 
-  return 0;
+  return TEST_PASS;
+}
+
+/* Test for bug #1725864: writing empty .tap file causes crash */
+static test_return_t
+test_3( void )
+{
+  libspectrum_tape *tape;
+  libspectrum_byte *buffer = (libspectrum_byte*)1;
+  size_t length = 0;
+
+  if( libspectrum_tape_alloc( &tape ) ) return TEST_INCOMPLETE;
+
+  if( libspectrum_tape_write( &buffer, &length, tape, LIBSPECTRUM_ID_TAPE_TAP ) ) {
+    libspectrum_tape_free( tape );
+    return TEST_INCOMPLETE;
+  }
+
+  /* `buffer' should now have been set to NULL */
+  if( buffer ) {
+    fprintf( stderr, "%s: `buffer' was not NULL after libspectrum_tape_write()\n", progname );
+    libspectrum_tape_free( tape );
+    return TEST_FAIL;
+  }
+
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
 }
 
 static test_fn tests[] = {
   test_1,
   test_2,
+  test_3,
   NULL
 };
 
@@ -169,15 +213,15 @@ main( int argc, char *argv[] )
        test++, count++ ) {
     switch( (*test)() ) {
     case TEST_PASS:
-      printf( "Test %d passed\n", count );
+      printf( "Test %d passed\n", count + 1 );
       pass++;
       break;
     case TEST_FAIL:
-      printf( "Test %d FAILED\n", count );
+      printf( "Test %d FAILED\n", count + 1 );
       fail++;
       break;
     case TEST_INCOMPLETE:
-      printf( "Test %d NOT COMPLETE\n", count );
+      printf( "Test %d NOT COMPLETE\n", count + 1 );
       incomplete++;
       break;
     }
