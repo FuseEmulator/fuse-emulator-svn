@@ -235,6 +235,9 @@ libspectrum_tape_write( libspectrum_byte **buffer, size_t *length,
   libspectrum_class_t class;
   libspectrum_error error;
 
+  /* Allow for uninitialised buffer on entry */
+  if( !*length ) *buffer = NULL;
+
   error = libspectrum_identify_class( &class, type );
   if( error ) return error;
 
