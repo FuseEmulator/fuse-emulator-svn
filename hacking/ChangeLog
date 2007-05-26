@@ -169,3 +169,4 @@
 20070522 tzxlist.c: remove warnings in printfs (Fred).
 20070522 snap2tzx.c,tapeconv.c,man/tapeconv.1: don't call deprecated tape API
          functions (Fred).
+20070526 <almost everything>: update FSF address in GPL notices (Stuart).
