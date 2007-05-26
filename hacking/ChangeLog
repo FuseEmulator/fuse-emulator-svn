@@ -447,4 +447,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          deprecated functions (Fred).
 20070522 Mark mkinstalldirs as an ignored file (Fred).
 20070522 rzx.c: fix printf warning and comment (Fred).
+20070526 tape.c,test/test.c: allow for uninitialised buffer on entry to
+	 libspectrum_tape_write() (fixes bugs #1725864) (thanks, Dave Mills).
 20070526 <almost everything>: update FSF address in GPL notices (Stuart).
