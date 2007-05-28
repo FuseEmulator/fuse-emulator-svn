@@ -85,3 +85,34 @@ _delay1	dec hl			; 14384 + n * 26
 _isr	pop hl
 	ret
 ENDP
+
+; Check for IN timings and floating bus behaviour (bug #1708957)
+
+contendedintest
+PROC
+	ld hl, 0x5a0f
+	ld b,(hl)
+	push bc
+	ld (hl), 0x40
+	
+	call interruptsync
+
+	ld bc, 0x40ff		; 88
+	ld d, 0x40		; 98
+	ld hl, 0x0673		; 105
+
+_delay	dec hl			; 115 + n * 26
+	ld a, l			; 121 + n * 26
+	or h			; 125 + n * 26
+	jr nz, _delay		; 129 + n * 26
+
+	ld hl, 0x5a0f		; 43036
+
+	in a,(c)		; 43046; floating bus read at 43069
+
+	pop bc
+	ld (hl),b
+
+	cp d
+	ret
+ENDP

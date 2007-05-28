@@ -63,6 +63,9 @@ _testdata
 	defb 'LDIR', 0
 	defw ldirtest
 
+	defb 'Contended IN', 0
+	defw contendedintest
+
 	defb 0
 	
 ENDP
