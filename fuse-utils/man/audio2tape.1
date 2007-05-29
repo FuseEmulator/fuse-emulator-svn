@@ -1,0 +1,126 @@
+.\" -*- nroff -*-
+.\"
+.\" audio2tape.1: audio2tape man page
+.\" Copyright (c) 2007 Fredrick Meunier
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+.\"
+.\" Author contact information:
+.\"
+.\" E-mail: fredm@spamcop.net
+.\"
+.\"
+.TH audio2tape 1 "11th May, 2007" "Version 0.8.0.1" "Emulators"
+.\"
+.\"------------------------------------------------------------------
+.\"
+.SH NAME
+audio2tape \- Sinclair ZX Spectrum audio to tape file convertor
+.\"
+.\"------------------------------------------------------------------
+.\"
+.SH SYNOPSIS
+.PD 0
+.B audio2tape
+.RI "[-t " type ]
+[-s]
+.RI "[-p " level ]
+.RI "[-h " level ]
+.RI "[-l " level ]
+.I infile outfile
+.PD 1
+.\"
+.\"------------------------------------------------------------------
+.\"
+.SH DESCRIPTION
+Audio2tape converts audio files to ZX Spectrum tape images.
+.\"
+.\"------------------------------------------------------------------
+.\"
+.SH OPTIONS
+.TP
+.RI "-t type
+causes
+.I type
+to be used as the level detection trigger. There are two triggers implemented;
+the
+.I simple
+trigger just uses a threshold value to convert to a one or zero on output, and
+the
+.I schmitt
+trigger implements a Schmitt trigger which outputs a less noisy signal, but
+requires a stronger signal to noise ratio than the simple trigger. The default
+trigger is "simple".
+.TP
+-s
+causes the display of a freqency graph showing the sound levels present in the
+audio file. This can be useful when selecting good crossover points.
+.TP
+.RI "-p " level
+causes
+.I level
+to be used as the crossover point between a level of one or zero in the tape
+file output in the simple trigger. The default level is 127 from a range of
+0-255.
+.TP
+.RI "-h " level
+causes
+.I level
+to be used as the low to high crossover point between a level of one or zero
+in the tape file output for the Schmitt trigger. The default level is 195 from a
+range of 0-255.
+.TP
+.RI "-l " level
+causes
+.I level
+to be used as the high to low crossover point between a level of one or zero
+in the tape file output for the Schmitt trigger. The default level is 60 from a
+range of 0-255.
+.TP
+.I infile
+specifies the audio file to be converted. This file can be in any of the
+tape formats supported by
+.IR libaudiofile.
+.TP
+.I outfile
+specifies the output tape file. The format will be determined by the
+file extension and can be in any of the formats
+.IR libspectrum "(3)"
+supports for output.
+.\"
+.\"------------------------------------------------------------------
+.\"
+.SH BUGS
+None known.
+.\"
+.\"------------------------------------------------------------------
+.\"
+.SH SEE ALSO
+.IR fuse "(1),"
+.IR fuse-utils "(1),"
+.IR libspectrum "(3),"
+.IR listbasic "(1),"
+.IR tapeconv "(1)"
+.IR tzxlist "(1)"
+.IR snap2tzx "(1)"
+.PP
+The comp.sys.sinclair Spectrum FAQ, at
+.br
+.IR "http://www.worldofspectrum.org/faq/index.html" .
+.\"
+.\"------------------------------------------------------------------
+.\"
+.SH AUTHOR
+Fredrick Meunier (fredm@spamcop.net).

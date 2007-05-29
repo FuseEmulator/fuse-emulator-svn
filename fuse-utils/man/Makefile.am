@@ -23,7 +23,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-man_MANS = createhdf.1 \
+man_MANS = audio2tape.1 \
+	   createhdf.1 \
 	   fuse-utils.1 \
 	   listbasic.1 \
 	   raw2hdf.1 \
