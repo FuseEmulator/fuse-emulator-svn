@@ -192,6 +192,9 @@ libspectrum_error
 libspectrum_csw_read( libspectrum_tape *tape,
                       const libspectrum_byte *buffer, size_t length );
 
+libspectrum_error
+libspectrum_wav_read( libspectrum_tape *tape, const char *filename );
+
 /* Crypto functions */
 
 libspectrum_error

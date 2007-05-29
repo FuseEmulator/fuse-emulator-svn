@@ -450,3 +450,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070526 tape.c,test/test.c: allow for uninitialised buffer on entry to
 	 libspectrum_tape_write() (fixes bugs #1725864) (thanks, Dave Mills).
 20070526 <almost everything>: update FSF address in GPL notices (Stuart).
+20070530 Makefile.am,acinclude.m4,configure.in,doc/libspectrum.txt,
+         internals.h,libspectrum.c,libspectrum.h.in,tape.c,wav.c: add simple
+         support for loading directly from wav tape files (part of patch
+         #1725974) (Fred).

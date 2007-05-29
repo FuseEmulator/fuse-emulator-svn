@@ -735,9 +735,11 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 Take the tape image of type `type' of `length' bytes starting at
 `buffer' and convert it to a `libspectrum_tape' structure. If `type'
 is `LIBSPECTRUM_ID_UNKNOWN', guess the file format via
-`libspectrum_identify_file'; `filename' is used only to help with the
-identification process and can be set to NULL (or anything else) if
-`type' is not `LIBSPECTRUM_ID_UNKNOWN'. Tape images compressed with
+`libspectrum_identify_file'; `filename' is generally used only to help
+with the identification process and can be set to NULL (or anything
+else) if `type' is not `LIBSPECTRUM_ID_UNKNOWN' unless the tape is a
+WAV file where the underlying audiofile library will reread the
+file and will not use the buffer. Tape images compressed with
 bzip2 or gzip will be automatically and transparently decompressed.
 
 libspectrum_error

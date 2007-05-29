@@ -50,6 +50,7 @@ libspectrum_la_SOURCES = bzip2.c \
 			 tzx_read.c \
 			 tzx_write.c \
 			 warajevo_read.c \
+			 wav.c \
 			 z80.c \
 			 z80em.c \
 			 zlib.c \
@@ -57,7 +58,7 @@ libspectrum_la_SOURCES = bzip2.c \
 
 libspectrum_la_LDFLAGS = -version-info 5:1:0 -no-undefined
 
-libspectrum_la_LIBADD = myglib/libmyglib.la -lm
+libspectrum_la_LIBADD = myglib/libmyglib.la @AUDIOFILE_LIBS@ -lm
 
 BUILT_SOURCES = libspectrum.h snap_accessors.c tape_accessors.c tape_set.c
 
@@ -87,7 +88,7 @@ tape_accessors.c: tape_accessors.pl tape_accessors.txt
 tape_set.c: tape_set.pl tape_accessors.txt
 	@PERL@ tape_set.pl tape_accessors.txt > $@
 
-INCLUDES = @GLIB_CFLAGS@
+INCLUDES = @GLIB_CFLAGS@ @AUDIOFILE_CFLAGS@
 
 EXTRA_DIST = accessor.pl \
 	     generate.pl.in \

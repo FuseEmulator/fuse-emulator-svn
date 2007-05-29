@@ -124,6 +124,11 @@ if test "$ac_cv_prog_gcc" = yes; then
   fi
 fi
 
+AM_PATH_AUDIOFILE(
+  0.2.3,
+  AC_DEFINE([HAVE_LIB_AUDIOFILE], 1, [Defined if we've got audiofile])
+)
+
 AC_OUTPUT(
   Makefile
   libspectrum.qpg
