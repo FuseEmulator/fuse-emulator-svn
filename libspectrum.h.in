@@ -163,7 +163,10 @@ typedef enum libspectrum_id_t {
 
   LIBSPECTRUM_ID_MICRODRIVE_MDR,	/* .mdr microdrive cartridge */
   LIBSPECTRUM_ID_TAPE_CSW,		/* .csw tape image */
-  LIBSPECTRUM_ID_TAPE_Z80EM		/* Z80Em tape image */
+  LIBSPECTRUM_ID_TAPE_Z80EM,		/* Z80Em tape image */
+
+  /* Below here, present only in x.x.x and later */
+  LIBSPECTRUM_ID_TAPE_WAV		/* .wav tape image */
 
 } libspectrum_id_t;
 
