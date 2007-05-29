@@ -193,6 +193,10 @@ libspectrum_csw_read( libspectrum_tape *tape,
                       const libspectrum_byte *buffer, size_t length );
 
 libspectrum_error
+libspectrum_csw_write( libspectrum_byte **buffer, size_t *length,
+                       libspectrum_tape *tape );
+
+libspectrum_error
 libspectrum_wav_read( libspectrum_tape *tape, const char *filename );
 
 /* Crypto functions */
@@ -201,5 +205,15 @@ libspectrum_error
 libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
 		       libspectrum_byte *data, size_t data_length,
 		       libspectrum_rzx_dsa_key *key );
+
+libspectrum_tape_block*
+libspectrum_tape_block_internal_init(
+                                libspectrum_tape_block_state *iterator,
+                                libspectrum_tape *tape );
+
+libspectrum_error
+libspectrum_tape_get_next_edge_internal( libspectrum_dword *tstates, int *flags,
+                                         libspectrum_tape *tape,
+                                         libspectrum_tape_block_state *it );
 
 #endif				/* #ifndef LIBSPECTRUM_INTERNALS_H */

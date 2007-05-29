@@ -454,3 +454,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          internals.h,libspectrum.c,libspectrum.h.in,tape.c,wav.c: add simple
          support for loading directly from wav tape files (part of patch
          #1725974) (Fred).
+20070530 Makefile.am,csw.c,internals.h,libspectrum.h.in,tape.c,
+         tape_accessors.txt,tape_block.[ch],z80em.c: add support for saving csw
+         tape files (rest of patch #1725974) (Fred).

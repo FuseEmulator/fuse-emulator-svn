@@ -473,6 +473,7 @@ typedef enum libspectrum_tape_type {
 } libspectrum_tape_type;
 
 typedef struct libspectrum_tape_block libspectrum_tape_block;
+typedef struct libspectrum_tape_block_state libspectrum_tape_block_state;
 typedef struct libspectrum_tape_generalised_data_symbol_table libspectrum_tape_generalised_data_symbol_table;
 
 /* Something to step through all the blocks in a tape */
@@ -513,7 +514,8 @@ libspectrum_tape_block_set_type( libspectrum_tape_block *block,
 				 libspectrum_tape_type type );
 
 libspectrum_error WIN32_DLL
-libspectrum_tape_block_init( libspectrum_tape_block *block );
+libspectrum_tape_block_init( libspectrum_tape_block *block,
+                             libspectrum_tape_block_state *state );
 
 libspectrum_error WIN32_DLL
 libspectrum_tape_block_description( char *buffer, size_t length,
@@ -553,6 +555,15 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
 /* Get the current block from the tape */
 libspectrum_tape_block WIN32_DLL *
 libspectrum_tape_current_block( libspectrum_tape *tape );
+
+/* Get the state of the active block on the tape */
+libspectrum_tape_state_type WIN32_DLL
+libspectrum_tape_state( libspectrum_tape *tape );
+
+/* Set the state of the active block on the tape */
+libspectrum_error WIN32_DLL
+libspectrum_tape_set_state( libspectrum_tape *tape,
+                            libspectrum_tape_state_type state );
 
 /* Peek at the next block on the tape */
 libspectrum_tape_block WIN32_DLL *
@@ -626,6 +637,9 @@ libspectrum_warajevo_read( libspectrum_tape *tape,
 libspectrum_tape_block WIN32_DLL *
 libspectrum_tape_iterator_init( libspectrum_tape_iterator *iterator,
 				libspectrum_tape *tape );
+
+libspectrum_tape_block WIN32_DLL *
+libspectrum_tape_iterator_current( libspectrum_tape_iterator iterator );
 
 libspectrum_tape_block WIN32_DLL *
 libspectrum_tape_iterator_next( libspectrum_tape_iterator *iterator );
