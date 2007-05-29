@@ -458,3 +458,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          tape_accessors.txt,tape_block.[ch],z80em.c: add support for saving csw
          tape files (rest of patch #1725974) (Fred).
 20070530 tape.c: tidy up audiofile missing error message (Fred).
+20070530 acinclude.m4: remove warning about underquoted definition (Stuart).
