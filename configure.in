@@ -86,6 +86,38 @@ if test "$ac_cv_prog_gcc" = yes; then
     fi
 fi
 
+# Must either find glib or use the replacement (as supplied by libspectrum)
+AC_MSG_CHECKING(whether to use glib)
+AC_ARG_WITH(glib,
+[  --without-glib          don't use glib],
+if test "$withval" = no; then glib=no; else glib=yes; fi,
+glib=yes)
+AC_MSG_RESULT($glib)
+if test "$glib" = yes; then
+  glib2=no
+  AM_PATH_GLIB_2_0(
+    2.0.0,
+    glib2=yes
+    AC_DEFINE([HAVE_LIB_GLIB], 1, [Defined if we've got glib])
+    LIBS="$LIBS `pkg-config --libs glib-2.0`",
+  )
+  if test "$glib2" = no; then
+    AM_PATH_GLIB(
+      1.2.0,
+      AC_DEFINE([HAVE_LIB_GLIB], 1, [Defined if we've got glib])
+      LIBS="$LIBS `glib-config --libs`",
+      AC_MSG_WARN(glib not found - using libspectrum's replacement)
+    )
+  fi
+fi
+
+AM_PATH_AUDIOFILE(
+  0.2.3,
+  AC_DEFINE([HAVE_LIB_AUDIOFILE], 1, [Defined if we've got audiofile])
+  AUDIO2TAPE="audio2tape"
+)
+AC_SUBST(AUDIO2TAPE)
+
 AC_OUTPUT(Makefile \
 fuse-utils.qpg \
 hacking/Makefile \
