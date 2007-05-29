@@ -1,5 +1,5 @@
 /* tape.c: Routines for handling tape files
-   Copyright (c) 2001-2007 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2007 Philip Kendall, Darren Salt, Fredrick Meunier
 
    $Id$
 
@@ -37,13 +37,8 @@ struct libspectrum_tape {
   /* All the blocks */
   GSList* blocks;
 
-  /* The current block */
-  GSList* current_block;
-
-  /* Where to return to after a loop, and how many iterations of the loop
-     to do */
-  GSList* loop_block;
-  size_t loop_count;
+  /* The state of the current block */
+  libspectrum_tape_block_state state;
 
 };
 
@@ -65,35 +60,45 @@ block_free( gpointer data, gpointer user_data );
 /* Functions to get the next edge */
 
 static libspectrum_error
-rom_edge( libspectrum_tape_rom_block *block, libspectrum_dword *tstates,
-	  int *end_of_block );
+rom_edge( libspectrum_tape_rom_block *block,
+          libspectrum_tape_rom_block_state *state,
+          libspectrum_dword *tstates, int *end_of_block );
 static libspectrum_error
-rom_next_bit( libspectrum_tape_rom_block *block );
+rom_next_bit( libspectrum_tape_rom_block *block,
+              libspectrum_tape_rom_block_state *state );
 
 static libspectrum_error
-turbo_edge( libspectrum_tape_turbo_block *block, libspectrum_dword *tstates,
+turbo_edge( libspectrum_tape_turbo_block *block,
+            libspectrum_tape_turbo_block_state *state,
+            libspectrum_dword *tstates,
 	    int *end_of_block );
 static libspectrum_error
-turbo_next_bit( libspectrum_tape_turbo_block *block );
+turbo_next_bit( libspectrum_tape_turbo_block *block,
+                libspectrum_tape_turbo_block_state *state );
 
 static libspectrum_error
-tone_edge( libspectrum_tape_pure_tone_block *block, libspectrum_dword *tstates,
-	   int *end_of_block );
+tone_edge( libspectrum_tape_pure_tone_block *block,
+           libspectrum_tape_pure_tone_block_state *state,
+           libspectrum_dword *tstates, int *end_of_block );
 
 static libspectrum_error
-pulses_edge( libspectrum_tape_pulses_block *block, libspectrum_dword *tstates,
-	     int *end_of_block );
+pulses_edge( libspectrum_tape_pulses_block *block,
+             libspectrum_tape_pulses_block_state *state,
+             libspectrum_dword *tstates, int *end_of_block );
 
 static libspectrum_error
 pure_data_edge( libspectrum_tape_pure_data_block *block,
+                libspectrum_tape_pure_data_block_state *state,
 		libspectrum_dword *tstates, int *end_of_block );
 
 static libspectrum_error
 raw_data_edge( libspectrum_tape_raw_data_block *block,
+               libspectrum_tape_raw_data_block_state *state,
 	       libspectrum_dword *tstates, int *end_of_block );
 
 static libspectrum_error
 generalised_data_edge( libspectrum_tape_generalised_data_block *block,
+                       libspectrum_tape_generalised_data_block_state *state,
 		       libspectrum_dword *tstates, int *end_of_block,
 		       int *flags );
 
@@ -102,6 +107,7 @@ jump_blocks( libspectrum_tape *tape, int offset );
 
 static libspectrum_error
 rle_pulse_edge( libspectrum_tape_rle_pulse_block *block,
+                libspectrum_tape_rle_pulse_block_state *state,
 		libspectrum_dword *tstates, int *end_of_block );
 
 /*** Function definitions ****/
@@ -117,7 +123,8 @@ libspectrum_tape_alloc( libspectrum_tape **tape )
     return LIBSPECTRUM_ERROR_MEMORY;
   }
 
-  (*tape)->current_block = (*tape)->blocks = NULL;
+  (*tape)->blocks = NULL;
+  libspectrum_tape_iterator_init( &((*tape)->state.current_block), *tape );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -128,7 +135,8 @@ libspectrum_tape_clear( libspectrum_tape *tape )
 {
   g_slist_foreach( tape->blocks, block_free, NULL );
   g_slist_free( tape->blocks );
-  tape->current_block = tape->blocks = NULL;  
+  tape->blocks = NULL;
+  libspectrum_tape_iterator_init( &(tape->state.current_block), tape );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -265,6 +273,9 @@ libspectrum_tape_write( libspectrum_byte **buffer, size_t *length,
   case LIBSPECTRUM_ID_TAPE_TZX:
     return internal_tzx_write( buffer, length, tape );
 
+  case LIBSPECTRUM_ID_TAPE_CSW:
+    return libspectrum_csw_write( buffer, length, tape );
+
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "libspectrum_tape_write: format not supported" );
@@ -289,17 +300,16 @@ const int LIBSPECTRUM_TAPE_FLAGS_NO_EDGE    = 1 << 3; /* Not an edge really */
 const int LIBSPECTRUM_TAPE_FLAGS_LEVEL_LOW  = 1 << 4; /* Set level low */
 const int LIBSPECTRUM_TAPE_FLAGS_LEVEL_HIGH = 1 << 5; /* Set level high */
 
-/* The main function: called with a tape object and returns the number of
-   t-states until the next edge, and a marker if this was the last edge
-   on the tape */
 libspectrum_error
-libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
-	                        libspectrum_tape *tape )
+libspectrum_tape_get_next_edge_internal( libspectrum_dword *tstates,
+                                         int *flags,
+                                         libspectrum_tape *tape,
+                                         libspectrum_tape_block_state *it )
 {
   int error;
 
   libspectrum_tape_block *block =
-    (libspectrum_tape_block*)tape->current_block->data;
+    libspectrum_tape_iterator_current( it->current_block );
 
   /* Has this edge ended the block? */
   int end_of_block = 0;
@@ -312,33 +322,40 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
 
   switch( block->type ) {
   case LIBSPECTRUM_TAPE_BLOCK_ROM:
-    error = rom_edge( &(block->types.rom), tstates, &end_of_block );
+    error = rom_edge( &(block->types.rom), &(it->block_state.rom), tstates,
+                      &end_of_block );
     if( error ) return error;
     break;
   case LIBSPECTRUM_TAPE_BLOCK_TURBO:
-    error = turbo_edge( &(block->types.turbo), tstates, &end_of_block );
+    error = turbo_edge( &(block->types.turbo), &(it->block_state.turbo), tstates,
+                        &end_of_block );
     if( error ) return error;
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
-    error = tone_edge( &(block->types.pure_tone), tstates, &end_of_block );
+    error = tone_edge( &(block->types.pure_tone), &(it->block_state.pure_tone),
+                       tstates, &end_of_block );
     if( error ) return error;
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PULSES:
-    error = pulses_edge( &(block->types.pulses), tstates, &end_of_block );
+    error = pulses_edge( &(block->types.pulses), &(it->block_state.pulses),
+                         tstates, &end_of_block );
     if( error ) return error;
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
-    error = pure_data_edge( &(block->types.pure_data), tstates, &end_of_block);
+    error = pure_data_edge( &(block->types.pure_data),
+                            &(it->block_state.pure_data), tstates, &end_of_block);
     if( error ) return error;
     break;
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
-    error = raw_data_edge( &(block->types.raw_data), tstates, &end_of_block );
+    error = raw_data_edge( &(block->types.raw_data), &(it->block_state.raw_data),
+                           tstates, &end_of_block );
     if( error ) return error;
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
-    error = generalised_data_edge( &(block->types.generalised_data), tstates,
-				   &end_of_block, flags );
+    error = generalised_data_edge( &(block->types.generalised_data),
+                                   &(it->block_state.generalised_data),
+                                   tstates, &end_of_block, flags );
     if( error ) return error;
     break;
 
@@ -355,14 +372,14 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
-    tape->loop_block = tape->current_block->next;
-    tape->loop_count = block->types.loop_start.count;
+    it->loop_block = it->current_block->next;
+    it->loop_count = block->types.loop_start.count;
     *tstates = 0; end_of_block = 1;
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
-    if( --tape->loop_count ) {
-      tape->current_block = tape->loop_block;
+    if( --(it->loop_count) ) {
+      it->current_block->data = it->loop_block;
       no_advance = 1;
     }
     *tstates = 0; end_of_block = 1;
@@ -386,7 +403,8 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
-    error = rle_pulse_edge( &(block->types.rle_pulse), tstates, &end_of_block);
+    error = rle_pulse_edge( &(block->types.rle_pulse),
+                            &(it->block_state.rle_pulse), tstates, &end_of_block);
     if( error ) return error;
     break;
 
@@ -408,18 +426,20 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
     /* Advance to the next block, unless we've been told not to */
     if( !no_advance ) {
 
-      tape->current_block = tape->current_block->next;
+      libspectrum_tape_iterator_next( &(it->current_block) );
 
       /* If we've just hit the end of the tape, stop the tape (and
 	 then `rewind' to the start) */
-      if( tape->current_block == NULL ) {
+      if( libspectrum_tape_iterator_current( it->current_block ) == NULL ) {
 	*flags |= LIBSPECTRUM_TAPE_FLAGS_STOP;
-	tape->current_block = tape->blocks;
+        libspectrum_tape_iterator_init( &(it->current_block), tape );
       }
     }
 
     /* Initialise the new block */
-    error = libspectrum_tape_block_init( tape->current_block->data );
+    error = libspectrum_tape_block_init(
+                      libspectrum_tape_iterator_current( it->current_block ),
+                      it );
     if( error ) return error;
 
   }
@@ -427,48 +447,61 @@ libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+/* The main function: called with a tape object and returns the number of
+   t-states until the next edge, and a marker if this was the last edge
+   on the tape */
+libspectrum_error
+libspectrum_tape_get_next_edge( libspectrum_dword *tstates, int *flags,
+	                        libspectrum_tape *tape )
+{
+  return libspectrum_tape_get_next_edge_internal( tstates, flags, tape,
+                                                  &(tape->state) );
+}
+
 static libspectrum_error
-rom_edge( libspectrum_tape_rom_block *block, libspectrum_dword *tstates,
+rom_edge( libspectrum_tape_rom_block *block,
+          libspectrum_tape_rom_block_state *state,
+          libspectrum_dword *tstates,
 	  int *end_of_block )
 {
   int error;
 
-  switch( block->state ) {
+  switch( state->state ) {
 
   case LIBSPECTRUM_TAPE_STATE_PILOT:
     /* The next edge occurs in one pilot edge timing */
     *tstates = LIBSPECTRUM_TAPE_TIMING_PILOT;
     /* If that was the last pilot edge, change state */
-    if( --(block->edge_count) == 0 )
-      block->state = LIBSPECTRUM_TAPE_STATE_SYNC1;
+    if( --(state->edge_count) == 0 )
+      state->state = LIBSPECTRUM_TAPE_STATE_SYNC1;
     break;
 
   case LIBSPECTRUM_TAPE_STATE_SYNC1:
     /* The first short sync pulse */
     *tstates = LIBSPECTRUM_TAPE_TIMING_SYNC1;
     /* Followed by the second sync pulse */
-    block->state = LIBSPECTRUM_TAPE_STATE_SYNC2;
+    state->state = LIBSPECTRUM_TAPE_STATE_SYNC2;
     break;
 
   case LIBSPECTRUM_TAPE_STATE_SYNC2:
     /* The second short sync pulse */
     *tstates = LIBSPECTRUM_TAPE_TIMING_SYNC2;
     /* Followed by the first bit of data */
-    error = rom_next_bit( block ); if( error ) return error;
+    error = rom_next_bit( block, state ); if( error ) return error;
     break;
 
   case LIBSPECTRUM_TAPE_STATE_DATA1:
     /* The first edge for a bit of data */
-    *tstates = block->bit_tstates;
+    *tstates = state->bit_tstates;
     /* Followed by the second edge */
-    block->state = LIBSPECTRUM_TAPE_STATE_DATA2;
+    state->state = LIBSPECTRUM_TAPE_STATE_DATA2;
     break;
 
   case LIBSPECTRUM_TAPE_STATE_DATA2:
     /* The second edge for a bit of data */
-    *tstates = block->bit_tstates;
+    *tstates = state->bit_tstates;
     /* Followed by the next bit of data (or the end of data) */
-    error = rom_next_bit( block ); if( error ) return error;
+    error = rom_next_bit( block, state ); if( error ) return error;
     break;
 
   case LIBSPECTRUM_TAPE_STATE_PAUSE:
@@ -480,7 +513,7 @@ rom_edge( libspectrum_tape_rom_block *block, libspectrum_dword *tstates,
 
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
-			     "rom_edge: unknown state %d", block->state );
+			     "rom_edge: unknown state %d", state->state );
     return LIBSPECTRUM_ERROR_LOGIC;
 
   }
@@ -489,49 +522,51 @@ rom_edge( libspectrum_tape_rom_block *block, libspectrum_dword *tstates,
 }
 
 static libspectrum_error
-rom_next_bit( libspectrum_tape_rom_block *block )
+rom_next_bit( libspectrum_tape_rom_block *block,
+              libspectrum_tape_rom_block_state *state )
 {
   int next_bit;
 
   /* Have we finished the current byte? */
-  if( ++(block->bits_through_byte) == 8 ) {
+  if( ++(state->bits_through_byte) == 8 ) {
 
     /* If so, have we finished the entire block? If so, all we've got
        left after this is the pause at the end */
-    if( ++(block->bytes_through_block) == block->length ) {
-      block->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
+    if( ++(state->bytes_through_block) == block->length ) {
+      state->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
       return LIBSPECTRUM_ERROR_NONE;
     }
     
     /* If we've finished the current byte, but not the entire block,
        get the next byte */
-    block->current_byte = block->data[ block->bytes_through_block ];
-    block->bits_through_byte = 0;
+    state->current_byte = block->data[ state->bytes_through_block ];
+    state->bits_through_byte = 0;
   }
 
   /* Get the high bit, and shift the byte out leftwards */
-  next_bit = block->current_byte & 0x80;
-  block->current_byte <<= 1;
+  next_bit = state->current_byte & 0x80;
+  state->current_byte <<= 1;
 
   /* And set the timing and state for another data bit */
-  block->bit_tstates = ( next_bit ? LIBSPECTRUM_TAPE_TIMING_DATA1
+  state->bit_tstates = ( next_bit ? LIBSPECTRUM_TAPE_TIMING_DATA1
 			          : LIBSPECTRUM_TAPE_TIMING_DATA0 );
-  block->state = LIBSPECTRUM_TAPE_STATE_DATA1;
+  state->state = LIBSPECTRUM_TAPE_STATE_DATA1;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
-turbo_edge( libspectrum_tape_turbo_block *block, libspectrum_dword *tstates,
-	    int *end_of_block )
+turbo_edge( libspectrum_tape_turbo_block *block,
+            libspectrum_tape_turbo_block_state *state,
+            libspectrum_dword *tstates, int *end_of_block )
 {
   int error;
 
-  switch( block->state ) {
+  switch( state->state ) {
 
   case LIBSPECTRUM_TAPE_STATE_PILOT:
     /* Check we actually have some edges */
-    if( block->edge_count-- != 0 ) {
+    if( state->edge_count-- != 0 ) {
       *tstates = block->pilot_length;
       break;
     }
@@ -541,28 +576,28 @@ turbo_edge( libspectrum_tape_turbo_block *block, libspectrum_dword *tstates,
     /* The first short sync pulse */
     *tstates = block->sync1_length;
     /* Followed by the second sync pulse */
-    block->state = LIBSPECTRUM_TAPE_STATE_SYNC2;
+    state->state = LIBSPECTRUM_TAPE_STATE_SYNC2;
     break;
 
   case LIBSPECTRUM_TAPE_STATE_SYNC2:
     /* The second short sync pulse */
     *tstates = block->sync2_length;
     /* Followed by the first bit of data */
-    error = turbo_next_bit( block ); if( error ) return error;
+    error = turbo_next_bit( block, state ); if( error ) return error;
     break;
 
   case LIBSPECTRUM_TAPE_STATE_DATA1:
     /* The first edge for a bit of data */
-    *tstates = block->bit_tstates;
+    *tstates = state->bit_tstates;
     /* Followed by the second edge */
-    block->state = LIBSPECTRUM_TAPE_STATE_DATA2;
+    state->state = LIBSPECTRUM_TAPE_STATE_DATA2;
     break;
 
   case LIBSPECTRUM_TAPE_STATE_DATA2:
     /* The second edge for a bit of data */
-    *tstates = block->bit_tstates;
+    *tstates = state->bit_tstates;
     /* Followed by the next bit of data (or the end of data) */
-    error = turbo_next_bit( block ); if( error ) return error;
+    error = turbo_next_bit( block, state ); if( error ) return error;
     break;
 
   case LIBSPECTRUM_TAPE_STATE_PAUSE:
@@ -574,7 +609,7 @@ turbo_edge( libspectrum_tape_turbo_block *block, libspectrum_dword *tstates,
 
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
-			     "turbo_edge: unknown state %d", block->state );
+			     "turbo_edge: unknown state %d", state->state );
     return LIBSPECTRUM_ERROR_LOGIC;
 
   }
@@ -583,88 +618,92 @@ turbo_edge( libspectrum_tape_turbo_block *block, libspectrum_dword *tstates,
 }
 
 static libspectrum_error
-turbo_next_bit( libspectrum_tape_turbo_block *block )
+turbo_next_bit( libspectrum_tape_turbo_block *block,
+                libspectrum_tape_turbo_block_state *state )
 {
   int next_bit;
 
   /* Have we finished the current byte? */
-  if( ++(block->bits_through_byte) == 8 ) {
+  if( ++(state->bits_through_byte) == 8 ) {
 
     /* If so, have we finished the entire block? If so, all we've got
        left after this is the pause at the end */
-    if( ++(block->bytes_through_block) == block->length ) {
-      block->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
+    if( ++(state->bytes_through_block) == block->length ) {
+      state->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
       return LIBSPECTRUM_ERROR_NONE;
     }
     
     /* If we've finished the current byte, but not the entire block,
        get the next byte */
-    block->current_byte = block->data[ block->bytes_through_block ];
+    state->current_byte = block->data[ state->bytes_through_block ];
 
     /* If we're looking at the last byte, take account of the fact it
        may have less than 8 bits in it */
-    if( block->bytes_through_block == block->length-1 ) {
-      block->bits_through_byte = 8 - block->bits_in_last_byte;
+    if( state->bytes_through_block == block->length-1 ) {
+      state->bits_through_byte = 8 - block->bits_in_last_byte;
     } else {
-      block->bits_through_byte = 0;
+      state->bits_through_byte = 0;
     }
   }
 
   /* Get the high bit, and shift the byte out leftwards */
-  next_bit = block->current_byte & 0x80;
-  block->current_byte <<= 1;
+  next_bit = state->current_byte & 0x80;
+  state->current_byte <<= 1;
 
   /* And set the timing and state for another data bit */
-  block->bit_tstates = ( next_bit ? block->bit1_length : block->bit0_length );
-  block->state = LIBSPECTRUM_TAPE_STATE_DATA1;
+  state->bit_tstates = ( next_bit ? block->bit1_length : block->bit0_length );
+  state->state = LIBSPECTRUM_TAPE_STATE_DATA1;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
-tone_edge( libspectrum_tape_pure_tone_block *block, libspectrum_dword *tstates,
-	   int *end_of_block )
+tone_edge( libspectrum_tape_pure_tone_block *block,
+           libspectrum_tape_pure_tone_block_state *state,
+           libspectrum_dword *tstates, int *end_of_block )
 {
   /* The next edge occurs in one pilot edge timing */
   *tstates = block->length;
   /* If that was the last edge, the block is finished */
-  if( --(block->edge_count) == 0 ) (*end_of_block) = 1;
+  if( --(state->edge_count) == 0 ) (*end_of_block) = 1;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
-pulses_edge( libspectrum_tape_pulses_block *block, libspectrum_dword *tstates,
-	     int *end_of_block )
+pulses_edge( libspectrum_tape_pulses_block *block,
+             libspectrum_tape_pulses_block_state *state,
+             libspectrum_dword *tstates, int *end_of_block )
 {
   /* Get the length of this edge */
-  *tstates = block->lengths[ block->edge_count ];
+  *tstates = block->lengths[ state->edge_count ];
   /* Was that the last edge? */
-  if( ++(block->edge_count) == block->count ) (*end_of_block) = 1;
+  if( ++(state->edge_count) == block->count ) (*end_of_block) = 1;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
 pure_data_edge( libspectrum_tape_pure_data_block *block,
+                libspectrum_tape_pure_data_block_state *state,
 		libspectrum_dword *tstates, int *end_of_block )
 {
   int error;
 
-  switch( block->state ) {
+  switch( state->state ) {
 
   case LIBSPECTRUM_TAPE_STATE_DATA1:
     /* The first edge for a bit of data */
-    *tstates = block->bit_tstates;
+    *tstates = state->bit_tstates;
     /* Followed by the second edge */
-    block->state = LIBSPECTRUM_TAPE_STATE_DATA2;
+    state->state = LIBSPECTRUM_TAPE_STATE_DATA2;
     break;
 
   case LIBSPECTRUM_TAPE_STATE_DATA2:
     /* The second edge for a bit of data */
-    *tstates = block->bit_tstates;
+    *tstates = state->bit_tstates;
     /* Followed by the next bit of data (or the end of data) */
-    error = libspectrum_tape_pure_data_next_bit( block );
+    error = libspectrum_tape_pure_data_next_bit( block, state );
     if( error ) return error;
     break;
 
@@ -678,7 +717,7 @@ pure_data_edge( libspectrum_tape_pure_data_block *block,
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "pure_data_edge: unknown state %d",
-			     block->state );
+			     state->state );
     return LIBSPECTRUM_ERROR_LOGIC;
 
   }
@@ -687,54 +726,56 @@ pure_data_edge( libspectrum_tape_pure_data_block *block,
 }
 
 libspectrum_error
-libspectrum_tape_pure_data_next_bit( libspectrum_tape_pure_data_block *block )
+libspectrum_tape_pure_data_next_bit( libspectrum_tape_pure_data_block *block,
+                             libspectrum_tape_pure_data_block_state *state )
 {
   int next_bit;
 
   /* Have we finished the current byte? */
-  if( ++(block->bits_through_byte) == 8 ) {
+  if( ++(state->bits_through_byte) == 8 ) {
 
     /* If so, have we finished the entire block? If so, all we've got
        left after this is the pause at the end */
-    if( ++(block->bytes_through_block) == block->length ) {
-      block->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
+    if( ++(state->bytes_through_block) == block->length ) {
+      state->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
       return LIBSPECTRUM_ERROR_NONE;
     }
     
     /* If we've finished the current byte, but not the entire block,
        get the next byte */
-    block->current_byte = block->data[ block->bytes_through_block ];
+    state->current_byte = block->data[ state->bytes_through_block ];
 
     /* If we're looking at the last byte, take account of the fact it
        may have less than 8 bits in it */
-    if( block->bytes_through_block == block->length-1 ) {
-      block->bits_through_byte = 8 - block->bits_in_last_byte;
+    if( state->bytes_through_block == block->length-1 ) {
+      state->bits_through_byte = 8 - block->bits_in_last_byte;
     } else {
-      block->bits_through_byte = 0;
+      state->bits_through_byte = 0;
     }
   }
 
   /* Get the high bit, and shift the byte out leftwards */
-  next_bit = block->current_byte & 0x80;
-  block->current_byte <<= 1;
+  next_bit = state->current_byte & 0x80;
+  state->current_byte <<= 1;
 
   /* And set the timing and state for another data bit */
-  block->bit_tstates = ( next_bit ? block->bit1_length : block->bit0_length );
-  block->state = LIBSPECTRUM_TAPE_STATE_DATA1;
+  state->bit_tstates = ( next_bit ? block->bit1_length : block->bit0_length );
+  state->state = LIBSPECTRUM_TAPE_STATE_DATA1;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
 raw_data_edge( libspectrum_tape_raw_data_block *block,
+               libspectrum_tape_raw_data_block_state *state,
 	       libspectrum_dword *tstates, int *end_of_block )
 {
   int error;
 
-  switch (block->state) {
+  switch (state->state) {
   case LIBSPECTRUM_TAPE_STATE_DATA1:
-    *tstates = block->bit_tstates;
-    error = libspectrum_tape_raw_data_next_bit( block );
+    *tstates = state->bit_tstates;
+    error = libspectrum_tape_raw_data_next_bit( block, state );
     if( error ) return error;
     break;
 
@@ -747,7 +788,7 @@ raw_data_edge( libspectrum_tape_raw_data_block *block,
 
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
-			     "raw_edge: unknown state %d", block->state );
+			     "raw_edge: unknown state %d", state->state );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -755,55 +796,58 @@ raw_data_edge( libspectrum_tape_raw_data_block *block,
 }
 
 libspectrum_error
-libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block )
+libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block,
+                             libspectrum_tape_raw_data_block_state *state )
 {
   int length = 0;
 
-  if( block->bytes_through_block == block->length ) {
-    block->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
+  if( state->bytes_through_block == block->length ) {
+    state->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
     return LIBSPECTRUM_ERROR_NONE;
   }
 
-  block->state = LIBSPECTRUM_TAPE_STATE_DATA1;
+  state->state = LIBSPECTRUM_TAPE_STATE_DATA1;
 
   /* Step through the data until we find an edge */
   do {
     length++;
-    if( ++block->bits_through_byte == 8 ) {
-      if( ++block->bytes_through_block == block->length - 1 ) {
-	block->bits_through_byte = 8 - block->bits_in_last_byte;
+    if( ++(state->bits_through_byte) == 8 ) {
+      if( ++(state->bytes_through_block) == block->length - 1 ) {
+	state->bits_through_byte = 8 - block->bits_in_last_byte;
       } else {
-	block->bits_through_byte = 0;
+	state->bits_through_byte = 0;
       }
-      if( block->bytes_through_block == block->length )
+      if( state->bytes_through_block == block->length )
 	break;
     }
-  } while( (block->data[block->bytes_through_block] << block->bits_through_byte
-            & 0x80 ) != block->last_bit) ;
+  } while( (block->data[state->bytes_through_block] << state->bits_through_byte
+            & 0x80 ) != state->last_bit) ;
 
-  block->bit_tstates = length * block->bit_length;
-  block->last_bit ^= 0x80;
+  state->bit_tstates = length * block->bit_length;
+  state->last_bit ^= 0x80;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_byte
-get_generalised_data_bit( libspectrum_tape_generalised_data_block *block )
+get_generalised_data_bit( libspectrum_tape_generalised_data_block *block,
+                      libspectrum_tape_generalised_data_block_state *state )
 {
-  libspectrum_byte r = block->current_byte & 0x80 ? 1 : 0;
-  block->current_byte <<= 1;
+  libspectrum_byte r = state->current_byte & 0x80 ? 1 : 0;
+  state->current_byte <<= 1;
 
-  if( ++block->bits_through_byte == 8 ) {
-    block->bits_through_byte = 0;
-    block->bytes_through_stream++;
-    block->current_byte = block->data[ block->bytes_through_stream ];
+  if( ++state->bits_through_byte == 8 ) {
+    state->bits_through_byte = 0;
+    state->bytes_through_stream++;
+    state->current_byte = block->data[ state->bytes_through_stream ];
   }
   
   return r;
 }
 
 static libspectrum_byte
-get_generalised_data_symbol( libspectrum_tape_generalised_data_block *block )
+get_generalised_data_symbol( libspectrum_tape_generalised_data_block *block,
+                      libspectrum_tape_generalised_data_block_state *state )
 {
   libspectrum_byte symbol;
   size_t i;
@@ -812,7 +856,7 @@ get_generalised_data_symbol( libspectrum_tape_generalised_data_block *block )
        i < block->bits_per_data_symbol;
        i++ ) {
     symbol <<= 1;
-    symbol |= get_generalised_data_bit( block );
+    symbol |= get_generalised_data_bit( block, state );
   }
     
   return symbol;
@@ -844,6 +888,7 @@ set_tstates_and_flags( libspectrum_tape_generalised_data_symbol *symbol,
 
 static libspectrum_error
 generalised_data_edge( libspectrum_tape_generalised_data_block *block,
+                       libspectrum_tape_generalised_data_block_state *state,
 		       libspectrum_dword *tstates, int *end_of_block,
 		       int *flags )
 {
@@ -851,28 +896,28 @@ generalised_data_edge( libspectrum_tape_generalised_data_block *block,
   libspectrum_tape_generalised_data_symbol *symbol;
   size_t current_symbol;
 
-  switch( block->state ) {
+  switch( state->state ) {
   case LIBSPECTRUM_TAPE_STATE_PILOT:
     table = &( block->pilot_table );
-    current_symbol = block->pilot_symbols[ block->run ];
+    current_symbol = block->pilot_symbols[ state->run ];
     symbol = &( table->symbols[ current_symbol ] );
 
-    set_tstates_and_flags( symbol, block->edges_through_symbol, tstates,
+    set_tstates_and_flags( symbol, state->edges_through_symbol, tstates,
 			   flags );
 
-    block->edges_through_symbol++;
-    if( block->edges_through_symbol == table->max_pulses    ||
-	symbol->lengths[ block->edges_through_symbol ] == 0    ) {
-      block->edges_through_symbol = 0;
-      if( ++block->symbols_through_run == block->pilot_repeats[ block->run ] ) {
-	block->symbols_through_run = 0;
-	if( ++block->run == table->symbols_in_block ) {
-	  block->state = LIBSPECTRUM_TAPE_STATE_DATA1;
-	  block->bits_through_byte = 0;
-	  block->bytes_through_stream = 0;
-	  block->symbols_through_stream = 0;
-	  block->current_byte = block->data[ 0 ];
-	  block->current_symbol = get_generalised_data_symbol( block );
+    state->edges_through_symbol++;
+    if( state->edges_through_symbol == table->max_pulses    ||
+	symbol->lengths[ state->edges_through_symbol ] == 0    ) {
+      state->edges_through_symbol = 0;
+      if( ++state->symbols_through_run == block->pilot_repeats[ state->run ] ) {
+	state->symbols_through_run = 0;
+	if( ++state->run == table->symbols_in_block ) {
+	  state->state = LIBSPECTRUM_TAPE_STATE_DATA1;
+	  state->bits_through_byte = 0;
+	  state->bytes_through_stream = 0;
+	  state->symbols_through_stream = 0;
+	  state->current_byte = block->data[ 0 ];
+	  state->current_symbol = get_generalised_data_symbol( block, state );
 	}
       }
     }
@@ -880,19 +925,19 @@ generalised_data_edge( libspectrum_tape_generalised_data_block *block,
 
   case LIBSPECTRUM_TAPE_STATE_DATA1:
     table = &( block->data_table );
-    symbol = &( table->symbols[ block->current_symbol ] );
+    symbol = &( table->symbols[ state->current_symbol ] );
 
-    set_tstates_and_flags( symbol, block->edges_through_symbol, tstates,
+    set_tstates_and_flags( symbol, state->edges_through_symbol, tstates,
 			   flags );
 
-    block->edges_through_symbol++;
-    if( block->edges_through_symbol == table->max_pulses    ||
-	symbol->lengths[ block->edges_through_symbol ] == 0    ) {
-      if( ++block->symbols_through_stream == table->symbols_in_block ) {
-	block->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
+    state->edges_through_symbol++;
+    if( state->edges_through_symbol == table->max_pulses    ||
+	symbol->lengths[ state->edges_through_symbol ] == 0    ) {
+      if( ++state->symbols_through_stream == table->symbols_in_block ) {
+	state->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
       } else {
-	block->edges_through_symbol = 0;
-	block->current_symbol = get_generalised_data_symbol( block );
+	state->edges_through_symbol = 0;
+	state->current_symbol = get_generalised_data_symbol( block, state );
       }
     }
     break;
@@ -906,7 +951,7 @@ generalised_data_edge( libspectrum_tape_generalised_data_block *block,
 
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC, "%s: unknown state %d",
-			     __func__, block->state );
+			     __func__, state->state );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -918,13 +963,14 @@ jump_blocks( libspectrum_tape *tape, int offset )
 {
   gint current_position; GSList *new_block;
 
-  current_position = g_slist_position( tape->blocks, tape->current_block );
+  current_position =
+    g_slist_position( tape->blocks, tape->state.current_block );
   if( current_position == -1 ) return LIBSPECTRUM_ERROR_LOGIC;
 
   new_block = g_slist_nth( tape->blocks, current_position + offset );
   if( new_block == NULL ) return LIBSPECTRUM_ERROR_CORRUPT;
 
-  tape->current_block = new_block;
+  tape->state.current_block->data = new_block;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -933,29 +979,30 @@ jump_blocks( libspectrum_tape *tape, int offset )
 
 static libspectrum_error
 rle_pulse_edge( libspectrum_tape_rle_pulse_block *block,
+                libspectrum_tape_rle_pulse_block_state *state,
 		libspectrum_dword *tstates, int *end_of_block )
 {
-  if( block->data[block->index] ) {
+  if( block->data[state->index] ) {
 
-    *tstates = block->scale * block->data[ block->index++ ];
+    *tstates = block->scale * block->data[ state->index++ ];
 
   } else {
 
-    if( block->index + 5 > block->length ) {
+    if( state->index + 5 > block->length ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			       "rle_pulse_edge: file is truncated\n" );
       return LIBSPECTRUM_ERROR_LOGIC;
     }
 
-    *tstates = block->scale * ( block->data[ block->index + 1 ]       |
-			        block->data[ block->index + 2 ] << 8  |
-			        block->data[ block->index + 3 ] << 16 |
-			        block->data[ block->index + 4 ] << 24   );
-    block->index += 5;
+    *tstates = block->scale * ( block->data[ state->index + 1 ]       |
+			        block->data[ state->index + 2 ] << 8  |
+			        block->data[ state->index + 3 ] << 16 |
+			        block->data[ state->index + 4 ] << 24   );
+    state->index += 5;
 
   }
 
-  if( block->index == block->length ) *end_of_block = 1;
+  if( state->index == block->length ) *end_of_block = 1;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -964,17 +1011,18 @@ rle_pulse_edge( libspectrum_tape_rle_pulse_block *block,
 libspectrum_tape_block*
 libspectrum_tape_current_block( libspectrum_tape *tape )
 {
-  return tape->current_block ? tape->current_block->data : NULL;
+  return libspectrum_tape_iterator_current( tape->state.current_block );
 }
 
 /* Peek at the next block on the tape */
 libspectrum_tape_block*
 libspectrum_tape_peek_next_block( libspectrum_tape *tape )
 {
-  if( !tape->current_block ) return NULL;
+  if( !tape->state.current_block ) return NULL;
 
-  return tape->current_block->next ? tape->current_block->next->data
-				   : tape->blocks->data;
+  libspectrum_tape_block *block =
+    libspectrum_tape_iterator_current( tape->state.current_block->next );
+  return block ? block : tape->blocks->data;
 }
 
 /* Cause the next block on the tape to be active, initialise it
@@ -983,21 +1031,25 @@ libspectrum_tape_block*
 libspectrum_tape_select_next_block( libspectrum_tape *tape )
 {
   
-  if( !tape->current_block ) return NULL;
+  if( !tape->state.current_block ) return NULL;
 
-  tape->current_block = tape->current_block->next;
-  if( !tape->current_block ) tape->current_block = tape->blocks;
+  libspectrum_tape_block *block =
+    libspectrum_tape_iterator_next( &(tape->state.current_block) );
 
-  if( libspectrum_tape_block_init( tape->current_block->data ) ) return NULL;
+  if( !block )
+    block = libspectrum_tape_iterator_init( &(tape->state.current_block), tape );
 
-  return tape->current_block->data;
+  if( libspectrum_tape_block_init( block, &(tape->state) ) )
+    return NULL;
+
+  return block;
 }
   
 /* Get the position on the tape of the current block */
 libspectrum_error
 libspectrum_tape_position( int *n, libspectrum_tape *tape )
 {
-  *n = g_slist_position( tape->blocks, tape->current_block );
+  *n = g_slist_position( tape->blocks, tape->state.current_block );
 
   if( *n == -1 ) {
     libspectrum_print_error(
@@ -1026,9 +1078,10 @@ libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  tape->current_block = new_block;
+  tape->state.current_block = new_block;
 
-  error = libspectrum_tape_block_init( tape->current_block->data );
+  error = libspectrum_tape_block_init( tape->state.current_block->data,
+                                       &(tape->state) );
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -1043,9 +1096,9 @@ libspectrum_tape_append_block( libspectrum_tape *tape,
   /* If we previously didn't have a tape loaded ( implied by
      tape->current_block == NULL ), set up so that we point to the
      start of the tape */
-  if( !tape->current_block ) {
-    tape->current_block = tape->blocks;
-    libspectrum_tape_block_init( tape->blocks->data );
+  if( !tape->state.current_block ) {
+    tape->state.current_block = tape->blocks;
+    libspectrum_tape_block_init( tape->blocks->data, &(tape->state) );
   }
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -1244,12 +1297,74 @@ libspectrum_tape_iterator_init( libspectrum_tape_iterator *iterator,
 				libspectrum_tape *tape )
 {
   *iterator = tape->blocks;
-  return *iterator ? (*iterator)->data : NULL;
+  return libspectrum_tape_iterator_current( *iterator );
+}
+
+libspectrum_tape_block*
+libspectrum_tape_block_internal_init(
+                                libspectrum_tape_block_state *it,
+				libspectrum_tape *tape )
+{
+  it->current_block = tape->blocks;
+
+  if( libspectrum_tape_block_init( it->current_block->data,
+                                   it ) )
+    return NULL;
+
+  return libspectrum_tape_iterator_current( it->current_block );
+}
+
+libspectrum_tape_block*
+libspectrum_tape_iterator_current( libspectrum_tape_iterator iterator )
+{
+  return iterator ? iterator->data : NULL;
 }
 
 libspectrum_tape_block*
 libspectrum_tape_iterator_next( libspectrum_tape_iterator *iterator )
 {
   *iterator = (*iterator)->next;
-  return *iterator ? (*iterator)->data : NULL;
+  return libspectrum_tape_iterator_current( *iterator );
+}
+
+libspectrum_tape_state_type
+libspectrum_tape_state( libspectrum_tape *tape )
+{
+  libspectrum_tape_block *block = (libspectrum_tape_block*)tape->state.current_block;
+  switch( block->type ) {
+
+    case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA: return tape->state.block_state.pure_data.state;
+    case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA: return tape->state.block_state.raw_data.state;
+    case LIBSPECTRUM_TAPE_BLOCK_ROM: return tape->state.block_state.rom.state;
+    case LIBSPECTRUM_TAPE_BLOCK_TURBO: return tape->state.block_state.turbo.state;
+
+    default:
+      libspectrum_print_error(
+        LIBSPECTRUM_ERROR_INVALID,
+        "invalid current block type 0x%02x in tape given to %s", block->type, __func__
+      );
+      return LIBSPECTRUM_TAPE_STATE_INVALID;
+  }
+}
+
+libspectrum_error
+libspectrum_tape_set_state( libspectrum_tape *tape, libspectrum_tape_state_type state )
+{
+  libspectrum_tape_block *block = (libspectrum_tape_block*)tape->state.current_block;
+  switch( block->type ) {
+
+    case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA: tape->state.block_state.pure_data.state = state; break;
+    case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA: tape->state.block_state.raw_data.state = state; break;
+    case LIBSPECTRUM_TAPE_BLOCK_ROM: tape->state.block_state.rom.state = state; break;
+    case LIBSPECTRUM_TAPE_BLOCK_TURBO: tape->state.block_state.turbo.state = state; break;
+
+    default:
+      libspectrum_print_error(
+        LIBSPECTRUM_ERROR_INVALID,
+        "invalid current block type 0x%2x in tape given to %s", block->type, __func__
+      );
+      return LIBSPECTRUM_ERROR_INVALID;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
 }

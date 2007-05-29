@@ -90,6 +90,7 @@ size_t			data_length		0	-1
        custom		length
        pure_data	length
        raw_data		length
+       rle_pulse	length
        rom		length
        turbo		length
 
@@ -133,14 +134,11 @@ libspectrum_tape_generalised_data_symbol_table*	pilot_table	0	NULL	1
 libspectrum_dword	pulse_length		0	-1
 	pure_tone	length
 
+libspectrum_dword	scale			0	-1
+	rle_pulse
+
 libspectrum_dword	pulse_lengths		1	-1
 	pulses		lengths
-
-libspectrum_tape_state_type	state		0	LIBSPECTRUM_TAPE_STATE_INVALID
-	pure_data
-	raw_data
-	rom
-	turbo
 
 libspectrum_dword	sync1_length		0	-1
 	turbo

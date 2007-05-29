@@ -28,6 +28,7 @@ lib_LTLIBRARIES = libspectrum.la
 libspectrum_la_SOURCES = bzip2.c \
 			 creator.c \
 			 crypto.c \
+			 csw.c \
 			 dck.c \
 			 ide.c \
 			 libspectrum.c \

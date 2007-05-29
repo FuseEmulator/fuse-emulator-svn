@@ -40,15 +40,20 @@ static const size_t LIBSPECTRUM_TAPE_PILOTS_DATA   = 0x0c97;
 /* Functions to initialise block types */
 
 static libspectrum_error
-rom_init( libspectrum_tape_rom_block *block );
+rom_init( libspectrum_tape_rom_block *block,
+          libspectrum_tape_rom_block_state *state );
 static libspectrum_error
-turbo_init( libspectrum_tape_turbo_block *block );
+turbo_init( libspectrum_tape_turbo_block *block,
+            libspectrum_tape_turbo_block_state *state );
 static libspectrum_error
-pure_data_init( libspectrum_tape_pure_data_block *block );
+pure_data_init( libspectrum_tape_pure_data_block *block,
+                libspectrum_tape_pure_data_block_state *state );
 static libspectrum_error
-raw_data_init( libspectrum_tape_raw_data_block *block );
+raw_data_init( libspectrum_tape_raw_data_block *block,
+               libspectrum_tape_raw_data_block_state *state );
 static libspectrum_error
-generalised_data_init( libspectrum_tape_generalised_data_block *block );
+generalised_data_init( libspectrum_tape_generalised_data_block *block,
+                       libspectrum_tape_generalised_data_block_state *state );
 
 libspectrum_error
 libspectrum_tape_block_alloc( libspectrum_tape_block **block,
@@ -196,28 +201,32 @@ libspectrum_tape_block_set_type( libspectrum_tape_block *block,
 
 /* Called when a new block is started to initialise its internal state */
 libspectrum_error
-libspectrum_tape_block_init( libspectrum_tape_block *block )
+libspectrum_tape_block_init( libspectrum_tape_block *block,
+                             libspectrum_tape_block_state *state )
 {
   switch( libspectrum_tape_block_type( block ) ) {
 
   case LIBSPECTRUM_TAPE_BLOCK_ROM:
-    return rom_init( &(block->types.rom) );
+    return rom_init( &(block->types.rom), &(state->block_state.rom) );
   case LIBSPECTRUM_TAPE_BLOCK_TURBO:
-    return turbo_init( &(block->types.turbo) );
+    return turbo_init( &(block->types.turbo), &(state->block_state.turbo) );
   case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
-    block->types.pure_tone.edge_count = block->types.pure_tone.pulses;
+    state->block_state.pure_tone.edge_count = block->types.pure_tone.pulses;
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PULSES:
-    block->types.pulses.edge_count = 0;
+    state->block_state.pulses.edge_count = 0;
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
-    return pure_data_init( &(block->types.pure_data) );
+    return pure_data_init( &(block->types.pure_data),
+                           &(state->block_state.pure_data) );
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
-    return raw_data_init( &(block->types.raw_data) );
+    return raw_data_init( &(block->types.raw_data),
+                          &(state->block_state.raw_data) );
   case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
-    return generalised_data_init( &(block->types.generalised_data ) );
+    return generalised_data_init( &(block->types.generalised_data),
+                                  &(state->block_state.generalised_data) );
   case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
-    block->types.rle_pulse.index = 0;
+    state->block_state.rle_pulse.index = 0;
     return LIBSPECTRUM_ERROR_NONE;
 
   /* These blocks need no initialisation */
@@ -249,71 +258,76 @@ libspectrum_tape_block_init( libspectrum_tape_block *block )
 }
 
 static libspectrum_error
-rom_init( libspectrum_tape_rom_block *block )
+rom_init( libspectrum_tape_rom_block *block,
+          libspectrum_tape_rom_block_state *state )
 {
   /* Initialise the number of pilot pulses */
-  block->edge_count = block->length && block->data[0] & 0x80 ?
+  state->edge_count = block->length && block->data[0] & 0x80 ?
                       LIBSPECTRUM_TAPE_PILOTS_DATA           :
                       LIBSPECTRUM_TAPE_PILOTS_HEADER;
 
   /* And that we're just before the start of the data */
-  block->bytes_through_block = -1; block->bits_through_byte = 7;
-  block->state = LIBSPECTRUM_TAPE_STATE_PILOT;
+  state->bytes_through_block = -1; state->bits_through_byte = 7;
+  state->state = LIBSPECTRUM_TAPE_STATE_PILOT;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
-turbo_init( libspectrum_tape_turbo_block *block )
+turbo_init( libspectrum_tape_turbo_block *block,
+            libspectrum_tape_turbo_block_state *state )
 {
   /* Initialise the number of pilot pulses */
-  block->edge_count = block->pilot_pulses;
+  state->edge_count = block->pilot_pulses;
 
   /* And that we're just before the start of the data */
-  block->bytes_through_block = -1; block->bits_through_byte = 7;
-  block->state = LIBSPECTRUM_TAPE_STATE_PILOT;
+  state->bytes_through_block = -1; state->bits_through_byte = 7;
+  state->state = LIBSPECTRUM_TAPE_STATE_PILOT;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
-pure_data_init( libspectrum_tape_pure_data_block *block )
+pure_data_init( libspectrum_tape_pure_data_block *block,
+                libspectrum_tape_pure_data_block_state *state )
 {
   libspectrum_error error;
 
   /* We're just before the start of the data */
-  block->bytes_through_block = -1; block->bits_through_byte = 7;
+  state->bytes_through_block = -1; state->bits_through_byte = 7;
   /* Set up the next bit */
-  error = libspectrum_tape_pure_data_next_bit( block );
+  error = libspectrum_tape_pure_data_next_bit( block, state );
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
-raw_data_init( libspectrum_tape_raw_data_block *block )
+raw_data_init( libspectrum_tape_raw_data_block *block,
+               libspectrum_tape_raw_data_block_state *state )
 {
   libspectrum_error error;
 
   /* We're just before the start of the data */
-  block->state = LIBSPECTRUM_TAPE_STATE_DATA1;
-  block->bytes_through_block = -1; block->bits_through_byte = 7;
-  block->last_bit = 0x80 & block->data[0];
+  state->state = LIBSPECTRUM_TAPE_STATE_DATA1;
+  state->bytes_through_block = -1; state->bits_through_byte = 7;
+  state->last_bit = 0x80 & block->data[0];
   /* Set up the next bit */
-  error = libspectrum_tape_raw_data_next_bit( block );
+  error = libspectrum_tape_raw_data_next_bit( block, state );
   if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
-generalised_data_init( libspectrum_tape_generalised_data_block *block )
+generalised_data_init( libspectrum_tape_generalised_data_block *block,
+                       libspectrum_tape_generalised_data_block_state *state )
 {
-  block->state = LIBSPECTRUM_TAPE_STATE_PILOT;
+  state->state = LIBSPECTRUM_TAPE_STATE_PILOT;
 
-  block->run = 0;
-  block->symbols_through_run = 0;
-  block->edges_through_symbol = 0;
+  state->run = 0;
+  state->symbols_through_run = 0;
+  state->edges_through_symbol = 0;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
