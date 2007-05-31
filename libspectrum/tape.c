@@ -1332,7 +1332,8 @@ libspectrum_tape_iterator_next( libspectrum_tape_iterator *iterator )
 libspectrum_tape_state_type
 libspectrum_tape_state( libspectrum_tape *tape )
 {
-  libspectrum_tape_block *block = (libspectrum_tape_block*)tape->state.current_block;
+  libspectrum_tape_block *block =
+    libspectrum_tape_iterator_current( tape->state.current_block );
   switch( block->type ) {
 
     case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA: return tape->state.block_state.pure_data.state;
@@ -1352,7 +1353,8 @@ libspectrum_tape_state( libspectrum_tape *tape )
 libspectrum_error
 libspectrum_tape_set_state( libspectrum_tape *tape, libspectrum_tape_state_type state )
 {
-  libspectrum_tape_block *block = (libspectrum_tape_block*)tape->state.current_block;
+  libspectrum_tape_block *block =
+    libspectrum_tape_iterator_current( tape->state.current_block );
   switch( block->type ) {
 
     case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA: tape->state.block_state.pure_data.state = state; break;
