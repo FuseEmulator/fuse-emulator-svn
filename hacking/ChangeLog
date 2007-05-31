@@ -174,3 +174,4 @@
          man/{Makefile.am,audio2tape.1}: add new audio file to tape image
          convertor (part of patch #1725974) (Fred).
 20070529 acinclude.m4: remove warnings about underquoted definitions (Stuart).
+20070531 audio2tape.c,tzxlist.c: remove warnings.

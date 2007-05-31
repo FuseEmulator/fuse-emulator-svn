@@ -232,7 +232,8 @@ read_tape( glm get_level_method, char *filename, libspectrum_tape **tape )
   }
 
   if( frames != length ) {
-    fprintf( stderr, "Read %d frames, but expected %ld\n", frames, length );
+    fprintf( stderr, "Read %d frames, but expected %lu\n", frames,
+	     (unsigned long)length );
     free( buffer );
     libspectrum_tape_free( *tape );
     afCloseFile( handle );
