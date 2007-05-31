@@ -459,3 +459,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          tape files (rest of patch #1725974) (Fred).
 20070530 tape.c: tidy up audiofile missing error message (Fred).
 20070530 acinclude.m4: remove warning about underquoted definition (Stuart).
+20070531 tape.c: fix loading with tape traps (thanks, Stuart Brady) (Fred).
