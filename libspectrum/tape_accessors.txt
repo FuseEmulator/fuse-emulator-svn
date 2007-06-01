@@ -83,6 +83,7 @@ libspectrum_byte*	data			0	NULL
 	generalised_data
 	pure_data
 	raw_data
+	rle_pulse
 	rom
 	turbo
 
