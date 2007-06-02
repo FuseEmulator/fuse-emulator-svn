@@ -382,8 +382,8 @@ libspectrum_rzx_rollback_to( libspectrum_rzx *rzx, libspectrum_snap **snap,
 			   find_block );
     if( !list ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
-			       "snapshot block %ld not found in recording",
-			       which );
+			       "snapshot block %lu not found in recording",
+			       (unsigned long)which );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
 

@@ -115,7 +115,8 @@ libspectrum_wav_read( libspectrum_tape *tape, const char *filename )
     afCloseFile( handle );
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
-      "libspectrum_wav_read: read %d frames, but expected %ld\n", frames, length
+      "libspectrum_wav_read: read %d frames, but expected %lu\n", frames,
+      (unsigned long)length
     );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
