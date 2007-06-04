@@ -463,3 +463,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070601 tape_accessors.txt: add data accessor for rle_pulse block (Fred).
 20070602 rzx.c,wav.c: fix up printf() related warnings.
 20070602 Ignore make-perl.exe and test/test.exe (Stuart).
+20070604 libspectrum.h.in,libspectrum.c: allow Amiga version to decompress
+         files with xfdmaster.library (part of patch #1712260) (Chris Young).

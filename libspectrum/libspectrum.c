@@ -44,6 +44,13 @@ static const char *gcrypt_version;
 
 #include "internals.h"
 
+#ifdef AMIGA
+#include <proto/exec.h>
+#include <proto/xfdmaster.h>
+struct Library *xfdMasterBase;
+struct xfdMasterIFace *IxfdMaster;
+#endif /* #ifdef AMIGA */
+
 /* The various real devices that can be attached to a virtual joystick */
 const int LIBSPECTRUM_JOYSTICK_INPUT_NONE             = 0;
 const int LIBSPECTRUM_JOYSTICK_INPUT_KEYBOARD         = 1 << 0;
@@ -515,6 +522,38 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
     }
   }
 
+#ifdef AMIGA
+  /* Compressed file check through xfdmaster.library */
+
+  /* this prevents most good matches and gz/bz2 from being run through xfd (xfd
+     supports gz, but we want to use the internal code) */
+  if( best_score <= 3 ) {
+    struct ExecIFace *IExec =
+      (struct ExecIFace *)(*(struct ExecBase **)4)->MainInterface;
+    struct xfdBufferInfo *xfdobj;
+
+    if( xfdMasterBase = IExec->OpenLibrary("xfdmaster.library",38 ) ) {
+      if( IxfdMaster =
+         (struct xfdMasterIFace *)IExec->GetInterface(xfdMasterBase,"main",1,NULL)) {
+        if( xfdobj =
+            (struct xfdBufferInfo *)IxfdMaster->xfdAllocObject(XFDOBJ_BUFFERINFO) ) {
+          xfdobj->xfdbi_SourceBuffer = buffer;
+          xfdobj->xfdbi_SourceBufLen = length;
+          xfdobj->xfdbi_Flags = XFDFB_RECOGTARGETLEN | XFDFB_RECOGEXTERN;
+
+          if( IxfdMaster->xfdRecogBuffer( xfdobj ) ) {
+            best_guess = LIBSPECTRUM_ID_COMPRESSED_XFD;
+            duplicate_best=0;
+          }
+          IxfdMaster->xfdFreeObject( (APTR)xfdobj );
+        }
+        IExec->DropInterface( (struct Interface *)IxfdMaster );
+      }
+      IExec->CloseLibrary( xfdMasterBase );
+    }
+  }
+#endif /* #ifdef AMIGA */
+
   /* If two things were equally good, we can't identify this. Otherwise,
      return our best guess */
   if( duplicate_best ) {
@@ -541,6 +580,7 @@ libspectrum_identify_class( libspectrum_class_t *libspectrum_class,
 
   case LIBSPECTRUM_ID_COMPRESSED_BZ2:
   case LIBSPECTRUM_ID_COMPRESSED_GZ:
+  case LIBSPECTRUM_ID_COMPRESSED_XFD:
     *libspectrum_class = LIBSPECTRUM_CLASS_COMPRESSED; return 0;
 
   case LIBSPECTRUM_ID_DISK_DSK:
@@ -671,6 +711,52 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 #endif				/* #ifdef HAVE_ZLIB_H */
 
     break;
+
+#ifdef AMIGA
+  case LIBSPECTRUM_ID_COMPRESSED_XFD:
+    {
+      struct ExecIFace *IExec =
+        (struct ExecIFace *)(*(struct ExecBase **)4)->MainInterface;
+      struct xfdBufferInfo *xfdobj;
+
+      if( xfdMasterBase = IExec->OpenLibrary( "xfdmaster.library", 38 ) ) {
+        if( IxfdMaster =
+            (struct xfdMasterIFace *)IExec->GetInterface(xfdMasterBase,"main",1,NULL)) {
+          if( xfdobj = (struct xfdBufferInfo *)IxfdMaster->xfdAllocObject(XFDOBJ_BUFFERINFO) ) {
+            xfdobj->xfdbi_SourceBufLen = old_length;
+            xfdobj->xfdbi_SourceBuffer = old_buffer;
+            xfdobj->xfdbi_Flags = XFDFB_RECOGEXTERN | XFDFB_RECOGTARGETLEN;
+            xfdobj->xfdbi_PackerFlags = XFDPFB_RECOGLEN;
+            if( IxfdMaster->xfdRecogBuffer( xfdobj ) ) {
+              xfdobj->xfdbi_TargetBufMemType = MEMF_SHARED;
+
+              if( IxfdMaster->xfdDecrunchBuffer( xfdobj ) ) {
+                *new_buffer = malloc( xfdobj->xfdbi_TargetBufSaveLen );
+                *new_length = xfdobj->xfdbi_TargetBufSaveLen;
+                memcpy( *new_buffer, xfdobj->xfdbi_TargetBuffer, *new_length );
+                IExec->FreeMem( xfdobj->xfdbi_TargetBuffer,xfdobj->xfdbi_TargetBufLen );
+              } else {
+                libspectrum_print_error(
+                             LIBSPECTRUM_ERROR_UNKNOWN,
+                             "xfdmaster.library not able to decrunch %s file",
+                             xfdobj->xfdbi_PackerName );
+                return LIBSPECTRUM_ERROR_UNKNOWN;
+              }
+            } else {
+              libspectrum_print_error(
+                                 LIBSPECTRUM_ERROR_UNKNOWN,
+                                 "xfdmaster.library does not recognise file" );
+              return LIBSPECTRUM_ERROR_UNKNOWN;
+            }
+            IxfdMaster->xfdFreeObject( xfdobj );
+          }
+          IExec->DropInterface( (struct Interface *)IxfdMaster );
+        }
+        IExec->CloseLibrary( xfdMasterBase );
+      }
+    }
+    break;
+#endif /* #ifdef AMIGA */
 
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
