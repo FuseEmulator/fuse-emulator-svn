@@ -166,7 +166,10 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_TAPE_Z80EM,		/* Z80Em tape image */
 
   /* Below here, present only in x.x.x and later */
-  LIBSPECTRUM_ID_TAPE_WAV		/* .wav tape image */
+  LIBSPECTRUM_ID_TAPE_WAV,		/* .wav tape image */
+
+  /* Amiga entry for improved compressed file support */
+  LIBSPECTRUM_ID_COMPRESSED_XFD		/* xfdmaster compressed file */
 
 } libspectrum_id_t;
 
