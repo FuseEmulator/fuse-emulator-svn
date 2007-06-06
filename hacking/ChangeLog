@@ -176,3 +176,6 @@
 20070529 acinclude.m4: remove warnings about underquoted definitions (Stuart).
 20070531 audio2tape.c,tzxlist.c: remove warnings.
 20070606 man/fuse-utils.1: mention audio2tape (Stuart).
+20070606 man/{audio2tape.1,createhdf.1,listbasic.1,rzxcheck.1,rzxdump.1,
+	 rzxtool.1,scl2trd.1,snap2tzx.1,snapconv.1,tapeconv.1,tzxlist.1}:
+	 spelling/formatting fixes (Stuart).
