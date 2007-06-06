@@ -465,3 +465,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070602 Ignore make-perl.exe and test/test.exe (Stuart).
 20070604 libspectrum.h.in,libspectrum.c: allow Amiga version to decompress
          files with xfdmaster.library (part of patch #1712260) (Chris Young).
+20070606 tzx_write.c: add write support for libspectrum RLE block by converting
+         to a TZX DRB block due to the limited program support for the TZX
+         CSW block (Fred).

@@ -1,5 +1,5 @@
 /* tzx_write.c: Routines for writing .tzx files
-   Copyright (c) 2001-2005 Philip Kendall
+   Copyright (c) 2001-2007 Philip Kendall, Fredrick Meunier
 
    $Id$
 
@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "tape_block.h"
 #include "internals.h"
 
 /*** Local function prototypes ***/
@@ -90,6 +91,11 @@ tzx_write_hardware( libspectrum_tape_block *block, libspectrum_byte **buffer,
 static libspectrum_error
 tzx_write_custom( libspectrum_tape_block *block, libspectrum_byte **buffer,
 		  libspectrum_byte **ptr, size_t *length );
+static libspectrum_error
+tzx_write_rle( libspectrum_tape_block *block, libspectrum_byte **buffer,
+               libspectrum_byte **ptr, size_t *length,
+               libspectrum_tape *tape,
+               libspectrum_tape_iterator iterator );
 
 static libspectrum_error
 tzx_write_empty_block( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -141,15 +147,15 @@ internal_tzx_write( libspectrum_byte **buffer, size_t *length,
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
-      error = tzx_write_pure_tone( block, buffer, &ptr, length);
+      error = tzx_write_pure_tone( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_PULSES:
-      error = tzx_write_pulses( block, buffer, &ptr, length);
+      error = tzx_write_pulses( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
-      error = tzx_write_data( block, buffer, &ptr, length);
+      error = tzx_write_data( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
@@ -163,11 +169,11 @@ internal_tzx_write( libspectrum_byte **buffer, size_t *length,
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
-      error = tzx_write_pause( block, buffer, &ptr, length);
+      error = tzx_write_pause( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
-      error = tzx_write_group_start( block, buffer, &ptr, length);
+      error = tzx_write_group_start( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
@@ -180,7 +186,7 @@ internal_tzx_write( libspectrum_byte **buffer, size_t *length,
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
-      error = tzx_write_loop_start( block, buffer, &ptr, length);
+      error = tzx_write_loop_start( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
@@ -200,24 +206,29 @@ internal_tzx_write( libspectrum_byte **buffer, size_t *length,
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
-      error = tzx_write_comment( block, buffer, &ptr, length);
+      error = tzx_write_comment( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
-      error = tzx_write_message( block, buffer, &ptr, length);
+      error = tzx_write_message( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
-      error = tzx_write_archive_info( block, buffer, &ptr, length);
+      error = tzx_write_archive_info( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
     case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
-      error = tzx_write_hardware( block, buffer, &ptr, length);
+      error = tzx_write_hardware( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
-      error = tzx_write_custom( block, buffer, &ptr, length);
+      error = tzx_write_custom( block, buffer, &ptr, length );
+      if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
+      break;
+
+    case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
+      error = tzx_write_rle( block, buffer, &ptr, length, tape, iterator );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       break;
 
@@ -793,6 +804,170 @@ tzx_write_custom( libspectrum_tape_block *block, libspectrum_byte **buffer,
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
+}
+
+typedef struct {
+  short bits_used; /* The bits used in the current byte in progress */
+  short level; /* The last level output to this block */
+  libspectrum_byte *tape_buffer; /* The buffer we are writing into */
+  size_t tape_length; /* size of the buffer allocated so far */
+  size_t length; /* size of the buffer used so far */
+} rle_write_state;
+
+static rle_write_state rle_state;
+
+/* write a pulse of pulse_length bits into the tape_buffer */
+static libspectrum_error
+write_pulse( libspectrum_dword pulse_length )
+{
+  int i;
+  size_t target_size = rle_state.length + pulse_length/8;
+
+  if( rle_state.tape_length <= target_size ) {
+    rle_state.tape_length = target_size * 2;
+    rle_state.tape_buffer = realloc( rle_state.tape_buffer,
+                                     rle_state.tape_length );
+    if( !rle_state.tape_buffer ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+                               "%s: out of memory for RLE block conversion buffer",
+                               __func__ );
+      return LIBSPECTRUM_ERROR_MEMORY;
+    }
+  }
+
+  for( i = pulse_length; i > 0; i-- ) {
+    if( rle_state.level ) 
+      *(rle_state.tape_buffer + rle_state.length) |=
+        1 << (7 - rle_state.bits_used);
+    rle_state.bits_used++;
+
+    if( rle_state.bits_used == 8 ) {
+      rle_state.length++;
+      *(rle_state.tape_buffer + rle_state.length) = 0;
+      rle_state.bits_used = 0;
+    }
+  }
+
+  rle_state.level = !rle_state.level;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+/* Convert RLE block to a TZX DRB as TZX CSW block support is limited :/ */
+static libspectrum_error
+tzx_write_rle( libspectrum_tape_block *block, libspectrum_byte **buffer,
+               libspectrum_byte **ptr, size_t *length,
+               libspectrum_tape *tape,
+               libspectrum_tape_iterator iterator )
+{
+  libspectrum_error error;
+  libspectrum_tape_block_state it;
+  libspectrum_dword scale = libspectrum_tape_block_scale( block );
+  libspectrum_dword pulse_tstates = 0;
+  libspectrum_dword balance_tstates = 0;
+  int flags = 0;
+
+  libspectrum_tape_block* raw_block;
+  error = libspectrum_tape_block_alloc( &raw_block,
+                                        LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
+  if( error ) return error;
+
+  libspectrum_tape_block_set_bit_length( raw_block, scale );
+  libspectrum_tape_block_set_pause     ( raw_block, 0 );
+
+  rle_state.bits_used = 0;
+  rle_state.level = 0;
+  rle_state.length = 0;
+  rle_state.tape_length = 8192;
+  rle_state.tape_buffer = malloc( rle_state.tape_length );
+
+  if( !rle_state.tape_buffer ) {
+    libspectrum_tape_block_free( raw_block );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+                             "%s: out of memory for RLE block conversion buffer",
+                             __func__ );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  *rle_state.tape_buffer = 0;
+
+  it.current_block = iterator;
+  error = libspectrum_tape_block_init( block, &it );
+  if( error != LIBSPECTRUM_ERROR_NONE ) {
+    free( rle_state.tape_buffer );
+    libspectrum_tape_block_free( raw_block );
+    return error;
+  }
+
+  while( !(flags & LIBSPECTRUM_TAPE_FLAGS_BLOCK) ) {
+    libspectrum_dword pulse_length = 0;
+
+    /* Use internal version of this that doesn't bugger up the
+       external tape status */
+    error = libspectrum_tape_get_next_edge_internal( &pulse_tstates, &flags,
+                                                     tape, &it );
+    if( error != LIBSPECTRUM_ERROR_NONE ) {
+      free( rle_state.tape_buffer );
+      libspectrum_tape_block_free( raw_block );
+      return error;
+    }
+
+    balance_tstates += pulse_tstates;
+
+    /* next set of pulses is: balance_tstates / scale; */
+    pulse_length = balance_tstates / scale;
+    balance_tstates = balance_tstates % scale;
+
+    /* write pulse_length bits of the current level into the buffer */
+    error = write_pulse( pulse_length );
+    if( error != LIBSPECTRUM_ERROR_NONE ) {
+      free( rle_state.tape_buffer );
+      libspectrum_tape_block_free( raw_block );
+      return error;
+    }
+  }
+
+  if( rle_state.length || rle_state.bits_used ) {
+    if( rle_state.bits_used ) {
+      rle_state.length++;
+    } else {
+      rle_state.bits_used = 8;
+    }
+
+    error = libspectrum_tape_block_set_bits_in_last_byte( raw_block,
+                                                          rle_state.bits_used );
+    if( error != LIBSPECTRUM_ERROR_NONE ) {
+      free( rle_state.tape_buffer );
+      libspectrum_tape_block_free( raw_block );
+      return error;
+    }
+
+    error = libspectrum_tape_block_set_data_length( raw_block,
+                                                    rle_state.length );
+    if( error != LIBSPECTRUM_ERROR_NONE ) {
+      free( rle_state.tape_buffer );
+      libspectrum_tape_block_free( raw_block );
+      return error;
+    }
+
+    error = libspectrum_tape_block_set_data( raw_block, rle_state.tape_buffer );
+    if( error != LIBSPECTRUM_ERROR_NONE ) {
+      free( rle_state.tape_buffer );
+      libspectrum_tape_block_free( raw_block );
+      return error;
+    }
+
+    /* now have tzx_write_raw_data finish the job */
+    error = tzx_write_raw_data( raw_block, buffer, ptr, length );
+    if( error != LIBSPECTRUM_ERROR_NONE ) {
+      libspectrum_tape_block_free( raw_block );
+      return error;
+    }
+  } else {
+    free( rle_state.tape_buffer );
+  }
+
+  return libspectrum_tape_block_free( raw_block );
 }
 
 static libspectrum_error
