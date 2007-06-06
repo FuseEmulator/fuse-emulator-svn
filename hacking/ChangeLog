@@ -175,3 +175,4 @@
          convertor (part of patch #1725974) (Fred).
 20070529 acinclude.m4: remove warnings about underquoted definitions (Stuart).
 20070531 audio2tape.c,tzxlist.c: remove warnings.
+20070606 man/fuse-utils.1: mention audio2tape (Stuart).
