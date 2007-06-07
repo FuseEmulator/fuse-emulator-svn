@@ -468,3 +468,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070606 tzx_write.c: add write support for libspectrum RLE block by converting
          to a TZX DRB block due to the limited program support for the TZX
          CSW block (Fred).
+20070608 libspectrum.c: add .snapshot as an extension for SNA files as it was
+         used by Peter McGavin's Spectrum Emulator on the Amiga (Fred).
