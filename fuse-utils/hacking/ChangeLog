@@ -182,3 +182,5 @@
 20070608 configure.in,Makefile.am,tape2wav.c,man/{tape2wav.1,audio2tape.1},
          audio2tape.c: add simple tape image to wav file convertor (Fred).
 20070608 man/*.1: fix dashes (Stuart).
+20070608 audio2tape.c,man/{audio2tape.1,tape2wav.1},tape2wav.c: update FSF
+	 address (Stuart).
