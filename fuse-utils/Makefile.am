@@ -26,7 +26,7 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = hacking \
 	man
 
-bin_PROGRAMS = @AUDIO2TAPE@ \
+bin_PROGRAMS = @AUDIOTOOLS@ \
 	       createhdf \
 	       listbasic \
 	       raw2hdf \
@@ -39,7 +39,7 @@ bin_PROGRAMS = @AUDIO2TAPE@ \
 	       tapeconv \
 	       tzxlist
 
-EXTRA_PROGRAMS = rzxcheck audio2tape
+EXTRA_PROGRAMS = rzxcheck audio2tape tape2wav
 
 INCLUDES = @LIBSPEC_CFLAGS@ @AUDIOFILE_CFLAGS@
 
@@ -75,5 +75,8 @@ tzxlist_LDADD = @LIBSPEC_LIBS@
 
 audio2tape_SOURCES = audio2tape.c utils.c
 audio2tape_LDADD = @LIBSPEC_LIBS@ @AUDIOFILE_LIBS@
+
+tape2wav_SOURCES = tape2wav.c utils.c
+tape2wav_LDADD = @LIBSPEC_LIBS@ @AUDIOFILE_LIBS@
 
 noinst_HEADERS = ide.h utils.h

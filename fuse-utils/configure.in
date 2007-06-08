@@ -114,9 +114,9 @@ fi
 AM_PATH_AUDIOFILE(
   0.2.3,
   AC_DEFINE([HAVE_LIB_AUDIOFILE], 1, [Defined if we've got audiofile])
-  AUDIO2TAPE="audio2tape"
+  AUDIOTOOLS="audio2tape tape2wav"
 )
-AC_SUBST(AUDIO2TAPE)
+AC_SUBST(AUDIOTOOLS)
 
 AC_OUTPUT(Makefile \
 fuse-utils.qpg \

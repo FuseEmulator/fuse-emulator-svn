@@ -1,4 +1,4 @@
-/* audio2tape.c: Convert audio files (wav, voc, etc.) to .tzx files
+/* audio2tape.c: Convert audio files (wav, voc, etc.) to tape files (.tzx,.csw)
    Copyright (c) 2007 Fredrick Meunier
 
    $Id$
