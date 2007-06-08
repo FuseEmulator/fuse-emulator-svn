@@ -34,7 +34,7 @@ snapconv \- Sinclair ZX Spectrum snapshot converter
 .SH SYNOPSIS
 .PD 0
 .B snapconv
-[ -c ] [ -n ]
+[ \-c ] [ \-n ]
 .I infile outfile
 .PD 1
 .\"
@@ -47,13 +47,13 @@ snapconv converts between ZX Spectrum snapshot files.
 .\"
 .SH OPTIONS
 .TP
-.I -c
+.I \-c
 specifies that all data in the output snapshot should be compressed,
 even if that compression will result in a bigger file than if some
 data is left uncompressed. This helps compatibility with some buggy
 programs that can only read entirely compressed .z80 files.
 .TP
-.I -n
+.I \-n
 specifies that the output snapshot should be uncompressed.
 .TP
 .I infile
@@ -76,7 +76,7 @@ None known.
 .\"
 .SH SEE ALSO
 .IR fuse "(1),"
-.IR fuse-utils "(1),"
+.IR fuse\-utils "(1),"
 .IR libspectrum "(3),"
 .IR listbasic "(1),"
 .IR snap2tzx "(1)"
@@ -88,4 +88,4 @@ The comp.sys.sinclair Spectrum FAQ, at
 .\"------------------------------------------------------------------
 .\"
 .SH AUTHOR
-Philip Kendall (philip-fuse@shadowmagic.org.uk).
+Philip Kendall (philip\-fuse@shadowmagic.org.uk).
