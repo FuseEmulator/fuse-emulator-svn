@@ -470,3 +470,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          CSW block (Fred).
 20070608 libspectrum.c: add .snapshot as an extension for SNA files as it was
          used by Peter McGavin's Spectrum Emulator on the Amiga (Fred).
+20070608 doc/libspectrum.3: fix dashes (Stuart).
