@@ -34,16 +34,16 @@ snap2tzx \- Convert ZX Spectrum snapshot to .tzx tape images
 .SH SYNOPSIS
 .PD 0
 .B snap2tzx
-.RI "[-1 " string ]
-.RI "[-2 " string ]
-.RI "[-b " colour ]
-.RI "[-g " string ]
-.RI "[-l " string ]
-.RI "[-o " filename ]
-[-r]
-.RI "[-s " speed ]
-[-v]
-.RI "[-$ " filename ]
+.RI "[\-1 " string ]
+.RI "[\-2 " string ]
+.RI "[\-b " colour ]
+.RI "[\-g " string ]
+.RI "[\-l " string ]
+.RI "[\-o " filename ]
+[\-r]
+.RI "[\-s " speed ]
+[\-v]
+.RI "[\-$ " filename ]
 .I snapshot
 .P
 .PD 1
@@ -57,46 +57,46 @@ snap2tzx converts a ZX Spectrum snapshot into a .tzx tape image.
 .\"
 .SH OPTIONS
 .TP
-.RI "-1 " string
+.RI "\-1 " string
 causes
 .I string
 (which has a maximum of 32 characters) to be shown while loading.
 .TP
-.RI "-2 " string
+.RI "\-2 " string
 causes
 .I string
 (maximum 32 characters) to also be shown while loading.
 .TP
-.RI "-b " colour
+.RI "\-b " colour
 specifies the border colour while loading.
 .TP
-.RI "-g " string
+.RI "\-g " string
 causes
 .I string
 (maximum 32 characters) to be used as the game name while loading.
 .TP
-.RI "-l " string
+.RI "\-l " string
 causes
 .I string
 (maximum 8 characters) to be used as the BASIC filename in the loader.
 .TP
-.RI "-o " filename
+.RI "\-o " filename
 causes the output to be sent to
 .IR filename .
 .TP
--r
+\-r
 causes the final line of attribute data in the loading screen to be
 bright.
 .TP
-.RI "-s " speed
+.RI "\-s " speed
 specifies the speed of the loader; available values for
 .I speed
 are 0 (1500 bps), 1 (2250 bps), 2 (3000 bps) and 3 (6000 bps).
 .TP
--v
+\-v
 specifies verbose output.
 .TP
-.RI "-$ " filename
+.RI "\-$ " filename
 specifies that the ZX Spectrum screen stored in
 .I filename
 should be used as the loading screen.
@@ -119,7 +119,7 @@ None known.
 .\"
 .SH SEE ALSO
 .IR fuse "(1),"
-.IR fuse-utils "(1),"
+.IR fuse\-utils "(1),"
 .IR libspectrum "(3),"
 .IR listbasic "(1),"
 .IR snapconv "(1)"
@@ -131,10 +131,10 @@ The comp.sys.sinclair Spectrum FAQ, at
 .\"------------------------------------------------------------------
 .\"
 .SH AUTHOR
-Philip Kendall (philip-fuse@shadowmagic.org.uk).
+Philip Kendall (philip\-fuse@shadowmagic.org.uk).
 .PP
 Tomaz Kac wrote
-.IR z802tzx " (" ftp://ftp.worldofspectrum.org/pub/sinclair/tools/unix/z802tzx-1.2.tar.gz "),"
+.IR z802tzx " (" ftp://ftp.worldofspectrum.org/pub/sinclair/tools/unix/z802tzx\-1.2.tar.gz "),"
 on which 
 .I snap2tzx
 is very heavily based.

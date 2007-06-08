@@ -34,11 +34,11 @@ audio2tape \- Sinclair ZX Spectrum audio to tape file converter
 .SH SYNOPSIS
 .PD 0
 .B audio2tape
-.RI "[-t " type ]
-[-s]
-.RI "[-p " level ]
-.RI "[-h " level ]
-.RI "[-l " level ]
+.RI "[\-t " type ]
+[\-s]
+.RI "[\-p " level ]
+.RI "[\-h " level ]
+.RI "[\-l " level ]
 .I infile outfile
 .PD 1
 .\"
@@ -51,7 +51,7 @@ audio2tape converts audio files to ZX Spectrum tape images.
 .\"
 .SH OPTIONS
 .TP
-.RI "-t type
+.RI "\-t type
 causes
 .I type
 to be used as the level detection trigger. There are two triggers implemented;
@@ -64,25 +64,25 @@ trigger implements a Schmitt trigger which outputs a less noisy signal, but
 requires a stronger signal to noise ratio than the simple trigger. The default
 trigger is "simple".
 .TP
--s
+\-s
 causes the display of a frequency graph showing the sound levels present in the
 audio file. This can be useful when selecting good crossover points.
 .TP
-.RI "-p " level
+.RI "\-p " level
 causes
 .I level
 to be used as the crossover point between a level of one or zero in the tape
 file output in the simple trigger. The default level is 127 from a range of
 0-255.
 .TP
-.RI "-h " level
+.RI "\-h " level
 causes
 .I level
 to be used as the low to high crossover point between a level of one or zero
 in the tape file output for the Schmitt trigger. The default level is 195 from a
 range of 0-255.
 .TP
-.RI "-l " level
+.RI "\-l " level
 causes
 .I level
 to be used as the high to low crossover point between a level of one or zero
@@ -109,11 +109,11 @@ None known.
 .\"
 .SH SEE ALSO
 .IR fuse "(1),"
-.IR fuse-utils "(1),"
+.IR fuse\-utils "(1),"
 .IR libspectrum "(3),"
 .IR listbasic "(1),"
-.IR tapeconv "(1)"
-.IR tzxlist "(1)"
+.IR tapeconv "(1),"
+.IR tzxlist "(1),"
 .IR snap2tzx "(1)"
 .IR tape2wav "(1)"
 .PP

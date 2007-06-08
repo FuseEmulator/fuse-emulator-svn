@@ -34,7 +34,7 @@ createhdf \- Create a blank IDE hard disk image in .hdf format
 .SH SYNOPSIS
 .PD 0
 .B createhdf
-[ -c ] [ -s ]
+[ \-c ] [ \-s ]
 .I cylinders heads sectors file
 .P
 .PD 1
@@ -49,13 +49,13 @@ use with Sinclair ZX Spectrum emulators.
 .\"
 .SH OPTIONS
 .TP
-.I -c
+.I \-c
 specifies that the .hdf image should be created in `compact' mode,
 where only the low byte of every word is stored in the image. This is
 useful for saving space if the hard disk image is for use with an
 interface which accesses only the low byte of every word.
 .TP
-.I -s
+.I \-s
 specifies that the .hdf image should
 .B not
 be created as a sparse file. Normally,
@@ -67,7 +67,7 @@ disables this. (There's nothing `magic' about this: if data is written
 to the file, it will take up space just like any other data; it's only
 empty space which is synthesised by the operating system).
 .TP
-.I -v version
+.I \-v version
 specifies the version of .hdf image to be created. Valid values are
 .RI ` 1.0 '
 for a version 1.0 file and
@@ -95,7 +95,7 @@ None known.
 .\"
 .SH SEE ALSO
 .IR fuse "(1),"
-.IR fuse-utils "(1),"
+.IR fuse\-utils "(1),"
 .IR libspectrum "(3)"
 .PP
 The .hdf format specification, at
@@ -109,4 +109,4 @@ The comp.sys.sinclair Spectrum FAQ, at
 .\"------------------------------------------------------------------
 .\"
 .SH AUTHOR
-Philip Kendall (philip-fuse@shadowmagic.org.uk).
+Philip Kendall (philip\-fuse@shadowmagic.org.uk).

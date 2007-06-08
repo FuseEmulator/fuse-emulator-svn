@@ -34,8 +34,8 @@ rzxtool \- Modify properties Sinclair ZX Spectrum input recording files
 .SH SYNOPSIS
 .PD 0
 .B rzxtool
-.RI "[-a " snapfile ]
-[ -e ] [ -r ] [ -u ]
+.RI "[\-a " snapfile ]
+[ \-e ] [ \-r ] [ \-u ]
 .I rzxfile
 .P
 .PD 1
@@ -50,7 +50,7 @@ in the file.
 .\"------------------------------------------------------------------
 .\"
 .SH OPTIONS
-.I -a snapfile
+.I \-a snapfile
 .RS
 The snapshot specified in
 .I snapfile
@@ -62,24 +62,24 @@ The new RZX file will be output to standard output.
 can be any of the .sna, .snp, .sp, .szx, .z80, .zxs or +D formats.
 .RE
 .PP
-.I -e
+.I \-e
 .RS
 The snapshot present in
 .I rzxfile
 will be output to standard output in .z80 format. This option is
 incompatible with the
-.IR -a ", " -r " and " -u
+.IR \-a ", " \-r " and " \-u
 options.
 .RE
 .PP
-.I -r
+.I \-r
 .RS
 Any snapshot present in
 .I rzxfile
 will be removed, and the new RZX file output to standard output.
 .RE
 .PP
-.I -u
+.I \-u
 .RS
 When outputting an RZX file, this option causes the input recording
 data to be output uncompressed; if this option is not given, the data
@@ -101,7 +101,7 @@ None known
 .\"
 .SH SEE ALSO
 .IR fuse "(1),"
-.IR fuse-utils "(1),"
+.IR fuse\-utils "(1),"
 .IR rzxcheck "(1),"
 .IR rzxdump "(1),"
 .IR zlib "(3)"
@@ -113,4 +113,4 @@ The comp.sys.sinclair Spectrum FAQ, at
 .\"------------------------------------------------------------------
 .\"
 .SH AUTHOR
-Philip Kendall (philip-fuse@shadowmagic.org.uk).
+Philip Kendall (philip\-fuse@shadowmagic.org.uk).
