@@ -184,3 +184,5 @@
 20070608 man/*.1: fix dashes (Stuart).
 20070608 audio2tape.c,man/{audio2tape.1,tape2wav.1},tape2wav.c: update FSF
 	 address (Stuart).
+20070611 man/fuse-utils.1: mention tape2wav (Stuart).
+20070611 .: ignore tape2wav.
