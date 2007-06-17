@@ -491,6 +491,9 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
 
       { LIBSPECTRUM_ID_TAPE_WAV,      "wav", 3, NULL,		    0, 0, 0 },
 
+      { LIBSPECTRUM_ID_DISK_MGT,      "mgt", 3, NULL,		    0, 0, 0 },
+      { LIBSPECTRUM_ID_DISK_IMG,      "img", 3, NULL,		    0, 0, 0 },
+
       { -1, NULL, 0, NULL, 0, 0, 0 }, /* End marker */
 
     };
@@ -588,6 +591,10 @@ libspectrum_identify_class( libspectrum_class_t *libspectrum_class,
 
   case LIBSPECTRUM_ID_DISK_DSK:
     *libspectrum_class = LIBSPECTRUM_CLASS_DISK_PLUS3; return 0;
+
+  case LIBSPECTRUM_ID_DISK_IMG:
+  case LIBSPECTRUM_ID_DISK_MGT:
+    *libspectrum_class = LIBSPECTRUM_CLASS_DISK_PLUSD; return 0;
 
   case LIBSPECTRUM_ID_DISK_SCL:
   case LIBSPECTRUM_ID_DISK_TRD:
