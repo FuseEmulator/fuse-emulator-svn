@@ -472,3 +472,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          used by Peter McGavin's Spectrum Emulator on the Amiga (Fred).
 20070608 doc/libspectrum.3: fix dashes (Stuart).
 20070608 csw.c,wav.c: update FSF address (Stuart).
+20070617 libspectrum.{c,h.in}: add support for +D disk images (plusd_20070609).
+
