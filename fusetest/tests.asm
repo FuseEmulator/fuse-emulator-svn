@@ -9,17 +9,17 @@
 	
 bitnixtest
 PROC
-	ld ix, _data - 0xc4
-	bit 5, (ix+0xc4)
+	ld ix, _data - 0x44
+	bit 5, (ix+0x44)
 	push af
 	pop bc
-	ld a, 0x7c
+	ld a, 0x10
 	cp c
 	ret z
 	ld a,c
 	ret
 
-_data	defb 0xe7
+_data	defb 0xff
 	
 ENDP
 	
