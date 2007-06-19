@@ -73,6 +73,7 @@ ENDP
 INCLUDE tests.asm
 	
 INCLUDE sync.asm
+INCLUDE delay.asm
 INCLUDE atiming.asm
 INCLUDE print.asm
 

@@ -53,33 +53,17 @@ PROC
 	inc hl			; 108
 	ld (hl), _isr / 0x100	; 114
 
-	ld hl, 0x0220		; 124
-
-_delay	dec hl			; 134 + n * 26
-	ld a, l			; 140 + n * 26
-	or h			; 144 + n * 26
-	jr nz, _delay		; 148 + n * 26
-
-	nop			; 14273
-	nop			; 14277
-	nop			; 14281
-	nop			; 14285
+	ld hl, 0x374b		; 124
+	call delay		; 134
 
 	ld hl, 0x0000		; 14289
 	ld de, 0x7fff		; 14299
 	ld bc, 0x0002		; 14309
 	ldir			; 14319, 14358
 
-	ld hl, 0x0842		; 14374
+	ld hl, 0xd6bb		; 14374
+	call delay		; 14384
 
-_delay1	dec hl			; 14384 + n * 26
-	ld a, l			; 14390 + n * 26
-	or h			; 14394 + n * 26
-	jr nz, _delay1		; 14398 + n * 26
-
-	nop			; 69343
-	nop			; 69347
-	nop			; 69351
 	jp atiming		; 69355
 
 _isr	pop hl
@@ -97,14 +81,11 @@ PROC
 	
 	call interruptsync
 
-	ld bc, 0x40ff		; 88
-	ld d, 0x40		; 98
-	ld hl, 0x0673		; 105
+	ld hl, 0xa7a9		; 88
+	call delay		; 98
 
-_delay	dec hl			; 115 + n * 26
-	ld a, l			; 121 + n * 26
-	or h			; 125 + n * 26
-	jr nz, _delay		; 129 + n * 26
+	ld bc, 0x40ff		; 43019
+	ld d, 0x40		; 43029
 
 	ld hl, 0x5a0f		; 43036
 

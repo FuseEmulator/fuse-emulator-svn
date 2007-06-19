@@ -15,6 +15,7 @@ all: $(target)
 
 fusetest.tap: \
 	atiming.asm \
+	delay.asm \
 	fusetest.asm \
 	print.asm \
 	sync.asm \

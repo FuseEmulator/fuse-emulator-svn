@@ -49,20 +49,13 @@ _isr
 	inc hl			; 49 - 52
 	ld (hl), _isr3 / 0x100	; 55 - 58
 
-_isr1	ld hl, 0x0a7c 		; 65 - 68
+_isr1	ld hl, 0xffff 		; 65 - 68
+	call delay		; 75 - 78
+	ld hl, 0x10a3		; 65610 - 65613
+	call delay		; 65620 - 65623
 
-_isr2	dec hl			; 75 - 78 + n * 26
-	ld a, l			; 81 - 84 + n * 26
-	or h			; 85 - 88 + n * 26
-	jr nz, _isr2		; 89 - 92 + n * 26
-
-	ei			; 69854 - 69857
-	ld a,i			; 69858 - 69861
-	xor a			; 69867 - 69870
-	nop			; 69871 - 69874
-	nop			; 69875 - 69878
-	nop			; 69879 - 69882
-	nop			; 69883 - 69886
+	ei			; 69879 - 69882
+	xor a			; 69883 - 69886
 	inc a			; 69887 or interrupt occurred
 	dec a			; Should not be executed
 	halt
