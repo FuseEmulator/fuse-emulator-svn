@@ -58,7 +58,7 @@ typedef struct libspectrum_microdrive_block {
 
 } libspectrum_microdrive_block;
 
-const static size_t MDR_LENGTH = LIBSPECTRUM_MICRODRIVE_CARTRIDGE_LENGTH + 1;
+static const size_t MDR_LENGTH = LIBSPECTRUM_MICRODRIVE_CARTRIDGE_LENGTH + 1;
 
 /* Constructor/destructor */
 
