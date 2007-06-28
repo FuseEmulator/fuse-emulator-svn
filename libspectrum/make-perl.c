@@ -123,6 +123,7 @@ int main(void)
 "#endif\n"
 "\n"
 "typedef int gint;\n"
+"typedef long glong;\n"
 "typedef gint gboolean;\n"
 "typedef unsigned int guint;\n"
 "typedef const void * gconstpointer;\n"
