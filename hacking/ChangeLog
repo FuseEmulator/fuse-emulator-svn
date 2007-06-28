@@ -479,3 +479,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070628 make-perl.c: fix compilation on 64-bit systems without glib (Stuart).
 20070628 microdrive.c: remove "'static' is not at beginning of declaration"
 	 warning with -Wextra (Stuart).
+20070628 rzx.c,timings.c: remove missing initializer warnings with -Wextra
+	 (Stuart).

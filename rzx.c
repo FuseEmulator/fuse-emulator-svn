@@ -48,7 +48,7 @@ static snapshot_string_t snapshot_strings[] = {
   { LIBSPECTRUM_ID_SNAPSHOT_SNA, "SNA" },
   { LIBSPECTRUM_ID_SNAPSHOT_SZX, "SZX" },
   { LIBSPECTRUM_ID_SNAPSHOT_Z80, "Z80" },
-  { 0 },	/* End marker */
+  { 0, NULL },	/* End marker */
 };
 
 typedef struct libspectrum_rzx_frame_t {
