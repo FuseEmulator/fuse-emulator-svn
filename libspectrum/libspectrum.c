@@ -44,12 +44,16 @@ static const char *gcrypt_version;
 
 #include "internals.h"
 
-#ifdef AMIGA
+#if defined AMIGA || defined __MORPHOS__
 #include <proto/exec.h>
 #include <proto/xfdmaster.h>
-struct Library *xfdMasterBase;
+struct xfdMasterBase *xfdMasterBase;
+
+#ifndef __MORPHOS__
 struct xfdMasterIFace *IxfdMaster;
-#endif /* #ifdef AMIGA */
+#endif				/* #ifndef __MORPHOS__ */
+
+#endif /* #if defined AMIGA || defined __MORPHOS__ */
 
 /* The various real devices that can be attached to a virtual joystick */
 const int LIBSPECTRUM_JOYSTICK_INPUT_NONE             = 0;
@@ -528,34 +532,53 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
     }
   }
 
-#ifdef AMIGA
+#if defined AMIGA || defined __MORPHOS__
   /* Compressed file check through xfdmaster.library */
 
   /* this prevents most good matches and gz/bz2 from being run through xfd (xfd
      supports gz, but we want to use the internal code) */
   if( best_score <= 3 ) {
+#ifndef __MORPHOS__
     struct ExecIFace *IExec =
       (struct ExecIFace *)(*(struct ExecBase **)4)->MainInterface;
+#endif				/* #ifndef __MORPHOS__ */
     struct xfdBufferInfo *xfdobj;
 
+#ifndef __MORPHOS__
     if( xfdMasterBase = IExec->OpenLibrary("xfdmaster.library",38 ) ) {
       if( IxfdMaster =
-         (struct xfdMasterIFace *)IExec->GetInterface(xfdMasterBase,"main",1,NULL)) {
-        if( xfdobj =
-            (struct xfdBufferInfo *)IxfdMaster->xfdAllocObject(XFDOBJ_BUFFERINFO) ) {
+         (struct xfdMasterIFace *)IExec->GetInterface(xfdMasterBase,"main",1,NULL)){
+        if( xfdobj = (struct xfdBufferInfo *)IxfdMaster->xfdAllocObject(XFDOBJ_BUFFERINFO) ) {
+#else				/* #ifndef __MORPHOS__ */
+    if( xfdMasterBase = OpenLibrary("xfdmaster.library",38 ) ) {
+        if( xfdobj = (struct xfdBufferInfo *)xfdAllocObject(XFDOBJ_BUFFERINFO) ) {
+#endif				/* #ifndef __MORPHOS__ */
+    if( xfdMasterBase = OpenLibrary("xfdmaster.library",38 ) ) {
           xfdobj->xfdbi_SourceBuffer = buffer;
           xfdobj->xfdbi_SourceBufLen = length;
           xfdobj->xfdbi_Flags = XFDFB_RECOGTARGETLEN | XFDFB_RECOGEXTERN;
 
+#ifndef __MORPHOS__
           if( IxfdMaster->xfdRecogBuffer( xfdobj ) ) {
+#else				/* #ifndef __MORPHOS__ */
+          if( xfdRecogBuffer( xfdobj ) ) {
+#endif				/* #ifndef __MORPHOS__ */
             best_guess = LIBSPECTRUM_ID_COMPRESSED_XFD;
             duplicate_best=0;
           }
+#ifndef __MORPHOS__
           IxfdMaster->xfdFreeObject( (APTR)xfdobj );
+#else				/* #ifndef __MORPHOS__ */
+          xfdFreeObject( (APTR)xfdobj );
+#endif				/* #ifndef __MORPHOS__ */
         }
+#ifndef __MORPHOS__
         IExec->DropInterface( (struct Interface *)IxfdMaster );
       }
       IExec->CloseLibrary( xfdMasterBase );
+#else				/* #ifndef __MORPHOS__ */
+      CloseLibrary( xfdMasterBase );
+#endif				/* #ifndef __MORPHOS__ */
     }
   }
 #endif /* #ifdef AMIGA */
@@ -722,29 +745,48 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 
     break;
 
-#ifdef AMIGA
+#if defined AMIGA || defined __MORPHOS__
   case LIBSPECTRUM_ID_COMPRESSED_XFD:
     {
+#ifndef __MORPHOS__
       struct ExecIFace *IExec =
         (struct ExecIFace *)(*(struct ExecBase **)4)->MainInterface;
+#endif				/* #ifndef __MORPHOS__ */
       struct xfdBufferInfo *xfdobj;
 
+#ifndef __MORPHOS__
       if( xfdMasterBase = IExec->OpenLibrary( "xfdmaster.library", 38 ) ) {
         if( IxfdMaster =
             (struct xfdMasterIFace *)IExec->GetInterface(xfdMasterBase,"main",1,NULL)) {
-          if( xfdobj = (struct xfdBufferInfo *)IxfdMaster->xfdAllocObject(XFDOBJ_BUFFERINFO) ) {
+          if( xfdobj =
+              (struct xfdBufferInfo *)IxfdMaster->xfdAllocObject(XFDOBJ_BUFFERINFO) ) {
+#else				/* #ifndef __MORPHOS__ */
+      if( xfdMasterBase = OpenLibrary( "xfdmaster.library", 38 ) ) {
+          if( xfdobj = (struct xfdBufferInfo *)xfdAllocObject(XFDOBJ_BUFFERINFO) ) {
+#endif				/* #ifndef __MORPHOS__ */
             xfdobj->xfdbi_SourceBufLen = old_length;
             xfdobj->xfdbi_SourceBuffer = old_buffer;
             xfdobj->xfdbi_Flags = XFDFB_RECOGEXTERN | XFDFB_RECOGTARGETLEN;
             xfdobj->xfdbi_PackerFlags = XFDPFB_RECOGLEN;
+#ifndef __MORPHOS__
             if( IxfdMaster->xfdRecogBuffer( xfdobj ) ) {
-              xfdobj->xfdbi_TargetBufMemType = MEMF_SHARED;
-
+#else				/* #ifndef __MORPHOS__ */
+            if( xfdRecogBuffer( xfdobj ) ) {
+#endif				/* #ifndef __MORPHOS__ */
+              xfdobj->xfdbi_TargetBufMemType = MEMF_ANY;
+#ifndef __MORPHOS__
               if( IxfdMaster->xfdDecrunchBuffer( xfdobj ) ) {
+#else				/* #ifndef __MORPHOS__ */
+              if( xfdDecrunchBuffer( xfdobj ) ) {
+#endif				/* #ifndef __MORPHOS__ */
                 *new_buffer = malloc( xfdobj->xfdbi_TargetBufSaveLen );
                 *new_length = xfdobj->xfdbi_TargetBufSaveLen;
                 memcpy( *new_buffer, xfdobj->xfdbi_TargetBuffer, *new_length );
+#ifndef __MORPHOS__
                 IExec->FreeMem( xfdobj->xfdbi_TargetBuffer,xfdobj->xfdbi_TargetBufLen );
+#else				/* #ifndef __MORPHOS__ */
+                FreeMem( xfdobj->xfdbi_TargetBuffer,xfdobj->xfdbi_TargetBufLen );
+#endif				/* #ifndef __MORPHOS__ */
               } else {
                 libspectrum_print_error(
                              LIBSPECTRUM_ERROR_UNKNOWN,
@@ -758,11 +800,19 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
                                  "xfdmaster.library does not recognise file" );
               return LIBSPECTRUM_ERROR_UNKNOWN;
             }
+#ifndef __MORPHOS__
             IxfdMaster->xfdFreeObject( xfdobj );
+#else				/* #ifndef __MORPHOS__ */
+            xfdFreeObject( xfdobj );
+#endif				/* #ifndef __MORPHOS__ */
           }
+#ifndef __MORPHOS__
           IExec->DropInterface( (struct Interface *)IxfdMaster );
         }
         IExec->CloseLibrary( xfdMasterBase );
+#else				/* #ifndef __MORPHOS__ */
+        CloseLibrary( xfdMasterBase );
+#endif				/* #ifndef __MORPHOS__ */
       }
     }
     break;

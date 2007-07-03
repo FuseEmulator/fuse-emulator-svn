@@ -481,3 +481,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 warning with -Wextra (Stuart).
 20070628 rzx.c,timings.c: remove missing initializer warnings with -Wextra
 	 (Stuart).
+20070703 libspectrum.c,tape.c: patches for MorphOS (patch #1746269) (Q-Master).
