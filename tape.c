@@ -1020,10 +1020,11 @@ libspectrum_tape_current_block( libspectrum_tape *tape )
 libspectrum_tape_block*
 libspectrum_tape_peek_next_block( libspectrum_tape *tape )
 {
+  libspectrum_tape_block *block;
+
   if( !tape->state.current_block ) return NULL;
 
-  libspectrum_tape_block *block =
-    libspectrum_tape_iterator_current( tape->state.current_block->next );
+  block = libspectrum_tape_iterator_current( tape->state.current_block->next );
   return block ? block : tape->blocks->data;
 }
 
@@ -1032,11 +1033,11 @@ libspectrum_tape_peek_next_block( libspectrum_tape *tape )
 libspectrum_tape_block*
 libspectrum_tape_select_next_block( libspectrum_tape *tape )
 {
-  
+  libspectrum_tape_block *block;
+
   if( !tape->state.current_block ) return NULL;
 
-  libspectrum_tape_block *block =
-    libspectrum_tape_iterator_next( &(tape->state.current_block) );
+  block = libspectrum_tape_iterator_next( &(tape->state.current_block) );
 
   if( !block )
     block = libspectrum_tape_iterator_init( &(tape->state.current_block), tape );
