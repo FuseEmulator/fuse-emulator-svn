@@ -201,8 +201,40 @@ test_4( void )
   }
 
   if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
-			     filename ) != LIBSPECTRUM_ERROR_CORRUPT ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_CORRUPT\n",
+			     filename ) != LIBSPECTRUM_ERROR_UNKNOWN ) {
+    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_UNKNOWN\n",
+	     progname, filename );
+    libspectrum_snap_free( snap );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  if( libspectrum_snap_free( snap ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
+}
+
+/* Further test for bug #1753279: invalid compressed file causes crash */
+static test_return_t
+test_5( void )
+{
+  libspectrum_byte *buffer = NULL; 
+  size_t filesize;
+  libspectrum_snap *snap;
+  const char *filename = "invalid.gz";
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  if( libspectrum_snap_alloc( &snap ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     NULL ) != LIBSPECTRUM_ERROR_UNKNOWN ) {
+    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_UNKNOWN\n",
 	     progname, filename );
     libspectrum_snap_free( snap );
     free( buffer );
@@ -221,6 +253,7 @@ static test_fn tests[] = {
   test_2,
   test_3,
   test_4,
+  test_5,
   NULL
 };
 

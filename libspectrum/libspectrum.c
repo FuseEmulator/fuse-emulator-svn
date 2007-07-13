@@ -405,7 +405,7 @@ libspectrum_identify_file_with_class(
   const char *filename, const unsigned char *buffer, size_t length )
 {
   libspectrum_error error;
-  char *new_filename; unsigned char *new_buffer; size_t new_length;
+  char *new_filename = NULL; unsigned char *new_buffer; size_t new_length;
 
   error = libspectrum_identify_file_raw( type, filename, buffer, length );
   if( error ) return error;
@@ -695,7 +695,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 
 #ifdef HAVE_LIBBZ2
 
-    if( new_filename ) {
+    if( *new_filename ) {
       if( strlen( *new_filename ) >= 4 &&
 	  !strcasecmp( &(*new_filename)[ strlen( *new_filename ) - 4 ],
 		       ".bz2" ) )
@@ -704,7 +704,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 
     error = libspectrum_bzip2_inflate( old_buffer, old_length,
 				       new_buffer, new_length );
-    if( error ) { free( new_filename ); return error; }
+    if( error ) { free( *new_filename ); return error; }
 
 #else				/* #ifdef HAVE_LIBBZ2 */
 
@@ -723,7 +723,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 
 #ifdef HAVE_ZLIB_H
 
-    if( new_filename ) {
+    if( *new_filename ) {
       if( strlen( *new_filename ) >= 3 &&
 	  !strcasecmp( &(*new_filename)[ strlen( *new_filename ) - 3 ],
 		       ".gz" ) )
@@ -732,7 +732,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
       
     error = libspectrum_gzip_inflate( old_buffer, old_length,
 				      new_buffer, new_length );
-    if( error ) { free( new_filename ); return error; }
+    if( error ) { free( *new_filename ); return error; }
 
 #else				/* #ifdef HAVE_ZLIB_H */
 

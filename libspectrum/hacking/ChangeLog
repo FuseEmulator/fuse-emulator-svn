@@ -482,3 +482,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070628 rzx.c,timings.c: remove missing initializer warnings with -Wextra
 	 (Stuart).
 20070703 libspectrum.c,tape.c: patches for MorphOS (patch #1746269) (Q-Master).
+20070713 test/{invalid.gz,test.c}: add test for bug #1753279.
+20070713 libspectrum.c,test/{invalid.gz,test.c}: don't free the wrong things
+	 or things that haven't been allocated; add another test case.
