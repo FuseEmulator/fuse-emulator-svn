@@ -485,3 +485,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070713 test/{invalid.gz,test.c}: add test for bug #1753279.
 20070713 libspectrum.c,test/{invalid.gz,test.c}: don't free the wrong things
 	 or things that haven't been allocated; add another test case.
+20070715 szx.c,test/{invalid.szx,test.c}: check whether the chunk length was
+	 so large it caused pointer wraparound (fixes bug #1753938).
