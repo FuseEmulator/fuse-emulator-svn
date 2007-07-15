@@ -248,12 +248,45 @@ test_5( void )
   return TEST_PASS;
 }
 
+/* Test for bug #1753938: pointer wraparound causes segfault */
+static test_return_t
+test_6( void )
+{
+  libspectrum_byte *buffer = NULL; 
+  size_t filesize;
+  libspectrum_snap *snap;
+  const char *filename = "invalid.szx";
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  if( libspectrum_snap_alloc( &snap ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_SNAPSHOT_SZX,
+			     filename ) != LIBSPECTRUM_ERROR_CORRUPT ) {
+    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_CORRUPT\n",
+	     progname, filename );
+    libspectrum_snap_free( snap );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  if( libspectrum_snap_free( snap ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
+}
+
 static test_fn tests[] = {
   test_1,
   test_2,
   test_3,
   test_4,
   test_5,
+  test_6,
   NULL
 };
 
