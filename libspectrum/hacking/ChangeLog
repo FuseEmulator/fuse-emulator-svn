@@ -495,3 +495,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 DRBs (fixes bug #1755372).
 20070717 tzx_read.c,test/{invalid-archiveinfo.tzx,test.c}: free the right thing
 	 when unwinding an invalid archive info block (fixes bug #1755539).
+20070717 tzx_read.c,test/{invalid-hardwareinfo.tzx,test.c}: free up tape block
+	 on invalid hardware info blocks (fixes bug #1755545).

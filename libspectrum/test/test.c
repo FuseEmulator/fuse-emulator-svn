@@ -376,6 +376,38 @@ test_9( void )
   return TEST_PASS;
 }
 
+/* Test for bug #1755545: invalid hardware info blocks can leak memory */
+static test_return_t
+test_10( void )
+{
+  libspectrum_byte *buffer = NULL; 
+  size_t filesize;
+  libspectrum_tape *tape;
+  const char *filename = "invalid-hardwareinfo.tzx";
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  if( libspectrum_tape_alloc( &tape ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_TAPE_TZX,
+			     filename ) != LIBSPECTRUM_ERROR_CORRUPT ) {
+    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_CORRUPT\n",
+	     progname, filename );
+    libspectrum_tape_free( tape );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
+}
+
 static test_fn tests[] = {
   test_1,
   test_2,
@@ -386,6 +418,7 @@ static test_fn tests[] = {
   test_7,
   test_8,
   test_9,
+  test_10,
   NULL
 };
 
