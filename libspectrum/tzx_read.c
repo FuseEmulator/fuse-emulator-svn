@@ -1067,7 +1067,7 @@ tzx_read_archive_info( libspectrum_tape *tape, const libspectrum_byte **ptr,
     /* Must be ID byte and length byte */
     if( end - (*ptr) < 2 ) {
       size_t j;
-      for( j=0; j<i; j++ ) free( strings[i] );
+      for( j=0; j<i; j++ ) free( strings[j] );
       free( strings ); free( ids ); free( block );
       libspectrum_print_error(
         LIBSPECTRUM_ERROR_CORRUPT,
@@ -1083,7 +1083,7 @@ tzx_read_archive_info( libspectrum_tape *tape, const libspectrum_byte **ptr,
     error = tzx_read_string( ptr, end, &strings[i] );
     if( error ) {
       size_t j;
-      for( j = 0; j < i; j++ ) free( strings[i] );
+      for( j = 0; j < i; j++ ) free( strings[j] );
       free( strings ); free( ids ); free( block );
       return error;
     }
