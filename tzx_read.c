@@ -1124,6 +1124,7 @@ tzx_read_hardware( libspectrum_tape *tape, const libspectrum_byte **ptr,
 
   /* Check there's enough data in the buffer for all the data */
   if( end - (*ptr) < 3 * (ptrdiff_t)count ) {
+    free( block );
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "tzx_read_hardware: not enough data in buffer" );
     return LIBSPECTRUM_ERROR_CORRUPT;
