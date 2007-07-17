@@ -557,7 +557,7 @@ tzx_read_generalised_data( libspectrum_tape *tape,
   libspectrum_word *repeats;
 
   const libspectrum_byte *blockend, *ptr2;
-  size_t i;
+  size_t i, data_size;
   int bits_per_symbol;
 
   /* Check the length exists */
@@ -662,13 +662,22 @@ tzx_read_generalised_data( libspectrum_tape *tape,
   symbol_count = libspectrum_tape_generalised_data_symbol_table_symbols_in_block( table );
 
   data_count = ( ( bits_per_symbol * symbol_count ) + 7 ) / 8;
+  data_size = data_count * sizeof( *data );
 
-  data = malloc( data_count * sizeof( *data ) );
+  data = malloc( data_size );
   if( !data ) {
     libspectrum_tape_block_free( block );
     libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s:%d", __func__,
 			     __LINE__ );
     return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  if( *ptr + data_size > end || *ptr + data_size < *ptr ) {
+    free( data );
+    libspectrum_tape_block_free( block );
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "%s: data extends beyond end of block", __func__ );
+    return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
   memcpy( data, *ptr, data_count * sizeof( *data ) );
