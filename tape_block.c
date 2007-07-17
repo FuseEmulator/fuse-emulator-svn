@@ -308,13 +308,21 @@ raw_data_init( libspectrum_tape_raw_data_block *block,
 {
   libspectrum_error error;
 
-  /* We're just before the start of the data */
-  state->state = LIBSPECTRUM_TAPE_STATE_DATA1;
-  state->bytes_through_block = -1; state->bits_through_byte = 7;
-  state->last_bit = 0x80 & block->data[0];
-  /* Set up the next bit */
-  error = libspectrum_tape_raw_data_next_bit( block, state );
-  if( error ) return error;
+  if( block->data ) {
+
+    /* We're just before the start of the data */
+    state->state = LIBSPECTRUM_TAPE_STATE_DATA1;
+    state->bytes_through_block = -1; state->bits_through_byte = 7;
+    state->last_bit = 0x80 & block->data[0];
+    /* Set up the next bit */
+    error = libspectrum_tape_raw_data_next_bit( block, state );
+    if( error ) return error;
+
+  } else {
+
+    state->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
+
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 }

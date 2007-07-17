@@ -491,3 +491,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 #1754362).
 20070717 tzx_read.c,test/{invalid-gdb.tzx,test.c}: check that GDB data does
 	 not extend beyond end of block (fixes bug #1755124).
+20070717 tape_block.c,test/{empty-drb.tzx,test.c}: don't segfault on empty
+	 DRBs (fixes bug #1755372).
