@@ -312,6 +312,38 @@ test_7( void )
   return TEST_PASS;
 }
 
+/* Test for bug #1755372: empty DRB causes segfault */
+static test_return_t
+test_8( void )
+{
+  libspectrum_byte *buffer = NULL; 
+  size_t filesize;
+  libspectrum_tape *tape;
+  const char *filename = "empty-drb.tzx";
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  if( libspectrum_tape_alloc( &tape ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_TAPE_TZX,
+			     filename ) != LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_NONE\n",
+	     progname, filename );
+    libspectrum_tape_free( tape );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
+}
+
 static test_fn tests[] = {
   test_1,
   test_2,
@@ -320,6 +352,7 @@ static test_fn tests[] = {
   test_5,
   test_6,
   test_7,
+  test_8,
   NULL
 };
 
