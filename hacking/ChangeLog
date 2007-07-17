@@ -489,3 +489,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 so large it caused pointer wraparound (fixes bug #1753938).
 20070715 z80.c: free memory used by page with unknown number (fixes bug
 	 #1754362).
+20070717 tzx_read.c,test/{invalid-gdb.tzx,test.c}: check that GDB data does
+	 not extend beyond end of block (fixes bug #1755124).
