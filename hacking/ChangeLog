@@ -493,3 +493,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 not extend beyond end of block (fixes bug #1755124).
 20070717 tape_block.c,test/{empty-drb.tzx,test.c}: don't segfault on empty
 	 DRBs (fixes bug #1755372).
+20070717 tzx_read.c,test/{invalid-archiveinfo.tzx,test.c}: free the right thing
+	 when unwinding an invalid archive info block (fixes bug #1755539).
