@@ -217,7 +217,17 @@ get_next_block( size_t *offset, const libspectrum_byte *buffer,
 		const libspectrum_byte *end, libspectrum_tape *tape )
 {
   int error;
-  libspectrum_dword next_block = lsb2dword( buffer + 4 + *offset );
+  libspectrum_dword next_block;
+
+  if( buffer + 8 + *offset > end ) {
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_CORRUPT,
+      "libspectrum_warajevo_read: not enough data in buffer"
+    );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  next_block = lsb2dword( buffer + 4 + *offset );
 
   /* Check for EOF marker */
   if( next_block == warajevo_signature ) {
