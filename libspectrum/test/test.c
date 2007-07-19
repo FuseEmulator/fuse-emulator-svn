@@ -408,6 +408,38 @@ test_10( void )
   return TEST_PASS;
 }
 
+/* Test for bug #1756375: invalid Warajevo tape block offset causes segfault */
+static test_return_t
+test_11( void )
+{
+  libspectrum_byte *buffer = NULL; 
+  size_t filesize;
+  libspectrum_tape *tape;
+  const char *filename = "invalid-warajevo-blockoffset.tap";
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  if( libspectrum_tape_alloc( &tape ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_TAPE_WARAJEVO,
+			     filename ) != LIBSPECTRUM_ERROR_CORRUPT ) {
+    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_CORRUPT\n",
+	     progname, filename );
+    libspectrum_tape_free( tape );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
+}
+
 static test_fn tests[] = {
   test_1,
   test_2,
@@ -419,6 +451,7 @@ static test_fn tests[] = {
   test_8,
   test_9,
   test_10,
+  test_11,
   NULL
 };
 

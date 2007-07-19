@@ -497,3 +497,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 when unwinding an invalid archive info block (fixes bug #1755539).
 20070717 tzx_read.c,test/{invalid-hardwareinfo.tzx,test.c}: free up tape block
 	 on invalid hardware info blocks (fixes bug #1755545).
+20070719 warajevo_read.c,test/{invalid-warajevo-blockoffset.tap,test.c}: free
+         up tape block on invalid hardware info blocks (thanks, Philip
+         Kendall) (fixes bug #1756375).
