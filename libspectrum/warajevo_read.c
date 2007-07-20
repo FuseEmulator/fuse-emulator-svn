@@ -219,7 +219,9 @@ get_next_block( size_t *offset, const libspectrum_byte *buffer,
   int error;
   libspectrum_dword next_block;
 
-  if( buffer + 8 + *offset > end ) {
+  /* Check we have enough data, and check for pointer wrap */
+  if( buffer + 8 + *offset > end || buffer + *offset < buffer || 
+      buffer + 8 + *offset < buffer ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
       "libspectrum_warajevo_read: not enough data in buffer"
