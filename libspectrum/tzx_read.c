@@ -1200,7 +1200,7 @@ tzx_read_custom( libspectrum_tape *tape, const libspectrum_byte **ptr,
 
   /* Read in the data */
   error = tzx_read_data( ptr, end, &length, 4, &data );
-  if( error ) { free( block ); return error; }
+  if( error ) { free( description ); free( block ); return error; }
   libspectrum_tape_block_set_data_length( block, length );
   libspectrum_tape_block_set_data( block, data );
 
