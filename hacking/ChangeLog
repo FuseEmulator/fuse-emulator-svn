@@ -502,3 +502,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          Philip Kendall) (fixes bug #1756375) (Fred).
 20070720 warajevo_read.c: try to catch pointer wrap as well (thanks, Philip
          Kendall) (Fred).
+20070720 tzx_read.c: fix memory leak on invalid custom data blocks (fixes
+	 bug #1757587).
