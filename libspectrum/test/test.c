@@ -72,15 +72,12 @@ read_file( libspectrum_byte **buffer, size_t *length, const char *filename )
   return 0;
 }
 
-/* Test for bugs #1479451 and #1706994: tape object incorrectly freed
-   after reading invalid tape */
 static test_return_t
-test_1( void )
+read_tape( const char *filename, libspectrum_error expected_result )
 {
   libspectrum_byte *buffer = NULL;
   size_t filesize = 0;
   libspectrum_tape *tape;
-  const char *filename = "invalid.tzx";
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
@@ -90,8 +87,8 @@ test_1( void )
   }
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
-			     filename ) != LIBSPECTRUM_ERROR_UNKNOWN ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_UNKNOWN\n",
+			     filename ) != expected_result ) {
+    fprintf( stderr, "%s: reading `%s' did not give expected result\n",
 	     progname, filename );
     libspectrum_tape_free( tape );
     free( buffer );
@@ -103,6 +100,47 @@ test_1( void )
   if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
 
   return TEST_PASS;
+}
+
+static test_return_t
+read_snap( const char *filename, const char *filename_to_pass,
+	   libspectrum_error expected_result )
+{
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0;
+  libspectrum_snap *snap;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  if( libspectrum_snap_alloc( &snap ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename_to_pass ) != expected_result ) {
+    fprintf( stderr, "%s: reading `%s' did not give expected result\n",
+	     progname, filename );
+    libspectrum_snap_free( snap );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  if( libspectrum_snap_free( snap ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
+}
+
+/* Specific tests begin here */
+
+/* Test for bugs #1479451 and #1706994: tape object incorrectly freed
+   after reading invalid tape */
+static test_return_t
+test_1( void )
+{
+  return read_tape( "invalid.tzx", LIBSPECTRUM_ERROR_UNKNOWN );
 }
 
 /* Test for bugs #1720238: TZX turbo blocks with zero pilot pulses and
@@ -188,288 +226,65 @@ test_3( void )
 static test_return_t
 test_4( void )
 {
-  libspectrum_byte *buffer = NULL; 
-  size_t filesize;
-  libspectrum_snap *snap;
   const char *filename = "invalid.gz";
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_snap_alloc( &snap ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
-			     filename ) != LIBSPECTRUM_ERROR_UNKNOWN ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_UNKNOWN\n",
-	     progname, filename );
-    libspectrum_snap_free( snap );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  if( libspectrum_snap_free( snap ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return read_snap( filename, filename, LIBSPECTRUM_ERROR_UNKNOWN );
 }
 
 /* Further test for bug #1753279: invalid compressed file causes crash */
 static test_return_t
 test_5( void )
 {
-  libspectrum_byte *buffer = NULL; 
-  size_t filesize;
-  libspectrum_snap *snap;
-  const char *filename = "invalid.gz";
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_snap_alloc( &snap ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
-			     NULL ) != LIBSPECTRUM_ERROR_UNKNOWN ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_UNKNOWN\n",
-	     progname, filename );
-    libspectrum_snap_free( snap );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  if( libspectrum_snap_free( snap ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return read_snap( "invalid.gz", NULL, LIBSPECTRUM_ERROR_UNKNOWN );
 }
 
 /* Test for bug #1753938: pointer wraparound causes segfault */
 static test_return_t
 test_6( void )
 {
-  libspectrum_byte *buffer = NULL; 
-  size_t filesize;
-  libspectrum_snap *snap;
   const char *filename = "invalid.szx";
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_snap_alloc( &snap ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_SNAPSHOT_SZX,
-			     filename ) != LIBSPECTRUM_ERROR_CORRUPT ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_CORRUPT\n",
-	     progname, filename );
-    libspectrum_snap_free( snap );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  if( libspectrum_snap_free( snap ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return read_snap( filename, filename, LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 /* Test for bug #1755124: lack of sanity check in GDB code */
 static test_return_t
 test_7( void )
 {
-  libspectrum_byte *buffer = NULL; 
-  size_t filesize;
-  libspectrum_tape *tape;
-  const char *filename = "invalid-gdb.tzx";
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_TAPE_TZX,
-			     filename ) != LIBSPECTRUM_ERROR_CORRUPT ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_CORRUPT\n",
-	     progname, filename );
-    libspectrum_tape_free( tape );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return read_tape( "invalid-gdb.tzx", LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 /* Test for bug #1755372: empty DRB causes segfault */
 static test_return_t
 test_8( void )
 {
-  libspectrum_byte *buffer = NULL; 
-  size_t filesize;
-  libspectrum_tape *tape;
-  const char *filename = "empty-drb.tzx";
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_TAPE_TZX,
-			     filename ) != LIBSPECTRUM_ERROR_NONE ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_NONE\n",
-	     progname, filename );
-    libspectrum_tape_free( tape );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return read_tape( "empty-drb.tzx", LIBSPECTRUM_ERROR_NONE );
 }
 
 /* Test for bug #1755539: problems with invalid archive info block */
 static test_return_t
 test_9( void )
 {
-  libspectrum_byte *buffer = NULL; 
-  size_t filesize;
-  libspectrum_tape *tape;
-  const char *filename = "invalid-archiveinfo.tzx";
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_TAPE_TZX,
-			     filename ) != LIBSPECTRUM_ERROR_CORRUPT ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_CORRUPT\n",
-	     progname, filename );
-    libspectrum_tape_free( tape );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return read_tape( "invalid-archiveinfo.tzx", LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 /* Test for bug #1755545: invalid hardware info blocks can leak memory */
 static test_return_t
 test_10( void )
 {
-  libspectrum_byte *buffer = NULL; 
-  size_t filesize;
-  libspectrum_tape *tape;
-  const char *filename = "invalid-hardwareinfo.tzx";
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_TAPE_TZX,
-			     filename ) != LIBSPECTRUM_ERROR_CORRUPT ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_CORRUPT\n",
-	     progname, filename );
-    libspectrum_tape_free( tape );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return read_tape( "invalid-hardwareinfo.tzx", LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 /* Test for bug #1756375: invalid Warajevo tape block offset causes segfault */
 static test_return_t
 test_11( void )
 {
-  libspectrum_byte *buffer = NULL; 
-  size_t filesize;
-  libspectrum_tape *tape;
-  const char *filename = "invalid-warajevo-blockoffset.tap";
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_TAPE_WARAJEVO,
-			     filename ) != LIBSPECTRUM_ERROR_CORRUPT ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_CORRUPT\n",
-	     progname, filename );
-    libspectrum_tape_free( tape );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return read_tape( "invalid-warajevo-blockoffset.tap", LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 /* Test for bug #1757587: invalid custom info block causes memory leak */
 static test_return_t
 test_12( void )
 {
-  libspectrum_byte *buffer = NULL; 
-  size_t filesize;
-  libspectrum_tape *tape;
-  const char *filename = "invalid-custominfo.tzx";
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_TAPE_TZX,
-			     filename ) != LIBSPECTRUM_ERROR_CORRUPT ) {
-    fprintf( stderr, "%s: reading `%s' did not give expected result of LIBSPECTRUM_ERROR_CORRUPT\n",
-	     progname, filename );
-    libspectrum_tape_free( tape );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return read_tape( "invalid-custominfo.tzx", LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 static test_fn tests[] = {
