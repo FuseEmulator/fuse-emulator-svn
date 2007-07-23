@@ -287,6 +287,43 @@ test_12( void )
   return read_tape( "invalid-custominfo.tzx", LIBSPECTRUM_ERROR_CORRUPT );
 }
 
+/* Test for bug #1758860: loop end without a loop start block accesses
+   uninitialised memory */
+static test_return_t
+test_13( void )
+{
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0;
+  libspectrum_tape *tape;
+  const char *filename = "loopend.tzx";
+  libspectrum_dword tstates;
+  int flags;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  if( libspectrum_tape_alloc( &tape ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename ) ) {
+    libspectrum_tape_free( tape );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) {
+    libspectrum_tape_free( tape );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
+}
 static test_fn tests[] = {
   test_1,
   test_2,
@@ -300,6 +337,7 @@ static test_fn tests[] = {
   test_10,
   test_11,
   test_12,
+  test_13,
   NULL
 };
 
