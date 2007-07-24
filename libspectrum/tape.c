@@ -125,6 +125,7 @@ libspectrum_tape_alloc( libspectrum_tape **tape )
 
   (*tape)->blocks = NULL;
   libspectrum_tape_iterator_init( &((*tape)->state.current_block), *tape );
+  (*tape)->state.loop_block = NULL;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -382,9 +383,13 @@ libspectrum_tape_get_next_edge_internal( libspectrum_dword *tstates,
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
-    if( --(it->loop_count) ) {
-      it->current_block->data = it->loop_block;
-      no_advance = 1;
+    if( it->loop_block ) {
+      if( --(it->loop_count) ) {
+	it->current_block->data = it->loop_block;
+	no_advance = 1;
+      } else {
+	it->loop_block = NULL;
+      }
     }
     *tstates = 0; end_of_block = 1;
     break;

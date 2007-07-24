@@ -509,3 +509,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 end block causes segfault).
 20070724 tape.c,test/{loop.tzx,test.c}: fix another aspect of bug #1758860 (TZX
 	 loop blocks broken).
+20070724 tape.c: fix stray TZX loop end block causes segfault (fixes bug
+	 #1758860).
