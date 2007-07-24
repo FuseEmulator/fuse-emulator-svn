@@ -324,6 +324,48 @@ test_13( void )
 
   return TEST_PASS;
 }
+
+/* Test for bug #1758860: TZX loop blocks broken */
+static test_return_t
+test_14( void )
+{
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0;
+  libspectrum_tape *tape;
+  const char *filename = "loop.tzx";
+  libspectrum_dword tstates;
+  int flags;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  if( libspectrum_tape_alloc( &tape ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename ) ) {
+    libspectrum_tape_free( tape );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  do {
+
+    if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) {
+      libspectrum_tape_free( tape );
+      return TEST_INCOMPLETE;
+    }
+
+  } while( !( flags & LIBSPECTRUM_TAPE_FLAGS_STOP ) );
+
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
+}
+
 static test_fn tests[] = {
   test_1,
   test_2,
@@ -338,6 +380,7 @@ static test_fn tests[] = {
   test_11,
   test_12,
   test_13,
+  test_14,
   NULL
 };
 

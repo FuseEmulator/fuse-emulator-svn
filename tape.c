@@ -374,8 +374,10 @@ libspectrum_tape_get_next_edge_internal( libspectrum_dword *tstates,
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
-    it->loop_block = it->current_block->next;
-    it->loop_count = block->types.loop_start.count;
+    if( it->current_block->next && block->types.loop_start.count ) {
+      it->loop_block = it->current_block->next->data;
+      it->loop_count = block->types.loop_start.count;
+    }
     *tstates = 0; end_of_block = 1;
     break;
 
