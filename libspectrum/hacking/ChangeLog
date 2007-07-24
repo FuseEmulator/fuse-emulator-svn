@@ -507,3 +507,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070720 test/test.c: factor out common code.
 20070723 test/{loopend.tzx,test.c}: add test for bug #1758860 (stray TZX loop
 	 end block causes segfault).
+20070724 tape.c,test/{loop.tzx,test.c}: fix another aspect of bug #1758860 (TZX
+	 loop blocks broken).
