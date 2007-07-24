@@ -366,29 +366,63 @@ test_14( void )
   return TEST_PASS;
 }
 
-static test_fn tests[] = {
-  test_1,
-  test_2,
-  test_3,
-  test_4,
-  test_5,
-  test_6,
-  test_7,
-  test_8,
-  test_9,
-  test_10,
-  test_11,
-  test_12,
-  test_13,
-  test_14,
-  NULL
+struct test_description {
+
+  test_fn test;
+  const char *description;
+  int active;
+
 };
+
+static struct test_description tests[] = {
+  { test_1, "Tape with unknown block", 0 },
+  { test_2, "TZX turbo data with zero pilot pulses and zero data", 0 },
+  { test_3, "Writing empty .tap file", 0 },
+  { test_4, "Invalid compressed file 1", 0 },
+  { test_5, "Invalid compressed file 2", 0 },
+  { test_6, "Pointer wraparound in SZX file", 0 },
+  { test_7, "Invalid TZX GDB", 0 },
+  { test_8, "Empty TZX DRB", 0 },
+  { test_9, "Invalid TZX archive info block", 0 },
+  { test_10, "Invalid hardware info block causes memory leak", 0 },
+  { test_11, "Invalid Warajevo tape file", 0 },
+  { test_12, "Invalid TZX custom info block causes memory leak", 0 },
+  { test_13, "TZX loop end block with loop start block", 0 },
+  { test_14, "TZX loop blocks", 0 },
+};
+
+static size_t test_count = sizeof( tests ) / sizeof( tests[0] );
+
+static void
+parse_test_specs( char **specs, int count )
+{
+  int i, j;
+
+  for( i = 0; i < count; i++ ) {
+
+    const char *spec = specs[i];
+    const char *dash = strchr( spec, '-' );
+
+    if( dash ) {
+      int begin = atoi( spec ), end = atoi( dash + 1 );
+      if( begin < 1 ) begin = 1;
+      if( end == 0 || end > test_count ) end = test_count;
+      for( j = begin; j <= end; j++ ) tests[j-1].active = 1;
+    } else {
+      int test = atoi( spec );
+      if( test < 1 || test > test_count ) continue;
+      tests[ test - 1 ].active = 1;
+    }
+    
+  }
+}
 
 int
 main( int argc, char *argv[] )
 {
-  test_fn *test;
-  int count;
+  struct test_description *test;
+  size_t i;
+  int tests_done = 0, tests_skipped = 0;
   int pass = 0, fail = 0, incomplete = 0;
 
   progname = argv[0];
@@ -401,29 +435,47 @@ main( int argc, char *argv[] )
     return 2;
   }
 
-  for( test = tests, count = 0;
-       *test;
-       test++, count++ ) {
-    switch( (*test)() ) {
-    case TEST_PASS:
-      printf( "Test %d passed\n", count + 1 );
-      pass++;
-      break;
-    case TEST_FAIL:
-      printf( "Test %d FAILED\n", count + 1 );
-      fail++;
-      break;
-    case TEST_INCOMPLETE:
-      printf( "Test %d NOT COMPLETE\n", count + 1 );
-      incomplete++;
-      break;
-    }
+  if( argc < 2 ) {
+    for( i = 0; i < test_count; i++ ) tests[i].active = 1;
+  } else {
+    parse_test_specs( &argv[1], argc - 1 );
   }
 
-  printf( "\n%3d tests run\n\n", count );
-  printf( "%3d     passed (%6.2f%%)\n", pass, 100 * (float)pass/count );
-  printf( "%3d     failed (%6.2f%%)\n", pass, 100 * (float)fail/count );
-  printf( "%3d incomplete (%6.2f%%)\n", pass, 100 * (float)incomplete/count );
+  for( i = 0, test = tests;
+       i < test_count;
+       i++, test++ ) {
+    printf( "Test %d: %s... ", i + 1, test->description );
+    if( test->active ) {
+      tests_done++;
+      switch( test->test() ) {
+      case TEST_PASS:
+	printf( "passed\n" );
+	pass++;
+	break;
+      case TEST_FAIL:
+	printf( "FAILED\n" );
+	fail++;
+	break;
+      case TEST_INCOMPLETE:
+	printf( "NOT COMPLETE\n" );
+	incomplete++;
+	break;
+      }
+    } else {
+      tests_skipped++;
+      printf( "skipped\n" );
+    }
+      
+  }
+
+  /* Stop silly divisions occuring */
+  if( !tests_done ) tests_done = 1;
+
+  printf( "\n%3d tests run\n\n", test_count );
+  printf( "%3d     passed (%6.2f%%)\n", pass, 100 * (float)pass/tests_done );
+  printf( "%3d     failed (%6.2f%%)\n", fail, 100 * (float)fail/tests_done );
+  printf( "%3d incomplete (%6.2f%%)\n", incomplete, 100 * (float)incomplete/tests_done );
+  printf( "%3d    skipped\n", tests_skipped );
 
   if( fail == 0 && incomplete == 0 ) {
     return 0;
