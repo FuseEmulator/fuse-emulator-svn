@@ -130,26 +130,22 @@ process_tape( char *filename )
 
   size_t i;
 
-  error = mmap_file( filename, &buffer, &length ); if( error ) return error;
+  error = read_file( filename, &buffer, &length ); if( error ) return error;
 
   error = libspectrum_tape_alloc( &tape );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    munmap( buffer, length );
+    free( buffer );
     return 1;
   }
 
   error = libspectrum_tape_read( tape, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
                                  filename );
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    munmap( buffer, length );
+    free( buffer );
     return error;
   }
 
-  if( munmap( buffer, length ) == -1 ) {
-    fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    return 1;
-  }
+  free( buffer );
 
   printf("Listing of `%s':\n\n", filename );
 
@@ -322,10 +318,7 @@ process_tape( char *filename )
   }
 
   error = libspectrum_tape_free( tape );
-  if( error != LIBSPECTRUM_ERROR_NONE ) {
-    munmap( buffer, length );
-    return error;
-  }
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   return 0;
 }

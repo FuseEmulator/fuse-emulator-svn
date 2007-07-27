@@ -108,7 +108,7 @@ do_file( const char *filename )
 
   printf( "Examining file %s\n", filename );
 
-  error = mmap_file( filename, &buffer, &length ); if( error ) return error;
+  error = read_file( filename, &buffer, &length ); if( error ) return error;
 
   ptr = buffer; end = buffer + length;
 
@@ -118,14 +118,14 @@ do_file( const char *filename )
     fprintf( stderr,
 	     "%s: Not enough bytes for RZX header (%ld bytes)\n",
 	     progname, (unsigned long)strlen( rzx_signature ) + 6 );
-    munmap( buffer, length );
+    free( buffer );
     return 1;
   }
 
   if( memcmp( ptr, rzx_signature, strlen( rzx_signature ) ) ) {
     fprintf( stderr, "%s: Wrong signature: expected `%s'\n", progname,
 	     rzx_signature );
-    munmap( buffer, length );
+    free( buffer );
     return 1;
   }
 
@@ -152,19 +152,15 @@ do_file( const char *filename )
 
     default:
       fprintf( stderr, "%s: Unknown block type 0x%02x\n", progname, id );
-      munmap( buffer, length );
+      free( buffer );
       return 1;
 
     }
 
-    if( error ) { munmap( buffer, length ); return 1; }
+    if( error ) { free( buffer ); return 1; }
   }
 
-  if( munmap( buffer, length ) == -1 ) {
-    fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    return 1;
-  }
+  free( buffer );
 
   return 0;
 }

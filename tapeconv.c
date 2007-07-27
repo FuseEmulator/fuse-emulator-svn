@@ -94,25 +94,20 @@ read_tape( char *filename, libspectrum_tape **tape )
 {
   libspectrum_byte *buffer; size_t length;
 
-  if( mmap_file( filename, &buffer, &length ) ) return 1;
+  if( read_file( filename, &buffer, &length ) ) return 1;
 
   if( libspectrum_tape_alloc( tape ) ) {
-    munmap( buffer, length );
+    free( buffer );
     return 1;
   }
 
   if( libspectrum_tape_read( *tape, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
                              filename ) ) {
-    munmap( buffer, length );
+    free( buffer );
     return 1;
   }
 
-  if( munmap( buffer, length ) == -1 ) {
-    fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    libspectrum_tape_free( *tape );
-    return 1;
-  }
+  free( buffer );
 
   return 0;
 }

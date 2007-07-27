@@ -483,7 +483,7 @@ load_snap( libspectrum_snap **snap, const char *filename )
 
   error = libspectrum_snap_alloc( snap ); if( error ) return error;
 
-  if( mmap_file( filename, &buffer, &length ) ) {
+  if( read_file( filename, &buffer, &length ) ) {
     libspectrum_snap_free( *snap );
     return 1;
   }
@@ -491,16 +491,11 @@ load_snap( libspectrum_snap **snap, const char *filename )
   error = libspectrum_snap_read( *snap, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
 				 filename );
   if( error ) {
-    libspectrum_snap_free( *snap ); munmap( buffer, length );
+    libspectrum_snap_free( *snap ); free( buffer );
     return error;
   }
 
-  if( munmap( buffer, length ) == -1 ) {
-    fprintf( stderr, "%s: couldn't munmap '%s': %s\n", progname, filename,
-	     strerror( errno ) );
-    libspectrum_snap_free( *snap );
-    return 1;
-  }
+  free( buffer );
 
   return 0;
 }
