@@ -75,44 +75,39 @@ int main(int argc, char* argv[])
 
   error = init_libspectrum(); if( error ) return error;
 
-  error = mmap_file( argv[1], &buffer, &length ); if( error ) return error;
+  error = read_file( argv[1], &buffer, &length ); if( error ) return error;
 
   error = libspectrum_identify_file_with_class( &type, &class, argv[1], buffer,
 						length );
-  if( error ) { munmap( buffer, length ); return error; }
+  if( error ) { free( buffer ); return error; }
 
   switch( class ) {
 
   case LIBSPECTRUM_CLASS_SNAPSHOT:
     error = parse_snapshot_file( buffer, length, type );
-    if( error ) { munmap( buffer, length ); return error; }
+    if( error ) { free( buffer ); return error; }
     break;
 
   case LIBSPECTRUM_CLASS_TAPE:
     error = parse_tape_file( buffer, length, type );
-    if( error ) { munmap( buffer, length ); return error; }
+    if( error ) { free( buffer ); return error; }
     break;
 
   case LIBSPECTRUM_CLASS_UNKNOWN:
     fprintf( stderr, "%s: couldn't identify the file type of `%s'\n",
 	     progname, argv[1] );
-    munmap( buffer, length );
+    free( buffer );
     return 1;
 
   default:
     fprintf( stderr, "%s: `%s' is an unsupported file type\n",
 	     progname, argv[1] );
-    munmap( buffer, length );
+    free( buffer );
     return 1;
 
   }
 
-  error = munmap( buffer, length );
-  if( error ) {
-    fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, argv[1],
-	     strerror( errno ) );
-    return 1;
-  }
+  free( buffer );
 
   return 0;
 }

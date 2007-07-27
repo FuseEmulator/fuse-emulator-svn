@@ -80,7 +80,7 @@ main( int argc, char **argv )
 
   error = libspectrum_snap_alloc( &snap ); if( error ) return error;
 
-  if( mmap_file( argv[0], &buffer, &length ) ) {
+  if( read_file( argv[0], &buffer, &length ) ) {
     libspectrum_snap_free( snap );
     return 1;
   }
@@ -88,16 +88,11 @@ main( int argc, char **argv )
   error = libspectrum_snap_read( snap, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
 				 argv[0] );
   if( error ) {
-    libspectrum_snap_free( snap ); munmap( buffer, length );
+    libspectrum_snap_free( snap ); free( buffer );
     return error;
   }
 
-  if( munmap( buffer, length ) == -1 ) {
-    fprintf( stderr, "%s: couldn't munmap '%s': %s\n", progname, argv[1],
-	     strerror( errno ) );
-    libspectrum_snap_free( snap );
-    return 1;
-  }
+  free( buffer );
 
   error = libspectrum_identify_file_with_class( &type, &class, argv[1], NULL,
                                                 0 );

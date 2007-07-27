@@ -89,18 +89,14 @@ main( int argc, char **argv )
 
   if( libspectrum_rzx_alloc( &rzx ) ) return 1;
 
-  if( mmap_file( options.rzxfile, &buffer, &length ) ) return 1;
+  if( read_file( options.rzxfile, &buffer, &length ) ) return 1;
 
   if( libspectrum_rzx_read( rzx, buffer, length ) ) {
-    munmap( buffer, length );
+    free( buffer );
     return 1;
   }
 
-  if( munmap( buffer, length ) == -1 ) {
-    fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname,
-	     options.rzxfile, strerror( errno ) );
-    return 1;
-  }
+  free( buffer );
 
   if( options.extract ) {
 

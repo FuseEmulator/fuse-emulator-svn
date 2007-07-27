@@ -66,10 +66,10 @@ main( int argc, char **argv )
 
   if( libspectrum_rzx_alloc( &rzx ) ) return 16;
 
-  if( mmap_file( rzxfile, &buffer, &length ) ) return 16;
+  if( read_file( rzxfile, &buffer, &length ) ) return 16;
 
   if( libspectrum_rzx_read( rzx, buffer, length ) ) {
-    munmap( buffer, length );
+    free( buffer );
     return 16;
   }
 
@@ -77,7 +77,7 @@ main( int argc, char **argv )
   if( !keyid ) {
     printf( "%s: no key ID found in '%s'\n", progname, rzxfile );
     libspectrum_rzx_free( rzx );
-    munmap( buffer, length );
+    free( buffer );
     return 16;
   }
 
@@ -88,14 +88,14 @@ main( int argc, char **argv )
     printf( "%s: don't know anything about key ID %08x\n", progname,
 	    keyid );
     libspectrum_rzx_free( rzx );
-    munmap( buffer, length );
+    free( buffer );
     return 16;
   }
 
   error = libspectrum_rzx_get_signature( rzx, &signature );
   if( error ) {
     libspectrum_rzx_free( rzx );
-    munmap( buffer, length );
+    free( buffer );
     return 16;
   }
 
@@ -103,17 +103,11 @@ main( int argc, char **argv )
   if( error && error != LIBSPECTRUM_ERROR_SIGNATURE ) {
     libspectrum_signature_free( &signature );
     libspectrum_rzx_free( rzx );
-    munmap( buffer, length );
+    free( buffer );
     return 16;
   }
 
-  if( munmap( buffer, length ) == -1 ) {
-    fprintf( stderr, "%s: couldn't munmap `%s': %s\n", progname, rzxfile,
-	     strerror( errno ) );
-    libspectrum_signature_free( &signature );
-    libspectrum_rzx_free( rzx );
-    return 16;
-  }
+  free( buffer );
 
   libspectrum_rzx_free( rzx ); free( rzx );
   libspectrum_signature_free( &signature );

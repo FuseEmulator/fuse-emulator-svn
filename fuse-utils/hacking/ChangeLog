@@ -186,3 +186,6 @@
 	 address (Stuart).
 20070611 man/fuse-utils.1: mention tape2wav (Stuart).
 20070611 .: ignore tape2wav.
+20070727 listbasic.c,rzxcheck.c,rzxdump.c,rzxtool.c,snap2tzx.c,snapconv.c,
+         tape2wav.c,tapeconv.c,tzxlist.c,utils.[ch]: remove use of mmap():
+	 added complexity for no real benefit.
