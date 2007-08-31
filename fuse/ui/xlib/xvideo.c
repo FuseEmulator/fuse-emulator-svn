@@ -559,7 +559,7 @@ xvideo_create_image( void )
 }
 
 void
-xvideo_set_size( void )
+xvideo_set_size( int width, int height )
 {
   if( !settings_current.full_screen ) {
     xvideo_dw = width; xvideo_dh = height;
@@ -608,7 +608,7 @@ xvideo_register_scalers( void )
 }
 
 void
-xvideo_set_size( void )
+xvideo_set_size( int width, int height )
 {
   /* Should never be called */
   fuse_abort();

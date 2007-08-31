@@ -45,5 +45,6 @@ void xvideo_end( void );
 int xvideo_scaler_in_use( void );
 void xvideo_register_scalers( void );
 void xvideo_create_image( void );
+void xvideo_set_size( int width, int height );
 
 #endif			/* #ifndef FUSE_XVIDEO_H */

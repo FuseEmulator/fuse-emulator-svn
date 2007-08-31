@@ -2090,3 +2090,5 @@
 	 xlib/{Makefile.am,xdisplay.c,xdisplay.h,xui.c,xui.h,xvideo.c,xvideo.h}},
 	 widget/{menu.c,widget.c,widget.h}: first commit of a heavily refactored
 	 version of the XVideo patch (patch #1686228) (xvideo-2007-08-31).
+20070831 Makefile.am,ui/xlib/{xdisplay.c,xvideo.c,xvideo.h}: fix up compilation
+	 (xvideo-2007-08-31).

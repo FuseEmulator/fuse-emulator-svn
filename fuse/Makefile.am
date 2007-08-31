@@ -135,10 +135,10 @@ windres.o: windres.rc winfuse.ico
 	@WINDRES@ windres.rc windres.o
 
 settings.c: settings.pl settings.dat
-	@PERL@ -I$(srcdir)/perl $(srcdir)/settings.pl $(srcdir)/settings.dat > $@.tmp && mv settings.c.tmp $@
+	@PERL@ -I$(srcdir)/perl $(srcdir)/settings.pl $(srcdir)/settings.dat > $@.tmp && mv $@.tmp $@
 
 settings.h: settings-header.pl settings.dat
-	@PERL@ -I$(srcdir)/perl $(srcdir)/settings-header.pl $(srcdir)/settings.dat > $@.tmp && mv settings.h.tmp $@
+	@PERL@ -I$(srcdir)/perl $(srcdir)/settings-header.pl $(srcdir)/settings.dat > $@.tmp && mv $@.tmp $@
 
 INCLUDES = @GLIB_CFLAGS@ @GTK_CFLAGS@ @LIBSPEC_CFLAGS@ @DSK_CFLAGS@\
 @XML_CFLAGS@ @SAMPLERATE_CFLAGS@ -DFUSEDATADIR="\"${pkgdatadir}\""

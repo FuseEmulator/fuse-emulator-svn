@@ -703,7 +703,7 @@ xdisplay_configure_notify( int width, int height )
 
   /* If we're the same size as before, nothing special needed */
   if( xvideo_scaler_in_use() ) {
-    xvideo_set_size();
+    xvideo_set_size( width, height );
   } else {
     size = width / DISPLAY_ASPECT_WIDTH;
     if( size != height / DISPLAY_SCREEN_HEIGHT ) {	/* out of aspect */
