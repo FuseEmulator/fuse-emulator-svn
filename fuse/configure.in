@@ -54,7 +54,6 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(
   libgen.h \
-  siginfo.h \
   strings.h \
   sys/soundcard.h \
   sys/audio.h \

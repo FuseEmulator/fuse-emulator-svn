@@ -34,10 +34,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#ifdef HAVE_SIGINFO_H
-#include <siginfo.h>		/* Needed for psignal on Solaris */
-#endif				/* #ifdef HAVE_SIGINFO_H */
-
 #ifdef HAVE_X11_EXTENSIONS_XSHM_H
 #define X_USE_SHM
 #endif				/* #ifdef HAVE_X11_EXTENSIONS_XSHM_H */
@@ -962,7 +958,7 @@ static void
 xdisplay_catch_signal( int sig )
 {
   xdisplay_end();
-  psignal( sig, fuse_progname );
+  fprintf( stderr, "%s: Interrupt\n", fuse_progname );
   exit( 1 );
 }
 
