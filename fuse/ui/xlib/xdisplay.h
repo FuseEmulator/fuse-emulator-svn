@@ -32,6 +32,13 @@ int xdisplay_end( void );
 int xdisplay_configure_notify(int width, int height);
 void xdisplay_area(int x, int y, int width, int height);
 
+int xdisplay_allocate_image( void );
+void xdisplay_destroy_image( void );
+
+typedef void xdisplay_putpixel_t( int x, int y, libspectrum_word *color );
+extern xdisplay_putpixel_t *xdisplay_putpixel;
+void xdisplay_setup_rgb_putpixel( void );
+
 /* Are we expecting an X error to occur? */
 extern int xerror_expecting;
 
@@ -40,5 +47,7 @@ extern int xerror_error;
 
 /* The X error handler */
 int xerror_handler( Display *display, XErrorEvent *error );
+
+extern int xdisplay_current_size;
 
 #endif			/* #ifndef FUSE_XDISPLAY_H */

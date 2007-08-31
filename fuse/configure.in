@@ -240,6 +240,23 @@ if test -z "$UI"; then
   AC_CHECK_HEADERS( X11/extensions/XShm.h )
   AC_CHECK_LIB( Xext, XShmAttach, LIBS="$LIBS -lXext" )
 
+  dnl Check for the XVideo extension
+  AC_MSG_CHECKING(whether to use Xlib Xv extension)
+  AC_ARG_WITH(xv,
+    [  --without-xv            don't use Xlib Xv extension],
+    if test "$withval" = no; then xv=no; else xv=yes; fi,
+    xv=yes)
+  AC_MSG_RESULT($xv)
+  if test "$xv" = yes; then
+    AC_CHECK_LIB( Xv, XvPutImage,
+	[AC_CHECK_HEADERS(X11/extensions/Xv.h X11/extensions/Xvlib.h,
+	    [AC_DEFINE([X_USE_XV], 1, [Defined if we're going to be using the installed libXv]) LIBS="$LIBS -lXv"],
+	    [AC_MSG_WARN(Xv header(s) not found - no Xv fullscreen support)]
+	)],
+	[AC_MSG_WARN(XvPutImage not found - no Xv fullscreen support)],
+    )
+  fi
+
   AC_DEFINE([UI_X], 1, [Defined if Xlib UI in use])
   UI=xlib; WIDGET=widget;
   AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])

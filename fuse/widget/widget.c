@@ -658,6 +658,9 @@ widget_t widget_data[] = {
 			                      widget_peripherals_keyhandler },
   { widget_query_draw,    NULL,			 widget_query_keyhandler    },
   { widget_query_save_draw,NULL,		 widget_query_save_keyhandler },
+#ifdef X_USE_XV
+  { widget_xvideo_draw,	  widget_options_finish, widget_xvideo_keyhandler    },
+#endif
 };
 
 #ifndef UI_SDL

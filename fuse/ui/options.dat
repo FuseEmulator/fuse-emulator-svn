@@ -59,3 +59,21 @@ Checkbox, (F)orce 8-bit, sound_force_8bit, INPUT_KEY_f
 #ifdef HAVE_SAMPLERATE 
 Checkbox, (H)i-fi beeper, sound_hifi, INPUT_KEY_h
 #endif /* #ifdef HAVE_SAMPLERATE */
+
+#ifdef X_USE_XV
+xvideo
+X-Video Options
+Checkbox, Use (X)-Video for scaling, xv_scaler, INPUT_KEY_x
+Checkbox, X-Video (f)ull screen, full_screen, INPUT_KEY_f
+Entry, (B)rightness, xv_bright, INPUT_KEY_b, 3, %
+Entry, (C)ontrast, xv_contr, INPUT_KEY_c, 3, %
+Entry, (S)aturation, xv_satur, INPUT_KEY_s, 3, %
+Entry, C(o)lor, xv_color, INPUT_KEY_o, 3, %
+Entry, (H)ue, xv_hue, INPUT_KEY_h, 3, %
+Entry, (G)amma, xv_gamma, INPUT_KEY_g, 3, %
+Entry, Re(d) Intensity, xv_red, INPUT_KEY_d, 3, %
+Entry, Gree(n) Intensity, xv_green, INPUT_KEY_n, 3, %
+Entry, Blu(e) Intensity, xv_blue, INPUT_KEY_e, 3, %
+Entry, He(a)d, xv_crt, INPUT_KEY_a, 1
+#endif
+

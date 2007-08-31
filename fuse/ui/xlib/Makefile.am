@@ -32,6 +32,7 @@ libuixlib_a_SOURCES = xdisplay.c \
 		      xjoystick.c \
 		      xkeyboard.c \
 		      xui.c \
+		      xvideo.c \
 		      keysyms.c
 
 BUILT_SOURCES = keysyms.c

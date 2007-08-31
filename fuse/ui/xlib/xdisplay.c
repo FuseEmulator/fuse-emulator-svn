@@ -48,6 +48,11 @@
 #include <X11/extensions/XShm.h>
 #endif				/* #ifdef X_USE_SHM */
 
+#ifdef X_USE_XV
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/Xvlib.h>
+#endif
+
 #include <libspectrum.h>
 
 #include "display.h"
@@ -64,6 +69,7 @@
 #include "widget/widget.h"
 #endif				/* #ifdef USE_WIDGET */
 #include "scld.h"
+#include "xvideo.h"
 
 typedef enum {
   MSB_RED = 0,			/* 0RGB */
@@ -101,7 +107,7 @@ static unsigned long colours[128];
 static int colours_allocated = 0;
 
 /* The current size of the window (in units of DISPLAY_SCREEN_*) */
-static int xdisplay_current_size = 1;
+int xdisplay_current_size = 1;
 static int xdisplay_depth = -1;
 static Visual *xdisplay_visual = NULL;
 static int xdisplay_bw = -1;
@@ -139,14 +145,10 @@ static int xdisplay_allocate_colours4( void );
 static int xdisplay_allocate_colours8( void );
 static int xdisplay_allocate_gc( Window window, GC *new_gc );
 
-static int xdisplay_allocate_image( void );
 static void register_scalers( void );
-static void xdisplay_destroy_image( void );
 static void xdisplay_catch_signal( int sig );
 
-typedef void xdisplay_putpixel_t( int x, int y, libspectrum_word *color );
-
-static xdisplay_putpixel_t *xdisplay_putpixel;
+xdisplay_putpixel_t *xdisplay_putpixel;
 
 static xdisplay_putpixel_t xdisplay_putpixel_4;
 static xdisplay_putpixel_t xdisplay_putpixel_8;
@@ -186,10 +188,12 @@ static  int rgb_for_4[] = {
 int
 xdisplay_init( void )
 {
+  xvideo_find();
   if( xdisplay_find_visual() ) return 1;
   if( xdisplay_depth == 4 && xdisplay_allocate_colours4() ) return 1;
   if( xdisplay_depth == 8 && xdisplay_allocate_colours8() ) return 1;
   if( xdisplay_allocate_gc( xui_mainWindow,&gc ) ) return 1;
+  xvideo_acquire();
   if( xdisplay_allocate_image() ) return 1;
 
   return 0;
@@ -387,10 +391,12 @@ xdisplay_allocate_gc( Window window, GC *new_gc )
   return 0;
 }
 
-static int
+int
 xdisplay_allocate_image( void )
 {
   struct sigaction handler;
+  char **data;
+  int size;
 
   handler.sa_handler = xdisplay_catch_signal;
   sigemptyset( &handler.sa_mask );
@@ -404,18 +410,34 @@ xdisplay_allocate_image( void )
   /* If SHM isn't available, or we're not using it for some reason,
      just get a normal image */
   if( !shm_used ) {
-    image = XCreateImage( display, xdisplay_visual,
+    if( xvideo_scaler_in_use() ) {
+      xvideo_create_image();
+    } else {
+      image = XCreateImage( display, xdisplay_visual,
 		       xdisplay_depth, ZPixmap, 0, NULL,
 		       3 * DISPLAY_ASPECT_WIDTH,
 		       3 * DISPLAY_SCREEN_HEIGHT, 8, 0 );
-    if(!image) {
+    }
+
+#ifdef X_USE_XV
+    if( !image && !xvimage ) {
       fprintf(stderr,"%s: couldn't create image\n",fuse_progname);
       return 1;
     }
-
-    if( ( image->data = (char*)malloc( image->bytes_per_line *
-						 image->height ) ) == NULL ) {
-      fprintf(stderr, "%s: out of memory for image data\n", fuse_progname);
+    
+    size = image ? image->bytes_per_line * image->height : xvimage->data_size;
+    data = ( image ? &image->data : &xvimage->data );
+#else /* X_USE_XV */
+    if( !image ) {
+      fprintf(stderr,"%s: couldn't create image\n",fuse_progname);
+      return 1;
+    }
+    
+    size = image->bytes_per_line * image->height;
+    data = &image->data;
+#endif
+    if( ( *data = (char*)malloc( size ) ) == NULL ) {
+      fprintf( stderr , "%s: out of memory for image data\n", fuse_progname );
       return 1;
     }
   }
@@ -452,10 +474,34 @@ try_shm( void )
 {
   int id;
   int error;
+  char **data;
 
   if( !XShmQueryExtension( display ) ) return 0;
 
   shm_eventtype = XShmGetEventBase( display ) + ShmCompletion;
+
+#ifdef X_USE_XV
+  if( xv_scaler ) {
+    xvimage = XvShmCreateImage( display, xvport, xvid,
+			   NULL, 
+			   xvideo_isize * DISPLAY_ASPECT_WIDTH,
+			   xvideo_isize * DISPLAY_SCREEN_HEIGHT,
+			   &shm_info );
+  } else {
+    image = XShmCreateImage( display, xdisplay_visual,
+			   xdisplay_depth, ZPixmap,
+			   NULL, &shm_info,
+			   3 * DISPLAY_ASPECT_WIDTH,
+			   3 * DISPLAY_SCREEN_HEIGHT );
+  }
+  if( !image && !xvimage ) return 0;
+
+  /* Get an SHM to work with */
+  id = get_shm_id( image ? image->bytes_per_line * image->height : xvimage->data_size );
+  if( id == -1 ) return 0;
+  data = ( image ? &image->data : &xvimage->data );
+
+#else
   image = XShmCreateImage( display, xdisplay_visual,
 			   xdisplay_depth, ZPixmap,
 			   NULL, &shm_info,
@@ -466,15 +512,19 @@ try_shm( void )
   /* Get an SHM to work with */
   id = get_shm_id( image->bytes_per_line * image->height );
   if( id == -1 ) return 0;
+  data = &image->data;
+
+#endif
 
   /* Attempt to attach to the shared memory */
   shm_info.shmid = id;
-  image->data = shm_info.shmaddr = shmat( id, 0, 0 );
+  shm_info.readOnly = False;
+  *data = shm_info.shmaddr = shmat( id, 0, 0 );
 
   /* If we couldn't attach, remove the chunk and give up */
-  if( image->data == (void*)-1 ) {
+  if( *data == (void*)-1 ) {
     shmctl( id, IPC_RMID, NULL );
-    image->data = NULL;
+    *data = NULL;
     return 0;
   }
 
@@ -559,6 +609,8 @@ uidisplay_init( int width, int height )
   }
 
   register_scalers();
+  if( xvideo_scaler_in_use() ) xui_setsizehints( 1 );
+
   display_ui_initialised = 1;
 
   display_refresh_all();
@@ -582,6 +634,9 @@ register_scalers( void )
   scaler_register_clear();
   scaler_select_bitformat( 565 );		/* 16bit always */
 
+  if( xvideo_scaler_in_use() ) {
+    xvideo_register_scalers();
+  } else {
     if( xdisplay_depth == 4 ) {
       scaler_register( SCALER_NORMAL );
       if( machine_current->timex ) {
@@ -618,11 +673,13 @@ register_scalers( void )
 	scaler_register( SCALER_PALTV3X );
       }
     }
+  }
   if( current_scaler != SCALER_NUM )
     f = 4.0 * scaler_get_scaling_factor( current_scaler ) * 
 	    ( machine_current->timex ? 2 : 1 );
   if( scaler_is_supported( current_scaler ) &&
-	( xdisplay_current_size * 4 == f ) ) {
+        ( xdisplay_current_size * 4 == f || xvideo_scaler_in_use()
+	 ) ) {
     uidisplay_hotswap_gfx_mode();
   } else {
     switch( xdisplay_current_size ) {
@@ -645,23 +702,26 @@ xdisplay_configure_notify( int width, int height )
   int size;
 
   /* If we're the same size as before, nothing special needed */
-  size = width / DISPLAY_ASPECT_WIDTH;
-  if( size != height / DISPLAY_SCREEN_HEIGHT ) {	/* out of aspect */
-    if( size > height / DISPLAY_SCREEN_HEIGHT ) {
-      size = height / DISPLAY_SCREEN_HEIGHT;
-      width = size * DISPLAY_ASPECT_WIDTH;
-    } else {
-      height = size * DISPLAY_SCREEN_HEIGHT;
+  if( xvideo_scaler_in_use() ) {
+    xvideo_set_size();
+  } else {
+    size = width / DISPLAY_ASPECT_WIDTH;
+    if( size != height / DISPLAY_SCREEN_HEIGHT ) {	/* out of aspect */
+      if( size > height / DISPLAY_SCREEN_HEIGHT ) {
+	size = height / DISPLAY_SCREEN_HEIGHT;
+	width = size * DISPLAY_ASPECT_WIDTH;
+      } else {
+	height = size * DISPLAY_SCREEN_HEIGHT;
+      }
+      xdisplay_current_size = 0;			/* force resize */
+      resize_window( width, height );
+    } else if( size == xdisplay_current_size ) {
+      return 0;
     }
-    xdisplay_current_size = 0;				/* force resize */
-    resize_window( width, height );
-  } else if( size == xdisplay_current_size ) {
-    return 0;
-  }
 
-  /* Else set ourselves to the new height */
-  xdisplay_current_size = size;
-  
+    /* Else set ourselves to the new height */
+    xdisplay_current_size = size;
+  }
   /* Get a new scaler */
   register_scalers();
 
@@ -678,7 +738,7 @@ xdisplay_update_rect_noscale( int x, int y, int w, int h )
     for( xx = x; xx < x + w; xx++ )
       xdisplay_putpixel( xx, yy, &rgb_image[yy + 2][xx + 1] );
   /* Blit to the real screen at the frame end end */
-  xdisplay_area( x, y, w, h );
+  if( !xvideo_scaler_in_use() ) xdisplay_area( x, y, w, h );
 }
 
 static void
@@ -704,7 +764,7 @@ xdisplay_update_rect_scale( int x, int y, int w, int h )
     for( xx = x; xx < x + w; xx++ )
       xdisplay_putpixel( xx, yy, &scaled_image[yy][xx] );
   /* Blit to the real screen */
-  xdisplay_area( x, y, w, h );
+  if( !xvideo_scaler_in_use() ) xdisplay_area( x, y, w, h );
 }
 
 void
@@ -732,6 +792,10 @@ uidisplay_frame_end( void )
 
   for( r = updated_rects; r != last_rect; r++ )
     xdisplay_update_rect( r->x, r->y, r->w, r->h );
+#ifdef X_USE_XV
+  if( xv_scaler )
+    xdisplay_area( 0, 0, scaled_image_w, scaled_image_h );
+#endif		/* X_USE_XV */
   num_rects = 0;
   xdisplay_force_full_refresh = 0;
 }
@@ -752,9 +816,14 @@ uidisplay_area( int x, int y, int w, int h )
   if( scaler_flags & SCALER_FLAGS_EXPAND )
     scaler_expander( &x, &y, &w, &h, image_width, image_height );
 
-  updated_rects[num_rects].x = x;
+  if( xvideo_scaler_in_use() ) {
+    updated_rects[num_rects].x = x - ( x % 2 );
+    updated_rects[num_rects].w = w + ( x % 2 );
+  } else {
+    updated_rects[num_rects].x = x;
+    updated_rects[num_rects].w = w;
+  }
   updated_rects[num_rects].y = y;
-  updated_rects[num_rects].w = w;
   updated_rects[num_rects].h = h;
   num_rects++;
 }
@@ -771,16 +840,36 @@ xdisplay_area( int x, int y, int w, int h )
 
   if( shm_used ) {
 #ifdef X_USE_SHM
+#ifdef X_USE_XV
+    if( xv_scaler ) {
+
+      XvShmPutImage( display, xvport, xui_mainWindow, gc, xvimage,
+    	    0, 0, scaled_image_w, scaled_image_h,
+    	    0, 0, xvideo_dw, xvideo_dh, True );
+    } else {
+      XShmPutImage( display, xui_mainWindow, gc, image, x, y, x, y, w, h, True );
+    }
+#else
     XShmPutImage( display, xui_mainWindow, gc, image, x, y, x, y, w, h, True );
     /* FIXME: should wait for an ShmCompletion event here */
+#endif
 #endif				/* #ifdef X_USE_SHM */
   } else {
+#ifdef X_USE_XV
+    if( xv_scaler )
+      XvPutImage( display, xvport, xui_mainWindow, gc, xvimage,
+    	    0, 0, scaled_image_w, scaled_image_h,
+    	    0, 0, xvideo_dw, xvideo_dh );
+    else
+      XPutImage( display, xui_mainWindow, gc, image, x, y, x, y, w, h );
+#else
     XPutImage( display, xui_mainWindow, gc, image, x, y, x, y, w, h );
+#endif
   }
 }
 
-static void
-xdisplay_destroy_image(void)
+void
+xdisplay_destroy_image( void )
 {
   /* Free the XImage used to store screen data; also frees the malloc'd
      data */
@@ -788,14 +877,24 @@ xdisplay_destroy_image(void)
   if( shm_used ) {
     XShmDetach( display, &shm_info );
     shmdt( shm_info.shmaddr );
-    image->data = NULL;
+    if( image )
+      image->data = NULL;
+#ifdef X_USE_XV
+    if( xvimage ) {
+      xvimage->data = NULL;
+      XvUngrabPort( display, xvport, CurrentTime );
+    }
+#endif	/* X_USE_XV */
     shm_used = 0;
   }
-#endif
+#endif  /* X_USE_SHM */
   if( image ) XDestroyImage( image ); image = NULL;
+#ifdef X_USE_XV
+  if( xvimage ) XFree( xvimage ); xvimage = NULL;
+#endif
 }
 
-static void
+void
 xdisplay_setup_rgb_putpixel( void )
 {
   switch( xdisplay_depth ) {
@@ -835,12 +934,19 @@ uidisplay_hotswap_gfx_mode( void )
 
   if( settings_current.bw_tv != xdisplay_bw ) {
     xdisplay_bw = settings_current.bw_tv;
-    if( xdisplay_depth == 4 )
-      xdisplay_allocate_colours4();
-    else if( xdisplay_depth == 8 )
-      xdisplay_allocate_colours8();
+    if( !xvideo_scaler_in_use() ) {
+      if( xdisplay_depth == 4 )
+        xdisplay_allocate_colours4();
+      else if( xdisplay_depth == 8 )
+        xdisplay_allocate_colours8();
+    }
   }
+
+#ifdef X_USE_XV  
+  xvideo_hotswap_gfx_mode();
+#else
   xdisplay_setup_rgb_putpixel();
+#endif
   display_refresh_all();
   return 0;
 }
@@ -864,6 +970,7 @@ int
 xdisplay_end( void )
 {
   xdisplay_destroy_image();
+  xvideo_end();
   /* Free the allocated GC */
   if( gc ) XFreeGC( display, gc ); gc = 0;
 

@@ -52,6 +52,38 @@ Bool xui_trueFunction();
 
 static Atom delete_window_atom;
 
+void
+xui_setsizehints( int xv )
+{
+  XSizeHints *sizeHints;
+
+  if(!(sizeHints = XAllocSizeHints())) {
+    fprintf(stderr,"%s: failure allocating memory\n", fuse_progname);
+    return;
+  }
+
+  /* Set standard window properties */
+
+  if( !xv ) {
+    sizeHints->flags = PBaseSize | PResizeInc | PMaxSize;
+    sizeHints->base_width   = DISPLAY_ASPECT_WIDTH;
+    sizeHints->base_height  = DISPLAY_SCREEN_HEIGHT;
+    sizeHints->width_inc    = DISPLAY_ASPECT_WIDTH;
+    sizeHints->height_inc   = DISPLAY_SCREEN_HEIGHT;
+    sizeHints->max_width    = 3 * DISPLAY_ASPECT_WIDTH;
+    sizeHints->max_height   = 3 * DISPLAY_SCREEN_HEIGHT;
+  }
+  if( settings_current.aspect_hint ) {
+    sizeHints->flags |= PAspect;
+    sizeHints->min_aspect.x = DISPLAY_ASPECT_WIDTH;
+    sizeHints->min_aspect.y = DISPLAY_SCREEN_HEIGHT;
+    sizeHints->max_aspect.x = DISPLAY_ASPECT_WIDTH;
+    sizeHints->max_aspect.y = DISPLAY_SCREEN_HEIGHT;
+  }
+  XSetWMNormalHints( display, xui_mainWindow, sizeHints );
+  XFree( sizeHints );
+}
+
 int
 ui_init( int *argc, char ***argv )
 {
@@ -117,26 +149,6 @@ ui_init( int *argc, char ***argv )
 
   /* Set standard window properties */
 
-  sizeHints->flags = PBaseSize | PResizeInc | PMaxSize | PMinSize;
-
-  sizeHints->base_width = 0;
-  sizeHints->base_height = 0;
-
-  sizeHints->min_width    =     DISPLAY_ASPECT_WIDTH;
-  sizeHints->min_height   =     DISPLAY_SCREEN_HEIGHT;
-  sizeHints->width_inc    =     DISPLAY_ASPECT_WIDTH;
-  sizeHints->height_inc   =     DISPLAY_SCREEN_HEIGHT;
-  sizeHints->max_width    = 3 * DISPLAY_ASPECT_WIDTH;
-  sizeHints->max_height   = 3 * DISPLAY_SCREEN_HEIGHT;
-
-  if( settings_current.aspect_hint ) {
-    sizeHints->flags |= PAspect;
-    sizeHints->min_aspect.x = 4;
-    sizeHints->min_aspect.y = 3;
-    sizeHints->max_aspect.x = 4;
-    sizeHints->max_aspect.y = 3;
-  }
-
   wmHints->flags=StateHint | InputHint;
   wmHints->initial_state=NormalState;
   wmHints->input=True;
@@ -145,7 +157,8 @@ ui_init( int *argc, char ***argv )
   classHint->res_class="Fuse";
 
   XSetWMProperties(display, xui_mainWindow, &windowName, &iconName,
-		   *argv, *argc, sizeHints, wmHints, classHint);
+		   *argv, *argc, NULL, wmHints, classHint);
+  xui_setsizehints( 0 );
 
   /* Ask the server to use its backing store for this window */
 

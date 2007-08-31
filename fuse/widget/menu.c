@@ -376,6 +376,14 @@ menu_options_rzx( int action )
   widget_do( WIDGET_TYPE_RZX, NULL );
 }
 
+#ifdef X_USE_XV
+void
+menu_options_xvideo( int action )
+{
+  widget_do( WIDGET_TYPE_XVIDEO, NULL );
+}
+#endif
+
 void
 menu_options_joysticks_select( int action )
 {

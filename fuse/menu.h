@@ -130,6 +130,9 @@ MENU_CALLBACK( menu_options_general );
 MENU_CALLBACK( menu_options_sound );
 MENU_CALLBACK( menu_options_peripherals );
 MENU_CALLBACK( menu_options_rzx );
+#ifdef X_USE_XV
+MENU_CALLBACK( menu_options_xvideo );
+#endif
 MENU_CALLBACK_WITH_ACTION( menu_options_joysticks_select );
 
 MENU_CALLBACK( menu_machine_pause );

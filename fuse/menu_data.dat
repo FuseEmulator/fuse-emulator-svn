@@ -67,6 +67,9 @@ Options/_General..., Item, F4
 Options/_Sound..., Item
 Options/_Peripherals..., Item
 Options/_RZX..., Item
+#ifdef X_USE_XV
+Options/_X-Video..., Item
+#endif
 
 Options/_Joysticks, Branch
 Options/Joysticks/Joystick _1..., Item,, menu_options_joysticks_select, 1

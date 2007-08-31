@@ -1,5 +1,5 @@
-/* xui.h: Routines for dealing with the Xlib user interface
-   Copyright (c) 2000 Philip Kendall
+/* xvideo.h: Routines for using the XVideo extension
+   Copyright (c) 2007 Gergely Szász, Philip Kendall
 
    $Id$
 
@@ -23,18 +23,27 @@
 
 */
 
-#ifndef FUSE_XUI_H
-#define FUSE_XUI_H
+#ifndef FUSE_XVIDEO_H
+#define FUSE_XVIDEO_H
 
-#ifndef _XLIB_H_
-#include <X11/Xlib.h>
-#endif
+#ifdef X_USE_XV
 
-extern Display *display;	/* Which display are we connected to? */
-extern int xui_screenNum;	/* Which screen are we using on our
-				   X server? */
-extern Window xui_mainWindow;	/* Window ID for the main Fuse window */
+extern XvPortID xvport;
+extern XvImage *xvimage;
+extern int xvid;
+extern int xvideo_usable;
+extern int xv_scaler;
 
-void xui_setsizehints( int xv );
+extern int xvideo_dw, xvideo_dh, xvideo_isize;
 
-#endif			/* #ifndef FUSE_XUI_H */
+#endif			/* #ifdef X_USE_XV */
+
+void xvideo_find( void );
+void xvideo_acquire( void );
+void xvideo_hotswap_gfx_mode( void );
+void xvideo_end( void );
+int xvideo_scaler_in_use( void );
+void xvideo_register_scalers( void );
+void xvideo_create_image( void );
+
+#endif			/* #ifndef FUSE_XVIDEO_H */

@@ -59,6 +59,22 @@ snapsasz80, null, 0
 pal_tv2x, boolean, 0
 plusd, boolean, 0
 
+#ifdef X_USE_XV
+xv_scaler, boolean, 1
+xv_bright, numeric, -1
+xv_contr, numeric, -1
+xv_satur, numeric, -1
+xv_color, numeric, -1
+xv_hue, numeric, -1
+xv_gamma, numeric, -1
+xv_red, numeric, -1
+xv_green, numeric, -1
+xv_blue, numeric, -1
+xv_crt, numeric, -1
+xv_adaptor, numeric, -1
+xv_port, numeric, -1
+#endif
+
 sound_device, string, NULL, 'd'
 sound, boolean, 1
 sound_load, boolean, 1,, loading-sound
