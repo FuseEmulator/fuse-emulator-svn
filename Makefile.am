@@ -70,24 +70,24 @@ noinst_PROGRAMS =
 
 AM_CFLAGS = -DLIBSPECTRUM_EXPORTS
 
-make-perl$(EXEEXT): make-perl.c
+make-perl$(EXEEXT): $(srcdir)/make-perl.c
 	$(CC_FOR_BUILD) -I. -o $@ $<
 
 libspectrum.h: libspectrum.h.in generate.pl snap_accessors.txt tape_accessors.txt config.h
-	@PERL@ -p generate.pl libspectrum.h.in > $@
+	@PERL@ -p generate.pl $(srcdir) $(srcdir)/libspectrum.h.in > $@.tmp && mv $@.tmp $@
 
 generate.pl: make-perl$(EXEEXT) generate.pl.in
 	./make-perl$(EXEEXT) > $@
-	cat generate.pl.in >> $@
+	cat $(srcdir)/generate.pl.in >> $@
 
 snap_accessors.c: accessor.pl snap_accessors.txt
-	@PERL@ accessor.pl snap_accessors.txt > $@
+	@PERL@ $(srcdir)/accessor.pl $(srcdir)/snap_accessors.txt > $@.tmp && mv $@.tmp $@
 
 tape_accessors.c: tape_accessors.pl tape_accessors.txt
-	@PERL@ tape_accessors.pl tape_accessors.txt > $@
+	@PERL@ $(srcdir)/tape_accessors.pl $(srcdir)/tape_accessors.txt > $@.tmp && mv $@.tmp $@
 
 tape_set.c: tape_set.pl tape_accessors.txt
-	@PERL@ tape_set.pl tape_accessors.txt > $@
+	@PERL@ $(srcdir)/tape_set.pl $(srcdir)/tape_accessors.txt > $@.tmp && mv $@.tmp $@
 
 INCLUDES = @GLIB_CFLAGS@ @AUDIOFILE_CFLAGS@
 
