@@ -515,3 +515,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070904 Makefile.am,generate.pl.in: allowing building in directories other
 	 than the main source directory.
 20070904 plusd.c: fix support for +D snapshots (fixes bug #1765021) (Stuart).
+20070904 Makefile.am: rebuild make-perl when config.h is updated (Stuart).

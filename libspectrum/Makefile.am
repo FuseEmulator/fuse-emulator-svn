@@ -70,7 +70,7 @@ noinst_PROGRAMS =
 
 AM_CFLAGS = -DLIBSPECTRUM_EXPORTS
 
-make-perl$(EXEEXT): $(srcdir)/make-perl.c
+make-perl$(EXEEXT): $(srcdir)/make-perl.c config.h
 	$(CC_FOR_BUILD) -I. -o $@ $<
 
 libspectrum.h: libspectrum.h.in generate.pl snap_accessors.txt tape_accessors.txt config.h
