@@ -517,3 +517,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070904 plusd.c: fix support for +D snapshots (fixes bug #1765021) (Stuart).
 20070904 Makefile.am: rebuild make-perl when config.h is updated (Stuart).
 20070905 Makefile.am: clean generated files on 'make clean' etc. (Stuart).
+20070905 configure.in: add --disable-libaudiofile option (Stuart).
