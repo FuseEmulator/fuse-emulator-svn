@@ -101,6 +101,12 @@ EXTRA_DIST = accessor.pl \
 	     libspectrum.h.in \
 	     snap_accessors.txt
 
+CLEANFILES = libspectrum.h \
+	     snap_accessors.c \
+	     tape_accessors.c \
+	     tape_set.c \
+	     generate.pl \
+	     make-perl$(EXEEXT)
 
 include doc/Makefile.am
 include hacking/Makefile.am
