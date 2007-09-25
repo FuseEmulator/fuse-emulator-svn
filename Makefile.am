@@ -67,6 +67,7 @@ nodist_include_HEADERS = libspectrum.h
 noinst_HEADERS = internals.h
 
 noinst_PROGRAMS =
+noinst_DATA =
 
 AM_CFLAGS = -DLIBSPECTRUM_EXPORTS
 

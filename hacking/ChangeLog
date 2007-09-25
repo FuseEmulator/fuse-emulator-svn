@@ -519,3 +519,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070905 Makefile.am: clean generated files on 'make clean' etc. (Stuart).
 20070905 configure.in: add --disable-libaudiofile option (Stuart).
 20070925 test/invalid-warajevo-blockoffset.tap: reduce to minimal testcase.
+20070925 Makefile.am,test/{Makefile.am,complete-tzx.pl,edges.c,test.c,test.h,
+	 test15.c}: add beginnings of test to check implementation of every
+	 TZX block type.

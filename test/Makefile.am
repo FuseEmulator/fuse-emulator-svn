@@ -23,6 +23,18 @@
 
 noinst_PROGRAMS += test/test
 
+test_test_SOURCES = \
+	test/edges.c \
+	test/test.c \
+	test/test15.c
+
+noinst_DATA += test/complete-tzx.tzx
+
+noinst_HEADERS += test/test.h
+
+test/complete-tzx.tzx: test/complete-tzx.pl
+	perl $< > $@.tmp && mv $@.tmp $@
+
 test_test_LDADD = libspectrum.la
 
 EXTRA_DIST += \
