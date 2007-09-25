@@ -6,16 +6,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "libspectrum.h"
+#include "test.h"
 
 const char *progname;
-const char *LIBSPECTRUM_MIN_VERSION = "0.3.0.1";
-
-typedef enum test_return_t {
-  TEST_PASS,
-  TEST_FAIL,
-  TEST_INCOMPLETE,
-} test_return_t;
+static const char *LIBSPECTRUM_MIN_VERSION = "0.3.0.1";
 
 typedef test_return_t (*test_fn)( void );
 
@@ -23,7 +17,7 @@ typedef test_return_t (*test_fn)( void );
 #define O_BINARY 0
 #endif
 
-static int
+int
 read_file( libspectrum_byte **buffer, size_t *length, const char *filename )
 {
   int fd;
@@ -389,6 +383,7 @@ static struct test_description tests[] = {
   { test_12, "Invalid TZX custom info block causes memory leak", 0 },
   { test_13, "TZX loop end block with loop start block", 0 },
   { test_14, "TZX loop blocks", 0 },
+  { test_15, "Complete TZX file", 0 },
 };
 
 static size_t test_count = sizeof( tests ) / sizeof( tests[0] );
