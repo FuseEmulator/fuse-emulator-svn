@@ -127,6 +127,45 @@ read_snap( const char *filename, const char *filename_to_pass,
   return TEST_PASS;
 }
 
+static test_return_t
+play_tape( const char *filename )
+{
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0;
+  libspectrum_tape *tape;
+  libspectrum_dword tstates;
+  int flags;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  if( libspectrum_tape_alloc( &tape ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename ) ) {
+    libspectrum_tape_free( tape );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  do {
+
+    if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) {
+      libspectrum_tape_free( tape );
+      return TEST_INCOMPLETE;
+    }
+
+  } while( !( flags & LIBSPECTRUM_TAPE_FLAGS_STOP ) );
+
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
+}
+
 /* Specific tests begin here */
 
 /* Test for bugs #1479451 and #1706994: tape object incorrectly freed
@@ -323,123 +362,21 @@ test_13( void )
 static test_return_t
 test_14( void )
 {
-  libspectrum_byte *buffer = NULL;
-  size_t filesize = 0;
-  libspectrum_tape *tape;
-  const char *filename = "loop.tzx";
-  libspectrum_dword tstates;
-  int flags;
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
-			     filename ) ) {
-    libspectrum_tape_free( tape );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  do {
-
-    if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) {
-      libspectrum_tape_free( tape );
-      return TEST_INCOMPLETE;
-    }
-
-  } while( !( flags & LIBSPECTRUM_TAPE_FLAGS_STOP ) );
-
-  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return play_tape( "loop.tzx" );
 }
 
 /* Test for bug #1802607: TZX loop blocks still broken */
 static test_return_t
 test_16( void )
 {
-  libspectrum_byte *buffer = NULL;
-  size_t filesize = 0;
-  libspectrum_tape *tape;
-  const char *filename = "loop2.tzx";
-  libspectrum_dword tstates;
-  int flags;
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
-			     filename ) ) {
-    libspectrum_tape_free( tape );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  do {
-
-    if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) {
-      libspectrum_tape_free( tape );
-      return TEST_INCOMPLETE;
-    }
-
-  } while( !( flags & LIBSPECTRUM_TAPE_FLAGS_STOP ) );
-
-  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return play_tape( "loop2.tzx" );
 }
 
 /* Test for bug #1802618: TZX jump blocks broken */
 static test_return_t
 test_17( void )
 {
-  libspectrum_byte *buffer = NULL;
-  size_t filesize = 0;
-  libspectrum_tape *tape;
-  const char *filename = "jump.tzx";
-  libspectrum_dword tstates;
-  int flags;
-
-  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
-
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
-			     filename ) ) {
-    libspectrum_tape_free( tape );
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
-
-  free( buffer );
-
-  do {
-
-    if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) {
-      libspectrum_tape_free( tape );
-      return TEST_INCOMPLETE;
-    }
-
-  } while( !( flags & LIBSPECTRUM_TAPE_FLAGS_STOP ) );
-
-  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
-
-  return TEST_PASS;
+  return play_tape( "jump.tzx" );
 }
 
 struct test_description {
