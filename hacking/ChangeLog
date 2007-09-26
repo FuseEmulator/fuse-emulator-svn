@@ -526,3 +526,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 to the full TZX test.
 20070926 test/{loop2.tzx,test.c}: add test for bug #1802607 (TZX loop blocks
 	 still broken).
+20070926 tape.c: fix bug #1802607.
