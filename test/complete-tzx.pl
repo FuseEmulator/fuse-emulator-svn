@@ -73,9 +73,60 @@ sub write_turbo_speed_data_block {
 
 }
 
+sub write_pure_tone_block {
+
+  my( $length, $count ) = @_;
+
+  write_byte( 0x12 );
+  write_word( $length );
+  write_word( $count );
+
+}
+
+sub write_pulse_sequence_block {
+
+  my( @data ) = @_;
+
+  write_byte( 0x13 );
+  write_byte( scalar @data );
+  write_word( $_ ) foreach @data;
+
+}
+
+sub write_pure_data_block {
+
+  my( $zero_length, $one_length, $data, $bits_in_last_byte, $pause ) = @_;
+
+  write_byte( 0x14 );
+  write_word( $zero_length );
+  write_word( $one_length );
+  write_byte( $bits_in_last_byte );
+  write_word( $pause );
+  write_three( length $data );
+  print $data;
+
+}
+
+sub write_pause_block {
+
+  my( $pause ) = @_;
+
+  write_byte( 0x20 );
+  write_word( $pause );
+
+}
+
 write_header();
 
 write_standard_speed_data_block( "\xaa", 2345 );
 
 write_turbo_speed_data_block( 1000, 5, 123, 456, 789, 400, "\x00\xff\x55\xa0",
 			      4, 987 );
+
+write_pure_tone_block( 535, 666 );
+
+write_pulse_sequence_block( 772, 297, 692 );
+
+write_pure_data_block( 552, 1639, "\xff\x00\xfc", 6, 554 );
+
+write_pause_block( 618 );

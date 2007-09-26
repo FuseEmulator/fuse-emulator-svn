@@ -522,3 +522,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070925 Makefile.am,test/{Makefile.am,complete-tzx.pl,edges.c,test.c,test.h,
 	 test15.c}: add beginnings of test to check implementation of every
 	 TZX block type.
+20070926 test/{complete-tzx.pl,edges.c,test.h,test15.c}: add more block types
+	 to the full TZX test.
+
