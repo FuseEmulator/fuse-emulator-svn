@@ -979,7 +979,7 @@ jump_blocks( libspectrum_tape *tape, int offset )
   new_block = g_slist_nth( tape->blocks, current_position + offset );
   if( new_block == NULL ) return LIBSPECTRUM_ERROR_CORRUPT;
 
-  tape->state.current_block->data = new_block;
+  tape->state.current_block = new_block;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
