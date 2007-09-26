@@ -59,9 +59,47 @@ complete_edges_list[] =
   { 1935897, 1, 1 },	/* Pause */
 
   /* Pause block */
-  { 2159539, 1, 3 },
+  { 2159539, 1, 1 },
 
-  { 0, 0 }		/* End marker */
+  /* Group start block */
+  {    0,    1, 1 },
+
+  /* Group end block */
+  {    0,    1, 1 },
+
+  /* Jump block */
+  {    0,    1, 1 },
+
+  /* Pure tone block skipped */
+
+  /* Loop start block */
+  {    0,    1, 1 },
+
+    /* Iteration 1 */
+    {  837,  184, 0 },	/* Pure tone block */
+    {  837,    1, 1 },
+
+    {    0,    1, 1 },	/* Loop end block */
+
+    /* Iteration 2 */
+    {  837,  184, 0 },	/* Pure tone block */
+    {  837,    1, 1 },
+
+    {    0,    1, 1 },	/* Loop end block */
+
+    /* Iteration 3 */
+    {  837,  184, 0 },	/* Pure tone block */
+    {  837,    1, 1 },
+
+    {    0,    1, 1 },	/* Loop end block */
+
+  /* Stop tape if in 48K mode block */
+  {    0,    1, 5 },
+
+  /* Text description block */
+  {    0,    1, 3 },
+
+  { -1, 0, 0 }		/* End marker */
 
 };
 
@@ -70,4 +108,3 @@ test_15( void )
 {
   return check_edges( "complete-tzx.tzx", complete_edges_list );
 }
-
