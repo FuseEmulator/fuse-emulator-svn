@@ -37,13 +37,9 @@ check_edges( const char *filename, test_edge_sequence_t *edges )
       return TEST_INCOMPLETE;
     }
 
-    if( flags & LIBSPECTRUM_TAPE_FLAGS_STOP ) {
-      if( ptr->length == 0 ) {
-	r = TEST_PASS;
-      } else {
-	fprintf( stderr, "%s: expected end of tape, got %d tstates\n",
-		 progname, tstates );
-      }
+    if( tstates != ptr->length || flags != ptr->flags ) {
+      fprintf( stderr, "%s: expected %d tstates and flags %d, got %d tstates and flags %d\n",
+	       progname, ptr->length, ptr->flags, tstates, flags );
       break;
     }
 
@@ -53,7 +49,13 @@ check_edges( const char *filename, test_edge_sequence_t *edges )
       break;
     }
 
-    if( --ptr->count == 0 ) ptr++;
+    if( --ptr->count == 0 ) {
+      ptr++;
+      if( ptr->length == 0 ) {
+	r = TEST_PASS;
+	break;
+      }
+    }
   }
 
   if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;

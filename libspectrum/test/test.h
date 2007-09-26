@@ -15,6 +15,7 @@ typedef struct test_edge_sequence_t {
 
   libspectrum_dword length;
   size_t count;
+  int flags;
 
 } test_edge_sequence_t;
 
