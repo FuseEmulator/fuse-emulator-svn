@@ -530,3 +530,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070926 test/{jump.tzx,test.c}: add test for bug #1802618 (TZX jump blocks
 	 broken).
 20070926 tape.c: fix bug #1802618.
+20070926 test/{complete-tzx.pl,edges.c,test15.c}: add more block types to
+	 the full TZX test.

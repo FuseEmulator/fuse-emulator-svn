@@ -116,6 +116,65 @@ sub write_pause_block {
 
 }
 
+sub write_group_start_block {
+
+  my( $name ) = @_;
+
+  write_byte( 0x21 );
+  write_byte( length $name );
+  print $name;
+
+}
+
+sub write_group_end_block {
+
+  my( $name ) = @_;
+
+  write_byte( 0x22 );
+
+}
+
+sub write_jump_block {
+
+  my( $offset ) = @_;
+
+  write_byte( 0x23 );
+  write_word( $offset );
+
+}
+
+sub write_loop_start_block {
+
+  my( $iterations ) = @_;
+
+  write_byte( 0x24 );
+  write_word( $iterations );
+
+}
+
+sub write_loop_end_block {
+
+  write_byte( 0x25 );
+
+}
+
+sub write_stop_tape_if_in_48k_mode_block {
+
+  write_byte( 0x2a );
+  write_dword( 0 );
+
+}
+
+sub write_text_description_block {
+
+  my( $text ) = @_;
+
+  write_byte( 0x30 );
+  write_byte( length $text );
+  print $text;
+
+}
+
 write_header();
 
 write_standard_speed_data_block( "\xaa", 2345 );
@@ -130,3 +189,21 @@ write_pulse_sequence_block( 772, 297, 692 );
 write_pure_data_block( 552, 1639, "\xff\x00\xfc", 6, 554 );
 
 write_pause_block( 618 );
+
+write_group_start_block( "Group Start" );
+
+write_group_end_block();
+
+write_jump_block( 2 );
+
+write_pure_tone_block( 303, 678 );
+
+write_loop_start_block( 3 );
+
+write_pure_tone_block( 837, 185 );
+
+write_loop_end_block();
+
+write_stop_tape_if_in_48k_mode_block();
+
+write_text_description_block( "Comment here" );

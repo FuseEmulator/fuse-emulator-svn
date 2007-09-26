@@ -51,7 +51,7 @@ check_edges( const char *filename, test_edge_sequence_t *edges )
 
     if( --ptr->count == 0 ) {
       ptr++;
-      if( ptr->length == 0 ) {
+      if( ptr->length == -1 ) {
 	r = TEST_PASS;
 	break;
       }
