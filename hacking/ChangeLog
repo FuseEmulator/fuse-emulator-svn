@@ -524,4 +524,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 TZX block type.
 20070926 test/{complete-tzx.pl,edges.c,test.h,test15.c}: add more block types
 	 to the full TZX test.
-
+20070926 test/{loop2.tzx,test.c}: add test for bug #1802607 (TZX loop blocks
+	 still broken).
