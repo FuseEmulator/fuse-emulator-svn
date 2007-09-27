@@ -97,7 +97,23 @@ complete_edges_list[] =
   {    0,    1, 5 },
 
   /* Text description block */
-  {    0,    1, 3 },
+  {    0,    1, 1 },
+
+  /* Message block */
+  {    0,    1, 1 },
+
+  /* Archive info block */
+  {    0,    1, 1 },
+
+  /* Hardware info block */
+  {    0,    1, 1 },
+
+  /* Custom info block */
+  {    0,    1, 1 },
+
+  /* Pure tone block */
+  {  820,  940, 0 },
+  {  820,    1, 3 },
 
   { -1, 0, 0 }		/* End marker */
 
