@@ -189,3 +189,4 @@
 20070727 listbasic.c,rzxcheck.c,rzxdump.c,rzxtool.c,snap2tzx.c,snapconv.c,
          tape2wav.c,tapeconv.c,tzxlist.c,utils.[ch]: remove use of mmap():
 	 added complexity for no real benefit.
+20070905 listbasic.c: fix handling of block characters (Stuart).

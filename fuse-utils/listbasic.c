@@ -349,7 +349,7 @@ detokenize( libspectrum_word offset, int length,
 
     b = get_byte( offset + i, data );
 
-    if( b < 128 ) {
+    if( b < 144 ) {
 
       switch( b ) {
 
