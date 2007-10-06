@@ -376,7 +376,7 @@ libspectrum_csw_write( libspectrum_byte **buffer, size_t *length,
   *ptr++ = 0;		/* No header extension */
 
   /* encoding application description */
-  bzero( ptr, 16 ); ptr += 16; /* No creator for now */
+  memset( ptr, 0, 16 ); ptr += 16; /* No creator for now */
 
   /* header extension data is zero so on to the data */
 
