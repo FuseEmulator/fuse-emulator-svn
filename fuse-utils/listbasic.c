@@ -42,8 +42,6 @@
 /* argv[0] */
 char *progname;
 
-int betabasic = 0;
-
 /* A function used to read memory */
 typedef
   libspectrum_byte (*memory_read_fn)( libspectrum_word offset, void *data );
@@ -63,35 +61,23 @@ int detokenize( libspectrum_word offset, int length,
 
 int main(int argc, char* argv[])
 {
+  int error;
   unsigned char *buffer; size_t length;
   libspectrum_id_t type;
   libspectrum_class_t class;
 
-  int c;
-  int error;
-
   progname = argv[0];
 
-  while( ( c = getopt( argc, argv, "b" ) ) != -1 ) {
-
-    switch( c ) {
-
-    case 'b': betabasic = 1; break;
-    }
-  }
-  argc -= optind;
-  argv += optind;
-
-  if( argc != 1 ) {
-    fprintf( stderr, "%s: usage: %s [-b] <file>\n", progname, progname );
+  if( argc != 2 ) {
+    fprintf( stderr, "%s: usage: %s <file>\n", progname, progname );
     return 1;
   }
 
   error = init_libspectrum(); if( error ) return error;
 
-  error = read_file( argv[0], &buffer, &length ); if( error ) return error;
+  error = read_file( argv[1], &buffer, &length ); if( error ) return error;
 
-  error = libspectrum_identify_file_with_class( &type, &class, argv[0], buffer,
+  error = libspectrum_identify_file_with_class( &type, &class, argv[1], buffer,
 						length );
   if( error ) { free( buffer ); return error; }
 
@@ -109,13 +95,13 @@ int main(int argc, char* argv[])
 
   case LIBSPECTRUM_CLASS_UNKNOWN:
     fprintf( stderr, "%s: couldn't identify the file type of `%s'\n",
-	     progname, argv[0] );
+	     progname, argv[1] );
     free( buffer );
     return 1;
 
   default:
     fprintf( stderr, "%s: `%s' is an unsupported file type\n",
-	     progname, argv[0] );
+	     progname, argv[1] );
     free( buffer );
     return 1;
 
@@ -166,7 +152,7 @@ read_snap_memory( libspectrum_word address, void *data )
   /* FIXME: assumes a 48K memory model */
 
   switch( address >> 14 ) {
-
+    
   case 0: /* ROM; can't handle this */
     fprintf( stderr, "%s: attempt to read from ROM\n", progname );
     /* FIXME: find a better way to handle the error return */
@@ -276,7 +262,7 @@ read_tape_block( libspectrum_word offset, void *data )
 
   return libspectrum_tape_block_data( tape_block )[offset];
 }
-
+  
 int
 extract_basic( libspectrum_word offset, libspectrum_word end,
 	       memory_read_fn get_byte, void *data )
@@ -290,18 +276,15 @@ extract_basic( libspectrum_word offset, libspectrum_word end,
     offset += 2;
     if( line_number >= 16384 ) break;
 
+    printf( "%5d", line_number );
+
     line_length = get_byte( offset, data ) | get_byte( offset + 1, data ) << 8;
     offset += 2;
 
-    /* Hide line 0 for Beta BASIC */
-    if( line_number != 0 || !betabasic ) {
-      printf( "%5d", line_number );
+    error = detokenize( offset, line_length, get_byte, data );
+    if( error ) return error;
 
-      error = detokenize( offset, line_length, get_byte, data );
-      if( error ) return error;
-
-      printf( "\n" );
-    }
+    printf( "\n" );
 
     offset += line_length;
   }
@@ -360,30 +343,13 @@ detokenize( libspectrum_word offset, int length,
     " DRAW ",	" CLEAR ",	" RETURN ",	" COPY "
   };
 
-  /* Beta BASIC keywords: */
-  static const char beta_keyword[][11] = {
-    " KEYWORDS ", " DEF PROC ",	" PROC ",	" END PROC ",
-    " RENUM ",	  " WINDOW ",	" AUTO ",	" DELETE ",
-    " REF ",	  " JOIN ",	" EDIT ",	" KEYIN ",
-    " LOCAL ",	  " DEFAULT ",	" DEF KEY ",	" CSIZE ",
-    " ALTER ",	  " BLANK ",	" CLOCK ",	" DO ",
-    " ELSE ",	  " FILL ",	" GET ",	" ENDIF ",
-    " EXIT IF ",  " WHILE ",	" UNTIL ",	" LOOP ",
-    " SORT ",	  " ON ERROR ",	" ON ",		" DPOKE ",
-    " POP ",	  " ROLL ",	" SCROLL ",	" TRACE ",
-    " USING ",
-  };
-
-  /* The Timex keywords, DELETE, ON ERR, STICK, SOUND, FREE, RESET,
-   * are handled below */
-
   for( i = 0; i < length; i++ ) {
 
     char nextspace = 1;
 
     b = get_byte( offset + i, data );
 
-    if( b < 128 ) {
+    if( b < 144 ) {
 
       switch( b ) {
 
@@ -468,25 +434,7 @@ detokenize( libspectrum_word offset, int length,
           printf( "\\*" ); /* putchar (0xA9); */
 	}
         break;
-
-      default:
-        if( b < 32 ) continue;
-        putchar( b );
-        break;
-      }
-
-    } else if( betabasic && b >= 128 && b <= 164 ) {
-
-      if( b == 164 && i == 0) {
-	nextspace = print_keyword( keyword[ b - 163 ], space );
-      } else {
-	nextspace = print_keyword( beta_keyword[ b - 128 ], space );
-      }
-
-    } else if( b < 163 + 2 * quote ) {
-
-      switch( b ) {
-
+	
       case 128: printf( "\\  " ); break; /* Graphics characters */
       case 129: printf( "\\ '" ); break;
       case 130: printf( "\\' " ); break;
@@ -504,10 +452,14 @@ detokenize( libspectrum_word offset, int length,
       case 142: printf( "\\:." ); break;
       case 143: printf( "\\::" ); break;
 
-      default: printf( "\\%c", b - 144 + 'a' ); break; /* UDGs */
-
+      default:
+        if( b < 32 ) continue;
+        putchar( b );
+        break;
       }
-
+    
+    } else if( b < 163 + 2 * quote ) {	/* UDGs */
+      printf( "\\%c", b - 144 + 'a' );
     } else {
       nextspace = print_keyword( keyword[ b - 163 ], space );
     }
