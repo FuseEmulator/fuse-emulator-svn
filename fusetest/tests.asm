@@ -97,3 +97,39 @@ PROC
 	cp d
 	ret
 ENDP
+
+; Test memory contention
+
+contendedmemorytest
+PROC
+	ld hl, _in
+	ld de, 0x7ffe
+	ld bc, _inend - _in
+	ldir
+	
+	call interruptsync
+
+	ld hl, 0xfdfe		; 88
+	ld (hl), _isr % 0x100	; 98
+	inc hl			; 108
+	ld (hl), _isr / 0x100	; 114
+
+	ld hl, 0x375d		; 124
+	call delay		; 134
+
+	ld a, 0xff		; 14307
+	call 0x7ffe		; 14314
+
+	ld hl, 0xd6cb		; 14358
+	call delay		; 14368
+	
+	jp atiming		; 69355
+
+_isr	pop hl
+	ret
+	
+_in	in a, (0xff)		; 14331
+	ret			; 14348
+_inend
+
+ENDP

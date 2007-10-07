@@ -66,6 +66,9 @@ _testdata
 	defb 'Contended IN', 0
 	defw contendedintest
 
+	defb 'Contended memory', 0
+	defw contendedmemorytest
+	
 	defb 0
 	
 ENDP
