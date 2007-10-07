@@ -194,3 +194,4 @@
 	 to make it useful with the new RZX model of allowing multiple
 	 snapshots in an RZX file.
 20071007 listbasic.c: add Beta BASIC support to listbasic (Stuart).
+20071007 listbasic.c: improve handling of spaces in Beta BASIC (Stuart).
