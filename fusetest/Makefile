@@ -6,12 +6,19 @@
 Z80AS := pasmo
 Z80ASFLAGS := --alocal
 
-target := fusetest.tap
+targets := contention.tap fusetest.tap
 
-all: $(target)
+all: $(targets)
 
 %.tap: %.asm
 	$(Z80AS) $(Z80ASFLAGS) --tapbas $< $@
+
+contention.tap: \
+	atiming.asm \
+	contention.asm \
+	delay.asm \
+	print.asm \
+	sync.asm
 
 fusetest.tap: \
 	atiming.asm \
@@ -22,4 +29,4 @@ fusetest.tap: \
 	tests.asm \
 
 clean:
-	rm -rf $(target)
+	rm -rf $(targets)
