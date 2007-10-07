@@ -41,7 +41,7 @@ bin_PROGRAMS = @AUDIOTOOLS@ \
 
 EXTRA_PROGRAMS = rzxcheck audio2tape tape2wav
 
-INCLUDES = @LIBSPEC_CFLAGS@ @AUDIOFILE_CFLAGS@
+INCLUDES = @LIBSPEC_CFLAGS@ @AUDIOFILE_CFLAGS@ `pkg-config --cflags glib-2.0`
 
 createhdf_SOURCES = ide.c createhdf.c
 

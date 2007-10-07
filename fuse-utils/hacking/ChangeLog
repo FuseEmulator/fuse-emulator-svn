@@ -190,3 +190,6 @@
          tape2wav.c,tapeconv.c,tzxlist.c,utils.[ch]: remove use of mmap():
 	 added complexity for no real benefit.
 20071005 listbasic.c: fix handling of block characters (Stuart).
+20071007 Makefile.am,man/rzxtool.1,rzxtool.c: complete rewrite of rzxtool
+	 to make it useful with the new RZX model of allowing multiple
+	 snapshots in an RZX file.

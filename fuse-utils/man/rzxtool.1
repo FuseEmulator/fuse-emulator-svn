@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\"
 .\" rzxtool.1: rzxtool man page
-.\" Copyright (C) 2002-2004 Philip Kendall
+.\" Copyright (C) 2002-2007 Philip Kendall
 .\"
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -22,64 +22,62 @@
 .\" E-mail: philip-fuse@shadowmagic.org.uk
 .\"
 .\"
-.TH rzxtool 1 "11th May, 2007" "Version 0.8.0.1" "Emulators"
+.TH rzxtool 1 "7th October, 2007" "Version 0.8.0.1" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH NAME
-rzxtool \- Modify properties Sinclair ZX Spectrum input recording files
+rzxtool \- Modify Sinclair ZX Spectrum input recording files
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH SYNOPSIS
 .PD 0
 .B rzxtool
-.RI "[\-a " snapfile ]
-[ \-e ] [ \-r ] [ \-u ]
+.RI [\-d "block number" ]
+.RI [\-e "block number" , filename ]
+.RI [\-i "block number" , filename ]
+[\-u]
 .I rzxfile
+.RI [ outfile ]
 .P
 .PD 1
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH DESCRIPTION
-rzxtool allows modification or extraction of the snapshot embedded in
-an RZX input recording file and/or (un)compression of the data stored
-in the file.
+rzxtool allows some simple modifications to be made to Sinclair ZX Spectrum
+input recording files: blocks can be removed, snapshot data can be extracted
+or snapshots can be inserted into the file. The file can also be uncompressed.
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH OPTIONS
-.I \-a snapfile
+.RI \-d "block number"
+.RS
+The block number specified will be deleted from the file. Block
+numbers start at zero and ignore any "creator information" blocks in
+the file. The modified file will be written to
+.IR outfile .
+.RE
+.PP
+.RI \-e "block number" , filename
+.RS
+The snapshot in the specified block number will be written to the
+specified filename. All snapshot formats supported by
+.IR libspectrum (3)
+are available.
+.RE
+.PP
+.RI \-i "block number" , filename
 .RS
 The snapshot specified in
-.I snapfile
-will be added to the RZX file, replacing any snapshot which is
-currently present in
-.IR rzxfile .
-The new RZX file will be output to standard output.
-.I snapfile
-can be any of the .sna, .snp, .sp, .szx, .z80, .zxs or +D formats.
+.I filename
+will be added to the file at the position specified by
+.IR "block number" .
 .RE
 .PP
-.I \-e
-.RS
-The snapshot present in
-.I rzxfile
-will be output to standard output in .z80 format. This option is
-incompatible with the
-.IR \-a ", " \-r " and " \-u
-options.
-.RE
-.PP
-.I \-r
-.RS
-Any snapshot present in
-.I rzxfile
-will be removed, and the new RZX file output to standard output.
-.RE
-.PP
-.I \-u
+\-u
 .RS
 When outputting an RZX file, this option causes the input recording
 data to be output uncompressed; if this option is not given, the data
@@ -90,6 +88,11 @@ will be compressed using
 .I rzxfile
 .RS
 specifies an input recording file whose contents are to be modified.
+.RE
+.PP
+.I outfile
+.RS
+specifies where the modified input file should be written.
 .RE
 .\"
 .\"------------------------------------------------------------------

@@ -1,5 +1,5 @@
-/* rzxtool.c: (Un)compress RZX data and add, remove or extract embedded snaps
-   Copyright (c) 2002-2004 Philip Kendall
+/* rzxtool.c: Simple modifications to RZX files
+   Copyright (c) 2007 Philip Kendall
 
    $Id$
 
@@ -26,208 +26,380 @@
 #include <config.h>
 
 #include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
-#ifdef HAVE_STRINGS_H
-#include <strings.h>		/* Needed for strncasecmp() on QNX6 */
-#endif				/* #ifdef HAVE_STRINGS_H */
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
+#include <glib.h>
 #include <libspectrum.h>
 
 #include "utils.h"
 
-struct options {
+const char *progname;
+static libspectrum_creator *creator;
 
-  char *rzxfile;		/* The RZX file we'll operate on */
+typedef enum action_type_t {
 
-  char *add;			/* The snapshot to add */
-  int remove;			/* Shall we remove the existing snap? */
+  ACTION_DELETE_BLOCK,
+  ACTION_EXTRACT_SNAP,
+  ACTION_INSERT_SNAP,
 
-  int uncompress;		/* Shall we uncompress the data? */
+} action_type_t;
 
-  int extract;			/* Shall we extract the snapshot? */
+typedef struct action_t {
 
-};
+  action_type_t type;
+  size_t where;
+  char *filename;
 
-char *progname;			/* argv[0] */
+} action_t;
 
-void init_options( struct options *options );
-int parse_options( int argc, char **argv, struct options *options );
-int write_snapshot( libspectrum_snap *snap );
-int make_snapshot( unsigned char **buffer, size_t *length,
-		   libspectrum_snap *snap );
+typedef struct options_t {
 
-int
-main( int argc, char **argv )
+  const char *rzxfile;
+  const char *outfile;
+  int uncompressed;
+
+} options_t;
+
+static libspectrum_rzx_iterator
+get_block( libspectrum_rzx *rzx, size_t where )
 {
-  unsigned char *buffer; size_t length;
+  libspectrum_rzx_iterator it;
+
+  for( it = libspectrum_rzx_iterator_begin( rzx );
+       it && where;
+       where--, it = libspectrum_rzx_iterator_next( it ) )
+    ;	/* Do nothing */
+
+  return it;
+}
+
+static int
+delete_block( libspectrum_rzx *rzx, size_t where )
+{
+  libspectrum_rzx_iterator it;
+
+  it = get_block( rzx, where );
+  if( !it ) {
+    fprintf( stderr, "%s: not enough blocks in RZX file\n", progname );
+    return 1;
+  }
+
+  libspectrum_rzx_iterator_delete( rzx, it );
+
+  return 0;
+}
+
+static int
+write_file( unsigned char *buffer, size_t length, const char *filename )
+{
+  FILE *f;
+  size_t bytes;
   int error;
 
-  libspectrum_rzx *rzx;
-  libspectrum_creator *creator;
+  f = fopen( filename, "wb" );
+  if( !f ) {
+    fprintf( stderr, "%s: couldn't open `%s': %s\n", progname, filename,
+	     strerror( errno ) );
+    return 1;
+  }
 
-  struct options options;
+  bytes = fwrite( buffer, 1, length, f );
+  if( bytes != length ) {
+    fprintf( stderr, "%s: wrote only %d of %d bytes to `%s'\n", progname,
+	     bytes, length, filename );
+    return 1;
+  }
 
+  error = fclose( f );
+  if( error ) {
+    fprintf( stderr, "%s: error closing `%s': %s\n", progname, filename,
+	     strerror( errno ) );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+write_snapshot( libspectrum_snap *snap, const char *filename )
+{
+  unsigned char *buffer = NULL; size_t length = 0;
+  int error, flags;
+  libspectrum_id_t type;
+  libspectrum_class_t class;
+
+  error = libspectrum_identify_file_with_class( &type, &class, filename, NULL,
+						0 );
+  if( error ) return error;
+
+  if( class != LIBSPECTRUM_CLASS_SNAPSHOT || type == LIBSPECTRUM_ID_UNKNOWN )
+    type = LIBSPECTRUM_ID_SNAPSHOT_SZX;
+
+  error = libspectrum_snap_write( &buffer, &length, &flags, snap, type,
+				  creator, 0 );
+  if( error ) return error;
+
+  error = write_file( buffer, length, filename );
+  if( error ) { free( buffer ); return error; }
+
+  free( buffer );
+
+  return 0;
+}
+
+static int
+extract_snap( libspectrum_rzx *rzx, size_t where, const char *filename )
+{
+  libspectrum_rzx_iterator it;
+  libspectrum_snap *snap;
+  int e;
+
+  it = get_block( rzx, where );
+  if( !it ) {
+    fprintf( stderr, "%s: not enough blocks in RZX file\n", progname );
+    return 1;
+  }
+
+  snap = libspectrum_rzx_iterator_get_snap( it );
+  if( !snap ) {
+    fprintf( stderr, "%s: not a snapshot block\n", progname );
+    return 1;
+  }
+
+  e = write_snapshot( snap, filename );
+  if( e ) return e;
+  
+  return 0;
+}
+
+static libspectrum_snap*
+read_snap( const char *filename )
+{
+  return NULL;
+}
+
+static int
+insert_snap( libspectrum_rzx *rzx, size_t where, const char *filename )
+{
+  libspectrum_snap *snap;
+
+  snap = read_snap( filename );
+  if( !snap ) return 1;
+
+  libspectrum_rzx_insert_snap( rzx, snap, where );
+
+  return 0;
+}
+
+static void
+apply_action( void *data, void *user_data )
+{
+  const action_t *action = data;
+  libspectrum_rzx *rzx = user_data;
+  int e;
+  int where = action->where;
+
+  switch( action->type ) {
+  case ACTION_DELETE_BLOCK:
+    e = delete_block( rzx, where );
+    break;
+  case ACTION_EXTRACT_SNAP:
+    e = extract_snap( rzx, where, action->filename );
+    break;
+  case ACTION_INSERT_SNAP:
+    e = insert_snap( rzx, where, action->filename );
+    break;
+  default:
+    fprintf( stderr, "%s: unknown action type %d\n", progname, action->type );
+    e = 1;
+  }
+
+  /* Really would like to handle errors */
+}
+
+static int
+parse_argument( const char *argument, int *where, const char **filename )
+{
+  char *comma;
+  char *buffer;
+
+  buffer = strdup( argument );
+  if( !buffer ) {
+    fprintf( stderr, "%s: out of memory at %s:%d\n", progname,
+	     __func__, __LINE__ );
+    return 1;
+  }
+  
+  comma = strchr( buffer, ',' );
+  if( !comma ) {
+    fprintf( stderr, "%s: no comma found in argument `%s'\n", progname,
+	     argument );
+    return 1;
+  }
+
+  *comma = 0;
+
+  *where = atoi( buffer );
+
+  *filename = &argument[ comma + 1 - buffer ];
+
+  free( buffer );
+
+  return 0;
+}
+
+static int
+add_action( GSList **actions, action_type_t type, const char *argument )
+{
+  int error, where;
+  const char *filename;
+  action_t *action;
+
+  action = malloc( sizeof( *action ) );
+  if( !action ) {
+    fprintf( stderr, "%s: out of memory at %s:%d\n", progname,
+	     __func__, __LINE__ );
+    return 1;
+  }
+
+  action->type = type;
+
+  if( type == ACTION_DELETE_BLOCK ) {
+    action->where = atoi( argument );
+    action->filename = NULL;
+  } else {
+
+    error = parse_argument( argument, &where, &filename );
+    if( error ) return error;
+
+    action->where = where;
+    action->filename = strdup( filename );
+    if( !action->filename ) {
+      fprintf( stderr, "%s: out of memory at %s:%d\n", progname,
+	       __func__, __LINE__ );
+      return 1;
+    }
+
+  }
+
+  *actions = g_slist_append( *actions, action );
+
+  return 0;
+}
+
+static int
+parse_options( int argc, char **argv, GSList **actions,
+	       struct options_t *options )
+{
+  int c, error = 0;
+  int output_needed = 0;
+
+  options->uncompressed = 0;
+
+  while( ( c = getopt( argc, argv, "d:e:i:u" ) ) != EOF ) {
+    switch( c ) {
+    case 'd':
+      error = add_action( actions, ACTION_DELETE_BLOCK, optarg );
+      output_needed = 1;
+      break;
+    case 'e':
+      error = add_action( actions, ACTION_EXTRACT_SNAP, optarg );
+      break;
+    case 'i':
+      error = add_action( actions, ACTION_INSERT_SNAP, optarg );
+      output_needed = 1;
+      break;
+    case 'u':
+      options->uncompressed = 1;
+      output_needed = 1;
+      break;
+    case '?': error = 1; break;
+    }
+
+    if( error ) break;
+  }
+
+  if( error ) return error;
+
+  if( !argv[ optind ] ) {
+    fprintf( stderr, "%s: no RZX file specified\n", progname );
+    return 1;
+  }
+
+  options->rzxfile = argv[ optind++ ];
+
+  if( output_needed ) {
+
+    if( !argv[ optind ] ) {
+      fprintf( stderr, "%s: no RZX output file specified\n", progname );
+      return 1;
+    }
+
+    options->outfile = argv[ optind++ ];
+  } else {
+    options->outfile = NULL;
+  }
+
+  if( argv[ optind ] ) {
+    fprintf( stderr, "%s: extra argument on command line\n", progname );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+write_rzx( const char *filename, libspectrum_rzx *rzx, int compressed )
+{
+  unsigned char *buffer = NULL; size_t length = 0;
+  int error;
+
+  error = libspectrum_rzx_write( &buffer, &length, rzx, LIBSPECTRUM_ID_UNKNOWN,
+				 creator, compressed, NULL );
+  if( error ) return error;
+
+  error = write_file( buffer, length, filename );
+  if( error ) { free( buffer ); return error; }
+
+  free( buffer );
+
+  return 0;
+}  
+
+int
+main( int argc, char *argv[] )
+{
   progname = argv[0];
+  GSList *actions = NULL;
+  options_t options;
+  unsigned char *buffer = NULL; size_t length = 0;
+  libspectrum_rzx *rzx;
+  int error;
 
   error = init_libspectrum(); if( error ) return error;
 
-  init_options( &options );
-  if( parse_options( argc, argv, &options ) ) return 1;
+  error = get_creator( &creator, "rzxtool" ); if( error ) return error;
 
-  /* Don't screw up people's terminals */
-  if( isatty( STDOUT_FILENO ) ) {
-    fprintf( stderr, "%s: won't output binary data to a terminal\n",
-	     progname );
-    return 1;
-  }
+  error = parse_options( argc, argv, &actions, &options );
+  if( error ) return error;
 
-  if( libspectrum_rzx_alloc( &rzx ) ) return 1;
+  error = read_file( options.rzxfile, &buffer, &length );
+  if( error ) return error;
 
-  if( read_file( options.rzxfile, &buffer, &length ) ) return 1;
+  error = libspectrum_rzx_alloc( &rzx );
+  if( error ) return error;
 
-  if( libspectrum_rzx_read( rzx, buffer, length ) ) {
-    free( buffer );
-    return 1;
-  }
+  error = libspectrum_rzx_read( rzx, buffer, length );
+  if( error ) return error;
 
   free( buffer );
 
-  if( options.extract ) {
+  g_slist_foreach( actions, apply_action, rzx );
 
-    libspectrum_snap *snap;
-
-    error = libspectrum_rzx_start_playback( rzx, 0, &snap );
-    if( error ) { libspectrum_rzx_free( rzx ); return error; }
-
-    if( !snap ) {
-      fprintf( stderr, "%s: no snapshot in `%s' to extract\n", progname,
-	       options.rzxfile );
-      libspectrum_rzx_free( rzx );
-      return 1;
-    }
-    if( write_snapshot( snap ) ) {
-      libspectrum_rzx_free( rzx );
-      libspectrum_snap_free( snap );
-      return 1;
-    }
-
-  } else {
-
-    if( options.remove ) {
-      /* FIXME: do something here */
-    }
-
-    if( options.add ) {
-      /* FIXME: do something here */
-    }
-
-    if( get_creator( &creator, "rzxtool" ) ) {
-      libspectrum_rzx_free( rzx );
-      return 1;
-    }
-
-    length = 0;
-    if( libspectrum_rzx_write( &buffer, &length, rzx, LIBSPECTRUM_ID_UNKNOWN,
-			       creator, !options.uncompress, NULL ) ) {
-      libspectrum_creator_free( creator );
-      libspectrum_rzx_free( rzx );
-      return 1;
-    }
-
-    libspectrum_creator_free( creator );
-
-    /* And (finally!) write it */
-    if( fwrite( buffer, 1, length, stdout ) != length ) {
-      free( buffer );
-      libspectrum_rzx_free( rzx );
-      return 1;
-    }
-
-    free( buffer );
-
+  if( options.outfile ) {
+    error = write_rzx( options.outfile, rzx, !options.uncompressed );
+    if( error ) return error;
   }
-
-  libspectrum_rzx_free( rzx );
-
-  return 0;
-}
-
-void
-init_options( struct options *options )
-{
-  options->rzxfile = NULL;
-
-  options->add = NULL;
-  options->remove = 0;
-  options->uncompress = 0;
-  options->extract = 0;
-}
-
-int
-parse_options( int argc, char **argv, struct options *options )
-{
-  /* Defined by getopt */
-  extern char *optarg;
-  extern int optind;
-
-  int c;
-
-  int unknown = 0, output_rzx = 0, output_snapshot = 0;
-
-  while( ( c = getopt( argc, argv, "a:ceru" ) ) != EOF ) 
-    switch( c ) {
-    case 'a': options->add = optarg;   break;
-    case 'e': options->extract = 1;    break;
-    case 'r': options->remove = 1;     break;
-    case 'u': options->uncompress = 1; break;
-    case '?': unknown = 1;	       break;
-    }
-
-  if( unknown ) return 1;
-
-  if( options->add || options->remove || options->uncompress ) output_rzx = 1;
-  if( options->extract ) output_snapshot = 1;
-
-  if( output_rzx && output_snapshot ) {
-    fprintf( stderr, "%s: can't output both a snapshot and a RZX file\n",
-	     progname );
-    return 1;
-  }
-
-  if( argv[optind] == NULL ) {
-    fprintf( stderr, "%s: no RZX file given\n", progname );
-    return 1;
-  }
-
-  options->rzxfile = argv[optind];
-
-  return 0;
-}
-
-int
-write_snapshot( libspectrum_snap *snap )
-{
-  unsigned char *buffer = NULL; size_t length = 0;
-  int flags;
-
-  if( libspectrum_snap_write( &buffer, &length, &flags, snap,
-			      LIBSPECTRUM_ID_SNAPSHOT_Z80, NULL, 0 ) )
-    return 1;
-  
-  if( fwrite( buffer, 1, length, stdout ) != length ) {
-    fprintf( stderr, "%s: error writing output: %s\n", progname,
-	     strerror( errno ) );
-    free( buffer );
-    return 1;
-  }
-
-  free( buffer );
 
   return 0;
 }
