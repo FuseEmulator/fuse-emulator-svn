@@ -536,3 +536,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070927 test/{complete-tzx.pl,test15.c}: and more block types to the full
 	 TZX test.
 20071006 csw.c: use memset() instead of bzero() for consistency (Stuart).
+20071007 doc/libspectrum.txt,libspectrum.h.in,rzx.c: add functionality
+	 required for updated rzxtool.
