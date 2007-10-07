@@ -765,6 +765,10 @@ typedef enum libspectrum_rzx_block_id {
 
 } libspectrum_rzx_block_id;
 
+void
+libspectrum_rzx_insert_snap( libspectrum_rzx *rzx, libspectrum_snap *snap,
+			     int where );
+
 libspectrum_rzx_iterator WIN32_DLL
 libspectrum_rzx_iterator_begin( libspectrum_rzx *rzx );
 libspectrum_rzx_iterator WIN32_DLL
@@ -774,6 +778,12 @@ libspectrum_rzx_block_id WIN32_DLL
 libspectrum_rzx_iterator_get_type( libspectrum_rzx_iterator it );
 size_t WIN32_DLL
 libspectrum_rzx_iterator_get_frames( libspectrum_rzx_iterator it );
+
+void WIN32_DLL
+libspectrum_rzx_iterator_delete( libspectrum_rzx *rzx,
+				 libspectrum_rzx_iterator it );
+libspectrum_snap* WIN32_DLL
+libspectrum_rzx_iterator_get_snap( libspectrum_rzx_iterator it );
 
 /*
  * Microdrive image handling routines

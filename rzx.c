@@ -1709,6 +1709,13 @@ rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+void
+libspectrum_rzx_insert_snap( libspectrum_rzx *rzx, libspectrum_snap *snap,
+			     int where )
+{
+  rzx->blocks = g_slist_insert( rzx->blocks, snap, where );
+}
+
 /*
  * Iterator functions
  */
@@ -1741,4 +1748,23 @@ libspectrum_rzx_iterator_get_frames( libspectrum_rzx_iterator it )
   if( block->type != LIBSPECTRUM_RZX_INPUT_BLOCK ) return -1;
 
   return block->types.input.count;
+}
+
+void
+libspectrum_rzx_iterator_delete( libspectrum_rzx *rzx,
+				 libspectrum_rzx_iterator it )
+{
+  block_free( it->data );
+
+  rzx->blocks = g_slist_delete_link( rzx->blocks, it );
+}
+
+libspectrum_snap*
+libspectrum_rzx_iterator_get_snap( libspectrum_rzx_iterator it )
+{
+  rzx_block_t *block = it->data;
+
+  if( block->type != LIBSPECTRUM_RZX_SNAPSHOT_BLOCK ) return NULL;
+
+  return block->types.snap;
 }

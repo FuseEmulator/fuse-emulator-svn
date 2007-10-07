@@ -1254,6 +1254,25 @@ into the RZX file. If `key' is non-NULL, the RZX file will be
 digitally signed using the specified DSA key; see below for more
 details.
 
+void
+libspectrum_rzx_insert_snap( libspectrum_rzx *rzx, libspectrum_snap *snap,
+			     int where )
+
+Insert `snap' into the RZX recording in position `where'. A `where' value of
+zero is the first block in the file, before any current content.
+
+void
+libspectrum_rzx_iterator_delete( libspectrum_rzx *rzx,
+				 libspectrum_rzx_iterator *it )
+
+Delete the block pointed to by `it' from the RZX file `rzx'.
+
+libspectrum_snap*
+libspectrum_rzx_iterator_get_snap( libspectrum_rzx_iterator it )
+
+Get the snapshot pointed to by `it'. If `it' does not point to a snapshot,
+NULL is returned.
+
 Input recording iterators
 -------------------------
 
