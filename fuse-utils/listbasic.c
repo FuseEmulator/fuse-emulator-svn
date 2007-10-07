@@ -298,6 +298,7 @@ extract_basic( libspectrum_word offset, libspectrum_word end,
     /* Hide line 0 for Beta BASIC */
     if( line_number != 0 || !betabasic ) {
       printf( "%5d", line_number );
+      if( betabasic ) putchar( ' ' );
 
       error = detokenize( offset, line_length, get_byte, data );
       if( error ) return error;
@@ -333,7 +334,8 @@ detokenize( libspectrum_word offset, int length,
 {
   int i;
   libspectrum_byte b;
-  char space = 1, keyword_next = 1, quote = 0, rem = 0;
+  char keyword_next = 1, quote = 0, rem = 0;
+  char space;
 
   char first; /* set for the first token in each statement */
   char nextfirst = 1;
@@ -379,6 +381,11 @@ detokenize( libspectrum_word offset, int length,
     " USING ",
   };
 
+  if( betabasic )
+    space = 0;
+  else
+    space = 1;
+
   /* The Timex keywords, DELETE, ON ERR, STICK, SOUND, FREE, RESET,
    * are handled below */
 
@@ -414,7 +421,7 @@ detokenize( libspectrum_word offset, int length,
         continue;
 
       case  32:
-        putchar( b );
+        if( !betabasic || i != 0 ) putchar( b );
         nextspace = 0;
         nextfirst = first;
         break;
