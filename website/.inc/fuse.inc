@@ -203,7 +203,7 @@ END_HEADER;
     output_menu ($fuse_menu_header, '#-top-', $fuse_sections);
     if ($fuse_related != NULL)
       output_menu ($fuse_related[0][0], $fuse_related[0][1], array_slice ($fuse_related, 1));
-    output_menu ('SF project page', 'http://sourceforge.net/projects/fuse-emulator/', array (array ('Files', 'http://sourceforge.net/project/showfiles.php?group_id=91293'), array ('CVS', 'http://sourceforge.net/cvs/?group_id=91293')));
+    output_menu ('SF project page', 'http://sourceforge.net/projects/fuse-emulator/', array (array ('Files', 'http://sourceforge.net/project/showfiles.php?group_id=91293'), array ('SVN', 'http://sourceforge.net/svn/?group_id=91293')));
 
     print <<<END_MENU
  </div></div>
