@@ -28,8 +28,9 @@ PROC
 	ret
 ENDP
 
-; Synchronisation routine: return from this will be exactly 88 tstates
-; after interrupt
+; Synchronisation routine: return from this will be exactly 92 tstates
+; after interrupt with A reset if successful. If it couldn't sync with
+; interrupts, it will return with A set to 0xde.
 
 interruptsync
 PROC
@@ -57,8 +58,12 @@ _isr1	ld hl, 0xffff 		; 65 - 68
 	ei			; 69879 - 69882
 	xor a			; 69883 - 69886
 	inc a			; 69887 or interrupt occurred
-	dec a			; Should not be executed
-	halt
+	di			; Should not be executed
+	ld hl, _nosync
+	call printstring
+	pop hl
+	ld a, 0xde		; Error code
+	ret
 
 	; jp _isr3		  19 - 22
 _isr3	pop hl			; 29 - 32
@@ -68,6 +73,9 @@ _isr3	pop hl			; 29 - 32
 	nop			; 51 - 54
 	jp z, _isr1		; 55 - 58
 	pop hl			; 68
-	ret			; 78
+	xor a			; 78
+	ret			; 82
+
+_nosync defb '... no sync', 0
 
 ENDP

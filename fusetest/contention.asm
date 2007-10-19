@@ -33,21 +33,21 @@ _next	ld a, (hl)
 _done	halt
 
 _testdata
-	defw 0x375f, 0xd6d1	; 14332
-	defw 0x3760, 0xd6d0	; 14333
-	defw 0x3761, 0xd6cf	; 14334
-	defw 0x3762, 0xd6c8	; 14335
-	defw 0x3763, 0xd6c8	; 14336
-	defw 0x3764, 0xd6c8	; 14337
-	defw 0x3765, 0xd6c8	; 14338
-	defw 0x3766, 0xd6c8	; 14339
-	defw 0x3767, 0xd6c8	; 14340
-	defw 0x3768, 0xd6c8	; 14341
-	defw 0x3769, 0xd6c7	; 14342
-	defw 0x376a, 0xd6c0	; 14343
-	defw 0x376b, 0xd6c0	; 14344
-	defw 0x376c, 0xd6c0	; 14345
-	defw 0x376d, 0xd6c0	; 14346
+	defw 0x375b, 0xd6d1	; 14332
+	defw 0x375c, 0xd6d0	; 14333
+	defw 0x375d, 0xd6cf	; 14334
+	defw 0x375e, 0xd6c8	; 14335
+	defw 0x375f, 0xd6c8	; 14336
+	defw 0x3760, 0xd6c8	; 14337
+	defw 0x3761, 0xd6c8	; 14338
+	defw 0x3762, 0xd6c8	; 14339
+	defw 0x3763, 0xd6c8	; 14340
+	defw 0x3764, 0xd6c8	; 14341
+	defw 0x3765, 0xd6c7	; 14342
+	defw 0x3766, 0xd6c0	; 14343
+	defw 0x3767, 0xd6c0	; 14344
+	defw 0x3768, 0xd6c0	; 14345
+	defw 0x3769, 0xd6c0	; 14346
 	defw 0
 
 ENDP
@@ -106,13 +106,13 @@ test
 PROC
 	call interruptsync
 
-	ld hl, 0xfdfe		; 88
-	ld (hl), _isr % 0x100	; 98
-	inc hl			; 108
-	ld (hl), _isr / 0x100	; 114
+	ld hl, 0xfdfe		; 92
+	ld (hl), _isr % 0x100	; 102
+	inc hl			; 112
+	ld (hl), _isr / 0x100	; 118
 
-	ld hl, (delay1)		; 124
-	call delay		; 140
+	ld hl, (delay1)		; 128
+	call delay		; 144
 
 	call 0x7fff
 

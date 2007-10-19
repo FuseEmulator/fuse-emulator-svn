@@ -48,13 +48,16 @@ ldirtest
 PROC
 	call interruptsync
 
-	ld hl, 0xfdfe		; 88
-	ld (hl), _isr % 0x100	; 98
-	inc hl			; 108
-	ld (hl), _isr / 0x100	; 114
+	cp 0x00			; 92
+	ret nz			; 99
 
-	ld hl, 0x374b		; 124
-	call delay		; 134
+	ld hl, 0xfdfe		; 104
+	ld (hl), _isr % 0x100	; 114
+	inc hl			; 124
+	ld (hl), _isr / 0x100	; 130
+
+	ld hl, 0x373b		; 140
+	call delay		; 150
 
 	ld hl, 0x0000		; 14289
 	ld de, 0x7fff		; 14299
@@ -81,8 +84,11 @@ PROC
 	
 	call interruptsync
 
-	ld hl, 0xa7a9		; 88
-	call delay		; 98
+	cp 0x00			; 92
+	jr nz, _fail		; 99
+
+	ld hl, 0xa797		; 106
+	call delay		; 116
 
 	ld bc, 0x40ff		; 43019
 	ld d, 0x40		; 43029
@@ -96,6 +102,11 @@ PROC
 
 	cp d
 	ret
+
+_fail	pop bc
+	ld hl, 0x5a0f
+	ld (hl), b
+	ret
 ENDP
 
 ; Test memory contention
@@ -108,14 +119,17 @@ PROC
 	ldir
 	
 	call interruptsync
+	
+	cp 0x00			; 92
+	ret nz			; 99
 
-	ld hl, 0xfdfe		; 88
-	ld (hl), _isr % 0x100	; 98
-	inc hl			; 108
-	ld (hl), _isr / 0x100	; 114
+	ld hl, 0xfdfe		; 104
+	ld (hl), _isr % 0x100	; 114
+	inc hl			; 126
+	ld (hl), _isr / 0x100	; 130
 
-	ld hl, 0x375d		; 124
-	call delay		; 134
+	ld hl, 0x374d		; 140
+	call delay		; 150
 
 	ld a, 0xff		; 14307
 	call 0x7ffe		; 14314
