@@ -30,7 +30,7 @@ PROC
 	call _digit
 	ld a,b
 	and 0x0f
-_digit	cp 0x09
+_digit	cp 0x0a
 	jr nc, _letter
 	add a, 0x30
 	jr _x
