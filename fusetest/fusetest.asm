@@ -11,6 +11,45 @@ main
 PROC
 	call interruptsync_init
 
+	ld hl, _framestring
+	call printstring
+
+	call framelength
+
+	ld a, c
+	and b
+	cp 0xff
+	jr nz, _ok
+
+	;; Frame length couldn't be determined
+	ld hl, _unknownstring
+	call printstring
+
+	ret			; Done
+
+_ok
+	push bc
+	push bc
+	
+	ld hl, _conststring
+	call printstring
+	ld a, b
+	call printa
+	ld a, c
+	call printa
+	ld a, 0x0d
+	rst 0x10
+
+	pop hl
+	call frameadj_setup
+
+	ld hl, _machinetype
+	call printstring
+	pop hl
+	call guessmachine
+	ld a, 0x0d
+	rst 0x10	
+
 	ld hl, _testdata
 
 _test	ld a,(hl)
@@ -70,6 +109,11 @@ _testdata
 	defw contendedmemorytest
 	
 	defb 0
+
+_framestring defb 'Frame length ', 0
+_unknownstring defb 'unknown', 0x0d, 0
+_conststring defb '0x8000 + 0x', 0
+_machinetype defb 'Machine type: ', 0
 	
 ENDP
 
@@ -79,5 +123,7 @@ INCLUDE sync.asm
 INCLUDE delay.asm
 INCLUDE atiming.asm
 INCLUDE print.asm
+INCLUDE framelength.asm
+INCLUDE guessmachine.asm
 
 END	main

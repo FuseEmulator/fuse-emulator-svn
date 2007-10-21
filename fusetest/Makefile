@@ -24,6 +24,7 @@ fusetest.tap: \
 	atiming.asm \
 	delay.asm \
 	fusetest.asm \
+	guessmachine.asm \
 	print.asm \
 	sync.asm \
 	tests.asm \

@@ -133,5 +133,6 @@ INCLUDE atiming.asm
 INCLUDE delay.asm
 INCLUDE print.asm
 INCLUDE sync.asm
+INCLUDE framelength.asm
 
 END	main

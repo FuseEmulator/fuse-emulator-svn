@@ -52,12 +52,15 @@ _isr
 
 _isr1	ld hl, 0xffff 		; 65 - 68
 	call delay		; 75 - 78
-	ld hl, 0x10a3		; 65610 - 65613
-	call delay		; 65620 - 65623
+	call frameadj		; 65610 - 65613
 
-	ei			; 69879 - 69882
-	xor a			; 69883 - 69886
-	inc a			; 69887 or interrupt occurred
+				; 48K / 128K timings
+	ld hl, 0x0f78		; 65909 - 65912 / 66929 - 66932
+	call delay		; 65919 - 65922 / 66939 - 66942
+
+	ei			; 69879 - 69882 / 70899 - 70902
+	xor a			; 69883 - 69886 / 70903 - 70906
+	inc a			; 69887 / 70907 or interrupt occurred
 	di			; Should not be executed
 	ld hl, _nosync
 	call printstring

@@ -56,18 +56,25 @@ PROC
 	inc hl			; 124
 	ld (hl), _isr / 0x100	; 130
 
-	ld hl, 0x373b		; 140
+	ld hl, 0x35c1		; 140
 	call delay		; 150
 
-	ld hl, 0x0000		; 14289
-	ld de, 0x7fff		; 14299
-	ld bc, 0x0002		; 14309
-	ldir			; 14319, 14358
+	call guessmachine_precontend ; 13911
+	
+				; 48K / 128K timings
+	ld hl, 0x0000		; 14289 / 14315
+	ld de, 0x7fff		; 14299 / 14325
+	ld bc, 0x0002		; 14309 / 14335
+	ldir			; 14319, 14358 / 14345, 14374
 
-	ld hl, 0xd6bb		; 14374
-	call delay		; 14384
+	call guessmachine_postcontend ; 14374 / 14400
 
-	jp atiming		; 69355
+	call frameadj		; 15082 / 15082
+
+	ld hl, 0xd2cc		; 15381 / 16401
+	call delay		; 15391 / 16411
+
+	jp atiming		; 69355 / 70375
 
 _isr	pop hl
 	ret
@@ -128,22 +135,29 @@ PROC
 	inc hl			; 126
 	ld (hl), _isr / 0x100	; 130
 
-	ld hl, 0x374d		; 140
+	ld hl, 0x35d3		; 140
 	call delay		; 150
 
-	ld a, 0xff		; 14307
-	call 0x7ffe		; 14314
+	call guessmachine_precontend ; 13929
 
-	ld hl, 0xd6cb		; 14358
-	call delay		; 14368
+				; 48K / 128K timings
+	ld a, 0xff		; 14307 / 14333
+	call 0x7ffe		; 14314 / 14340
+
+	call guessmachine_postcontend ; 14358 / 14384
+
+	call frameadj		; 15066 / 15066
+
+	ld hl, 0xd2dc		; 15365 / 16385
+	call delay		; 15375 / 16395
 	
-	jp atiming		; 69355
+	jp atiming		; 69355 / 70375
 
 _isr	pop hl
 	ret
 	
-_in	in a, (0xff)		; 14331
-	ret			; 14348
+_in	in a, (0xff)		; 14331 / 14357
+	ret			; 14348 / 14374
 _inend
 
 ENDP
