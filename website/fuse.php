@@ -189,8 +189,12 @@ fuse_section ("Related projects", "Are there any related projects?", <<<END_SECT
   <ul>
    <li><a href="libspectrum.php">libspectrum</a> is the library used by Fuse to handle various file formats.</li>
    <li>Alexander Shabarshin is working on <a href="http://robots.ural.net/nedopc/sprinter/">SPRINT</a>, an emulator of the <a href="http://www.petersplus.com/">Peters Plus</a> super-Speccy, the <a href="http://www.petersplus.com/sprinter/">Sprinter</a>. SPRINT is using Fuse's Z80 core for its CPU emulation.</li>
-   <li>Mike Wynne's ZX81 emulator, <a href="http://www.chuntey.com/eightyone/">EightyOne</a> is also using
-Fuse's Z80 core.</li>
+   <li>Mike Wynne's ZX81 emulator, <a href="http://www.chuntey.com/eightyone/">EightyOne</a> is also using Fuse's Z80 core.</li>
+   <li>Crabfists's Xbox port, <a href="http://sourceforge.net/projects/fusex/">FuseX</a>.</li>
+   <li>Ben O'Steen's GP2X port, <a href="http://www.zen71790.zen.co.uk/#fuse">Fuse-GP2X</a>.</li>
+   <li>Keith Orbell's Smartphone port, <a href="http://www.aooa27.dsl.pipex.com/FuseSP.htm">FuseSP</a>.</li>
+   <li>Anders Holmberg's PocketPC port, <a href="http://pocketclive.emuunlim.com/">PocketClive</a>.</li>
+   <li><a href="http://sourceforge.net/projects/z80ex/">z80ex</li>, a Z80 emulation library based on Fuse's Z80 core, used by zemu and <a href="http://pocketspeccy.narod.ru/">PocketSpeccy</a>.</li>
   </ul>
 
 END_SECTION
