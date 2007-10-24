@@ -553,7 +553,6 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
     if( xfdMasterBase = OpenLibrary("xfdmaster.library",38 ) ) {
         if( xfdobj = (struct xfdBufferInfo *)xfdAllocObject(XFDOBJ_BUFFERINFO) ) {
 #endif				/* #ifndef __MORPHOS__ */
-    if( xfdMasterBase = OpenLibrary("xfdmaster.library",38 ) ) {
           xfdobj->xfdbi_SourceBuffer = buffer;
           xfdobj->xfdbi_SourceBufLen = length;
           xfdobj->xfdbi_Flags = XFDFB_RECOGTARGETLEN | XFDFB_RECOGEXTERN;

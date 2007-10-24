@@ -538,3 +538,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071006 csw.c: use memset() instead of bzero() for consistency (Stuart).
 20071007 doc/libspectrum.txt,libspectrum.h.in,rzx.c: add functionality
 	 required for updated rzxtool.
+20071024 libspectrum.c: fix compilation on MorphOS (part of patch #1774492)
+	 (Q-Master).
