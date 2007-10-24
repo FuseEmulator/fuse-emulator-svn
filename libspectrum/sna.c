@@ -332,6 +332,8 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
   case LIBSPECTRUM_MACHINE_PLUS3:
   case LIBSPECTRUM_MACHINE_PLUS3E:
   case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_PENT512:
+  case LIBSPECTRUM_MACHINE_PENT1024:
   case LIBSPECTRUM_MACHINE_SCORP:
   case LIBSPECTRUM_MACHINE_SE:
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
@@ -483,4 +485,3 @@ write_page( libspectrum_byte *buffer, libspectrum_snap *snap, int page )
 
   return LIBSPECTRUM_ERROR_NONE;
 }
-

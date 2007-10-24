@@ -212,19 +212,21 @@ const char *
 libspectrum_machine_name( libspectrum_machine type )
 {
   switch( type ) {
-  case LIBSPECTRUM_MACHINE_16:     return "Spectrum 16K";
-  case LIBSPECTRUM_MACHINE_48:     return "Spectrum 48K";
-  case LIBSPECTRUM_MACHINE_TC2048: return "Timex TC2048";
-  case LIBSPECTRUM_MACHINE_TC2068: return "Timex TC2068";
-  case LIBSPECTRUM_MACHINE_TS2068: return "Timex TS2068";
-  case LIBSPECTRUM_MACHINE_128:    return "Spectrum 128K";
-  case LIBSPECTRUM_MACHINE_PLUS2:  return "Spectrum +2";
-  case LIBSPECTRUM_MACHINE_PENT:   return "Pentagon 128K";
-  case LIBSPECTRUM_MACHINE_PLUS2A: return "Spectrum +2A";
-  case LIBSPECTRUM_MACHINE_PLUS3:  return "Spectrum +3";
-  case LIBSPECTRUM_MACHINE_PLUS3E: return "Spectrum +3e";
-  case LIBSPECTRUM_MACHINE_SCORP:  return "Scorpion ZS 256";
-  case LIBSPECTRUM_MACHINE_SE:     return "Spectrum SE";
+  case LIBSPECTRUM_MACHINE_16:       return "Spectrum 16K";
+  case LIBSPECTRUM_MACHINE_48:       return "Spectrum 48K";
+  case LIBSPECTRUM_MACHINE_TC2048:   return "Timex TC2048";
+  case LIBSPECTRUM_MACHINE_TC2068:   return "Timex TC2068";
+  case LIBSPECTRUM_MACHINE_TS2068:   return "Timex TS2068";
+  case LIBSPECTRUM_MACHINE_128:      return "Spectrum 128K";
+  case LIBSPECTRUM_MACHINE_PLUS2:    return "Spectrum +2";
+  case LIBSPECTRUM_MACHINE_PENT:     return "Pentagon 128K";
+  case LIBSPECTRUM_MACHINE_PENT512:  return "Pentagon 512K";
+  case LIBSPECTRUM_MACHINE_PENT1024: return "Pentagon 1024K";
+  case LIBSPECTRUM_MACHINE_PLUS2A:   return "Spectrum +2A";
+  case LIBSPECTRUM_MACHINE_PLUS3:    return "Spectrum +3";
+  case LIBSPECTRUM_MACHINE_PLUS3E:   return "Spectrum +3e";
+  case LIBSPECTRUM_MACHINE_SCORP:    return "Scorpion ZS 256";
+  case LIBSPECTRUM_MACHINE_SE:       return "Spectrum SE";
 
   case LIBSPECTRUM_MACHINE_UNKNOWN: return "(unknown)";
   }
@@ -273,7 +275,9 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
   case LIBSPECTRUM_MACHINE_PLUS3E:
   case LIBSPECTRUM_MACHINE_TC2068: case LIBSPECTRUM_MACHINE_TS2068:
-  case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
+  case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_PENT512: case LIBSPECTRUM_MACHINE_PENT1024:
+  case LIBSPECTRUM_MACHINE_SCORP:
   case LIBSPECTRUM_MACHINE_SE:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_AY; break;
   default:
@@ -285,7 +289,9 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   case LIBSPECTRUM_MACHINE_128: case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A: case LIBSPECTRUM_MACHINE_PLUS3:
   case LIBSPECTRUM_MACHINE_PLUS3E:
-  case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
+  case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_PENT512: case LIBSPECTRUM_MACHINE_PENT1024:
+  case LIBSPECTRUM_MACHINE_SCORP:
 /* FIXME: SE needs to have this capability to be considered a 128k machine */
   case LIBSPECTRUM_MACHINE_SE:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY; break;
@@ -330,7 +336,9 @@ libspectrum_machine_capabilities( libspectrum_machine type )
 
   /* TRDOS-style disk */
   switch( type ) {
-  case LIBSPECTRUM_MACHINE_PENT: case LIBSPECTRUM_MACHINE_SCORP:
+  case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_PENT512: case LIBSPECTRUM_MACHINE_PENT1024:
+  case LIBSPECTRUM_MACHINE_SCORP:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_TRDOS_DISK; break;
   default:
     break;
