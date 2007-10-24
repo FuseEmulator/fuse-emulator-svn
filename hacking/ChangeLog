@@ -540,3 +540,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 required for updated rzxtool.
 20071024 libspectrum.c: fix compilation on MorphOS (part of patch #1774492)
 	 (Q-Master).
+20071024 libspectrum.c,libspectrum.h.in,sna.c,szx.c,timings.c,z80.c: add
+	 Pentagon 512K and Pentagon 1024K support (part of patch #1774492)
+	 (Q-Master).

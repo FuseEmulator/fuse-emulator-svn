@@ -1233,6 +1233,8 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   case LIBSPECTRUM_MACHINE_PLUS3:
     *(*ptr)++ = Z80_MACHINE_PLUS3; break;
   case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_PENT512:
+  case LIBSPECTRUM_MACHINE_PENT1024:
     *(*ptr)++ = Z80_MACHINE_PENTAGON; break;
   case LIBSPECTRUM_MACHINE_SCORP:
     *(*ptr)++ = Z80_MACHINE_SCORPION; break;
