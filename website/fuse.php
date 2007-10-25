@@ -35,7 +35,7 @@ fuse_menu_heading ("Fuse");
 $img = mk_image('screens/f-awm.png', 330, 292);
 fuse_section (NULL, "What is it?", <<<END_SECTION
   $img
-  <p>Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat unsurprisingly, a Spectrum emulator for Unix. However, it has now also been ported to Mac OS X, which may or may not count as a Unix variant depending on your advocacy position.</p>
+  <p>Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat unsurprisingly, a Spectrum emulator for Unix. However, it has now also been ported to Mac OS X, which may or may not count as a Unix variant depending on your advocacy position. It is also being ported to Windows, AmigaOS and MorphOS, which are definitely not Unix variants.</p>
 
 END_SECTION
 );
@@ -96,6 +96,15 @@ fuse_section ("Requirements", "What do I need to run Fuse?", <<<END_SECTION
 
   <h3>Mac OS X</h3>
   <p>A native port to OS X by <a href="mailto:fredm@spamcop.net">Fredrick Meunier</a> is available on it's own sourceforge project <a href="http://fuse-for-macosx.sourceforge.net//">here</a>, as well as a Spotlight importer for Mac OS X 10.4 Tiger users. Alternatively, the original version of Fuse will compile on OS X 10.3 (Panther) or later.</p>
+
+  <h3>Windows</h3>
+  <p>A port to Windows is underway, with <a href="win32/">beta releases</a> available.</p>
+
+  <h3>AmigaOS 4</h3>
+  <p>Chris Young has ported Fuse to AmigaOS 4, with binaries available from Aminet as <a href="http://aminet.net/package/misc/emu/fuse.lha">misc/emu/fuse.lha</a>.</p>
+
+  <h3>MorphOS</h3>
+  <p>Q-Master has ported Fuse to MorphOS, with <a href="http://www.amirus.org.ru/files/fuse_0.8.0.1_cvs3109_morphos.lha">binaries available from AmiRUS</a>.</p>
 
 END_SECTION
 );
