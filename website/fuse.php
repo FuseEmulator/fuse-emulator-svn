@@ -202,7 +202,7 @@ fuse_section ("Related projects", "Are there any related projects?", <<<END_SECT
    <li>Ben O'Steen's GP2X port, <a href="http://www.zen71790.zen.co.uk/#fuse">Fuse-GP2X</a>.</li>
    <li>Keith Orbell's Smartphone port, <a href="http://www.aooa27.dsl.pipex.com/FuseSP.htm">FuseSP</a>.</li>
    <li>Anders Holmberg's PocketPC port, <a href="http://pocketclive.emuunlim.com/">PocketClive</a>.</li>
-   <li><a href="http://sourceforge.net/projects/z80ex/">z80ex</li>, a Z80 emulation library based on Fuse's Z80 core, used by zemu and <a href="http://pocketspeccy.narod.ru/">PocketSpeccy</a>.</li>
+   <li><a href="http://sourceforge.net/projects/z80ex/">z80ex</a>, a Z80 emulation library based on Fuse's Z80 core, used by zemu and <a href="http://pocketspeccy.narod.ru/">PocketSpeccy</a>.</li>
   </ul>
 
 END_SECTION
