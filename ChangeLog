@@ -1,3 +1,18 @@
+2007-xx-xx  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+	* Version 0.x.x released
+
+	* Add audio2tape and tape2wav utilities to convert between audio
+	  and tape formats (Fredrick Meunier).
+
+	* Remove use of mmap() (Philip Kendall).
+
+	* Beta BASIC support for listbasic (Stuart Brady).
+
+	* Win32 fixes (Stuart Brady).
+
+	* Man page fixes (Stuart Brady).
+
 2007-05-11  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
 	* Version 0.8.0.1 released (bug fix release)
@@ -61,7 +76,7 @@
 	* Add `snapconv' utility to convert between snapshot formats
 	  (Philip Kendall).
 
-	* Add `rzxcheck' utility to verify the digitial signature in an
+	* Add `rzxcheck' utility to verify the digital signature in an
 	  RZX file (Philip Kendall).
 
 	* listbasic: a line number of >= 16384 implies the end of BASIC,

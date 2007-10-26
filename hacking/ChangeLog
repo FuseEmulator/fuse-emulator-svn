@@ -195,3 +195,4 @@
 	 snapshots in an RZX file.
 20071007 listbasic.c: add Beta BASIC support to listbasic (Stuart).
 20071007 listbasic.c: improve handling of spaces in Beta BASIC (Stuart).
+20071026 ChangeLog: add some entries (Stuart).
