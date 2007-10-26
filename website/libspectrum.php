@@ -89,7 +89,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <h3>Binaries</h3>
   <p>Packages are available for some Unix distributions; in general, any problems which are specific to the packages should be sent to the package maintainer.</p>
   <ul>
-   <li><a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">Debian stable</a> (Debian 4.0, "Etch"), <a href="http://www.youmustbejoking.demon.co.uk/progs.testing.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.oldstable.html">Debian 3.1</a> ("Sarge") (all 0.2.2) or <a href="http://www.youmustbejoking.demon.co.uk/progs.woody.html">Debian 3.0 ("Woody")</a> (0.2.0.1) by Darren Salt.</li>
+   <li><a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">Debian stable</a> (Debian 4.0, "Etch"), <a href="http://www.youmustbejoking.demon.co.uk/progs.testing.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.oldstable.html">Debian 3.1 ("Sarge")</a> (all 0.2.2) or <a href="http://www.youmustbejoking.demon.co.uk/progs.woody.html">Debian 3.0 ("Woody")</a> (0.2.0.1) by Darren Salt.</li>
    <li><a href="https://admin.fedoraproject.org/pkgdb/packages/name/libspectrum">Fedora</a> (0.3.0.1)</li>
    <li><a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/libspectrum/">FreeBSD</a> (0.3.0.1)</li>
    <li><a href="http://packages.gentoo.org/packages/?category=app-emulation;name=libspectrum">Gentoo</a> (0.2.2)</li>
