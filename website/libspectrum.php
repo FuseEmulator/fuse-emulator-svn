@@ -64,7 +64,7 @@ fuse_section ("Supported formats", "Which formats does it support?", <<<END_SECT
     <ul><li>read/write: .hdf</li></ul>
    </li>
    <li>Microdrive cartridge images:
-    <ul><li>read/write: .mdr<li></ul>
+    <ul><li>read/write: .mdr</li></ul>
    </li>
    <li>Compressed files: reading of gzipped and bzipped files is transparently supported.</li>
   </ul>
@@ -89,14 +89,14 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <h3>Binaries</h3>
   <p>Packages are available for some Unix distributions; in general, any problems which are specific to the packages should be sent to the package maintainer.</p>
   <ul>
-   <li><a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">Debian stable</a> (Debian 3.1, "Sarge"), <a href="http://www.youmustbejoking.demon.co.uk/progs.testing.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a> (all 0.2.2) or <a href="http://www.youmustbejoking.demon.co.uk/progs.woody.html">old stable</a> (Debian 3.0, "Woody") (0.2.0.1) by Darren Salt.</li>
-   <li><a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/libspectrum/">FreeBSD</a> (0.2.0.1)</li>
+   <li><a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">Debian stable</a> (Debian 4.0, "Etch"), <a href="http://www.youmustbejoking.demon.co.uk/progs.testing.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.oldstable.html">old stable</a> (Debian 3.1, "Sarge") (all 0.2.2) or <a href="http://www.youmustbejoking.demon.co.uk/progs.woody.html">old stable</a> (Debian 3.0, "Woody") (0.2.0.1) by Darren Salt.</li>
+   <li><a href="https://admin.fedoraproject.org/pkgdb/packages/name/libspectrum">Fedora</a> (0.3.0.1)</li>
+   <li><a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/libspectrum/">FreeBSD</a> (0.3.0.1)</li>
    <li><a href="http://packages.gentoo.org/packages/?category=app-emulation;name=libspectrum">Gentoo</a> (0.2.2)</li>
-   <li><a href="http://www.mandrake.org/">Mandrake</a> 10.0 packages of 0.2.1 are available from the <a href="http://plf.zarb.org/">PLF</a>, or some <a href="http://www.speccy.org/sinclairmania/arch/emu/mandrake/">older packages</a> from Miguel Barrio Orsikowsky.</li>
-   <li><a href="http://www.netbsd.org/">NetBSD</a> has 0.2.2 available as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/libspectrum/">emulators/libspectrum</a> in <a href="http://www.pkgsrc.org/">pkgsrc</a>.</li>
-   <li><a href="http://www.openbsd.org/">OpenBSD</a> users can find a port of 0.2.1 in <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/devel/libspectrum/">ports/devel/libspectrum</a>.</li>
+   <li><a href="http://www.mandriva.com/">Mandriva</a> 10.0 packages of 0.3.0.1 are available from the <a href="http://plf.zarb.org/">PLF</a>, or some <a href="http://www.speccy.org/sinclairmania/arch/emu/mandrake/">older packages</a> from Miguel Barrio Orsikowsky.</li>
+   <li><a href="http://www.netbsd.org/">NetBSD</a> has 0.3.0.1 available as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/libspectrum/">emulators/libspectrum</a> in <a href="http://www.pkgsrc.org/">pkgsrc</a>.</li>
+   <li><a href="http://www.openbsd.org/">OpenBSD</a> users can find a port of 0.2.2 in <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/devel/libspectrum/">ports/devel/libspectrum</a>.</li>
    <li><a href="http://en.docs.pld-linux.org/">PLD</a> users have a package of 0.2.1 available.</li>
-   <li><a href="http://packages.amiga-hardware.com/">Fedora Core 2</a> (0.2.2), by Ian Chapman.
    <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has made a <a href="libspectrum-0.2.0.1-i386-1spec.tgz">Slackware 9.1</a> (<a href="libspectrum-0.2.0.1-i386-1spec.tgz.md5">md5 sum</a>) package of 0.2.0.1.</li>
    <li><a href="libspectrum-0.2.2-1.i386.rpm">0.2.2</a> for <a href="http://www.suse.com">SuSE</a> 9.1, with thanks to Cristi&aacute;n Gonz&aacute;lez.</li>
   </ul>
