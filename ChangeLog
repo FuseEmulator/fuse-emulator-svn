@@ -104,7 +104,7 @@
 	  (Philip Kendall).
 
 	* Write .rzx files with a version number of 0.12 if we're not
-	  signing the data; improves backward compatability (Philip
+	  signing the data; improves backward compatibility (Philip
 	  Kendall).
 
 	* Fix a segfault when dealing with .slt files (Philip Kendall,
@@ -126,7 +126,7 @@
 	* Various data structures (snapshots, tapes, tape blocks) which
 	  were previously directly accessible are now accessible only via
 	  wrapper functions. This should improve future binary
-	  compatability, but at the cost of breaking it for this release
+	  compatibility, but at the cost of breaking it for this release
 	  (Philip Kendall).
 
 	* Change the API for reading/writing snapshots to be more general.
@@ -175,7 +175,7 @@
 	* Version 0.1.0 released
 
 	* Major code reorganisation: API changes to allow future binary
-	  compatability, logical organisation of header files improved
+	  compatibility, logical organisation of header files improved
 	  and many other small changes (Philip Kendall)
 
 	* Add ability to output .tap files (Philip Kendall)

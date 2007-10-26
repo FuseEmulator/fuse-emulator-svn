@@ -544,3 +544,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 Pentagon 512K and Pentagon 1024K support (part of patch #1774492)
 	 (Q-Master).
 20071026 doc/libspectrum.txt: add Pentagon 512/1024, fix typos (Stuart).
+20071026 ChangeLog: fix typos (Stuart).
