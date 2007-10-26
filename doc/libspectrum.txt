@@ -1,4 +1,4 @@
-libspectrum 0.3.0.1
+libspectrum 0.x.x
 ===================
 
 libspectrum is a fairly simple library designed to make the handling
@@ -99,7 +99,7 @@ LIBSPECTRUM_ERROR_SLT		Ugly kludge used to indicate that a .z80
 				file contains .slt data
 LIBSPECTRUM_ERROR_INVALID	An invalid parameter was supplied to a
 				function
-LIBSPECTRUM_ERROR_LOGIC		An internal logic error has occured;
+LIBSPECTRUM_ERROR_LOGIC		An internal logic error has occurred;
 				should never be seen
 
 `libspectrum_error_function' is an object of type
@@ -143,6 +143,8 @@ LIBSPECTRUM_MACHINE_TC2048	Timex TC2048
 LIBSPECTRUM_MACHINE_TC2068	Timex TC2068
 LIBSPECTRUM_MACHINE_TS2068	Timex TS2068
 LIBSPECTRUM_MACHINE_PENT	Pentagon 128
+LIBSPECTRUM_MACHINE_PENT512	Pentagon 512
+LIBSPECTRUM_MACHINE_PENT1024	Pentagon 1024
 LIBSPECTRUM_MACHINE_SCORP	Scorpion ZS 256
 LIBSPECTRUM_MACHINE_SE		Spectrum SE
 
@@ -247,10 +249,10 @@ LIBSPECTRUM_ID_MICRODRIVE_MDR	A .mdf microdrive cartridge
 
 LIBSPECTRUM_ID_RECORDING_RZX	A .rzx input recording
 
-LIBSPECTRUM_ID_SNAPSHOT_PLUSD   A +D snapshot 
-LIBSPECTRUM_ID_SNAPSHOT_SNA     A .sna snapshot 
-LIBSPECTRUM_ID_SNAPSHOT_SNP     A .snp snapshot 
-LIBSPECTRUM_ID_SNAPSHOT_SP      A .sp snapshot 
+LIBSPECTRUM_ID_SNAPSHOT_PLUSD   A +D snapshot
+LIBSPECTRUM_ID_SNAPSHOT_SNA     A .sna snapshot
+LIBSPECTRUM_ID_SNAPSHOT_SNP     A .snp snapshot
+LIBSPECTRUM_ID_SNAPSHOT_SP      A .sp snapshot
 LIBSPECTRUM_ID_SNAPSHOT_SZX     A .szx snapshot (as used by Spectaculator)
 LIBSPECTRUM_ID_SNAPSHOT_Z80	A .z80 snapshot
 LIBSPECTRUM_ID_SNAPSHOT_ZXS	A .zxs snapshot (as used by zx32)
@@ -275,7 +277,7 @@ libspectrum_error
 libspectrum_identify_file( libspectrum_id_t *type, const char *filename,
 			   const unsigned char *buffer, size_t length )
 
-The parameters are the same as for `libspectrum_identify_file_raw'. 
+The parameters are the same as for `libspectrum_identify_file_raw'.
 
 What in many cases may be more useful than the specific type of the
 file is whether the file is a snapshot, a tape image or whatever. This
@@ -336,7 +338,7 @@ libspectrum_timings_right_border( libspectrum_machine machine )
 libspectrum_word
 libspectrum_timings_horizontal_retrace( libspectrum_machine machine )
 
-The length in tstates of the the different parts of one scanline.
+The length in tstates of the different parts of one scanline.
 
 libspectrum_word
 libspectrum_timings_tstates_per_line( libspectrum_machine machine )
@@ -593,7 +595,7 @@ be are:
   of the Timex EXROM or DOCK are writable.
 
 * `joystick_active_count' is the number of joysticks connected to the emulated
-  Spectrum. `joystick_list' gives the type of the joysticks and 
+  Spectrum. `joystick_list' gives the type of the joysticks and
   `joystick_inputs' gives the corresponding connections to the real machines
   keyboard and joysticks.
 
@@ -923,7 +925,7 @@ LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE	A run-length encoded list of pulses
 
 These values are defined in the `libspectrum_tape_type' enumeration.
 The `concatenation' block (0x5a) is recognised on input, but just
-skipped; hence it wil never appear in a libspectrum_tape_block.
+skipped; hence it will never appear in a libspectrum_tape_block.
 
 The basic routines for dealing with tape blocks are:
 
@@ -972,7 +974,7 @@ value returned.
 int
 libspectrum_tape_block_metadata( libspectrum_tape_block *block )
 
-Returns 1 if the block consists solely of metadata (comments, etc) or
+Returns 1 if the block consists solely of metadata (comments, etc.) or
 0 if it contains real data.
 
 The `get' and `set' functions follow the same pattern as for the
@@ -1104,23 +1106,29 @@ structure which represents the "symbol table" used in the TZX
 generalised data block (ID 0x19). It can be accessed with the
 following routines:
 
-libspectrum_dword libspectrum_tape_generalised_data_symbol_table_symbols_in_block( const libspectrum_tape_generalised_data_symbol_table *table )
-libspectrum_byte libspectrum_tape_generalised_data_symbol_table_max_pulses( cons
-t libspectrum_tape_generalised_data_symbol_table *table )
-libspectrum_word libspectrum_tape_generalised_data_symbol_table_symbols_in_table
-( const libspectrum_tape_generalised_data_symbol_table *table )
-libspectrum_tape_generalised_data_symbol* libspectrum_tape_generalised_data_symb
-ol_table_symbol( const libspectrum_tape_generalised_data_symbol_table *table, si
-ze_t which )
+libspectrum_dword
+libspectrum_tape_generalised_data_symbol_table_symbols_in_block(
+  const libspectrum_tape_generalised_data_symbol_table *table )
+libspectrum_byte
+libspectrum_tape_generalised_data_symbol_table_max_pulses(
+  const libspectrum_tape_generalised_data_symbol_table *table )
+libspectrum_word
+libspectrum_tape_generalised_data_symbol_table_symbols_in_table
+ (const libspectrum_tape_generalised_data_symbol_table *table )
+libspectrum_tape_generalised_data_symbol*
+libspectrum_tape_generalised_data_symbol_table_symbol(
+  const libspectrum_tape_generalised_data_symbol_table *table, size_t which )
 
 The libspectrum_tape_generalised_data_symbol represents one of the
 symbols used in the generalised data block and can be accessed with
 the following routines:
 
-libspectrum_tape_generalised_data_symbol_edge_type libspectrum_tape_generalised_
-data_symbol_type( const libspectrum_tape_generalised_data_symbol *symbol )
-libspectrum_word libspectrum_tape_generalised_data_symbol_pulse( const libspectr
-um_tape_generalised_data_symbol *symbol, size_t which )
+libspectrum_tape_generalised_data_symbol_edge_type
+libspectrum_tape_generalised_data_symbol_type(
+  const libspectrum_tape_generalised_data_symbol *symbol )
+libspectrum_word
+libspectrum_tape_generalised_data_symbol_pulse(
+  const libspectrum_tape_generalised_data_symbol *symbol, size_t which )
 
 The following edge types are available:
 
@@ -1173,7 +1181,7 @@ snapshot was inserted, where n is specified by `which'. That state is
 set up in `snap'.
 
 libspectrum_error libspectrum_rzx_store_frame( libspectrum_rzx *rzx,
-					       size_t instructions, 
+					       size_t instructions,
 					       size_t count,
 					       libspectrum_byte *in_bytes )
 
@@ -1317,7 +1325,7 @@ game, sends in input recordings of themselves doing this, and then
 everyone can see who is the best player. When using an emulator, it is
 obviously rather easy to cheat at this by using snapshots, slowing
 down the emulator and all sorts of other ways. Fundamentally, there's
-no way round this problem except by running a the emulator on trusted
+no way round this problem except by running the emulator on trusted
 hardware, which is a whole different kettle of fish.
 
 One such `best player' tournament, the Speccy Tour 2003 (see
@@ -1328,7 +1336,7 @@ RZX file was made in competition mode by digitally signing the RZX
 file. This is clearly still insecure as the key must be present in the
 emulator to allow it to sign files, but that's what the organisers
 wanted, so it's implemented in libspectrum. What information you wish
-to draw from the presence or absence of a digitial signature on an RZX
+to draw from the presence or absence of a digital signature on an RZX
 file is entirely up to you.
 
 The digital signature routines use libgcrypt to provide the necessary
@@ -1426,7 +1434,7 @@ The length in bytes of the data for a microdrive block (512).
 LIBSPECTRUM_MICRODRIVE_BLOCK_LEN
 
 The total length in bytes of a microdrive block (2 *
-LIBSPECTRUM_MICRODRIVE_HEAD_LEN + LISPECTRUM_MICRODRIVE_DATA_LEN + 1 =
+LIBSPECTRUM_MICRODRIVE_HEAD_LEN + LIBSPECTRUM_MICRODRIVE_DATA_LEN + 1 =
 543).
 
 LIBSPECTRUM_MICRODRIVE_CARTRIDGE_LENGTH
@@ -1463,7 +1471,7 @@ the cartridge.
 
 libspectrum_byte
 libspectrum_microdrive_write_protect( const libspectrum_microdrive *microdrive )
-void WIN32_DLL
+void
 libspectrum_microdrive_set_write_protect( libspectrum_microdrive *microdrive,
                                           int write_protect )
 
@@ -1526,7 +1534,7 @@ The `bank' field specifies which type of memory this bank represents,
 and takes one of the following values:
 
 LIBSPECTRUM_DCK_BANK_DOCK	The dock
-LIBSPECTRUM_DCK_BANK_EXROM	The EXROM 
+LIBSPECTRUM_DCK_BANK_EXROM	The EXROM
 LIBSPECTRUM_DCK_BANK_HOME	The normal memory space
 
 The `access' field gives the type of memory stored in each 8Kb page
@@ -1650,6 +1658,6 @@ void
 libspectrum_ide_write( libspectrum_ide_channel *chn,
 		       libspectrum_ide_register reg, libspectrum_byte data )
 
-Write `data' to register `reg' of the IDE channgel `chn'.
+Write `data' to register `reg' of the IDE channel `chn'.
 
 $Id$
