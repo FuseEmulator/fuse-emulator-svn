@@ -543,3 +543,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071024 libspectrum.c,libspectrum.h.in,sna.c,szx.c,timings.c,z80.c: add
 	 Pentagon 512K and Pentagon 1024K support (part of patch #1774492)
 	 (Q-Master).
+20071026 doc/libspectrum.txt: add Pentagon 512/1024, fix typos (Stuart).
