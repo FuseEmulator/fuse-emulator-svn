@@ -66,16 +66,3 @@ _loop	ret nc
 	jr _loop
 
 ENDP
-
-tabledelay
-PROC
-	ld e, a
-	ld d, 0x00
-	adc hl, de
-	adc hl, de
-	ld d, (hl)
-	inc hl
-	ld e, (hl)
-	ex de, hl
-	call delay
-ENDP
