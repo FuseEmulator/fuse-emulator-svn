@@ -29,7 +29,6 @@ PROC
 
 _ok
 	push bc
-	push bc
 	
 	ld hl, _conststring
 	call printstring
@@ -39,9 +38,6 @@ _ok
 	call printa
 	ld a, 0x0d
 	rst 0x10
-
-	pop hl
-	call frameadj_setup
 
 	ld hl, _machinetype
 	call printstring

@@ -34,6 +34,10 @@ ENDP
 
 interruptsync
 PROC
+	ld bc, _delay
+	ld hl, _table
+	call guessmachine_table
+	
 	ld hl, 0xfdfe
 	ld (hl), _isr % 0x100
 	inc hl
@@ -52,7 +56,8 @@ _isr
 
 _isr1	ld hl, 0xffff 		; 65 - 68
 	call delay		; 75 - 78
-	call frameadj		; 65610 - 65613
+	ld hl, (_delay)		; 65610 - 65613
+	call delay		; 65626 - 65629
 
 				; 48K / 128K timings
 	ld hl, 0x0f78		; 65909 - 65912 / 66929 - 66932
@@ -80,5 +85,9 @@ _isr3	pop hl			; 29 - 32
 	ret			; 82
 
 _nosync defb '... no sync', 0
+
+_table	defw 0x011b, 0x011b + 0x03fc
+
+_delay	defw 0x011b
 
 ENDP

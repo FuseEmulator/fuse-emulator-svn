@@ -157,20 +157,3 @@ _isr3
 	jp _phase3		; 39
 	
 ENDP
-
-frameadj_setup
-PROC
-	ld bc, 0x9000
-	sbc hl, bc
-	ld (frameadj_1), hl
-	ret
-ENDP
-
-frameadj
-PROC
-	ld hl, (frameadj_1)
-	call delay
-	ret
-ENDP
-
-frameadj_1 defw	0x0100		; Frame length of 69888 tstates (48K)

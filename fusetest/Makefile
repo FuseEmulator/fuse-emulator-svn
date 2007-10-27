@@ -17,12 +17,14 @@ contention.tap: \
 	atiming.asm \
 	contention.asm \
 	delay.asm \
+	guessmachine.asm \
 	print.asm \
 	sync.asm
 
 fusetest.tap: \
 	atiming.asm \
 	delay.asm \
+	framelength.asm \
 	fusetest.asm \
 	guessmachine.asm \
 	print.asm \
