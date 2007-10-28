@@ -201,9 +201,9 @@ PROC
 	ld hl, _table2
 	call guessmachine_table
 	
-	ld hl, _in
-	ld de, 0x7ffe
-	ld bc, _inend - _in
+	ld hl, _nop
+	ld de, 0x8001 - ( _nopend - _nop )
+	ld bc, _nopend - _nop
 	ldir
 	
 	call interruptsync
@@ -220,23 +220,22 @@ PROC
 	call delay		; 156
 
 				; 48K / 128K / +3 timings
-	ld a, 0xff		; 14307 / 14333 / 14335
-	call 0x7ffe		; 14314 / 14340 / 14342
+	call 0x7fff		; 14318 / 14344 / 14346
 
-	ld hl, (_delay2)	; 14358 / 14384 / 14387
-	call delay		; 14374 / 14400 / 14403
+	ld hl, (_delay2)	; 14355 / 14381 / 14384
+	call delay		; 14371 / 14397 / 14400
 	
 	jp atiming		; 69355 / 70375 / 70375
 
 _isr	pop hl
 	ret
 	
-_in	in a, (0xff)		; 14331 / 14357 / 14359
-	ret			; 14348 / 14374 / 14377
-_inend
+_nop	nop			; 14335 / 14361 / 14363
+	ret			; 14345 / 14371 / 14374
+_nopend
 
-_table1	defw 0x3747, 0x3747 + 0x001a, 0x3763
-_table2	defw 0xd6c5, 0xd6c5 - 0x001a + 0x03fc, 0xdaa4
+_table1	defw 0x3752, 0x3752 + 0x001a, 0x3752 + 0x001a + 0x0002
+_table2	defw 0xd6c8, 0xd6c8 - 0x001a + 0x03fc, 0xd6c8 - 0x001a - 0x0003 + 0x03fc
 
 _delay1	defw 0x0000
 _delay2	defw 0x0000
