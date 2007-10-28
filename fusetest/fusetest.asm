@@ -101,6 +101,9 @@ _testdata
 	defb 'Contended IN', 0
 	defw contendedintest
 
+	defb 'Floating bus', 0
+	defw floatingbustest
+
 	defb 'Contended memory', 0
 	defw contendedmemorytest
 	

@@ -89,9 +89,63 @@ _delay2	defw 0x0000
 
 ENDP
 
-; Check for IN timings and floating bus behaviour (bug #1708957)
+; Check for contended IN timings (part of bug #1708957)
 
 contendedintest
+PROC
+	ld bc, _delay1
+	ld hl, _table1
+	call guessmachine_table
+	
+	ld bc, _delay2
+	ld hl, _table2
+	call guessmachine_table
+	
+	call interruptsync
+
+	cp 0x00			; 92
+	jr nz, _fail		; 99
+
+	ld hl, 0xfdfe		; 106
+	ld (hl), _isr % 0x100	; 116
+	inc hl			; 126
+	ld (hl), _isr / 0x100	; 132
+
+	ld hl, (_delay1)	; 142
+	call delay		; 158
+
+				; 48K / 128K / +3 timings
+	ld bc, 0x40ff		; 43036 / 43574 / 43574
+	in a,(c)		; 43046 / 43584 / 43584
+
+	ld hl, (_delay2)	; 43070 / 43608 / 43596
+	call delay		; 43086 / 43624 / 43608
+
+	jp atiming		; 69355 / 70375 / 70735
+
+_isr	pop hl
+	ret
+
+_fail	pop bc
+	ld hl, 0x5a0f
+	ld (hl), b
+	ret
+
+_table1	defw 0xa77e
+	defw 0xa77e + 0x001a + 4 * 0x0080
+	defw 0xa77e + 0x001a + 4 * 0x0080
+_table2 defw 0x669d
+	defw 0x669d - 0x001a - 4 * 0x0080 + 0x03fc
+	defw 0x669d - 0x001a - 4 * 0x0080 + 0x03fc + 0x000c
+
+_delay1	defw 0x0000
+_delay2	defw 0x0000
+
+ENDP
+
+; Check for floating bus behaviour (rest of bug #1708957)
+
+floatingbustest
 PROC
 	ld bc, _delay
 	ld hl, _table
@@ -100,7 +154,7 @@ PROC
 	ld hl, 0x5a0f
 	ld b,(hl)
 	push bc
-	ld (hl), 0x40
+	ld (hl), 0x53
 	
 	call interruptsync
 
@@ -110,12 +164,14 @@ PROC
 	ld hl, (_delay)		; 106
 	call delay		; 122
 
-	ld bc, 0x40ff		; 43019
-	ld d, 0x40		; 43029
+				; 48K / 128K timings
+	ld bc, 0x40ff		; 43019 / 43557
+	ld d, 0x53		; 43029 / 43567
 
-	ld hl, 0x5a0f		; 43036
+	ld hl, 0x5a0f		; 43036 / 43574
 
-	in a,(c)		; 43046; floating bus read at 43069
+	in a,(c)		; 43046 / 43584
+				; floating bus read at 43069 / 43607
 
 	pop bc
 	ld (hl),b
