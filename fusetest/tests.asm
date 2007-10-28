@@ -67,21 +67,22 @@ PROC
 	ld hl, (_delay1)	; 140
 	call delay		; 156
 
-	ld hl, 0x0000		; 14289 / 14315
-	ld de, 0x7fff		; 14299 / 14325
-	ld bc, 0x0002		; 14309 / 14335
-	ldir			; 14319, 14358 / 14345, 14374
+				; 48K / 128K / +3 timings
+	ld hl, 0x0000		; 14289 / 14315 / 14322
+	ld de, 0x7fff		; 14299 / 14325 / 14332
+	ld bc, 0x0002		; 14309 / 14335 / 14342
+	ldir			; 14319, 14358 / 14345, 14384 / 14352, 14380
 
-	ld hl, (_delay2)	; 14374 / 14400
-	call delay		; 14390 / 14416
+	ld hl, (_delay2)	; 14374 / 14400 / 14400
+	call delay		; 14390 / 14416 / 14416
 
-	jp atiming		; 69355 / 70375
+	jp atiming		; 69355 / 70375 / 70375
 
 _isr	pop hl
 	ret
 
-_table1	defw 0x3735, 0x3735 + 0x001a
-_table2	defw 0xd6b5, 0xd6b5 - 0x001a + 0x03fc
+_table1	defw 0x3735, 0x3735 + 0x001a, 0x3756
+_table2	defw 0xd6b5, 0xd6b5 - 0x001a + 0x03fc, 0xda9b
 
 _delay1	defw 0x0000
 _delay2	defw 0x0000
@@ -162,24 +163,24 @@ PROC
 	ld hl, (_delay1)	; 140
 	call delay		; 156
 
-				; 48K / 128K timings
-	ld a, 0xff		; 14307 / 14333
-	call 0x7ffe		; 14314 / 14340
+				; 48K / 128K / +3 timings
+	ld a, 0xff		; 14307 / 14333 / 14335
+	call 0x7ffe		; 14314 / 14340 / 14342
 
-	ld hl, (_delay2)	; 14358 / 16385
-	call delay		; 14374 / 16401
+	ld hl, (_delay2)	; 14358 / 14384 / 14387
+	call delay		; 14374 / 14400 / 14403
 	
-	jp atiming		; 69355 / 70375
+	jp atiming		; 69355 / 70375 / 70375
 
 _isr	pop hl
 	ret
 	
-_in	in a, (0xff)		; 14331 / 14357
-	ret			; 14348 / 14374
+_in	in a, (0xff)		; 14331 / 14357 / 14359
+	ret			; 14348 / 14374 / 14377
 _inend
 
-_table1	defw 0x3747, 0x3747 + 0x001a
-_table2	defw 0xd6c5, 0xd6c5 - 0x001a + 0x03fc
+_table1	defw 0x3747, 0x3747 + 0x001a, 0x3763
+_table2	defw 0xd6c5, 0xd6c5 - 0x001a + 0x03fc, 0xdaa4
 
 _delay1	defw 0x0000
 _delay2	defw 0x0000

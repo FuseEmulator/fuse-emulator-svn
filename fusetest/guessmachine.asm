@@ -1,5 +1,5 @@
 ; Guess which machine we're running on
-; Currently, only does 48K or 128K
+; Currently, detects 48K (or +), 128K (or +2) and +3 (or +2A).
 
 guessmachine
 PROC
@@ -19,8 +19,25 @@ _m48	xor a
 	ld hl, _m48string
 	jr _end
 
-_m128	ld a, 0x01
+	;; The code section below also tests for bug #1821604 (128K / +3 ULA
+	;; handling slightly broken).
+
+_m128	ld a, 0xff		; Distinguish between 128K and +3 by
+	out (0xfe), a		; behaviour of bit 6 of reading from the
+	in a, (0xfe)		; ULA
+	ld b, a
+	ld a, 0xe7
+	out (0xfe), a
+	in a, (0xfe)
+	xor b
+	and 0x40
+	jr z, _mplus3
+	ld a, 0x01
 	ld hl, _m128string
+	jr _end
+
+_mplus3	ld a, 0x02
+	ld hl, _mplus3string
 
 _end	ld (guessmachine_guess), a
 	call printstring
@@ -28,6 +45,7 @@ _end	ld (guessmachine_guess), a
 
 _m48string defb '48K', 0x0d, 0
 _m128string defb '128K', 0x0d, 0
+_mplus3string defb '+3', 0x0d, 0
 _unknown defb 'unknown', 0x0d, 0
 
 ENDP

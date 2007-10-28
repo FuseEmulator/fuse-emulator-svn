@@ -86,7 +86,7 @@ _isr3	pop hl			; 29 - 32
 
 _nosync defb '... no sync', 0
 
-_table	defw 0x011b, 0x011b + 0x03fc
+_table	defw 0x011b, 0x011b + 0x03fc, 0x011b + 0x03fc
 
 _delay	defw 0x011b
 
