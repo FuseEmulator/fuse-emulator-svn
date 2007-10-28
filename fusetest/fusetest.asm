@@ -89,14 +89,14 @@ _failstring1 defb '... failed (0x', 0
 _failstring2 defb ')', 0x0d, 0
 
 _testdata
-	defb 'LDIR', 0
-	defw ldirtest
-
 	defb 'BIT n,(IX+d)', 0
 	defw bitnixtest
 
 	defb 'DAA', 0
 	defw daatest
+
+	defb 'LDIR', 0
+	defw ldirtest
 
 	defb 'Contended IN', 0
 	defw contendedintest
