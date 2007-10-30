@@ -545,3 +545,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (Q-Master).
 20071026 doc/libspectrum.txt: add Pentagon 512/1024, fix typos (Stuart).
 20071026 ChangeLog: fix typos (Stuart).
+20071030 csw.c,tape.c: fix writing and reading empty csw files (fixes bug
+         #1821425; thanks Stuart Brady) (Fred).
