@@ -108,37 +108,37 @@ libspectrum_csw_read( libspectrum_tape *tape,
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
-  if( compressed ) {
-    /* Compressed data... */
+  if( length ) {
+    if( compressed ) {
+      /* Compressed data... */
 #ifdef HAVE_ZLIB_H
-    csw_block->data = NULL;
-    csw_block->length = 0;
-    error = libspectrum_zlib_inflate( buffer, length, &csw_block->data,
-				      &csw_block->length );
-    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+      csw_block->data = NULL;
+      csw_block->length = 0;
+      error = libspectrum_zlib_inflate( buffer, length, &csw_block->data,
+                                        &csw_block->length );
+      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 #else
-    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
-			     "zlib not available to decompress gzipped file" );
-    return LIBSPECTRUM_ERROR_UNKNOWN;
+      libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+                               "zlib not available to decompress gzipped file" );
+      return LIBSPECTRUM_ERROR_UNKNOWN;
 #endif
-  }
-  else
-  {
-    /* Claim memory for the data (it's one big lump) */
-    csw_block->length = length;
-    csw_block->data = malloc( length );
-    if( !csw_block->data ) goto csw_nomem;
+    } else {
+      /* Claim memory for the data (it's one big lump) */
+      csw_block->length = length;
+      csw_block->data = malloc( length );
+      if( !csw_block->data ) goto csw_nomem;
 
-    /* Copy the data across */
-    memcpy( csw_block->data, buffer, length );
-  }
+      /* Copy the data across */
+      memcpy( csw_block->data, buffer, length );
+    }
 
-  /* Put the block into the block list */
-  error = libspectrum_tape_append_block( tape, block );
-  if( error ) {
-    free (csw_block->data);
-    libspectrum_tape_block_free( block );
-    return error;
+    /* Put the block into the block list */
+    error = libspectrum_tape_append_block( tape, block );
+    if( error ) {
+      free (csw_block->data);
+      libspectrum_tape_block_free( block );
+      return error;
+    }
   }
 
   /* Successful completion */
@@ -252,46 +252,46 @@ csw_write_body( libspectrum_byte **buffer, size_t *length,
   libspectrum_tape_block_state it;
   libspectrum_byte *length_ptr; 
 
-  libspectrum_tape_block_internal_init( &it, tape );
-
   error = libspectrum_make_room( &data, 8192, &data_ptr, &data_size );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-  while( !(flags & LIBSPECTRUM_TAPE_FLAGS_STOP) ) {
-    libspectrum_dword pulse_length = 0;
+  if( libspectrum_tape_block_internal_init( &it, tape ) ) {
+    while( !(flags & LIBSPECTRUM_TAPE_FLAGS_STOP) ) {
+      libspectrum_dword pulse_length = 0;
 
-    /* Use internal version of this that doesn't bugger up the
-       external tape status */
-    error = libspectrum_tape_get_next_edge_internal( &pulse_tstates, &flags,
-                                                     tape, &it );
-    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+      /* Use internal version of this that doesn't bugger up the
+         external tape status */
+      error = libspectrum_tape_get_next_edge_internal( &pulse_tstates, &flags,
+                                                       tape, &it );
+      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
-    balance_tstates += pulse_tstates;
+      balance_tstates += pulse_tstates;
 
-    if( flags & LIBSPECTRUM_TAPE_FLAGS_NO_EDGE ) continue;
+      if( flags & LIBSPECTRUM_TAPE_FLAGS_NO_EDGE ) continue;
 
-    /* next RLE value is: balance_tstates / scale; */
-    pulse_length = balance_tstates / scale;
-    balance_tstates = balance_tstates % scale;
+      /* next RLE value is: balance_tstates / scale; */
+      pulse_length = balance_tstates / scale;
+      balance_tstates = balance_tstates % scale;
 
-    if( pulse_length ) {
-      if( data_size < (data_length + 1 + sizeof(libspectrum_dword) ) ) {
-        error = libspectrum_make_room( &data, data_size*2,
-                                       &data_ptr, &data_size );
-        if( error != LIBSPECTRUM_ERROR_NONE ) {
-          free( data );
-          return error;
+      if( pulse_length ) {
+        if( data_size < (data_length + 1 + sizeof(libspectrum_dword) ) ) {
+          error = libspectrum_make_room( &data, data_size*2,
+                                         &data_ptr, &data_size );
+          if( error != LIBSPECTRUM_ERROR_NONE ) {
+            free( data );
+            return error;
+          }
         }
-      }
-        
-      if( pulse_length <= 0xff ) {
-        *data_ptr++ = pulse_length;
-        data_length++;
-      } else {
-        *data_ptr++ = 0;
-        data_length++;
-        libspectrum_write_dword( &data_ptr, pulse_length );
-        data_length+=sizeof(libspectrum_dword);
+          
+        if( pulse_length <= 0xff ) {
+          *data_ptr++ = pulse_length;
+          data_length++;
+        } else {
+          *data_ptr++ = 0;
+          data_length++;
+          libspectrum_write_dword( &data_ptr, pulse_length );
+          data_length+=sizeof(libspectrum_dword);
+        }
       }
     }
   }

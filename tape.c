@@ -1315,6 +1315,9 @@ libspectrum_tape_block_internal_init(
                                 libspectrum_tape_block_state *it,
 				libspectrum_tape *tape )
 {
+  if( !tape || !tape->blocks )
+    return NULL;
+
   it->current_block = tape->blocks;
 
   if( libspectrum_tape_block_init( it->current_block->data,
