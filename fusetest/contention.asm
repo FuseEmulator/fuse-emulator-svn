@@ -106,7 +106,7 @@ test
 PROC
 	call interruptsync
 
-	ld hl, 0xfdfe		; 92
+	ld hl, sync_isr + 1	; 92
 	ld (hl), _isr % 0x100	; 102
 	inc hl			; 112
 	ld (hl), _isr / 0x100	; 118

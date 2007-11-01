@@ -136,7 +136,7 @@ _phase3
 	ret
 
 _setisr1			
-	ld hl, 0xfdfe
+	ld hl, sync_isr + 1
 	ld (hl), _isr1 % 0x100
 	inc hl
 	ld (hl), _isr1 / 0x100

@@ -13,7 +13,7 @@ PROC
 	bit 5, (ix+0x44)
 	push af
 	pop bc
-	ld a, 0x10
+	ld a, 0x30
 	cp c
 	ret z
 	ld a,c
@@ -59,7 +59,7 @@ PROC
 	cp 0x00			; 92
 	ret nz			; 99
 
-	ld hl, 0xfdfe		; 104
+	ld hl, sync_isr + 1	; 104
 	ld (hl), _isr % 0x100	; 114
 	inc hl			; 124
 	ld (hl), _isr / 0x100	; 130
@@ -106,7 +106,7 @@ PROC
 	cp 0x00			; 92
 	jr nz, _fail		; 99
 
-	ld hl, 0xfdfe		; 106
+	ld hl, sync_isr + 1	; 106
 	ld (hl), _isr % 0x100	; 116
 	inc hl			; 126
 	ld (hl), _isr / 0x100	; 132
@@ -211,7 +211,7 @@ PROC
 	cp 0x00			; 92
 	ret nz			; 99
 
-	ld hl, 0xfdfe		; 104
+	ld hl, sync_isr + 1	; 104
 	ld (hl), _isr % 0x100	; 114
 	inc hl			; 124
 	ld (hl), _isr / 0x100	; 130

@@ -5,22 +5,29 @@
 ; This program is licensed under the GNU General Public License. See the
 ; file `COPYING' for details
 
+; IM2 table from 0xfe00 to 0xff00
+interruptsync_location equ 0xbe
+
+; IM2 routine at 0xfdfd
+interruptsync_isrbyte equ interruptsync_location - 1
+sync_isr equ interruptsync_isrbyte * 0x0101
+
 ; Setup routine; must be called before interruptsync
 
 interruptsync_init
 PROC
 	di
 
-	ld hl, 0xfe00
-	ld (hl), 0xfd
-	ld de, 0xfe01
+	ld hl, interruptsync_location * 0x0100
+	ld (hl), interruptsync_isrbyte
+	ld de, interruptsync_location * 0x0100 + 1
 	ld bc, 0x0100
 	ldir
 
-	ld hl, 0xfdfd
+	ld hl, sync_isr
 	ld (hl), 0xc3		; JP
 
-	ld a,0xfe
+	ld a, interruptsync_location
 	ld i,a
 
 	im 2
@@ -38,7 +45,7 @@ PROC
 	ld hl, _table
 	call guessmachine_table
 	
-	ld hl, 0xfdfe
+	ld hl, sync_isr + 1
 	ld (hl), _isr % 0x100
 	inc hl
 	ld (hl), _isr / 0x100
@@ -49,7 +56,7 @@ PROC
 
 	; jp _isr		  19 - 22
 _isr
-	ld hl, 0xfdfe		; 29 - 32
+	ld hl, sync_isr + 1	; 29 - 32
 	ld (hl), _isr3 % 0x100	; 39 - 42
 	inc hl			; 49 - 52
 	ld (hl), _isr3 / 0x100	; 55 - 58

@@ -5,7 +5,7 @@
 ; This program is licensed under the GNU General Public License. See the
 ; file `COPYING' for details
 
-ORG 0xc000
+ORG 0xa000
 	
 main
 PROC
@@ -76,7 +76,9 @@ _next	pop hl
 
 	jr _test
 
-_end	halt
+_end	im 1
+	ei
+	ret
 
 _jumphl ld e,(hl)
 	inc hl
