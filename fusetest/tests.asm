@@ -126,10 +126,7 @@ PROC
 _isr	pop hl
 	ret
 
-_fail	pop bc
-	ld hl, 0x5a0f
-	ld (hl), b
-	ret
+_fail	ret
 
 _table1	defw 0xa77e
 	defw 0xa77e + 0x001a + 4 * 0x0080
