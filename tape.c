@@ -323,108 +323,113 @@ libspectrum_tape_get_next_edge_internal( libspectrum_dword *tstates,
   /* Assume no special flags by default */
   *flags = 0;
 
-  switch( block->type ) {
-  case LIBSPECTRUM_TAPE_BLOCK_ROM:
-    error = rom_edge( &(block->types.rom), &(it->block_state.rom), tstates,
-                      &end_of_block );
-    if( error ) return error;
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_TURBO:
-    error = turbo_edge( &(block->types.turbo), &(it->block_state.turbo), tstates,
+  if( block ) {
+    switch( block->type ) {
+    case LIBSPECTRUM_TAPE_BLOCK_ROM:
+      error = rom_edge( &(block->types.rom), &(it->block_state.rom), tstates,
                         &end_of_block );
-    if( error ) return error;
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
-    error = tone_edge( &(block->types.pure_tone), &(it->block_state.pure_tone),
-                       tstates, &end_of_block );
-    if( error ) return error;
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_PULSES:
-    error = pulses_edge( &(block->types.pulses), &(it->block_state.pulses),
+      if( error ) return error;
+      break;
+    case LIBSPECTRUM_TAPE_BLOCK_TURBO:
+      error = turbo_edge( &(block->types.turbo), &(it->block_state.turbo), tstates,
+                          &end_of_block );
+      if( error ) return error;
+      break;
+    case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
+      error = tone_edge( &(block->types.pure_tone), &(it->block_state.pure_tone),
                          tstates, &end_of_block );
-    if( error ) return error;
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
-    error = pure_data_edge( &(block->types.pure_data),
-                            &(it->block_state.pure_data), tstates, &end_of_block);
-    if( error ) return error;
-    break;
-  case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
-    error = raw_data_edge( &(block->types.raw_data), &(it->block_state.raw_data),
+      if( error ) return error;
+      break;
+    case LIBSPECTRUM_TAPE_BLOCK_PULSES:
+      error = pulses_edge( &(block->types.pulses), &(it->block_state.pulses),
                            tstates, &end_of_block );
-    if( error ) return error;
-    break;
+      if( error ) return error;
+      break;
+    case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
+      error = pure_data_edge( &(block->types.pure_data),
+                              &(it->block_state.pure_data), tstates, &end_of_block);
+      if( error ) return error;
+      break;
+    case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
+      error = raw_data_edge( &(block->types.raw_data), &(it->block_state.raw_data),
+                             tstates, &end_of_block );
+      if( error ) return error;
+      break;
 
-  case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
-    error = generalised_data_edge( &(block->types.generalised_data),
-                                   &(it->block_state.generalised_data),
-                                   tstates, &end_of_block, flags );
-    if( error ) return error;
-    break;
+    case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+      error = generalised_data_edge( &(block->types.generalised_data),
+                                     &(it->block_state.generalised_data),
+                                     tstates, &end_of_block, flags );
+      if( error ) return error;
+      break;
 
-  case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
-    *tstates = ( block->types.pause.length * 69888 ) / 20; end_of_block = 1;
-    /* 0 ms pause => stop tape */
-    if( *tstates == 0 ) { *flags |= LIBSPECTRUM_TAPE_FLAGS_STOP; }
-    break;
+    case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
+      *tstates = ( block->types.pause.length * 69888 ) / 20; end_of_block = 1;
+      /* 0 ms pause => stop tape */
+      if( *tstates == 0 ) { *flags |= LIBSPECTRUM_TAPE_FLAGS_STOP; }
+      break;
 
-  case LIBSPECTRUM_TAPE_BLOCK_JUMP:
-    error = jump_blocks( tape, block->types.jump.offset );
-    if( error ) return error;
-    *tstates = 0; end_of_block = 1; no_advance = 1;
-    break;
+    case LIBSPECTRUM_TAPE_BLOCK_JUMP:
+      error = jump_blocks( tape, block->types.jump.offset );
+      if( error ) return error;
+      *tstates = 0; end_of_block = 1; no_advance = 1;
+      break;
 
-  case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
-    if( it->current_block->next && block->types.loop_start.count ) {
-      it->loop_block = it->current_block->next;
-      it->loop_count = block->types.loop_start.count;
-    }
-    *tstates = 0; end_of_block = 1;
-    break;
-
-  case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
-    if( it->loop_block ) {
-      if( --(it->loop_count) ) {
-	it->current_block = it->loop_block;
-	no_advance = 1;
-      } else {
-	it->loop_block = NULL;
+    case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
+      if( it->current_block->next && block->types.loop_start.count ) {
+        it->loop_block = it->current_block->next;
+        it->loop_count = block->types.loop_start.count;
       }
+      *tstates = 0; end_of_block = 1;
+      break;
+
+    case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
+      if( it->loop_block ) {
+        if( --(it->loop_count) ) {
+          it->current_block = it->loop_block;
+          no_advance = 1;
+        } else {
+          it->loop_block = NULL;
+        }
+      }
+      *tstates = 0; end_of_block = 1;
+      break;
+
+    case LIBSPECTRUM_TAPE_BLOCK_STOP48:
+      *tstates = 0; *flags |= LIBSPECTRUM_TAPE_FLAGS_STOP48; end_of_block = 1;
+      break;
+
+    /* For blocks which contain no Spectrum-readable data, return zero
+       tstates and set end of block set so we instantly get the next block */
+    case LIBSPECTRUM_TAPE_BLOCK_GROUP_START: 
+    case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
+    case LIBSPECTRUM_TAPE_BLOCK_SELECT:
+    case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
+    case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
+    case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
+    case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
+    case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
+      *tstates = 0; end_of_block = 1;
+      break;
+
+    case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
+      error = rle_pulse_edge( &(block->types.rle_pulse),
+                              &(it->block_state.rle_pulse), tstates, &end_of_block);
+      if( error ) return error;
+      break;
+
+    default:
+      *tstates = 0;
+      libspectrum_print_error(
+        LIBSPECTRUM_ERROR_LOGIC,
+        "libspectrum_tape_get_next_edge: unknown block type 0x%02x",
+        block->type
+      );
+      return LIBSPECTRUM_ERROR_LOGIC;
     }
-    *tstates = 0; end_of_block = 1;
-    break;
-
-  case LIBSPECTRUM_TAPE_BLOCK_STOP48:
-    *tstates = 0; *flags |= LIBSPECTRUM_TAPE_FLAGS_STOP48; end_of_block = 1;
-    break;
-
-  /* For blocks which contain no Spectrum-readable data, return zero
-     tstates and set end of block set so we instantly get the next block */
-  case LIBSPECTRUM_TAPE_BLOCK_GROUP_START: 
-  case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
-  case LIBSPECTRUM_TAPE_BLOCK_SELECT:
-  case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
-  case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
-  case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
-  case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
-  case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
-    *tstates = 0; end_of_block = 1;
-    break;
-
-  case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
-    error = rle_pulse_edge( &(block->types.rle_pulse),
-                            &(it->block_state.rle_pulse), tstates, &end_of_block);
-    if( error ) return error;
-    break;
-
-  default:
+  } else {
     *tstates = 0;
-    libspectrum_print_error(
-      LIBSPECTRUM_ERROR_LOGIC,
-      "libspectrum_tape_get_next_edge: unknown block type 0x%02x",
-      block->type
-    );
-    return LIBSPECTRUM_ERROR_LOGIC;
+    end_of_block = 1;
   }
 
   /* If that ended the block, move onto the next block */
@@ -1336,8 +1341,11 @@ libspectrum_tape_iterator_current( libspectrum_tape_iterator iterator )
 libspectrum_tape_block*
 libspectrum_tape_iterator_next( libspectrum_tape_iterator *iterator )
 {
-  *iterator = (*iterator)->next;
-  return libspectrum_tape_iterator_current( *iterator );
+  if( iterator && *iterator ) {
+    *iterator = (*iterator)->next;
+    return libspectrum_tape_iterator_current( *iterator );
+  }
+  return NULL;
 }
 
 libspectrum_tape_state_type

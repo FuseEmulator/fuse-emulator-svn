@@ -204,6 +204,8 @@ libspectrum_error
 libspectrum_tape_block_init( libspectrum_tape_block *block,
                              libspectrum_tape_block_state *state )
 {
+  if( !block ) return LIBSPECTRUM_ERROR_NONE;
+
   switch( libspectrum_tape_block_type( block ) ) {
 
   case LIBSPECTRUM_TAPE_BLOCK_ROM:
