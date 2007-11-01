@@ -547,3 +547,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071026 ChangeLog: fix typos (Stuart).
 20071030 csw.c,tape.c: fix writing and reading empty csw files (fixes bug
          #1821425; thanks Stuart Brady) (Fred).
+20071101 csw.c,tape.c,tape_block.c,test/test.c: add test for reading empty
+         csw files and add more fixes to cope (more for bug #1821425) (Fred).

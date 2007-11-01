@@ -379,6 +379,13 @@ test_17( void )
   return play_tape( "jump.tzx" );
 }
 
+/* Test for bug #1821425: crashes writing and reading empty CSW files */
+static test_return_t
+test_18( void )
+{
+  return play_tape( "empty.csw" );
+}
+
 struct test_description {
 
   test_fn test;
@@ -405,6 +412,7 @@ static struct test_description tests[] = {
   { test_15, "Complete TZX file", 0 },
   { test_16, "TZX loop blocks 2", 0 },
   { test_17, "TZX jump blocks", 0 },
+  { test_18, "CSW empty file", 0 },
 };
 
 static size_t test_count = sizeof( tests ) / sizeof( tests[0] );

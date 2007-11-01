@@ -108,37 +108,37 @@ libspectrum_csw_read( libspectrum_tape *tape,
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
-  if( length ) {
-    if( compressed ) {
-      /* Compressed data... */
+  if( !length ) goto csw_empty;
+
+  if( compressed ) {
+    /* Compressed data... */
 #ifdef HAVE_ZLIB_H
-      csw_block->data = NULL;
-      csw_block->length = 0;
-      error = libspectrum_zlib_inflate( buffer, length, &csw_block->data,
-                                        &csw_block->length );
-      if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+    csw_block->data = NULL;
+    csw_block->length = 0;
+    error = libspectrum_zlib_inflate( buffer, length, &csw_block->data,
+                                      &csw_block->length );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 #else
-      libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
-                               "zlib not available to decompress gzipped file" );
-      return LIBSPECTRUM_ERROR_UNKNOWN;
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+                             "zlib not available to decompress gzipped file" );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
 #endif
-    } else {
-      /* Claim memory for the data (it's one big lump) */
-      csw_block->length = length;
-      csw_block->data = malloc( length );
-      if( !csw_block->data ) goto csw_nomem;
+  } else {
+    /* Claim memory for the data (it's one big lump) */
+    csw_block->length = length;
+    csw_block->data = malloc( length );
+    if( !csw_block->data ) goto csw_nomem;
 
-      /* Copy the data across */
-      memcpy( csw_block->data, buffer, length );
-    }
+    /* Copy the data across */
+    memcpy( csw_block->data, buffer, length );
+  }
 
-    /* Put the block into the block list */
-    error = libspectrum_tape_append_block( tape, block );
-    if( error ) {
-      free (csw_block->data);
-      libspectrum_tape_block_free( block );
-      return error;
-    }
+  /* Put the block into the block list */
+  error = libspectrum_tape_append_block( tape, block );
+  if( error ) {
+    free (csw_block->data);
+    libspectrum_tape_block_free( block );
+    return error;
   }
 
   /* Successful completion */
@@ -163,6 +163,11 @@ libspectrum_csw_read( libspectrum_tape *tape,
   libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			   "libspectrum_csw_read: not enough data in buffer" );
   return LIBSPECTRUM_ERROR_CORRUPT;
+
+ csw_empty:
+  free( block );
+  /* Successful completion */
+  return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_dword
