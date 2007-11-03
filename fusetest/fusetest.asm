@@ -107,6 +107,9 @@ _failstring2 defb ')', 0x0d, 0
 _skipstring1 defb '... skipped (B=0x', 0
 
 _testdata
+	defb 'Contended IN', 0
+	defw contendedintest
+
 	defb 'BIT n,(IX+d)', 0
 	defw bitnixtest
 
@@ -116,14 +119,17 @@ _testdata
 	defb 'LDIR', 0
 	defw ldirtest
 
-	defb 'Contended IN', 0
-	defw contendedintest
-
 	defb 'Floating bus', 0
 	defw floatingbustest
 
 	defb 'Contended memory', 0
 	defw contendedmemorytest
+
+	defb 'High port contention 1', 0
+	defw highporttest1
+	
+	defb 'High port contention 2', 0
+	defw highporttest2
 	
 	defb 0
 

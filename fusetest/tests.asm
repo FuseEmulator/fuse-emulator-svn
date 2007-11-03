@@ -98,12 +98,16 @@ ENDP
 
 contendedintest
 PROC
-	ld bc, _delay1
-	ld hl, _table1
+	ld bc, contendedin_delay2
+	ld hl, contendedin_table2
 	call guessmachine_table
-	
-	ld bc, _delay2
-	ld hl, _table2
+
+	ld bc, 0x40ff
+	push bc
+
+contendedin1
+	ld bc, contendedin_delay1
+	ld hl, _table1
 	call guessmachine_table
 	
 	call interruptsync
@@ -116,14 +120,14 @@ PROC
 	inc hl			; 126
 	ld (hl), _isr / 0x100	; 132
 
-	ld hl, (_delay1)	; 142
+	ld hl, (contendedin_delay1) ; 142
 	call delay		; 158
 
 				; 48K / 128K / +3 timings
-	ld bc, 0x40ff		; 43036 / 43574 / 43574
+	pop bc			; 43036 / 43573 / 43574
 	in a,(c)		; 43046 / 43584 / 43584
 
-	ld hl, (_delay2)	; 43070 / 43608 / 43596
+	ld hl, (contendedin_delay2) ; 43070 / 43608 / 43596
 	call delay		; 43086 / 43624 / 43608
 
 	jp atiming		; 69355 / 70375 / 70735
@@ -139,13 +143,13 @@ _table1	defw 0xa77e
 	defw 0xa77e + 0x001a + 4 * 0x0080
 	defw 0xa77e + 0x001a + 4 * 0x0080
 	defw 0xa77e
-_table2 defw 0x669d
+contendedin_table2 defw 0x669d
 	defw 0x669d - 0x001a - 4 * 0x0080 + 0x03fc
 	defw 0x669d - 0x001a - 4 * 0x0080 + 0x03fc + 0x000c
 	defw 0x669d + 0x0700 + 0x000c
 
-_delay1	defw 0x0000
-_delay2	defw 0x0000
+contendedin_delay1 defw 0x0000
+contendedin_delay2 defw 0x0000
 
 ENDP
 
@@ -265,5 +269,59 @@ _table2	defw 0xd6c8
 
 _delay1	defw 0x0000
 _delay2	defw 0x0000
+
+ENDP
+
+; Test high port contention (part 1)
+
+highporttest1
+PROC
+	ld bc, contendedin_delay2
+	ld hl, _table
+	call guessmachine_table
+
+	ld bc, 0xffff
+	push bc
+
+	jp contendedin1
+
+_table	defw 0x66a9
+	defw 0x66a9 - 0x001a - 4 * 0x0080 + 0x03fc
+	defw 0x66a9 - 0x001a - 4 * 0x0080 + 0x03fc
+	defw 0x66a9 + 0x0700
+
+ENDP
+
+; High port contention part 2
+
+highporttest2
+PROC
+	ld a, (guessmachine_guess)
+	cp 0x01
+	jr c, _skip
+	
+	ld a, (0x5b5c)
+	and 0xf8
+	or 7
+	ld (0x5b5c), a
+	ld bc, 0x7ffd
+	out (c), a
+
+	ld bc, contendedin_delay2
+	ld hl, _table
+	call guessmachine_table
+
+	ld bc, 0xffff
+	push bc
+
+	jp contendedin1
+
+_skip	ld b, 0x01
+	ret
+
+_table	defw 0x66a9		; Not used
+	defw 0x66a9 - 0x001a - 4 * 0x0080 + 0x03fc - 0x000c
+	defw 0x66a9 - 0x001a - 4 * 0x0080 + 0x03fc
+	defw 0x66a9 + 0x0700
 
 ENDP
