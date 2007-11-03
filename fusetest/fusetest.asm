@@ -58,10 +58,24 @@ _test	ld a,(hl)
 	call _jumphl
 
 	jr z, _pass
-	ld b,a
-	ld hl, _failstring1
+	push af
+	ld a, b
+	cp 0x00
+	jr z, _fail
+
+	; B != 0 => skipped, etc
+_skip	ld hl, _skipstring1
 	call printstring
-	ld a,b
+	ld a, b
+	call printa
+	ld hl, _failstring2
+	call printstring
+	pop af
+	jr _next
+
+_fail	ld hl, _failstring1
+	call printstring
+        pop af
 	call printa
 	ld hl, _failstring2
 	call printstring
@@ -89,6 +103,8 @@ _jumphl ld e,(hl)
 _passstring defb '... passed', 0x0d, 0
 _failstring1 defb '... failed (0x', 0
 _failstring2 defb ')', 0x0d, 0
+
+_skipstring1 defb '... skipped (B=0x', 0
 
 _testdata
 	defb 'BIT n,(IX+d)', 0

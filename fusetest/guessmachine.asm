@@ -52,6 +52,7 @@ ENDP
 
 guessmachine_table
 PROC
+	xor a
 	ld a, (guessmachine_guess)
 	ld d, 0x00
 	ld e, a

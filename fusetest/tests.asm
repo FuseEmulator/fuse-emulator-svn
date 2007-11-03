@@ -16,6 +16,7 @@ PROC
 	ld a, 0x30
 	cp c
 	ret z
+	ld b, 0x00
 	ld a,c
 	ret
 
@@ -39,6 +40,7 @@ PROC
 	or l
 	ret z
 	ld a, b
+	ld b, 0x00
 	ret
 ENDP
 
@@ -57,15 +59,15 @@ PROC
 	call interruptsync
 
 	cp 0x00			; 92
-	ret nz			; 99
+	jr nz, _fail		; 99
 
-	ld hl, sync_isr + 1	; 104
-	ld (hl), _isr % 0x100	; 114
-	inc hl			; 124
-	ld (hl), _isr / 0x100	; 130
+	ld hl, sync_isr + 1	; 106
+	ld (hl), _isr % 0x100	; 116
+	inc hl			; 126
+	ld (hl), _isr / 0x100	; 132
 
-	ld hl, (_delay1)	; 140
-	call delay		; 156
+	ld hl, (_delay1)	; 142
+	call delay		; 158
 
 				; 48K / 128K / +3 timings
 	ld hl, 0x0000		; 14289 / 14315 / 14322
@@ -81,7 +83,10 @@ PROC
 _isr	pop hl
 	ret
 
-_table1	defw 0x3735, 0x3735 + 0x001a, 0x3756
+_fail	ld b, 0x02
+	ret
+
+_table1	defw 0x3733, 0x3733 + 0x001a, 0x3754
 _table2	defw 0xd6b5, 0xd6b5 - 0x001a + 0x03fc, 0xda9b
 
 _delay1	defw 0x0000
@@ -126,7 +131,8 @@ PROC
 _isr	pop hl
 	ret
 
-_fail	ret
+_fail	ld b, 0x02
+	ret
 
 _table1	defw 0xa77e
 	defw 0xa77e + 0x001a + 4 * 0x0080
@@ -144,6 +150,11 @@ ENDP
 
 floatingbustest
 PROC
+	; No point running this test on the +3 or Pentagon
+	ld a, (guessmachine_guess)
+	cp 0x02
+	jr nc, _skip
+
 	ld bc, _delay
 	ld hl, _table
 	call guessmachine_table
@@ -174,11 +185,17 @@ PROC
 	ld (hl),b
 
 	cp d
+	ld b, 0x00
 	ret
 
 _fail	pop bc
 	ld hl, 0x5a0f
 	ld (hl), b
+	ld b, 0x02
+	ret
+
+_skip	ld b, 0x01
+	add a, b
 	ret
 
 _table	defw 0xa791, 0xa791 + 0x001a + 4 * 0x0080
@@ -206,15 +223,15 @@ PROC
 	call interruptsync
 	
 	cp 0x00			; 92
-	ret nz			; 99
+	jr nz, _fail		; 99
 
-	ld hl, sync_isr + 1	; 104
-	ld (hl), _isr % 0x100	; 114
-	inc hl			; 124
-	ld (hl), _isr / 0x100	; 130
+	ld hl, sync_isr + 1	; 106
+	ld (hl), _isr % 0x100	; 116
+	inc hl			; 126
+	ld (hl), _isr / 0x100	; 132
 
-	ld hl, (_delay1)	; 140
-	call delay		; 156
+	ld hl, (_delay1)	; 142
+	call delay		; 158
 
 				; 48K / 128K / +3 timings
 	call 0x7fff		; 14318 / 14344 / 14346
@@ -226,12 +243,15 @@ PROC
 
 _isr	pop hl
 	ret
+
+_fail	ld b, 0x02
+	ret
 	
 _nop	nop			; 14335 / 14361 / 14363
 	ret			; 14345 / 14371 / 14374
 _nopend
 
-_table1	defw 0x3752, 0x3752 + 0x001a, 0x3752 + 0x001a + 0x0002
+_table1	defw 0x3750, 0x3750 + 0x001a, 0x3750 + 0x001a + 0x0002
 _table2	defw 0xd6c8, 0xd6c8 - 0x001a + 0x03fc, 0xd6c8 - 0x001a - 0x0003 + 0x03fc
 
 _delay1	defw 0x0000

@@ -74,10 +74,8 @@ _isr1	ld hl, 0xffff 		; 65 - 68
 	xor a			; 69883 - 69886 / 70903 - 70906
 	inc a			; 69887 / 70907 or interrupt occurred
 	di			; Should not be executed
-	ld hl, _nosync
-	call printstring
 	pop hl
-	ld a, 0xde		; Error code
+	ld a, 0xff		; Error code
 	ret
 
 	; jp _isr3		  19 - 22
@@ -91,10 +89,8 @@ _isr3	pop hl			; 29 - 32
 	xor a			; 78
 	ret			; 82
 
-_nosync defb '... no sync', 0
-
 _table	defw 0x011b, 0x011b + 0x03fc, 0x011b + 0x03fc
 
-_delay	defw 0x011b
+_delay	defw 0x0000
 
 ENDP
