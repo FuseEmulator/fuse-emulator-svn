@@ -1,5 +1,5 @@
 ; Guess which machine we're running on
-; Currently, detects 48K (or +), 128K (or +2) and +3 (or +2A).
+; Currently, detects 48K (or +), 128K (or +2), +3 (or +2A) and Pentagon.
 
 guessmachine
 PROC
@@ -10,6 +10,10 @@ PROC
 	ld bc, 0x94fc - 0x9100
 	sbc hl, bc
 	jr z, _m128
+
+	ld bc, 0x9800 - 0x94fc
+	sbc hl, bc
+	jr z, _mpent
 	
 	xor a
 	ld hl, _unknown
@@ -38,6 +42,10 @@ _m128	ld a, 0xff		; Distinguish between 128K and +3 by
 
 _mplus3	ld a, 0x02
 	ld hl, _mplus3string
+	jr _end
+
+_mpent	ld a, 0x03
+	ld hl, _mpentstring
 
 _end	ld (guessmachine_guess), a
 	call printstring
@@ -46,6 +54,7 @@ _end	ld (guessmachine_guess), a
 _m48string defb '48K', 0x0d, 0
 _m128string defb '128K', 0x0d, 0
 _mplus3string defb '+3', 0x0d, 0
+_mpentstring defb 'Pentagon', 0x0d, 0
 _unknown defb 'unknown', 0x0d, 0
 
 ENDP
