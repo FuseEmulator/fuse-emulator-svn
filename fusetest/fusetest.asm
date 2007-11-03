@@ -107,9 +107,6 @@ _failstring2 defb ')', 0x0d, 0
 _skipstring1 defb '... skipped (B=0x', 0
 
 _testdata
-	defb 'Contended IN', 0
-	defw contendedintest
-
 	defb 'BIT n,(IX+d)', 0
 	defw bitnixtest
 
@@ -118,6 +115,9 @@ _testdata
 
 	defb 'LDIR', 0
 	defw ldirtest
+
+	defb 'Contended IN', 0
+	defw contendedintest
 
 	defb 'Floating bus', 0
 	defw floatingbustest
