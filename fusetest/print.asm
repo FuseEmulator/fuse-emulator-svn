@@ -9,7 +9,7 @@
 	
 printstring
 PROC
-	ld a,(hl)
+	ld a, (hl)
 	cp 0x00
 	ret z
 	rst 0x10
@@ -21,14 +21,14 @@ ENDP
 
 printa
 PROC
-	ld b,a
+	ld b, a
 	and 0xf0
 	rrca
 	rrca
 	rrca
 	rrca
 	call _digit
-	ld a,b
+	ld a, b
 	and 0x0f
 _digit	cp 0x0a
 	jr nc, _letter
@@ -36,5 +36,6 @@ _digit	cp 0x0a
 	jr _x
 _letter	add a, 'a'-10
 _x	rst 0x10
+	ld a, b
 	ret
 ENDP

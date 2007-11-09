@@ -56,11 +56,19 @@ bigtest
 PROC
 	push de
 	push hl
+
+	ld b, 0x00
+	push bc
 	
 	call test
 
-	ld hl, _commastring
-	call printstring
+	pop bc
+	add a, b
+	ld b, a
+	push bc
+
+	ld a, ','
+	rst 0x10
 
 	ld hl, (delay2)
 	inc hl
@@ -68,8 +76,13 @@ PROC
 	
 	call test	
 
-	ld hl, _commastring
-	call printstring
+	pop bc
+	add a, b
+	ld b, a
+	push bc		
+
+	ld a, ','
+	rst 0x10
 
 	ld hl, (delay2)
 	inc hl
@@ -77,8 +90,13 @@ PROC
 	
 	call test	
 
-	ld hl, _commastring
-	call printstring
+	pop bc
+	add a, b
+	ld b, a
+	push bc		
+
+	ld a, ','
+	rst 0x10
 
 	ld hl, (delay2)
 	inc hl
@@ -86,19 +104,25 @@ PROC
 	
 	call test	
 
-	ld hl, _newline
+	pop bc
+	add a, b
+	ld b, a
+
+	ld hl, _finalstring
 	call printstring
+
+	ld a, b
+	call printa
+
+	ld a, 0x0d
+	rst 0x10
 
 	pop hl
 	pop de
 
 	ret
 
-_commastring
-	defb ',', 0
-
-_newline
-	defb 0x0d, 0
+_finalstring defb ' = ', 0
 
 ENDP
 
