@@ -67,29 +67,41 @@ read_file( libspectrum_byte **buffer, size_t *length, const char *filename )
 }
 
 static test_return_t
-read_tape( const char *filename, libspectrum_error expected_result )
+load_tape( libspectrum_tape **tape, const char *filename,
+           libspectrum_error expected_result )
 {
   libspectrum_byte *buffer = NULL;
   size_t filesize = 0;
-  libspectrum_tape *tape;
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  if( libspectrum_tape_alloc( &tape ) ) {
+  if( libspectrum_tape_alloc( tape ) ) {
     free( buffer );
     return TEST_INCOMPLETE;
   }
 
-  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+  if( libspectrum_tape_read( *tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) != expected_result ) {
     fprintf( stderr, "%s: reading `%s' did not give expected result\n",
 	     progname, filename );
-    libspectrum_tape_free( tape );
+    libspectrum_tape_free( *tape );
     free( buffer );
     return TEST_INCOMPLETE;
   }
 
   free( buffer );
+
+  return TEST_PASS;
+}
+
+static test_return_t
+read_tape( const char *filename, libspectrum_error expected_result )
+{
+  libspectrum_tape *tape;
+  test_return_t r; 
+
+  r = load_tape( &tape, filename, expected_result );
+  if( r != TEST_PASS ) return r;
 
   if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
 
@@ -386,6 +398,35 @@ test_18( void )
   return play_tape( "empty.csw" );
 }
 
+/* Test for bug #1828945: .tap writing code does not handle all block types */
+static test_return_t
+test_19( void )
+{
+  libspectrum_byte *buffer = NULL;
+  size_t length = 0;
+  libspectrum_tape *tape;
+  const char *filename = "complete-tzx.tzx";
+  test_return_t r;
+
+  r = load_tape( &tape, filename, LIBSPECTRUM_ERROR_NONE );
+  if( r ) return r;
+
+  if( libspectrum_tape_write( &buffer, &length, tape,
+                              LIBSPECTRUM_ID_TAPE_TAP ) ) {
+    fprintf( stderr, "%s: writing `%s' to a .tap file was not successful\n",
+             progname, filename );
+    libspectrum_tape_free( tape );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
+
+  return TEST_PASS;
+}
+  
+
 struct test_description {
 
   test_fn test;
@@ -413,6 +454,7 @@ static struct test_description tests[] = {
   { test_16, "TZX loop blocks 2", 0 },
   { test_17, "TZX jump blocks", 0 },
   { test_18, "CSW empty file", 0 },
+  { test_19, "Complete TZX to TAP conversion", 0 },
 };
 
 static size_t test_count = sizeof( tests ) / sizeof( tests[0] );

@@ -140,32 +140,46 @@ internal_tap_write( libspectrum_byte **buffer, size_t *length,
        block;
        block = libspectrum_tape_iterator_next( &iterator ) )
   {
+    int done = 0;
+
     switch( libspectrum_tape_block_type( block ) ) {
 
     case LIBSPECTRUM_TAPE_BLOCK_ROM:
       error = write_rom( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
+      done = 1;
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_TURBO:
       error = write_turbo( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
+      done = 1;
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
       error = write_pure_data( block, buffer, &ptr, length );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
+      done = 1;
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
     case LIBSPECTRUM_TAPE_BLOCK_PULSES:
+    case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
+    case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+    case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:     /* Could do better? */
+    case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
+    case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
       error = skip_block( block, "conversion almost certainly won't work" );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return 1; }
+      done = 1;
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
+    case LIBSPECTRUM_TAPE_BLOCK_JUMP:
+    case LIBSPECTRUM_TAPE_BLOCK_SELECT:
       error = skip_block( block, "conversion may not work" );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return 1; }
+      done = 1;
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
@@ -176,21 +190,25 @@ internal_tap_write( libspectrum_byte **buffer, size_t *length,
     case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
     case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
     case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
+    case LIBSPECTRUM_TAPE_BLOCK_CONCAT:
       error = skip_block( block, NULL );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return 1; }
+      done = 1;
       break;
+    }
 
-    default:
+    if( !done ) {
       if( *length ) free( *buffer );
       libspectrum_print_error(
         LIBSPECTRUM_ERROR_LOGIC,
         "libspectrum_tap_write: unknown block type 0x%02x",
-	libspectrum_tape_block_type( block )
+        libspectrum_tape_block_type( block )
       );
       return LIBSPECTRUM_ERROR_LOGIC;
-
     }
+
   }
+
 
   (*length) = ptr - *buffer;
 

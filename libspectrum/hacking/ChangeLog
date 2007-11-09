@@ -549,3 +549,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          #1821425; thanks Stuart Brady) (Fred).
 20071101 csw.c,tape.c,tape_block.c,test/test.c: add test for reading empty
          csw files and add more fixes to cope (more for bug #1821425) (Fred).
+20071109 tap.c,test/test.c: ensure .tap writing code handles all known block
+         types (fixes bug #1828945; thanks, Stuart Brady).
