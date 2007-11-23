@@ -103,12 +103,25 @@ struct libspectrum_snap {
   libspectrum_byte out_scld_hsr, out_scld_dec;
 
   /* Betadisk status */
+  int beta_active;
   int beta_paged;
   int beta_direction;	/* FDC seek direction:
 			      zero => towards lower cylinders (hubwards)
 			  non-zero => towards higher cylinders (rimwards) */
   libspectrum_byte beta_system, beta_track, beta_sector, beta_data,
     beta_status;
+
+  /* Plus D status */
+  int plusd_active;
+  int plusd_paged;
+  int plusd_custom_rom;
+  int plusd_direction;	/* FDC seek direction:
+			      zero => towards lower cylinders (hubwards)
+			  non-zero => towards higher cylinders (rimwards) */
+  libspectrum_byte plusd_control, plusd_track, plusd_sector, plusd_data,
+    plusd_status;
+  libspectrum_byte *plusd_rom[1];
+  libspectrum_byte *plusd_ram[1];
 
   /* ZXATASP status */
   int zxatasp_active;

@@ -553,3 +553,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          types (fixes bug #1828945; thanks, Stuart Brady).
 20071112 timings.c: timing tweak for TC2048 and TC2068 based on test programs
          from Phil and Woodster (Fred).
+20071124 accessor.pl,snap_accessors.txt,snapshot.c,szx.c,z80.c: add support
+         for the +D in z80 and szx snapshots (patch #1782512) (Fred).

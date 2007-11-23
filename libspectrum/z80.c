@@ -68,6 +68,10 @@ enum {
   Z80_MACHINE_128_IF1 = 5,
   Z80_MACHINE_128_MGT = 6,
 
+  Z80_MGT_DISCIPLE_EPSON = 0,
+  Z80_MGT_DISCIPLE_HP = 1,
+  Z80_MGT_PLUSD = 16,
+
   Z80_JOYSTICK_CURSOR_V3 = 0,
   Z80_JOYSTICK_KEMPSTON_V3 = 1,
   Z80_JOYSTICK_USER_DEFINED_V3 = 2,
@@ -110,11 +114,13 @@ static libspectrum_error
 read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	     const libspectrum_byte **data, int *version, int *compressed );
 static libspectrum_error
-get_machine_type( libspectrum_snap *snap, libspectrum_byte type, int version );
+get_machine_type( libspectrum_snap *snap, libspectrum_byte type,
+                  libspectrum_byte mgt_type, int version );
 static libspectrum_error
 get_machine_type_v2( libspectrum_snap *snap, libspectrum_byte type );
 static libspectrum_error
-get_machine_type_v3( libspectrum_snap *snap, libspectrum_byte type );
+get_machine_type_v3( libspectrum_snap *snap, libspectrum_byte type,
+                     libspectrum_byte mgt_type );
 static libspectrum_error
 get_machine_type_extension( libspectrum_snap *snap, libspectrum_byte type );
 static libspectrum_error
@@ -289,8 +295,12 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     libspectrum_snap_set_pc( snap, extra_header[0] + extra_header[1] * 0x100 );
 
-    error = get_machine_type( snap, extra_header[2], *version );
+    error = get_machine_type( snap, extra_header[2], extra_header[51], *version );
     if( error ) return error;
+
+    if( extra_header[27] && libspectrum_snap_plusd_active( snap ) ) {
+      libspectrum_snap_set_plusd_paged( snap, 1 );
+    }
 
     if( *version >= 3 ) {
 
@@ -397,7 +407,8 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 }
 
 static libspectrum_error
-get_machine_type( libspectrum_snap *snap, libspectrum_byte type, int version )
+get_machine_type( libspectrum_snap *snap, libspectrum_byte type,
+                  libspectrum_byte mgt_type, int version )
 {
   libspectrum_error error;
 
@@ -410,7 +421,7 @@ get_machine_type( libspectrum_snap *snap, libspectrum_byte type, int version )
       break;
 
     case 3:
-      error = get_machine_type_v3( snap, type ); if( error ) return error;
+      error = get_machine_type_v3( snap, type, mgt_type ); if( error ) return error;
       break;
 
     default:
@@ -450,19 +461,53 @@ get_machine_type_v2( libspectrum_snap *snap, libspectrum_byte type )
 }
 
 static libspectrum_error
-get_machine_type_v3( libspectrum_snap *snap, libspectrum_byte type )
+get_mgt_type( libspectrum_snap *snap, libspectrum_byte type )
 {
+  switch( type ) {
+    
+  case Z80_MGT_DISCIPLE_EPSON:
+  case Z80_MGT_DISCIPLE_HP:
+    break;
+
+  case Z80_MGT_PLUSD:
+    libspectrum_snap_set_plusd_active( snap, 1 );
+    break;
+
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "%s:get_mgt_type: unknown mgt type %d",
+			     __FILE__, type );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+get_machine_type_v3( libspectrum_snap *snap, libspectrum_byte type,
+                     libspectrum_byte mgt_type )
+{
+  libspectrum_error error;
+
   switch( type ) {
     
   case Z80_MACHINE_48:
   case Z80_MACHINE_48_IF1:
   case Z80_MACHINE_48_SAMRAM:
-  case Z80_MACHINE_48_MGT:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 ); break;
+  case Z80_MACHINE_48_MGT:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 );
+    error = get_mgt_type( snap, mgt_type );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+    break;
   case Z80_MACHINE_128:
   case Z80_MACHINE_128_IF1:
-  case Z80_MACHINE_128_MGT:
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 ); break;
+  case Z80_MACHINE_128_MGT:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 );
+    error = get_mgt_type( snap, mgt_type );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+    break;
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "%s:get_machine_type: unknown v3 machine type %d",
@@ -842,6 +887,19 @@ read_block( const libspectrum_byte *buffer, libspectrum_snap *snap,
       return LIBSPECTRUM_ERROR_UNKNOWN;
     }
 
+    /* If it is a +D ROM/RAM page put it in the appropriate structures */
+    if( page == 1 && libspectrum_snap_plusd_active( snap ) ) {
+      /* Bottom 8K of page is +D ROM, upper 8K is +D RAM */
+      libspectrum_byte *chunk = malloc( 0x2000 );
+      memcpy( chunk, uncompressed, 0x2000 );
+      libspectrum_snap_set_plusd_rom( snap, 0, chunk );
+      chunk = malloc( 0x2000 );
+      memcpy( chunk, uncompressed + 0x2000, 0x2000 );
+      libspectrum_snap_set_plusd_ram( snap, 0, chunk );
+      free( uncompressed );
+      return LIBSPECTRUM_ERROR_NONE;
+    }
+
     /* If it's a ROM page, just throw it away */
     if( page < 3 ) {
       free( uncompressed );
@@ -1081,6 +1139,10 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
   if( libspectrum_snap_halted( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
 
+  /* .z80 format doesn't store +D info well */
+  if( libspectrum_snap_plusd_active( snap ) )
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
+
   /* .z80 format doesn't store the ZXATASP or ZXCF info */
   if( libspectrum_snap_zxatasp_active( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
@@ -1220,13 +1282,24 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   switch( libspectrum_snap_machine( snap ) ) {
   case LIBSPECTRUM_MACHINE_16:
-  case LIBSPECTRUM_MACHINE_48:
     *(*ptr)++ = Z80_MACHINE_48; break;
+  case LIBSPECTRUM_MACHINE_48:
+    if( libspectrum_snap_plusd_active( snap ) ) {
+      *(*ptr)++ = Z80_MACHINE_48_MGT;
+    } else {
+      *(*ptr)++ = Z80_MACHINE_48;
+    }
+    break;
   case LIBSPECTRUM_MACHINE_SE:
     *flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
     /* fall through */
   case LIBSPECTRUM_MACHINE_128:
-    *(*ptr)++ = Z80_MACHINE_128; break;
+    if( libspectrum_snap_plusd_active( snap ) ) {
+      *(*ptr)++ = Z80_MACHINE_128_MGT;
+    } else {
+      *(*ptr)++ = Z80_MACHINE_128;
+    }
+    break;
   case LIBSPECTRUM_MACHINE_PLUS3E:
     *flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
     /* fall through */
@@ -1295,8 +1368,18 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   *(*ptr)++ =
     ( ( libspectrum_snap_tstates( snap ) / quarter_states ) + 3 ) % 4;
 
-  /* Spectator, MGT and Multiface disabled */
-  *(*ptr)++ = '\0'; *(*ptr)++ = '\0'; *(*ptr)++ = '\0';
+  /* Spectator disabled */
+  *(*ptr)++ = '\0';
+
+  /* MGT only for +D for now */
+  if( libspectrum_snap_plusd_active( snap ) ) {
+    *(*ptr)++ = libspectrum_snap_plusd_paged( snap );
+  } else {
+    *(*ptr)++ = '\0';
+  }
+
+  /* Multiface disabled */
+  *(*ptr)++ = '\0';
 
   /* Is 0x0000 to 0x3fff RAM? True if we're in a +3 64Kb RAM
      configuration, or a Scorpion configuration with page 0 mapped in */
@@ -1339,8 +1422,15 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
     for( i=32; i<52; i++ ) *(*ptr)++ = '\0';
   }
 
+  /* MGT type */
+  if( libspectrum_snap_plusd_active( snap ) ) {
+    *(*ptr)++ = Z80_MGT_PLUSD;
+  } else {
+    *(*ptr)++ = '\0';
+  }
+
   /* etc */
-  for( i=52; i<=LIBSPECTRUM_Z80_V3_LENGTH; i++ ) *(*ptr)++ = '\0';
+  for( i=53; i<=LIBSPECTRUM_Z80_V3_LENGTH; i++ ) *(*ptr)++ = '\0';
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -1354,6 +1444,19 @@ write_pages( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
 
   int capabilities =
     libspectrum_machine_capabilities( libspectrum_snap_machine( snap ) );
+
+  /* If +D is enabled, write the +D ROM and RAM in Z80 page 1 */
+  if( libspectrum_snap_plusd_active( snap ) ) {
+    libspectrum_byte *uncompressed = malloc( 0x4000 );
+    
+    memcpy( uncompressed, libspectrum_snap_plusd_rom( snap, 0 ), 0x2000 );
+    memcpy( uncompressed, libspectrum_snap_plusd_ram( snap, 0 ), 0x2000 );
+
+    error = write_page( buffer, ptr, length, 1, uncompressed, compress );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+    free( uncompressed );
+  }
 
   if( !( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY ) ) {
 
