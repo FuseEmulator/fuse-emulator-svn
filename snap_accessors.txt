@@ -59,6 +59,7 @@ libspectrum_byte ay_registers 1
 libspectrum_byte out_scld_hsr
 libspectrum_byte out_scld_dec
 
+int beta_active
 int beta_paged
 int beta_direction
 libspectrum_byte beta_system
@@ -66,6 +67,18 @@ libspectrum_byte beta_track
 libspectrum_byte beta_sector
 libspectrum_byte beta_data
 libspectrum_byte beta_status
+
+int plusd_active
+int plusd_paged
+int plusd_custom_rom
+int plusd_direction
+libspectrum_byte plusd_control
+libspectrum_byte plusd_track
+libspectrum_byte plusd_sector
+libspectrum_byte plusd_data
+libspectrum_byte plusd_status
+libspectrum_byte* plusd_rom 1
+libspectrum_byte* plusd_ram 1
 
 libspectrum_byte* pages 1
 

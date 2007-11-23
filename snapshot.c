@@ -93,6 +93,27 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
   libspectrum_snap_set_out_scld_hsr( *snap, 0x00 );
   libspectrum_snap_set_out_scld_dec( *snap, 0x00 );
 
+  libspectrum_snap_set_beta_active( *snap, 0 );
+  libspectrum_snap_set_beta_paged( *snap, 0 );
+  libspectrum_snap_set_beta_direction( *snap, 0 );
+  libspectrum_snap_set_beta_system( *snap, 0 );
+  libspectrum_snap_set_beta_track ( *snap, 0 );
+  libspectrum_snap_set_beta_sector( *snap, 0 );
+  libspectrum_snap_set_beta_data  ( *snap, 0 );
+  libspectrum_snap_set_beta_status( *snap, 0 );
+
+  libspectrum_snap_set_plusd_active( *snap, 0 );
+  libspectrum_snap_set_plusd_paged( *snap, 0 );
+  libspectrum_snap_set_plusd_custom_rom( *snap, 0 );
+  libspectrum_snap_set_plusd_direction( *snap, 0 );
+  libspectrum_snap_set_plusd_control( *snap, 0 );
+  libspectrum_snap_set_plusd_track ( *snap, 0 );
+  libspectrum_snap_set_plusd_sector( *snap, 0 );
+  libspectrum_snap_set_plusd_data  ( *snap, 0 );
+  libspectrum_snap_set_plusd_status( *snap, 0 );
+  libspectrum_snap_set_plusd_rom( *snap, 0, NULL );
+  libspectrum_snap_set_plusd_ram( *snap, 0, NULL );
+
   libspectrum_snap_set_zxatasp_active( *snap, 0 );
   libspectrum_snap_set_zxatasp_upload( *snap, 0 );
   libspectrum_snap_set_zxatasp_writeprotect( *snap, 0 );
@@ -157,6 +178,11 @@ libspectrum_snap_free( libspectrum_snap *snap )
     free( libspectrum_snap_dock_cart( snap, i ) );
     free( libspectrum_snap_exrom_cart( snap, i ) );
   }
+
+  if( libspectrum_snap_plusd_rom( snap, 0 ) )
+    free( libspectrum_snap_plusd_rom( snap, 0 ) );
+  if( libspectrum_snap_plusd_ram( snap, 0 ) )
+    free( libspectrum_snap_plusd_ram( snap, 0 ) );
 
   free( snap );
 
