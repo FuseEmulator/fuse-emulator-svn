@@ -489,7 +489,7 @@ read_plsd_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
                                "in compressed file, should be %lu, file "
                                "has %lu",
 			       __FILE__, 
-                               expected_length,
+                               (unsigned long)expected_length,
                                (unsigned long)uncompressed_length );
       return LIBSPECTRUM_ERROR_UNKNOWN;
     }
@@ -507,7 +507,7 @@ read_plsd_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
                                  "in compressed file, should be %lu, file "
                                  "has %lu",
                                  __FILE__, 
-                                 expected_length,
+                                 (unsigned long)expected_length,
                                  (unsigned long)disc_rom_length );
         return LIBSPECTRUM_ERROR_UNKNOWN;
       }
@@ -534,7 +534,7 @@ read_plsd_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
                                "in uncompressed file, should be %lu, file "
                                "has %lu",
 			       __FILE__, 
-                               expected_length,
+                               (unsigned long)expected_length,
                                (unsigned long)disc_rom_length );
       return LIBSPECTRUM_ERROR_UNKNOWN;
     }
