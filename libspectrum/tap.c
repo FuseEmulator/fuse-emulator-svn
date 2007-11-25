@@ -88,7 +88,7 @@ internal_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
       free( block );
       libspectrum_print_error(
         LIBSPECTRUM_ERROR_CORRUPT,
-        "libspectrum_tap_create: not enough data in buffer"
+        "libspectrum_tap_read: not enough data in buffer"
       );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
@@ -99,7 +99,7 @@ internal_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
       libspectrum_tape_clear( tape );
       free( block );
       libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			       "libspectrum_tap_create: out of memory" );
+			       "libspectrum_tap_read: out of memory" );
       return LIBSPECTRUM_ERROR_MEMORY;
     }
     libspectrum_tape_block_set_data( block, data );
