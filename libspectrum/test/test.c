@@ -510,7 +510,7 @@ main( int argc, char *argv[] )
   for( i = 0, test = tests;
        i < test_count;
        i++, test++ ) {
-    printf( "Test %d: %s... ", i + 1, test->description );
+    printf( "Test %d: %s... ", (int)i + 1, test->description );
     if( test->active ) {
       tests_done++;
       switch( test->test() ) {
@@ -537,7 +537,7 @@ main( int argc, char *argv[] )
   /* Stop silly divisions occuring */
   if( !tests_done ) tests_done = 1;
 
-  printf( "\n%3d tests run\n\n", test_count );
+  printf( "\n%3d tests run\n\n", (int)test_count );
   printf( "%3d     passed (%6.2f%%)\n", pass, 100 * (float)pass/tests_done );
   printf( "%3d     failed (%6.2f%%)\n", fail, 100 * (float)fail/tests_done );
   printf( "%3d incomplete (%6.2f%%)\n", incomplete, 100 * (float)incomplete/tests_done );

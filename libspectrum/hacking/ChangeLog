@@ -556,3 +556,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071124 accessor.pl,snap_accessors.txt,snapshot.c,szx.c,z80.c: add support
          for the +D in z80 and szx snapshots (patch #1782512) (Fred).
 20071124 szx.c: fix warnings.
+20071125 test/test.c: fix warnings (Stuart).
