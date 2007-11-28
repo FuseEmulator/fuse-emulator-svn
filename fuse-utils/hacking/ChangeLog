@@ -196,3 +196,6 @@
 20071007 listbasic.c: add Beta BASIC support to listbasic (Stuart).
 20071007 listbasic.c: improve handling of spaces in Beta BASIC (Stuart).
 20071026 ChangeLog: add some entries (Stuart).
+20071128 Makefile.am,man/{Makefile.am,fuse-utils.1,profile2map.1},
+	 profile2map.c: add profile2map utility for converting Fuse profiler
+	 output to Z80-style map format (feature request #1530348) (Stuart).

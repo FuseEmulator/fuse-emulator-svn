@@ -27,6 +27,7 @@ man_MANS = audio2tape.1 \
 	   createhdf.1 \
 	   fuse-utils.1 \
 	   listbasic.1 \
+	   profile2map.1 \
 	   raw2hdf.1 \
 	   rzxcheck.1 \
 	   rzxdump.1 \
