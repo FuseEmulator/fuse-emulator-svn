@@ -29,6 +29,7 @@ SUBDIRS = hacking \
 bin_PROGRAMS = @AUDIOTOOLS@ \
 	       createhdf \
 	       listbasic \
+	       profile2map \
 	       raw2hdf \
 	       @RZXCHECK@ \
 	       rzxdump \
@@ -47,6 +48,9 @@ createhdf_SOURCES = ide.c createhdf.c
 
 listbasic_SOURCES = listbasic.c utils.c
 listbasic_LDADD = @LIBSPEC_LIBS@
+
+profile2map_SOURCES = profile2map.c utils.c
+profile2map_LDADD = @LIBSPEC_LIBS@
 
 raw2hdf_SOURCES = ide.c raw2hdf.c
 
