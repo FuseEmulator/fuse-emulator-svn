@@ -558,3 +558,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071124 szx.c: fix warnings.
 20071125 test/test.c: fix warnings (Stuart).
 20071125 tap.c: fix error messages (Stuart).
+20071128 ChangeLog: update (Stuart).
