@@ -1,3 +1,25 @@
+2007-xx-xx  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+	* libspectrum 0.x.x released.
+
+	* Add support for loading from WAV files (Fredrick Meunier).
+
+	* Add support for CSW tape files (Fredrick Meunier).
+
+	* Tweak timings for TC2048 and TC2068 (Fredrick Meunier; thanks Philip
+	  Kendall and Mark Woodmass).
+
+	* Add support for the +D in z80 and szx snapshots (Fredrick Meunier).
+
+	* Add Pentagon 512/1024 support (Q-Master).
+
+	* Allow Amiga version to decompress files with xfdmaster.library
+	  (Chris Young).
+
+	* Allow MorphOS version to use xfdmaster.library (Q-Master).
+
+	* Various other bugfixes.
+
 2007-05-11  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
 	* libspectrum 0.3.0.1 released (bug fix release).
@@ -144,7 +166,7 @@
 
 	* Timing fixes for the TC2048 and TC2068 (Fredrick Meunier).
 
-	* Fix reading of 128K .sna snapshots (Philip Kendall).	
+	* Fix reading of 128K .sna snapshots (Philip Kendall).
 
 	* New capabilities for the Timex dock, and built-in Sinclair and
 	  Kempston joysticks (Fredrick Meunier).
