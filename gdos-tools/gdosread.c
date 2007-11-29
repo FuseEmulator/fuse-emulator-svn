@@ -37,9 +37,10 @@ main( int argc, const char **argv )
 {
   libgdos_disk *disk;
   libgdos_dir *dir;
+  libgdos_dirent entry;
   libgdos_file *file;
   uint8_t buf[ 0x1fe ];
-  int numread;
+  int numread, error;
   long slot;
 
   progname = argv[0];
@@ -70,15 +71,27 @@ main( int argc, const char **argv )
     return 1;
   }
 
-  file = libgdos_fopennum( dir, slot );
-  if( !file ) {
-    fprintf( stderr, "%s: failed to open file\n", progname );
+  error = libgdos_getentnum( dir, slot, &entry );
+  if( error ) {
+    fprintf( stderr, "%s: error reading slot %li\n", progname, slot );
     libgdos_closedir( dir );
     libgdos_closeimage( disk );
     return 1;
   }
 
   libgdos_closedir( dir );
+
+  file = libgdos_fopenent( &entry );
+  if( !file ) {
+    fprintf( stderr, "%s: failed to open file\n", progname );
+    libgdos_closeimage( disk );
+    return 1;
+  }
+
+  /* Write out the register dump for snapshots */
+  if( entry.ftype == libgdos_ftype_zx_snap48 ||
+      entry.ftype == libgdos_ftype_zx_snap128 )
+    fwrite( entry.ftypeinfo + 0, 1, 22, stdout );
 
   numread = libgdos_fread( buf, 0x1fe, file );
   while( numread ) {
