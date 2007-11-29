@@ -150,9 +150,8 @@ static int
 libspectrum_sna_read_data( const libspectrum_byte *buffer,
 			   size_t buffer_length, libspectrum_snap *snap )
 {
-  int error;
-  int offset; int page;
-  int i,j;
+  int error, page, i, j;
+  libspectrum_word sp, offset;
 
   if( buffer_length < 0xc000 ) {
     libspectrum_print_error(
@@ -166,8 +165,17 @@ libspectrum_sna_read_data( const libspectrum_byte *buffer,
 
   case LIBSPECTRUM_MACHINE_48:
 
+    sp = libspectrum_snap_sp( snap );
+    if( sp < 0x4000 || sp == 0xffff ) {
+      libspectrum_print_error(
+        LIBSPECTRUM_ERROR_CORRUPT,
+        "libspectrum_sna_read_data: SP invalid (0x%04x)", sp
+      );
+      return LIBSPECTRUM_ERROR_CORRUPT;
+    }
+
     /* Rescue PC from the stack */
-    offset = libspectrum_snap_sp( snap ) - 0x4000;
+    offset = sp - 0x4000;
     libspectrum_snap_set_pc( snap, buffer[offset] + 0x100 * buffer[offset+1] );
 
     /* Increase SP as PC has been unstacked */
