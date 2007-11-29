@@ -22,7 +22,7 @@ dnl Author contact information:
 dnl
 dnl E-mail: sdbrady@ntlworld.com
 
-AC_INIT(libgdos.c)
+AC_INIT(image.c)
 AM_CONFIG_HEADER(config.h)
 
 dnl Use automake to produce `Makefile.in'

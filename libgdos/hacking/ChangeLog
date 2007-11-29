@@ -1,1 +1,4 @@
-2007-11-29 initial revision
+20071129 initial revision.
+20071129 configure.in: fix AC_INIT call.
+
+$Id$
