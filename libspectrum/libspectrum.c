@@ -702,7 +702,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 
 #ifdef HAVE_LIBBZ2
 
-    if( *new_filename ) {
+    if( new_filename && *new_filename ) {
       if( strlen( *new_filename ) >= 4 &&
 	  !strcasecmp( &(*new_filename)[ strlen( *new_filename ) - 4 ],
 		       ".bz2" ) )
@@ -730,7 +730,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 
 #ifdef HAVE_ZLIB_H
 
-    if( *new_filename ) {
+    if( new_filename && *new_filename ) {
       if( strlen( *new_filename ) >= 3 &&
 	  !strcasecmp( &(*new_filename)[ strlen( *new_filename ) - 3 ],
 		       ".gz" ) )

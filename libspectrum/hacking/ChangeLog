@@ -564,3 +564,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071129 tests/{sp-2000.sna.gz,sp-ffff.sna.gz,test.c}: add tests for bugs
          #1841085 (SP not sanity checked when loading 48K .sna file) and
          #1841111 (compressed snapshots cause segfault).
+20071129 libspectrum.c: check new_filename before checking *new_filename.
