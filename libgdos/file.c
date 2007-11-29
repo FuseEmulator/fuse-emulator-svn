@@ -34,15 +34,8 @@ libgdos_fopennum( libgdos_dir *dir, int n )
   libgdos_dirent entry;
   int error;
 
-  int i=0;
-  error = libgdos_readdir( dir, &entry );
+  error = libgdos_getentnum( dir, n, &entry );
   if( error ) return NULL;
-  while( entry.slot < n ) {
-    error = libgdos_readdir( dir, &entry );
-    if( error ) return NULL;
-  }
-
-  if( entry.slot != n ) return NULL;
 
   return libgdos_fopenent( &entry );
 }

@@ -107,7 +107,7 @@ libgdos_readdir( libgdos_dir *dir, libgdos_dirent *entry )
     entry->track = buf[13];
     entry->sector = buf[14];
     memcpy( entry->sab, &buf[15], 195 );
-    memcpy( entry->ftypeinfo, &buf[220], 36 );
+    memcpy( entry->ftypeinfo, &buf[210], 46 );
 
     break;
   }
@@ -119,4 +119,21 @@ void
 libgdos_closedir( libgdos_dir *dir )
 {
   free( dir );
+}
+
+int
+libgdos_getentnum( libgdos_dir *dir, int slot, libgdos_dirent *entry )
+{
+  int error;
+
+  error = libgdos_readdir( dir, entry );
+  if( error ) return error;
+  while( entry->slot < slot ) {
+    error = libgdos_readdir( dir, entry );
+    if( error ) return error;
+  }
+
+  if( entry->slot != slot ) return 1;
+
+  return 0;
 }

@@ -1,4 +1,5 @@
 20071129 initial revision.
 20071129 configure.in: fix AC_INIT call.
+20071129 dir.c,file.c,libgdos.h: add getentnum() and extend ftypeinfo.
 
 $Id$

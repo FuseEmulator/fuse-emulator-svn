@@ -97,7 +97,7 @@ struct libgdos_dirent {
   int track;
   int sector;
   uint8_t sab[ 195 ];
-  uint8_t ftypeinfo[ 36 ];
+  uint8_t ftypeinfo[ 46 ];
 };
 
 libgdos_disk * WIN32_DLL
@@ -123,6 +123,9 @@ libgdos_readdir( libgdos_dir *dir, libgdos_dirent *entry );
 
 void WIN32_DLL
 libgdos_closedir( libgdos_dir *dir );
+
+int WIN32_DLL
+libgdos_getentnum( libgdos_dir *dir, int slot, libgdos_dirent *entry );
 
 int WIN32_DLL
 libgdos_scandir( libgdos_dir *dir, libgdos_dirent ***namelist,
