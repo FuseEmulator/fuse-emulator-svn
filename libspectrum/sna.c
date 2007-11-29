@@ -420,7 +420,7 @@ write_48k_sna( libspectrum_byte **buffer, libspectrum_byte **ptr,
   error = write_page( &( (*ptr)[ 0x8000 ] ), snap, 0 );
   if( error ) return error;
 
-  /* Overwrite a bit of memory with SP */
+  /* Place PC on the stack */
   stack = &( (*ptr)[ libspectrum_snap_sp( snap ) - 0x4000 - 2 ] );
   libspectrum_write_word( &stack, libspectrum_snap_pc( snap ) );
 
