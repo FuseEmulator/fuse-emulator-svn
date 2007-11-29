@@ -425,7 +425,22 @@ test_19( void )
 
   return TEST_PASS;
 }
+
+/* Tests for bug #1841085: SP not sanity checked when reading .sna files;
+   also tests bug #1841111: compressed snapshots cause segfault */
+static test_return_t
+test_20( void )
+{
+  const char *filename = "sp-2000.sna.gz";
+  return read_snap( filename, filename, LIBSPECTRUM_ERROR_CORRUPT );
+} 
   
+static test_return_t
+test_21( void )
+{
+  const char *filename = "sp-ffff.sna.gz";
+  return read_snap( filename, filename, LIBSPECTRUM_ERROR_CORRUPT );
+} 
 
 struct test_description {
 
@@ -455,6 +470,8 @@ static struct test_description tests[] = {
   { test_17, "TZX jump blocks", 0 },
   { test_18, "CSW empty file", 0 },
   { test_19, "Complete TZX to TAP conversion", 0 },
+  { test_20, "SNA file with SP < 0x4000", 0 },
+  { test_21, "SNA file with SP = 0xffff", 0 },
 };
 
 static size_t test_count = sizeof( tests ) / sizeof( tests[0] );
