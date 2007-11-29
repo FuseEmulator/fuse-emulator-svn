@@ -91,7 +91,7 @@ main( int argc, const char **argv )
   /* Write out the register dump for snapshots */
   if( entry.ftype == libgdos_ftype_zx_snap48 ||
       entry.ftype == libgdos_ftype_zx_snap128 )
-    fwrite( entry.ftypeinfo + 0, 1, 22, stdout );
+    fwrite( entry.ftypeinfo + 10, 1, 22, stdout );
 
   switch( entry.ftype ) {
 
