@@ -1,4 +1,6 @@
 20071129 initial revision.
 20071129 gdosread.c: output register dump when reading snapshots.
+20071129 gdosread.c: skip the file header when reading screenshots, and remove
+	 unused bytes at the end of snapshots.
 
 $Id$

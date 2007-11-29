@@ -40,7 +40,7 @@ main( int argc, const char **argv )
   libgdos_dirent entry;
   libgdos_file *file;
   uint8_t buf[ 0x1fe ];
-  int numread, error;
+  int numread, toread, length, error;
   long slot;
 
   progname = argv[0];
@@ -93,10 +93,42 @@ main( int argc, const char **argv )
       entry.ftype == libgdos_ftype_zx_snap128 )
     fwrite( entry.ftypeinfo + 0, 1, 22, stdout );
 
-  numread = libgdos_fread( buf, 0x1fe, file );
-  while( numread ) {
+  switch( entry.ftype ) {
+
+  case libgdos_ftype_zx_snap48:
+    length = 0xc000;
+    break;
+
+  case libgdos_ftype_zx_snap128:
+    length = 0x20001;
+    break;
+
+  case libgdos_ftype_zx_screen:
+    length = 0x1b00;
+    numread = libgdos_fread( buf, 9, file );
+    if( numread != 9 ) break;
+    break;
+
+  default:
+    length = -1;
+    break;
+
+  }
+
+  while( length != 0 ) {
+
+    if( length > 0 && length < 0x1fe )
+      toread = length;
+    else
+      toread = 0x1fe;
+
+    numread = libgdos_fread( buf, toread, file );
+    if( !numread ) break;
+
     fwrite( buf, 1, numread, stdout );
-    numread = libgdos_fread( buf, 0x1fe, file );
+    if( length > 0 )
+      length -= numread;
+
   }
 
   libgdos_fclose( file );
