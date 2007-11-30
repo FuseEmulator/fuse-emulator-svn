@@ -479,6 +479,7 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
       /* .slt files also dealt with by the .z80 loading code */
       { LIBSPECTRUM_ID_SNAPSHOT_Z80,  "slt", 3, "\0\0",		    6, 2, 1 },
       { LIBSPECTRUM_ID_SNAPSHOT_ZXS,  "zxs", 3, "SNAP",		    8, 4, 4 },
+      { LIBSPECTRUM_ID_SNAPSHOT_PLUSD,"mgtsnp", 3, NULL,	    0, 0, 0 },
 
       { LIBSPECTRUM_ID_CARTRIDGE_DCK, "dck", 3, NULL,		    0, 0, 0 },
       { LIBSPECTRUM_ID_CARTRIDGE_IF2, "rom", 3, NULL,		    0, 0, 0 },

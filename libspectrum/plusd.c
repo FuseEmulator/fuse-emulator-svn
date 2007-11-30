@@ -1,5 +1,6 @@
-/* plusd.c: Routines for handling +D snapshots
+/* plusd.c: Routines for handling DISCiPLE/+D snapshots
    Copyright (c) 1998,2003 Philip Kendall
+   Copyright (c) 2007 Stuart Brady
 
    $Id$
 
@@ -29,25 +30,64 @@
 
 #define PLUSD_HEADER_LENGTH 22
 
+static libspectrum_error
+identify_machine( size_t buffer_length, libspectrum_snap *snap );
+static libspectrum_error
+libspectrum_plusd_read_header( const libspectrum_byte *buffer,
+			       size_t buffer_length, libspectrum_snap *snap );
+static libspectrum_error
+libspectrum_plusd_read_data( const libspectrum_byte *buffer,
+			     libspectrum_snap *snap );
+static libspectrum_byte
+readbyte( libspectrum_snap *snap, libspectrum_word address );
+static libspectrum_error
+libspectrum_plusd_read_128_data( libspectrum_snap *snap,
+				 const libspectrum_byte *buffer );
+
 libspectrum_error
 libspectrum_plusd_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
-			size_t length )
+			size_t buffer_length )
 {
-  libspectrum_byte i, iff; const libspectrum_byte *ptr;
-  libspectrum_word sp;
-  libspectrum_error error;
+  int error;
 
-  /* Length must be at least the header plus 48K of RAM */
-  if( length < PLUSD_HEADER_LENGTH + 0xc000 ) {
-    libspectrum_print_error(
-      LIBSPECTRUM_ERROR_CORRUPT,
-      "libspectrum_plusd_read: not enough bytes for header"
-    );
+  error = identify_machine( buffer_length, snap );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  error = libspectrum_plusd_read_header( buffer, buffer_length, snap );
+  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+  buffer += PLUSD_HEADER_LENGTH;
+
+  error = libspectrum_plusd_read_data( buffer, snap );
+  if( error != LIBSPECTRUM_ERROR_NONE );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+identify_machine( size_t buffer_length, libspectrum_snap *snap )
+{
+  switch( buffer_length ) {
+  case PLUSD_HEADER_LENGTH + 0xc000:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 );
+    break;
+  case PLUSD_HEADER_LENGTH + 1 + 0x20000:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 );
+    break;
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "plusd identify_machine: unknown length" );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  /* All +D snaps are of the 48K machine */
-  libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_48 );
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+libspectrum_plusd_read_header( const libspectrum_byte *buffer,
+			       size_t buffer_length, libspectrum_snap *snap )
+{
+  libspectrum_byte i;
 
   libspectrum_snap_set_iy ( snap, buffer[ 0] + buffer[ 1] * 0x100 );
   libspectrum_snap_set_ix ( snap, buffer[ 2] + buffer[ 3] * 0x100 );
@@ -61,40 +101,132 @@ libspectrum_plusd_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
   libspectrum_snap_set_hl ( snap, buffer[16] + buffer[17] * 0x100 );
   /* Header offset 18 is 'rubbish' */
   i = buffer[19]; libspectrum_snap_set_i( snap, i );
-  sp = buffer[20] + buffer[21] * 0x100;
+  libspectrum_snap_set_sp ( snap, buffer[20] + buffer[21] * 0x100 );
 
   /* Make a guess at the interrupt mode depending on what I was set to */
   libspectrum_snap_set_im( snap, ( i == 0 || i == 63 ) ? 1 : 2 );
 
-  buffer += PLUSD_HEADER_LENGTH; length -= PLUSD_HEADER_LENGTH;
+  buffer += PLUSD_HEADER_LENGTH;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+libspectrum_plusd_read_data( const libspectrum_byte *buffer,
+			     libspectrum_snap *snap )
+{
+  libspectrum_byte iff;
+  libspectrum_word sp;
+  int error;
+
+  sp = libspectrum_snap_sp( snap );
 
   /* We must have 0x4000 <= SP <= 0xfffa so we can rescue the stacked
      registers */
   if( sp < 0x4000 || sp > 0xfffa ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
-      "libspectrum_plusd_read: SP invalid (0x%04x)", sp
+      "libspectrum_plusd_read_data: SP invalid (0x%04x)", sp
     );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
-    
-  /* R, IFF, AF and PC are stored on the stack */
-  ptr = &buffer[ sp - 0x4000 ];
 
-  iff = ptr[0] & 0x04;
-  libspectrum_snap_set_r   ( snap, ptr[1] );
+  switch( libspectrum_snap_machine( snap ) ) {
+
+  case LIBSPECTRUM_MACHINE_48:
+
+    /* Split the RAM into separate pages */
+    error = libspectrum_split_to_48k_pages( snap, buffer );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+    break;
+
+  case LIBSPECTRUM_MACHINE_128:
+
+    libspectrum_snap_set_out_128_memoryport( snap, buffer[0] );
+    buffer++;
+
+    error = libspectrum_plusd_read_128_data( snap, buffer );
+    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+
+    break;
+
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "libspectrum_plusd_read_data: unknown machine" );
+    return LIBSPECTRUM_ERROR_LOGIC;
+
+  }
+
+  /* R, IFF, AF and PC are stored on the stack */
+  iff = readbyte( snap, sp ) & 0x04;
+  libspectrum_snap_set_r   ( snap, readbyte( snap, sp + 1 ) );
   libspectrum_snap_set_iff1( snap, iff );
   libspectrum_snap_set_iff2( snap, iff );
-  libspectrum_snap_set_f   ( snap, ptr[2] );
-  libspectrum_snap_set_a   ( snap, ptr[3] );
-  libspectrum_snap_set_pc  ( snap, ptr[4] + ptr[5] * 0x100 );
+  libspectrum_snap_set_f   ( snap, readbyte( snap, sp + 2 ) );
+  libspectrum_snap_set_a   ( snap, readbyte( snap, sp + 3 ) );
+  libspectrum_snap_set_pc  ( snap, readbyte( snap, sp + 4 ) +
+				   readbyte( snap, sp + 5 ) * 0x100 );
 
   /* Store SP + 6 to account for those unstacked values */
   libspectrum_snap_set_sp( snap, sp + 6 );
 
-  /* Split the RAM into separate pages */
-  error = libspectrum_split_to_48k_pages( snap, buffer );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_byte
+readbyte( libspectrum_snap *snap, libspectrum_word address )
+{
+  int page;
+
+  switch( address >> 14 ) {
+
+  case 1:
+    page = 5;
+    break;
+
+  case 2:
+    page = 2;
+    break;
+
+  case 3:
+    page = libspectrum_snap_out_128_memoryport( snap ) & 0x07;
+    break;
+
+  default:
+    return 0;
+
+  }
+
+  return libspectrum_snap_pages( snap, page )[ address & 0x3fff ];
+}
+
+static libspectrum_error
+libspectrum_plusd_read_128_data( libspectrum_snap *snap,
+				 const libspectrum_byte *buffer )
+{
+  int i, j;
+
+  for( i=0; i<8; i++ ) {
+
+    libspectrum_byte *ram;
+
+    ram = malloc( 0x4000 * sizeof( libspectrum_byte ) );
+    if( ram == NULL ) {
+      for( j = 0; j < i; j++ ) {
+	free( libspectrum_snap_pages( snap, i ) );
+	libspectrum_snap_set_pages( snap, i, NULL );
+      }
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+	"libspectrum_plusd_read_128_data: out of memory" );
+      return LIBSPECTRUM_ERROR_MEMORY;
+    }
+    libspectrum_snap_set_pages( snap, i, ram );
+
+    memcpy( ram, buffer, 0x4000 );
+    buffer += 0x4000;
+
+  }
 
   return LIBSPECTRUM_ERROR_NONE;
 }
