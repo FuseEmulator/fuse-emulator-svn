@@ -48,7 +48,14 @@ printdir( libgdos_dirent *entry )
     typeinfo = "Erased";
     break;
   case libgdos_ftype_zx_basic:
-    typeinfo = "ZX BASIC";
+    if( !( entry->ftypeinfo[9] & 0xc0 ) ) {
+      snprintf( infobuf, sizeof( infobuf ),
+		"ZX BASIC  %5i",
+		entry->ftypeinfo[8] + entry->ftypeinfo[9] * 0x100 );
+      typeinfo = infobuf;
+    } else {
+      typeinfo = "ZX BASIC";
+    }
     break;
   case libgdos_ftype_zx_num:
     typeinfo = "ZX Num Arr";
@@ -57,8 +64,10 @@ printdir( libgdos_dirent *entry )
     typeinfo = "ZX Str Arr";
     break;
   case libgdos_ftype_zx_code:
+    length = entry->ftypeinfo[2] + entry->ftypeinfo[3] * 0x100;
+    start = entry->ftypeinfo[4] + entry->ftypeinfo[5] * 0x100;
     snprintf( infobuf, sizeof( infobuf ),
-	      "ZX CODE %i,%i", start, length );
+	      "ZX CODE  %6i,%i", start, length );
     typeinfo = infobuf;
     break;
   case libgdos_ftype_zx_snap48:
@@ -89,7 +98,14 @@ printdir( libgdos_dirent *entry )
     typeinfo = "UniDOS Create";
     break;
   case libgdos_ftype_sam_basic:
-    typeinfo = "SAM BASIC";
+    if( !entry->ftypeinfo[32] ) {
+      snprintf( infobuf, sizeof( infobuf ),
+		"SAM BASIC %5i",
+		entry->ftypeinfo[33] + entry->ftypeinfo[34] * 0x100 );
+      typeinfo = infobuf;
+    } else {
+      typeinfo = "SAM BASIC";
+    }
     break;
   case libgdos_ftype_sam_num:
     typeinfo = "SAM Num Arr";
@@ -98,7 +114,13 @@ printdir( libgdos_dirent *entry )
     typeinfo = "SAM Str Arr";
     break;
   case libgdos_ftype_sam_code:
-    typeinfo = "SAM CODE";
+    length = entry->ftypeinfo[29] * 0x4000 +
+	     entry->ftypeinfo[30] + entry->ftypeinfo[31] * 0x100;
+    start = 0x4000 + ( entry->ftypeinfo[26] & 0x1f ) * 0x4000 +
+	    entry->ftypeinfo[27] + ( entry->ftypeinfo[28] & 0x3f ) * 0x100;
+    snprintf( infobuf, sizeof( infobuf ),
+	      "SAM CODE %6i,%i", start, length );
+    typeinfo = infobuf;
     break;
   case libgdos_ftype_sam_screen:
     typeinfo = "SAM SCREEN$";
