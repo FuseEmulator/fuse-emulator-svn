@@ -566,3 +566,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          #1841111 (compressed snapshots cause segfault).
 20071129 libspectrum.c: check new_filename before checking *new_filename.
 20071130 dll.c: fix typo and remove executable property (Stuart).
+20071130 libspectrum.c: free *new_filename instead of new_filename (Stuart).
