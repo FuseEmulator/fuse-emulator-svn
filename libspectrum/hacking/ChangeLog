@@ -576,3 +576,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071130 libspectrum.c,libspectrum.h.in,szx.c: add support for Pentagon 512
 	 and 1024 snapshots.
 20071130 szx.c: save the Pentagon 1024 secondary memory control port as well.
+20071130 doc/libspectrum.{3,txt}: document .spc, .sta and .ltp support (Stuart).
