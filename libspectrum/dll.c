@@ -28,7 +28,7 @@
 #include "internals.h"
 
 BOOL APIENTRY
-DllMain( HANDLE module, DWORD reason, LPVOID opaque (
+DllMain( HANDLE module, DWORD reason, LPVOID opaque )
 {
   switch( ul_reason_for_call ) {
   case DLL_PROCESS_ATTACH:
