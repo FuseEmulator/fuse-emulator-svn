@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <libgdos.h>
 
@@ -37,6 +38,7 @@ printdir( libgdos_dirent *entry )
   char *typeinfo;
   char infobuf[ 80 ];
   int start=-1, length=-1;
+  int i;
 
   typeinfo = infobuf;
 
@@ -110,8 +112,25 @@ printdir( libgdos_dirent *entry )
 
   }
 
-  printf( "%3i %-10s%3i %s\n", entry->slot, entry->filename,
-			       entry->numsectors, typeinfo );
+  printf( "%3i %-10s%3i %s", entry->slot, entry->filename,
+			     entry->numsectors, typeinfo );
+
+  /* Master DOS timestamps */
+  if( entry->ftypeinfo[35] >= 1 && entry->ftypeinfo[35] <= 31 &&
+      entry->ftypeinfo[36] >= 1 && entry->ftypeinfo[36] <= 12 &&
+      entry->ftypeinfo[37] != 0xff && entry->ftypeinfo[37] != 0x00 &&
+      entry->ftypeinfo[38] < 60 &&
+      entry->ftypeinfo[39] < 60 ) {
+    for( i = strlen( typeinfo ); i < 24; i++ )
+      putchar(' ');
+    printf( "%02i/%02i/%04i %02i:%02i",
+	    entry->ftypeinfo[35], entry->ftypeinfo[36],
+	    1900 + entry->ftypeinfo[37],
+	    entry->ftypeinfo[38],
+	    entry->ftypeinfo[39] );
+  }
+
+  putchar('\n');
 }
 
 int
