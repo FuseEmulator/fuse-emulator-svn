@@ -166,11 +166,11 @@ libspectrum_tape_block_read_symbol_table(
   
 libspectrum_error
 internal_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-		   const size_t length );
+		   const size_t length, libspectrum_id_t type );
 
 libspectrum_error
 internal_tap_write( libspectrum_byte **buffer, size_t *length,
-		    libspectrum_tape *tape );
+		    libspectrum_tape *tape, libspectrum_id_t type );
 
 libspectrum_error
 internal_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
