@@ -569,3 +569,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071130 libspectrum.c: free *new_filename instead of new_filename (Stuart).
 20071130 plusd.c: enable DISCiPLE/+D snapshot support and add support for 128K
 	 DISCiPLE/+D snapshots (feature request #1764996) (Stuart).
+20071130 internals.h,libspectrum.c,libspectrum.h.in,tap.c,tape.c: add support
+	 for .spc, .sta and .ltp tape images (feature request #1764995)
+	 (Stuart).

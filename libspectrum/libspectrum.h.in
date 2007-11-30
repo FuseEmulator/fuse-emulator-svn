@@ -167,6 +167,9 @@ typedef enum libspectrum_id_t {
 
   /* Below here, present only in x.x.x and later */
   LIBSPECTRUM_ID_TAPE_WAV,		/* .wav tape image */
+  LIBSPECTRUM_ID_TAPE_SPC,		/* SP-style .spc tape image */
+  LIBSPECTRUM_ID_TAPE_STA,		/* Speculator-style .sta tape image */
+  LIBSPECTRUM_ID_TAPE_LTP,		/* Nuclear ZX-style .ltp tape image */
   LIBSPECTRUM_ID_COMPRESSED_XFD,	/* xfdmaster (Amiga) compressed file */
   LIBSPECTRUM_ID_DISK_IMG,		/* .img +D disk image */
   LIBSPECTRUM_ID_DISK_MGT,		/* .mgt +D disk image */

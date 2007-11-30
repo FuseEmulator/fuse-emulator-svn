@@ -34,27 +34,29 @@
 
 static libspectrum_error
 write_rom( libspectrum_tape_block *block, libspectrum_byte **buffer,
-	   libspectrum_byte **ptr, size_t *length );
+	   libspectrum_byte **ptr, size_t *length, libspectrum_id_t type );
 static libspectrum_error
 write_turbo( libspectrum_tape_block *block, libspectrum_byte **buffer,
-	     libspectrum_byte **ptr, size_t *length );
+	     libspectrum_byte **ptr, size_t *length, libspectrum_id_t type );
 static libspectrum_error
 write_pure_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
-		 libspectrum_byte **ptr, size_t *length );
+		 libspectrum_byte **ptr, size_t *length,
+		 libspectrum_id_t type );
 
 static libspectrum_error
 write_tap_block( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		 size_t *length, libspectrum_byte *data, size_t data_length );
+		 size_t *length, libspectrum_byte *data, size_t data_length,
+		 libspectrum_id_t type );
 static libspectrum_error
 skip_block( libspectrum_tape_block *block, const char *message );
 
 libspectrum_error
 internal_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-		   const size_t length )
+		   const size_t length, libspectrum_id_t type )
 {
   libspectrum_tape_block *block;
   libspectrum_error error;
-  size_t data_length; libspectrum_byte *data;
+  size_t data_length, buf_length; libspectrum_byte *data;
 
   const libspectrum_byte *ptr, *end;
 
@@ -79,11 +81,20 @@ internal_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 
     /* Get the length, and move along the buffer */
     data_length = ptr[0] + ptr[1] * 0x100;
+    if( type == LIBSPECTRUM_ID_TAPE_SPC ||
+	type == LIBSPECTRUM_ID_TAPE_STA ||
+	type == LIBSPECTRUM_ID_TAPE_LTP )
+      data_length += 2;
     libspectrum_tape_block_set_data_length( block, data_length );
     ptr += 2;
 
+    if( type == LIBSPECTRUM_ID_TAPE_STA )
+      buf_length = data_length - 1;
+    else
+      buf_length = data_length;
+
     /* Have we got enough bytes left in buffer? */
-    if( end - ptr < (ptrdiff_t)data_length ) {
+    if( end - ptr < (ptrdiff_t)buf_length ) {
       libspectrum_tape_clear( tape );
       free( block );
       libspectrum_print_error(
@@ -104,8 +115,25 @@ internal_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
     }
     libspectrum_tape_block_set_data( block, data );
 
-    /* Copy the block data across, and move along */
-    memcpy( data, ptr, data_length ); ptr += data_length;
+    /* Copy the block data across */
+    memcpy( data, ptr, buf_length );
+
+    /* Fix the parity byte for the SPC and STA tape formats */
+    if( type == LIBSPECTRUM_ID_TAPE_SPC ) {
+      data[ data_length - 1 ] ^= data[0];
+    } else if( type == LIBSPECTRUM_ID_TAPE_STA ) {
+      libspectrum_byte parity;
+      size_t i;
+
+      parity = 0x00;
+      for( i = 0; i < data_length - 1; i++ ) {
+	parity ^= data[i];
+      }
+      data[ data_length - 1 ] = parity;
+    }
+ 
+    /* Move along the buffer */
+    ptr += buf_length;
 
     /* Give a 1s pause after each block */
     libspectrum_tape_block_set_pause( block, 1000 );
@@ -123,12 +151,12 @@ libspectrum_error
 libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 		      const size_t length )
 {
-  return internal_tap_read( tape, buffer, length );
+  return internal_tap_read( tape, buffer, length, LIBSPECTRUM_ID_TAPE_TAP );
 }
 
 libspectrum_error
 internal_tap_write( libspectrum_byte **buffer, size_t *length,
-		    libspectrum_tape *tape )
+		    libspectrum_tape *tape, libspectrum_id_t type )
 {
   libspectrum_tape_iterator iterator;
   libspectrum_tape_block *block;
@@ -145,19 +173,19 @@ internal_tap_write( libspectrum_byte **buffer, size_t *length,
     switch( libspectrum_tape_block_type( block ) ) {
 
     case LIBSPECTRUM_TAPE_BLOCK_ROM:
-      error = write_rom( block, buffer, &ptr, length );
+      error = write_rom( block, buffer, &ptr, length, type );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       done = 1;
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_TURBO:
-      error = write_turbo( block, buffer, &ptr, length );
+      error = write_turbo( block, buffer, &ptr, length, type );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       done = 1;
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
-      error = write_pure_data( block, buffer, &ptr, length );
+      error = write_pure_data( block, buffer, &ptr, length, type );
       if( error != LIBSPECTRUM_ERROR_NONE ) { free( *buffer ); return error; }
       done = 1;
       break;
@@ -219,18 +247,18 @@ libspectrum_error
 libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_tape *tape )
 {
-  return internal_tap_write( buffer, length, tape );
+  return internal_tap_write( buffer, length, tape, LIBSPECTRUM_ID_TAPE_TAP );
 }
 
 static libspectrum_error
 write_rom( libspectrum_tape_block *block, libspectrum_byte **buffer,
-	   libspectrum_byte **ptr, size_t *length )
+	   libspectrum_byte **ptr, size_t *length, libspectrum_id_t type )
 {
   libspectrum_error error;
 
   error = write_tap_block( buffer, ptr, length,
 			   libspectrum_tape_block_data( block ),
-			   libspectrum_tape_block_data_length( block ) );
+			   libspectrum_tape_block_data_length( block ), type );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -238,7 +266,7 @@ write_rom( libspectrum_tape_block *block, libspectrum_byte **buffer,
 
 static libspectrum_error
 write_turbo( libspectrum_tape_block *block, libspectrum_byte **buffer,
-	     libspectrum_byte **ptr, size_t *length )
+	     libspectrum_byte **ptr, size_t *length, libspectrum_id_t type )
 {
   libspectrum_error error;
 
@@ -250,7 +278,7 @@ write_turbo( libspectrum_tape_block *block, libspectrum_byte **buffer,
 
   error = write_tap_block( buffer, ptr, length,
 			   libspectrum_tape_block_data( block ),
-			   libspectrum_tape_block_data_length( block ) );
+			   libspectrum_tape_block_data_length( block ), type );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -258,7 +286,8 @@ write_turbo( libspectrum_tape_block *block, libspectrum_byte **buffer,
 
 static libspectrum_error
 write_pure_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
-		 libspectrum_byte **ptr, size_t *length )
+		 libspectrum_byte **ptr, size_t *length,
+		 libspectrum_id_t type )
 {
   libspectrum_error error;
 
@@ -270,7 +299,7 @@ write_pure_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
 
   error = write_tap_block( buffer, ptr, length,
 			   libspectrum_tape_block_data( block ),
-			   libspectrum_tape_block_data_length( block ) );
+			   libspectrum_tape_block_data_length( block ), type );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -278,17 +307,42 @@ write_pure_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
 
 static libspectrum_error
 write_tap_block( libspectrum_byte **buffer, libspectrum_byte **ptr,
-		 size_t *length, libspectrum_byte *data, size_t data_length )
+		 size_t *length, libspectrum_byte *data, size_t data_length,
+		 libspectrum_id_t type )
 {
   libspectrum_error error;
+  size_t buf_length;
 
-  error = libspectrum_make_room( buffer, 2 + data_length, ptr, length );
+  /* Discard the parity byte for STA files */
+  if( type == LIBSPECTRUM_ID_TAPE_STA )
+    buf_length = data_length - 1;
+  else
+    buf_length = data_length;
+
+  if( type == LIBSPECTRUM_ID_TAPE_SPC ||
+      type == LIBSPECTRUM_ID_TAPE_STA ||
+      type == LIBSPECTRUM_ID_TAPE_LTP ) {
+    if( data_length < 2 ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_INVALID,
+			       "write_tap_block: block too short" );
+      return LIBSPECTRUM_ERROR_INVALID;
+    }
+    data_length -= 2;
+  }
+
+  error = libspectrum_make_room( buffer, 2 + buf_length, ptr, length );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
   /* Write out the length and the data */
   *(*ptr)++ =   data_length & 0x00ff;
   *(*ptr)++ = ( data_length & 0xff00 ) >> 8;
-  memcpy( *ptr, data, data_length ); (*ptr) += data_length;
+  memcpy( *ptr, data, buf_length );
+  
+  /* Fix the parity for SPC files */
+  if( type == LIBSPECTRUM_ID_TAPE_SPC )
+    (*ptr)[ buf_length - 1 ] ^= (*ptr)[0];
+
+  (*ptr) += buf_length;
 
   return LIBSPECTRUM_ERROR_NONE;
 }

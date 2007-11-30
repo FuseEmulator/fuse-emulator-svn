@@ -212,7 +212,10 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   switch( type ) {
 
   case LIBSPECTRUM_ID_TAPE_TAP:
-    error = internal_tap_read( tape, buffer, length ); break;
+  case LIBSPECTRUM_ID_TAPE_SPC:
+  case LIBSPECTRUM_ID_TAPE_STA:
+  case LIBSPECTRUM_ID_TAPE_LTP:
+    error = internal_tap_read( tape, buffer, length, type ); break;
 
   case LIBSPECTRUM_ID_TAPE_TZX:
     error = internal_tzx_read( tape, buffer, length ); break;
@@ -271,7 +274,10 @@ libspectrum_tape_write( libspectrum_byte **buffer, size_t *length,
   switch( type ) {
 
   case LIBSPECTRUM_ID_TAPE_TAP:
-    return internal_tap_write( buffer, length, tape );
+  case LIBSPECTRUM_ID_TAPE_SPC:
+  case LIBSPECTRUM_ID_TAPE_STA:
+  case LIBSPECTRUM_ID_TAPE_LTP:
+    return internal_tap_write( buffer, length, tape, type );
 
   case LIBSPECTRUM_ID_TAPE_TZX:
     return internal_tzx_write( buffer, length, tape );
