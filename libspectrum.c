@@ -262,6 +262,10 @@ const int LIBSPECTRUM_MACHINE_CAPABILITY_SE_MEMORY = 1 << 12;
                                                    /* SE-style memory paging */
 const int LIBSPECTRUM_MACHINE_CAPABILITY_NTSC = 1 << 13;
                                                              /* NTSC display */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_PENT512_MEMORY = 1 << 14;
+					 /* Pentagon 512-style memory paging */
+const int LIBSPECTRUM_MACHINE_CAPABILITY_PENT1024_MEMORY = 1 << 15;
+					/* Pentagon 1024-style memory paging */
 
 /* Given a machine type, what features does it have? */
 int
@@ -398,6 +402,23 @@ libspectrum_machine_capabilities( libspectrum_machine type )
   switch( type ) {
   case LIBSPECTRUM_MACHINE_TS2068:
     capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_NTSC; break;
+  default:
+    break;
+  }
+
+  /* Pentagon 512-style memory paging */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_PENT512:
+  case LIBSPECTRUM_MACHINE_PENT1024:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_PENT512_MEMORY; break;
+  default:
+    break;
+  }
+
+  /* Pentagon 1024-style memory paging */
+  switch( type ) {
+  case LIBSPECTRUM_MACHINE_PENT1024:
+    capabilities |= LIBSPECTRUM_MACHINE_CAPABILITY_PENT1024_MEMORY; break;
   default:
     break;
   }
