@@ -143,7 +143,7 @@ typedef enum libspectrum_id_t {
 
   LIBSPECTRUM_ID_TAPE_WARAJEVO,		/* Warajevo-style .tap tape image */ 
 
-  LIBSPECTRUM_ID_SNAPSHOT_PLUSD,	/* +D snapshot */
+  LIBSPECTRUM_ID_SNAPSHOT_PLUSD,	/* DISCiPLE/+D snapshot */
   LIBSPECTRUM_ID_SNAPSHOT_SP,		/* .sp snapshot */
   LIBSPECTRUM_ID_SNAPSHOT_SNP,		/* .snp snapshot */
   LIBSPECTRUM_ID_SNAPSHOT_ZXS,		/* .zxs snapshot (zx32) */
@@ -171,8 +171,8 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_TAPE_STA,		/* Speculator-style .sta tape image */
   LIBSPECTRUM_ID_TAPE_LTP,		/* Nuclear ZX-style .ltp tape image */
   LIBSPECTRUM_ID_COMPRESSED_XFD,	/* xfdmaster (Amiga) compressed file */
-  LIBSPECTRUM_ID_DISK_IMG,		/* .img +D disk image */
-  LIBSPECTRUM_ID_DISK_MGT,		/* .mgt +D disk image */
+  LIBSPECTRUM_ID_DISK_IMG,		/* .img DISCiPLE/+D disk image */
+  LIBSPECTRUM_ID_DISK_MGT,		/* .mgt DISCiPLE/+D disk image */
 
 } libspectrum_id_t;
 
@@ -203,7 +203,7 @@ typedef enum libspectrum_class_t {
 
   /* Below here, present only in x.x.x and later */
 
-  LIBSPECTRUM_CLASS_DISK_PLUSD,		/* +D disk image */
+  LIBSPECTRUM_CLASS_DISK_PLUSD,		/* DISCiPLE/+D disk image */
 
 } libspectrum_class_t;
 
