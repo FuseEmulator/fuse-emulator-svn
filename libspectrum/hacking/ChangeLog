@@ -573,3 +573,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 for .spc, .sta and .ltp tape images (feature request #1764995)
 	 (Stuart).
 20071130 libspectrum.h.in: refer also to the DISCiPLE in comments (Stuart).
+20071130 libspectrum.c,libspectrum.h.in,szx.c: add support for Pentagon 512
+	 and 1024 snapshots.

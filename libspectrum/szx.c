@@ -30,35 +30,6 @@
 
 #include "internals.h"
 
-/* I've had to make some assumptions about the 'right' way to do some
-   things in the .szx format due to the documentation
-   <http://www.spectaculator.com/docs/zx-state/intro.shtml> not being
-   up to scratch:
-
-   * http://www.spectaculator.com/docs/zx-state/header.shtml says
-     "chMinorVersion
-      Minor version number of the file format. Currently 1."
-
-     despite the current version of the format being 1.2. libspectrum
-     writes .szx files with a minor version number of 3 as they contain
-     blocks not in the v1.2 specification.
-
-   * The ZXSTSPECREGS block says that the ch1ffd member should be set
-     to zero for machines other than the +2A/+3. libspectrum makes
-     this field non-zero for Scorpion emulation.
-
-   * In a ZXSTRAMPAGE block, the Timex machines should save the same
-     pages as the 48K machine, and RAM pages 8-15 are valid for
-     Scorpion emulation.
-
-   Places where these points are used in the code are marked with
-   [Assumption].
-
-   I've mentioned these points to Jonathan Needle ('maintainer' of the
-   .szx format), but he hasn't replied :-(
-
-*/
-
 /* The machine numbers used in the .szx format */
 
 typedef enum szx_machine_type {
@@ -76,6 +47,8 @@ typedef enum szx_machine_type {
   SZX_MACHINE_SCORPION,
   SZX_MACHINE_SE,
   SZX_MACHINE_TS2068,
+  SZX_MACHINE_PENTAGON512,
+  SZX_MACHINE_PENTAGON1024,
 
 } szx_machine_type;
 
@@ -1265,6 +1238,14 @@ libspectrum_szx_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
     libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_SE );
     break;
 
+  case SZX_MACHINE_PENTAGON512:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PENT512 );
+    break;
+
+  case SZX_MACHINE_PENTAGON1024:
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PENT1024 );
+    break;
+
   default:
     libspectrum_print_error(
       LIBSPECTRUM_MACHINE_UNKNOWN,
@@ -1411,7 +1392,6 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   memcpy( *ptr, signature, 4 ); *ptr += 4;
   
-  /* [Assumption] We currently write version 1.3 files (major, minor) */
   *(*ptr)++ = SZX_VERSION_MAJOR; *(*ptr)++ = SZX_VERSION_MINOR;
 
   switch( libspectrum_snap_machine( snap ) ) {
@@ -1423,16 +1403,14 @@ write_file_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   case LIBSPECTRUM_MACHINE_PLUS2A: **ptr = SZX_MACHINE_PLUS2A; break;
   case LIBSPECTRUM_MACHINE_PLUS3:  **ptr = SZX_MACHINE_PLUS3; break;
   case LIBSPECTRUM_MACHINE_PLUS3E: **ptr = SZX_MACHINE_PLUS3E; break;
-  case LIBSPECTRUM_MACHINE_PENT:
-  case LIBSPECTRUM_MACHINE_PENT512:
-  case LIBSPECTRUM_MACHINE_PENT1024:
-    **ptr = SZX_MACHINE_PENTAGON;
-    break;
+  case LIBSPECTRUM_MACHINE_PENT:   **ptr = SZX_MACHINE_PENTAGON; break;
   case LIBSPECTRUM_MACHINE_TC2048: **ptr = SZX_MACHINE_TC2048; break;
   case LIBSPECTRUM_MACHINE_TC2068: **ptr = SZX_MACHINE_TC2068; break;
   case LIBSPECTRUM_MACHINE_TS2068: **ptr = SZX_MACHINE_TS2068; break;
   case LIBSPECTRUM_MACHINE_SCORP:  **ptr = SZX_MACHINE_SCORPION; break;
-  case LIBSPECTRUM_MACHINE_SE: **ptr = SZX_MACHINE_SE; break;
+  case LIBSPECTRUM_MACHINE_SE:     **ptr = SZX_MACHINE_SE; break;
+  case LIBSPECTRUM_MACHINE_PENT512: **ptr = SZX_MACHINE_PENTAGON512; break;
+  case LIBSPECTRUM_MACHINE_PENT1024: **ptr = SZX_MACHINE_PENTAGON1024; break;
 
   case LIBSPECTRUM_MACHINE_UNKNOWN:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
@@ -1553,7 +1531,6 @@ write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = '\0';
   }
   
-  /* [Assumption] The Scorpion port 0x1ffd should be written here */
   if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY || 
       capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY    ) {
     *(*ptr)++ = libspectrum_snap_out_plus3_memoryport( snap );
@@ -1670,7 +1647,7 @@ write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		 size_t *length, libspectrum_snap *snap, int compress )
 {
   libspectrum_machine machine;
-  int capabilities; 
+  int i, capabilities; 
   libspectrum_error error;
 
   machine = libspectrum_snap_machine( snap );
@@ -1679,7 +1656,6 @@ write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
   error = write_ramp_chunk( buffer, ptr, length, snap, 5, compress );
   if( error ) return error;
 
-  /* [Assumption] This is the right way to write Timex machine RAM */
   if( machine != LIBSPECTRUM_MACHINE_16 ) {
     error = write_ramp_chunk( buffer, ptr, length, snap, 2, compress );
     if( error ) return error;
@@ -1699,12 +1675,22 @@ write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
     error = write_ramp_chunk( buffer, ptr, length, snap, 7, compress );
     if( error ) return error;
 
-    /* [Assumption] RAM pages 8-15 are valid here */
     if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY ) {
-      int i;
       for( i = 8; i < 16; i++ ) {
         error = write_ramp_chunk( buffer, ptr, length, snap, i, compress );
         if( error ) return error;
+      }
+    } else if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PENT512_MEMORY ) {
+      for( i = 8; i < 32; i++ ) {
+        error = write_ramp_chunk( buffer, ptr, length, snap, i, compress );
+        if( error ) return error;
+      }
+
+      if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PENT1024_MEMORY ) {
+	for( i = 32; i < 64; i++ ) {
+	  error = write_ramp_chunk( buffer, ptr, length, snap, i, compress );
+	  if( error ) return error;
+	}
       }
     }
 

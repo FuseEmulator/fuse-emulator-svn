@@ -289,6 +289,11 @@ extern const int WIN32_DLL
 LIBSPECTRUM_MACHINE_CAPABILITY_SE_MEMORY;          /* SE-style memory paging */
 extern const int WIN32_DLL
 LIBSPECTRUM_MACHINE_CAPABILITY_NTSC;                         /* NTSC display */
+extern const int WIN32_DLL
+LIBSPECTRUM_MACHINE_CAPABILITY_PENT512_MEMORY; /* Pentagon 512 memory paging */
+extern const int WIN32_DLL
+LIBSPECTRUM_MACHINE_CAPABILITY_PENT1024_MEMORY;
+					      /* Pentagon 1024 memory paging */
 
 /* Get the capabilities of a machine */
 int WIN32_DLL libspectrum_machine_capabilities( libspectrum_machine type );
