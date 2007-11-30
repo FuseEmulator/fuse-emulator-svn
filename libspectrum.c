@@ -711,7 +711,10 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 
     error = libspectrum_bzip2_inflate( old_buffer, old_length,
 				       new_buffer, new_length );
-    if( error ) { free( *new_filename ); return error; }
+    if( error ) {
+      if( new_filename ) free( *new_filename );
+      return error;
+    }
 
 #else				/* #ifdef HAVE_LIBBZ2 */
 
@@ -719,7 +722,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
       LIBSPECTRUM_ERROR_UNKNOWN,
       "libbz2 not available to decompress bzipped file"
     );
-    free( new_filename );
+    if( new_filename ) free( *new_filename );
     return LIBSPECTRUM_ERROR_UNKNOWN;
 
 #endif				/* #ifdef HAVE_LIBBZ2 */
@@ -739,13 +742,16 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
       
     error = libspectrum_gzip_inflate( old_buffer, old_length,
 				      new_buffer, new_length );
-    if( error ) { free( *new_filename ); return error; }
+    if( error ) {
+      if( new_filename ) free( *new_filename );
+      return error;
+    }
 
 #else				/* #ifdef HAVE_ZLIB_H */
 
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "zlib not available to decompress gzipped file" );
-    free( new_filename );
+    if( new_filename ) free( *new_filename );
     return LIBSPECTRUM_ERROR_UNKNOWN;
 
 #endif				/* #ifdef HAVE_ZLIB_H */
@@ -828,7 +834,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "unknown compressed type %d", type );
-    free( new_filename );
+    if( new_filename ) free( *new_filename );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
