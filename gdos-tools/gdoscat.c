@@ -140,14 +140,14 @@ printdir( libgdos_dirent *entry )
   /* Master DOS timestamps */
   if( entry->ftypeinfo[35] >= 1 && entry->ftypeinfo[35] <= 31 &&
       entry->ftypeinfo[36] >= 1 && entry->ftypeinfo[36] <= 12 &&
-      entry->ftypeinfo[37] != 0xff && entry->ftypeinfo[37] != 0x00 &&
+      entry->ftypeinfo[37] < 100 &&
       entry->ftypeinfo[38] < 60 &&
       entry->ftypeinfo[39] < 60 ) {
     for( i = strlen( typeinfo ); i < 24; i++ )
       putchar(' ');
-    printf( "%02i/%02i/%04i %02i:%02i",
+    printf( "%02i/%02i/%02i %02i:%02i",
 	    entry->ftypeinfo[35], entry->ftypeinfo[36],
-	    1900 + entry->ftypeinfo[37],
+	    entry->ftypeinfo[37],
 	    entry->ftypeinfo[38],
 	    entry->ftypeinfo[39] );
   }

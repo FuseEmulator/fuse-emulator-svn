@@ -6,5 +6,6 @@
 20071130 gdoscat.c: display Master DOS timestamps.
 20071130 gdoscat.c: display the start address and length of CODE files and the
 	 autorun line number of BASIC files.
+20071130 gdoscat.c: fix display of Master DOS timestamps after 1999.
 
 $Id$
