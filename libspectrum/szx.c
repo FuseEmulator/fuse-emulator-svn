@@ -814,6 +814,7 @@ read_spcr_chunk( libspectrum_snap *snap, libspectrum_word version,
 		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
   libspectrum_byte out_ula;
+  int capabilities;
 
   if( data_length != 8 ) {
     libspectrum_print_error(
@@ -823,17 +824,29 @@ read_spcr_chunk( libspectrum_snap *snap, libspectrum_word version,
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
+  capabilities =
+    libspectrum_machine_capabilities( libspectrum_snap_machine( snap ) );
+
   out_ula = **buffer & 0x07; (*buffer)++;
 
   libspectrum_snap_set_out_128_memoryport( snap, **buffer ); (*buffer)++;
-  libspectrum_snap_set_out_plus3_memoryport( snap, **buffer ); (*buffer)++;
+
+  if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) ||
+      ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY )    )
+    libspectrum_snap_set_out_plus3_memoryport( snap, **buffer );
+  (*buffer)++;
 
   if( version >= 0x0101 ) out_ula |= **buffer & 0xf8;
   (*buffer)++;
 
   libspectrum_snap_set_out_ula( snap, out_ula );
 
-  *buffer += 4;			/* Skip 'reserved' data */
+  if( version >= 0x0103 &&
+      ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PENT1024_MEMORY ) )
+    libspectrum_snap_set_out_plus3_memoryport( snap, **buffer );
+  (*buffer)++;
+
+  *buffer += 3;			/* Skip 'reserved' data */
 
   return LIBSPECTRUM_ERROR_NONE;
 }
