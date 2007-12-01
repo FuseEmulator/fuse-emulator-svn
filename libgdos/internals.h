@@ -47,6 +47,8 @@ struct libgdos_dir {
   int track;
   int sector;
   int half;
+
+  int flags;
 };
 
 struct zx_basic_info {

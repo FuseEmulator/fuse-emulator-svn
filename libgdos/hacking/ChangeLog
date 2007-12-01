@@ -6,5 +6,7 @@
 20071201 dir.c,image.c,internals.h,libgdos.h: add support for Beta DOS and
 	 Master DOS extended directories.
 20071201 dir.c: remove debug code.
+20071201 dir.c,internals.h,libgdos.h: add flags for skipping hidden and erased
+	 directory entries, and for disabling zero-termination of directories.
 
 $Id$

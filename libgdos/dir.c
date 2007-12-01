@@ -48,6 +48,11 @@ libgdos_openrootdir( libgdos_disk *disk )
   dir->sector = 1;
   dir->half = 0;
 
+  dir->flags = 0;
+  libgdos_set_dirflag( dir, libgdos_dirflag_skip_erased );
+  libgdos_set_dirflag( dir, libgdos_dirflag_skip_hidden );
+  libgdos_set_dirflag( dir, libgdos_dirflag_zero_terminate );
+
   return dir;
 }
 
@@ -98,16 +103,22 @@ libgdos_readdir( libgdos_dir *dir, libgdos_dirent *entry )
     memcpy( entry->filename, &buf[1], 10 );
 
     if( entry->ftype == libgdos_ftype_erased ) {
-      if( /* dir->nullterminate && */ entry->filename[0] == '\0' ) {
+      if( libgdos_test_dirflag( dir, libgdos_dirflag_zero_terminate ) &&
+	  entry->filename[0] == '\0' ) {
 	return 1;
       }
 
-      if( /* !dir->readerased */ 1 ) {
+      if( libgdos_test_dirflag( dir, libgdos_dirflag_skip_erased ) ) {
 	if( dir->current >= dir->length ) {
 	  return 1;
 	}
 	continue;
       }
+    }
+
+    if( libgdos_test_dirflag( dir, libgdos_dirflag_skip_hidden ) &&
+	entry->status & 0x02 ) {
+      continue;
     }
 
     entry->disk = dir->disk;
@@ -135,6 +146,24 @@ int
 libgdos_getnumslots( libgdos_dir *dir )
 {
   return dir->length;
+}
+
+void
+libgdos_set_dirflag( libgdos_dir *dir, enum libgdos_dirflag flag )
+{
+  dir->flags |= ( 1 << flag );
+}
+
+void
+libgdos_reset_dirflag( libgdos_dir *dir, enum libgdos_dirflag flag )
+{
+  dir->flags &= ~( 1 << flag );
+}
+
+int
+libgdos_test_dirflag( libgdos_dir *dir, enum libgdos_dirflag flag )
+{
+  return !!( dir->flags & ( 1 << flag ) );
 }
 
 int
