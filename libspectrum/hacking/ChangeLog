@@ -577,3 +577,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 and 1024 snapshots.
 20071130 szx.c: save the Pentagon 1024 secondary memory control port as well.
 20071130 doc/libspectrum.{3,txt}: document .spc, .sta and .ltp support (Stuart).
+20071201 szx.c: change to Pentagon 1024 secondary memory control port after
+	 discussion with Jon Needle.
