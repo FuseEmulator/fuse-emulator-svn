@@ -162,6 +162,7 @@ main( int argc, const char **argv )
   libgdos_dir *dir;
   libgdos_dirent entry;
   int numfiles = 0;
+  int numhidden = 0;
   int numsectors = 0;
   int length;
   int error;
@@ -188,6 +189,8 @@ main( int argc, const char **argv )
     return 1;
   }
 
+  libgdos_reset_dirflag( dir, libgdos_dirflag_skip_hidden );
+
   length = libgdos_getnumslots( dir );
   numsectors += ( length + 1 ) / 2;
 
@@ -197,18 +200,24 @@ main( int argc, const char **argv )
   while( !error ) {
     numfiles++;
     numsectors += entry.numsectors;
-    printdir( &entry );
+    if( ( entry.status & libgdos_status_hidden ) ) {
+      numhidden++;
+    } else {
+      printdir( &entry );
+    }
     error = libgdos_readdir( dir, &entry );
   }
 
   printf( "\nNumber of Free K-Bytes = %i\n",
 	  800 - ( ( numsectors + 1 ) / 2 ) );
   freeslots = length - numfiles;
-  printf( "%i File%s, %i Free Slot%s\n",
+  printf( "%i %s, %i Free %s\n",
 	  numfiles,
-	  numfiles != 1 ? "s" : "",
+	  numfiles != 1 ? "Files" : "File",
 	  freeslots,
-	  freeslots != 1 ? "s" : "" );
+	  freeslots != 1 ? "Slots" : "Slot" );
+  if( numhidden != 0 )
+    printf( "(%i Hidden %s)\n", numhidden, numhidden != 1 ? "Files" : "File" );
 
   libgdos_closedir( dir );
 

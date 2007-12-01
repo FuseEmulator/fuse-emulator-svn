@@ -8,5 +8,6 @@
 	 autorun line number of BASIC files.
 20071130 gdoscat.c: fix display of Master DOS timestamps after 1999.
 20071201 gdoscat.c: get directory length using libgdos_getnumslots().
+20071201 gdoscat.c: count hidden files but don't list them.
 
 $Id$
