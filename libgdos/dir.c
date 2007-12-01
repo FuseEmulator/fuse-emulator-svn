@@ -117,7 +117,7 @@ libgdos_readdir( libgdos_dir *dir, libgdos_dirent *entry )
     }
 
     if( libgdos_test_dirflag( dir, libgdos_dirflag_skip_hidden ) &&
-	entry->status & 0x02 ) {
+	entry->status & libgdos_status_hidden ) {
       continue;
     }
 

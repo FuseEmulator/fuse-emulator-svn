@@ -97,12 +97,17 @@ enum libgdos_ftype {
   libgdos_ftype_mdos_subdir,
 };
 
+enum libgdos_status {
+  libgdos_status_protected = 1,
+  libgdos_status_hidden = 2,
+};
+
 /* dirent, inode */
 struct libgdos_dirent {
   libgdos_disk *disk;
 
   int slot;
-  int status;
+  enum libgdos_status status;
   enum libgdos_ftype ftype;
   char filename[ 10 ]; /* not null-terminated */
   int numsectors;
