@@ -831,8 +831,9 @@ read_spcr_chunk( libspectrum_snap *snap, libspectrum_word version,
 
   libspectrum_snap_set_out_128_memoryport( snap, **buffer ); (*buffer)++;
 
-  if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY ) ||
-      ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY )    )
+  if( ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY )    ||
+      ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY )    ||
+      ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PENT1024_MEMORY )    )
     libspectrum_snap_set_out_plus3_memoryport( snap, **buffer );
   (*buffer)++;
 
@@ -841,12 +842,7 @@ read_spcr_chunk( libspectrum_snap *snap, libspectrum_word version,
 
   libspectrum_snap_set_out_ula( snap, out_ula );
 
-  if( version >= 0x0103 &&
-      ( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PENT1024_MEMORY ) )
-    libspectrum_snap_set_out_plus3_memoryport( snap, **buffer );
-  (*buffer)++;
-
-  *buffer += 3;			/* Skip 'reserved' data */
+  *buffer += 4;			/* Skip 'reserved' data */
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -1544,8 +1540,9 @@ write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = '\0';
   }
   
-  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY || 
-      capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY    ) {
+  if( capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY    || 
+      capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_SCORP_MEMORY    ||
+      capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_PENT1024_MEMORY    ) {
     *(*ptr)++ = libspectrum_snap_out_plus3_memoryport( snap );
   } else {
     *(*ptr)++ = '\0';
