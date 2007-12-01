@@ -61,6 +61,12 @@ typedef struct libgdos_dir libgdos_dir;
 typedef struct libgdos_dirent libgdos_dirent;
 typedef struct libgdos_file libgdos_file;
 
+enum libgdos_variant {
+  libgdos_variant_gdos,
+  libgdos_variant_betados,
+  libgdos_variant_masterdos,
+};
+
 enum libgdos_ftype {
   libgdos_ftype_erased = 0,
   libgdos_ftype_zx_basic,
@@ -123,6 +129,9 @@ libgdos_readdir( libgdos_dir *dir, libgdos_dirent *entry );
 
 void WIN32_DLL
 libgdos_closedir( libgdos_dir *dir );
+
+int WIN32_DLL
+libgdos_getnumslots( libgdos_dir *dir );
 
 int WIN32_DLL
 libgdos_getentnum( libgdos_dir *dir, int slot, libgdos_dirent *entry );

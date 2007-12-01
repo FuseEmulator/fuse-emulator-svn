@@ -39,7 +39,11 @@ libgdos_openrootdir( libgdos_disk *disk )
   }
 
   dir->disk = disk;
-  dir->length = 80;
+  dir->length = 80 + disk->extra_dir_tracks * 20;
+  printf( "%i\n", dir->length );
+  /* track 4, sector 1 is reserved for the boot sector under Master DOS */
+  if( dir->length > 80 && disk->variant == libgdos_variant_masterdos )
+    dir->length -= 2;
   dir->current = 0;
   dir->track = 0;
   dir->sector = 1;
@@ -72,14 +76,21 @@ libgdos_readdir( libgdos_dir *dir, libgdos_dirent *entry )
       dir->half = 0;
       dir->sector++;
       if( dir->sector > 10 ) {
+        /* next track */
 	dir->sector = 1;
 	dir->track++;
 	if( ( dir->track & 0x7f ) >= 80 ) {
+	  /* next side */
 	  dir->track &= 0x80;
 	  dir->track += 0x80;
 	  if( dir->track >= 0x100 ) {
 	    dir->track = 0;
 	  }
+	} else if( dir->track == 4 && dir->sector == 1 &&
+		   dir->disk->variant == libgdos_variant_masterdos ) {
+	  /* track 4, sector 1 is reserved for the boot sector
+	   * under Master DOS */
+	  dir->sector++;
 	}
       }
     }
@@ -119,6 +130,12 @@ void
 libgdos_closedir( libgdos_dir *dir )
 {
   free( dir );
+}
+
+int
+libgdos_getnumslots( libgdos_dir *dir )
+{
+  return dir->length;
 }
 
 int

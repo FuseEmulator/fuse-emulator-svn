@@ -34,6 +34,9 @@
 struct libgdos_disk {
   DSK_PDRIVER driver;
   DSK_GEOMETRY geom;
+
+  int extra_dir_tracks;
+  enum libgdos_variant variant;
 };
 
 struct libgdos_dir {

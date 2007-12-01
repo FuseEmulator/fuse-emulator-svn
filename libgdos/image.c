@@ -35,6 +35,7 @@ libgdos_openimage( const char *filename )
 {
   libgdos_disk *d;
   int l;
+  uint8_t sector[ 0x200 ];
 
   dsk_format_t fmt;
   dsk_err_t dsk_error;
@@ -75,6 +76,18 @@ libgdos_openimage( const char *filename )
     dsk_close( &d->driver );
     free( d );
     return NULL;
+  }
+
+  libgdos_readsector( d, sector, 0, 1 );
+  if( sector[ 0xff ] <= 35 ) {
+    d->extra_dir_tracks = sector[ 0xff ];
+    if( sector[ 15 ] & 0x01 ) /* track 4, sector 1 is/was allocated */
+      d->variant = libgdos_variant_masterdos;
+    else
+      d->variant = libgdos_variant_betados;
+  } else {
+    d->extra_dir_tracks = 0;
+    d->variant = libgdos_variant_gdos;
   }
 
   return d;
