@@ -188,7 +188,7 @@ main( int argc, const char **argv )
     return 1;
   }
 
-  length = 80;
+  length = libgdos_getnumslots( dir );
   numsectors += ( length + 1 ) / 2;
 
   printf( "* GDOS-TOOLS  DISC CATALOGUE *\n\n" );
