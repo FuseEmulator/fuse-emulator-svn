@@ -96,7 +96,7 @@ struct libgdos_dirent {
   int numsectors;
   int track;
   int sector;
-  uint8_t sab[ 195 ];
+  uint8_t secmap[ 195 ];
   uint8_t ftypeinfo[ 46 ];
 };
 

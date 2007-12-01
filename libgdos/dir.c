@@ -106,7 +106,7 @@ libgdos_readdir( libgdos_dir *dir, libgdos_dirent *entry )
     entry->numsectors = ( buf[11] << 8 ) | buf[12];
     entry->track = buf[13];
     entry->sector = buf[14];
-    memcpy( entry->sab, &buf[15], 195 );
+    memcpy( entry->secmap, &buf[15], 195 );
     memcpy( entry->ftypeinfo, &buf[210], 46 );
 
     break;
