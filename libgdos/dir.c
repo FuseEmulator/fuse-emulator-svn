@@ -40,7 +40,6 @@ libgdos_openrootdir( libgdos_disk *disk )
 
   dir->disk = disk;
   dir->length = 80 + disk->extra_dir_tracks * 20;
-  printf( "%i\n", dir->length );
   /* track 4, sector 1 is reserved for the boot sector under Master DOS */
   if( dir->length > 80 && disk->variant == libgdos_variant_masterdos )
     dir->length -= 2;
