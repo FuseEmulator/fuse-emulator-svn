@@ -126,6 +126,15 @@ libgdos_closeimage( libgdos_disk *disk );
 int WIN32_DLL
 libgdos_readsector( libgdos_disk *disk, uint8_t *buf, int track, int sector );
 
+int WIN32_DLL
+libgdos_genallocmap( libgdos_disk *disk );
+
+int WIN32_DLL
+libgdos_findfreesector( libgdos_disk *disk, int *track, int *sector );
+
+int WIN32_DLL
+libgdos_numfreesectors( libgdos_disk *disk );
+
 libgdos_dir * WIN32_DLL
 libgdos_openrootdir( libgdos_disk *disk );
 

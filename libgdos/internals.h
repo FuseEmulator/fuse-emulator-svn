@@ -37,6 +37,7 @@ struct libgdos_disk {
 
   int extra_dir_tracks;
   enum libgdos_variant variant;
+  uint8_t *allocmap;
 };
 
 struct libgdos_dir {

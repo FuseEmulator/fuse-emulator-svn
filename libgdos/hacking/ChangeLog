@@ -9,5 +9,6 @@
 20071201 dir.c,internals.h,libgdos.h: add flags for skipping hidden and erased
 	 directory entries, and for disabling zero-termination of directories.
 20071201 dir.c,libgdos.h: add enumeration for directory entry status.
+20071202 image.c,internals.h,libgdos.h: add sector allocation map functions.
 
 $Id$
