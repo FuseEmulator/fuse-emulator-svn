@@ -401,14 +401,16 @@ read_plsd_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   }
 
   libspectrum_snap_set_plusd_active( snap, 1 );
+
   flags = libspectrum_read_dword( buffer );
-  disc_ram_length = libspectrum_read_dword( buffer );
-  disc_rom_length = libspectrum_read_dword( buffer );
   libspectrum_snap_set_plusd_paged( snap, flags & ZXSTPLUSDF_PAGED );
   libspectrum_snap_set_plusd_direction( snap,
 				       !( flags & ZXSTPLUSDF_SEEKLOWER ) );
 
+  disc_ram_length = libspectrum_read_dword( buffer );
+  disc_rom_length = libspectrum_read_dword( buffer );
   rom_type = *(*buffer)++;
+
   libspectrum_snap_set_plusd_custom_rom( snap, rom_type == ZXSTPDRT_CUSTOM );
   if( libspectrum_snap_plusd_custom_rom( snap ) && !disc_rom_length ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
@@ -429,10 +431,12 @@ read_plsd_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 
 #ifdef HAVE_ZLIB_H
 
-    size_t uncompressed_length;
+    size_t uncompressed_length = 0;
 
-    if( !libspectrum_snap_plusd_custom_rom( snap ) &&
-         disc_rom_length != 0 ) {
+    if( (!libspectrum_snap_plusd_custom_rom( snap ) &&
+         disc_rom_length != 0 ) ||
+        (libspectrum_snap_plusd_custom_rom( snap ) &&
+         disc_rom_length == 0 ) ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			       "%s:read_plsd_chunk: invalid ROM length "
                                "in compressed file, should be %lu, file "
@@ -448,7 +452,8 @@ read_plsd_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 			       "%s:read_plsd_chunk: length %lu too short, "
 			       "expected %lu" ,
 			       __FILE__, (unsigned long)data_length,
-			       (unsigned long)19 + disc_ram_length + disc_rom_length );
+			       (unsigned long)19 + disc_ram_length +
+                                 disc_rom_length );
       return LIBSPECTRUM_ERROR_UNKNOWN;
     }
 
