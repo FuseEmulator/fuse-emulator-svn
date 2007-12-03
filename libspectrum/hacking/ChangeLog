@@ -579,3 +579,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071130 doc/libspectrum.{3,txt}: document .spc, .sta and .ltp support (Stuart).
 20071201 szx.c: change to Pentagon 1024 secondary memory control port after
 	 discussion with Jon Needle.
+20071203 szx.c: also check if a +D custom ROM is supplied but not specified and
+         make sure all variables passed to the +D custom ROM zlib decompression
+         are initialised (Fred).
