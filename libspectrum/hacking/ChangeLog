@@ -585,3 +585,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071205 accessor.pl,snap_accessors.txt,snapshot.c,szx.c,z80.c: add support for
          Interface 1 in z80 and szx snapshots (Fred).
 20071205 z80.c: fix writing joystick info to z80 snapshots (Fred).
+20071205 szx.c: fix writing if1 info to szx snapshots (Fred).

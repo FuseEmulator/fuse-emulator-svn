@@ -1989,6 +1989,7 @@ write_if1_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_byte *compressed_rom_data = NULL;
   size_t block_size;
   libspectrum_word disk_rom_length = 0;
+  libspectrum_word uncompressed_rom_length = 0;
   libspectrum_word flags = 0;
   int use_compression = 0;
 
@@ -2003,7 +2004,8 @@ write_if1_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
       return LIBSPECTRUM_ERROR_LOGIC;
     }
     rom_data = libspectrum_snap_interface1_rom( snap, 0 );
-    disk_rom_length = libspectrum_snap_interface1_rom_length( snap, 0 );
+    uncompressed_rom_length = disk_rom_length =
+      libspectrum_snap_interface1_rom_length( snap, 0 );
   }
 
   compressed_rom_data = NULL;
@@ -2012,7 +2014,7 @@ write_if1_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 #ifdef HAVE_ZLIB_H
 
-  if( compress ) {
+  if( rom_data && compress ) {
 
     size_t compressed_rom_length;
 
@@ -2048,9 +2050,9 @@ write_if1_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
     *(*ptr)++ = libspectrum_snap_interface1_drive_count( snap );
   else
     *(*ptr)++ = 8;				/* guess 8 drives connected */
-  *buffer += 3;					/* Skip 'reserved' data */
-  *buffer += sizeof(libspectrum_dword) * 8;	/* Skip 'reserved' data */
-  libspectrum_write_word( ptr, disk_rom_length );
+  *ptr += 3;					/* Skip 'reserved' data */
+  *ptr += sizeof(libspectrum_dword) * 8;	/* Skip 'reserved' data */
+  libspectrum_write_word( ptr, uncompressed_rom_length );
 
   if( libspectrum_snap_interface1_custom_rom( snap ) ) {
     memcpy( *ptr, rom_data, disk_rom_length ); *ptr += disk_rom_length;
