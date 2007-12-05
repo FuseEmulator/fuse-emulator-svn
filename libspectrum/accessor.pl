@@ -102,6 +102,14 @@ struct libspectrum_snap {
   /* Timex-specific bits */
   libspectrum_byte out_scld_hsr, out_scld_dec;
 
+  /* Interface 1 status */
+  int interface1_active;
+  int interface1_paged;
+  int interface1_drive_count;
+  int interface1_custom_rom;
+  libspectrum_byte* interface1_rom[1];
+  size_t interface1_rom_length[1];	/* Length of the ROM */
+
   /* Betadisk status */
   int beta_active;
   int beta_paged;

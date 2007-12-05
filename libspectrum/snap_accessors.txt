@@ -59,6 +59,13 @@ libspectrum_byte ay_registers 1
 libspectrum_byte out_scld_hsr
 libspectrum_byte out_scld_dec
 
+int interface1_active
+int interface1_paged
+int interface1_drive_count
+int interface1_custom_rom
+libspectrum_byte* interface1_rom 1
+size_t interface1_rom_length 1
+
 int beta_active
 int beta_paged
 int beta_direction
