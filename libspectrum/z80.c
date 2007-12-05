@@ -1251,7 +1251,7 @@ write_base_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   if( libspectrum_snap_joystick_active_count( snap ) != 1 )
     *flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
 
-  switch( libspectrum_snap_joystick_list( snap, 1 ) ) {
+  switch( libspectrum_snap_joystick_list( snap, 0 ) ) {
   case LIBSPECTRUM_JOYSTICK_CURSOR:
     joystick_flags = Z80_JOYSTICK_CURSOR_V3;
     break;
