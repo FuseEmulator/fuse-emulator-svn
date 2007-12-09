@@ -45,6 +45,11 @@ libgdos_fopenent( libgdos_dirent *entry )
 {
   libgdos_file *file;
 
+  if( entry->ftype == libgdos_ftype_unidos_subdir ||
+      entry->ftype == libgdos_ftype_mdos_subdir      ) {
+    return NULL;
+  }
+
   file = malloc( sizeof *file );
   if( !file ) return NULL;
 
