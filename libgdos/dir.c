@@ -100,6 +100,7 @@ libgdos_readdir( libgdos_dir *dir, libgdos_dirent *entry )
     }
 
     entry->ftype = buf[0] & 0x3f;
+    entry->status = ( buf[0] >> 6 ) & 3;
     memcpy( entry->filename, &buf[1], 10 );
 
     if( entry->ftype == libgdos_ftype_erased ) {
@@ -117,13 +118,12 @@ libgdos_readdir( libgdos_dir *dir, libgdos_dirent *entry )
     }
 
     if( libgdos_test_dirflag( dir, libgdos_dirflag_skip_hidden ) &&
-	entry->status & libgdos_status_hidden ) {
+	( entry->status & libgdos_status_hidden ) ) {
       continue;
     }
 
     entry->disk = dir->disk;
     entry->slot = dir->current;
-    entry->status = ( buf[0] >> 6 ) & 3;
     entry->numsectors = ( buf[11] << 8 ) | buf[12];
     entry->track = buf[13];
     entry->sector = buf[14];
