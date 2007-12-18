@@ -586,3 +586,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          Interface 1 in z80 and szx snapshots (Fred).
 20071205 z80.c: fix writing joystick info to z80 snapshots (Fred).
 20071205 szx.c: fix writing if1 info to szx snapshots (Fred).
+20071218 ChangeLog,Makefile.am,README,configure.in,doc/libspectrum.{3,txt},
+	 libspectrum.h.in,test/test.c: update for 0.4.0 release (Stuart).

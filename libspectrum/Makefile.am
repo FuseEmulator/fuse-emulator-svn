@@ -57,7 +57,7 @@ libspectrum_la_SOURCES = bzip2.c \
 			 zlib.c \
 			 zxs.c
 
-libspectrum_la_LDFLAGS = -version-info 5:1:0 -no-undefined
+libspectrum_la_LDFLAGS = -version-info 6:0:1 -no-undefined
 
 libspectrum_la_LIBADD = myglib/libmyglib.la @AUDIOFILE_LIBS@ -lm
 

@@ -9,7 +9,7 @@
 #include "test.h"
 
 const char *progname;
-static const char *LIBSPECTRUM_MIN_VERSION = "0.3.0.1";
+static const char *LIBSPECTRUM_MIN_VERSION = "0.4.0";
 
 typedef test_return_t (*test_fn)( void );
 

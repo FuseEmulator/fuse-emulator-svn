@@ -165,7 +165,7 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_TAPE_CSW,		/* .csw tape image */
   LIBSPECTRUM_ID_TAPE_Z80EM,		/* Z80Em tape image */
 
-  /* Below here, present only in x.x.x and later */
+  /* Below here, present only in 0.4.0 and later */
   LIBSPECTRUM_ID_TAPE_WAV,		/* .wav tape image */
   LIBSPECTRUM_ID_TAPE_SPC,		/* SP-style .spc tape image */
   LIBSPECTRUM_ID_TAPE_STA,		/* Speculator-style .sta tape image */
@@ -201,7 +201,7 @@ typedef enum libspectrum_class_t {
 
   LIBSPECTRUM_CLASS_MICRODRIVE,		/* Microdrive cartridges */
 
-  /* Below here, present only in x.x.x and later */
+  /* Below here, present only in 0.4.0 and later */
 
   LIBSPECTRUM_CLASS_DISK_PLUSD,		/* DISCiPLE/+D disk image */
 
