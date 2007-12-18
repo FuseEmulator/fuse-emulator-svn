@@ -105,8 +105,8 @@ write_file( unsigned char *buffer, size_t length, const char *filename )
 
   bytes = fwrite( buffer, 1, length, f );
   if( bytes != length ) {
-    fprintf( stderr, "%s: wrote only %d of %d bytes to `%s'\n", progname,
-	     bytes, length, filename );
+    fprintf( stderr, "%s: wrote only %lu of %lu bytes to `%s'\n", progname,
+	     (unsigned long)bytes, (unsigned long)length, filename );
     return 1;
   }
 
