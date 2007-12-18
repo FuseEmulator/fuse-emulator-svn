@@ -50,8 +50,8 @@ fuse_section ("Supported formats", "Which formats does it support?", <<<END_SECT
    </li>
    <li>Tape images:
     <ul>
-     <li>read/write: .tzx, .tap</li>
-     <li>read only: Warajevo .tap, Z80Em, CSW version 1</li>
+     <li>read/write: .tzx, .tap, .spc, .sta, .ltp</li>
+     <li>read only: Warajevo .tap, Z80Em, CSW version 1, .wav</li>
     </ul>
    </li>
    <li>Input recordings:
@@ -82,7 +82,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
 
   <h3>Source</h3>
   <ul>
-   <li><a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.3.0.1.tar.gz?download">libspectrum-0.3.0.1.tar.gz</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.3.0.1.tar.gz.sig?download">PGP signature</a>) or from <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.3.0.1.tar.gz">World of Spectrum</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.3.0.1.tar.gz.sig">signature</a>).</li>
+   <li><a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.4.0.tar.gz?download">libspectrum-0.4.0.tar.gz</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.4.0.tar.gz.sig?download">PGP signature</a>) or from <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.4.0.tar.gz">World of Spectrum</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.4.0.tar.gz.sig">signature</a>).</li>
    <li>The source code release above is signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.1.1 release as I forgot the passphrase for that key <tt>:-(</tt>.</li>
   </ul>
 

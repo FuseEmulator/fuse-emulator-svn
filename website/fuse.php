@@ -35,7 +35,7 @@ fuse_menu_heading ("Fuse");
 $img = mk_image('screens/f-awm.png', 330, 292);
 fuse_section (NULL, "What is it?", <<<END_SECTION
   $img
-  <p>Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat unsurprisingly, a Spectrum emulator for Unix. However, it has now also been ported to Mac OS X, which may or may not count as a Unix variant depending on your advocacy position. It is also being ported to Windows, AmigaOS and MorphOS, which are definitely not Unix variants.</p>
+  <p>Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat unsurprisingly, a ZX Spectrum emulator for Unix. However, it has now also been ported to Mac OS X, which may or may not count as a Unix variant depending on your advocacy position. It has also been ported to Windows, AmigaOS and MorphOS, which are definitely not Unix variants.</p>
 
 END_SECTION
 );
@@ -46,13 +46,15 @@ $img = mk_image('screens/f-large.png', 650, 532, 4);
 fuse_section ("Features", "What features does it have?", <<<END_SECTION
   $img
   <ul>
-   <li>Working 16K, 48K, 128K, +2, +2A, +3, +3e, SE, TC2048, TC2068, TS2068, Pentagon 128 and Scorpion ZS 256 emulation, running at true Speccy speed on any computer you're likely to try it on.</li>
+   <li>Accurate 16K, 48K, 128K, +2, +2A and +3 emulation.</li>
+   <li>Working +3e, SE, TC2048, TC2068, TS2068, Pentagon 128, Pentagon "512" (Pentagon 128 modified for extra memory), Pentagon 1024 and Scorpion ZS 256 emulation.</li>
+   <li>Runs at true Speccy speed on any computer you're likely to try it on.</li>
    <li>Support for loading from .tzx files.</li>
-   <li>Sound (on systems supporting the Open Sound System, SDL or OpenBSD/Solaris's <tt>/dev/audio</tt>).</li>
+   <li>Sound (on Windows and Mac OS X, and on systems supporting ALSA, the Open Sound System, SDL or OpenBSD/Solaris's <tt>/dev/audio</tt>).</li>
    <li>Kempston joystick emulation.</li>
    <li>Emulation of the various printers you could attach to the Spectrum.</li>
    <li>Support for the RZX input recording file format, including 'competition mode'.</li>
-   <li>Emulation of the DivIDE, Interface I, Kempston mouse, Spectrum +3e, ZXATASP and ZXCF interfaces.</li>
+   <li>Emulation of the DivIDE, Interface I, +D, Beta 128, Kempston mouse, Spectrum +3e, ZXATASP and ZXCF interfaces.</li>
   </ul>
 
 END_SECTION
@@ -89,16 +91,20 @@ fuse_section ("Requirements", "What do I need to run Fuse?", <<<END_SECTION
      <li><a href="http://www.gnu.org/directory/security/libgcrypt.html">libgcrypt</a>: the ability to digitally sign RZX files (note that Fuse requires version 1.1.42 or later).</li>
      <li><a href="http://www.libpng.org/pub/png/libpng.html">libpng</a>: the ability to save screenshots.</li>
      <li><a href="http://xmlsoft.org/">libxml2</a>: the ability to load and save Fuse's current configuration.</li>
+     <li><a href="http://www.battlefieldlinux.com/wolfpack/libjsw/">libjsw</a>: allow joystick input to be used (not required for joystick emulation).</li>
      <li><a href="http://www.gzip.org/zlib/">zlib</a>: support for compressed RZX files.</li>
+     <li><a href="http://www.bzip.org/">libbzip2</a>: support for certain compressed files.</li>
+     <li><a href="http://www.68k.org/~michael/audiofile/">libaudiofile</a>: support for loading from .wav files.</li>
+     <li><a href="http://www.mega-nerd.com/SRC/">libsamplerate</a>: higher quality sound.</li>
     </ul>
    </dd>
   </dl>
 
   <h3>Mac OS X</h3>
-  <p>A native port to OS X by <a href="mailto:fredm@spamcop.net">Fredrick Meunier</a> is available on it's own sourceforge project <a href="http://fuse-for-macosx.sourceforge.net//">here</a>, as well as a Spotlight importer for Mac OS X 10.4 Tiger users. Alternatively, the original version of Fuse will compile on OS X 10.3 (Panther) or later.</p>
+  <p>A native port to OS X by <a href="mailto:fredm@spamcop.net">Fredrick Meunier</a> is available on its own SourceForge project <a href="http://fuse-for-macosx.sourceforge.net//">here</a>, as well as a Spotlight importer for Mac OS X 10.4 Tiger users. Alternatively, the original version of Fuse will compile on OS X 10.3 (Panther) or later.</p>
 
   <h3>Windows</h3>
-  <p>A port to Windows is underway, with <a href="win32/">beta releases</a> available.</p>
+  <p>A port to Windows by Marek Januszewski and Stuart Brady is available <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.9.0-win32.zip?download">here</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.9.0.tar.gz.sig?download">PGP signature</a>). This is also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.9.0.tar.gz">Fuse</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.9.0.tar.gz.sig">signature</a>).</p>
 
   <h3>AmigaOS 4</h3>
   <p>Chris Young has ported Fuse to AmigaOS 4, with binaries available from Aminet as <a href="http://aminet.net/package/misc/emu/fuse.lha">misc/emu/fuse.lha</a>.</p>
@@ -118,12 +124,12 @@ fuse_section ("Download", "Where can I get it from?", <<<END_SECTION
   <h3>Source</h3>
   $img
   <ul>
-   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.8.0.1.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.8.0.1.tar.gz.sig?download">PGP signature</a>).</li>
-   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.8.0.1.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.8.0.1.tar.gz.sig?download">PGP signature</a>). Note that
+   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.9.0.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.9.0.tar.gz.sig?download">PGP signature</a>).</li>
+   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.9.0.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.9.0.tar.gz.sig?download">PGP signature</a>). Note that
 you'll still need <a href="libspectrum.php">libspectrum</a> installed to run these.</li>
    <li>The above are also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.8.0.1.tar.gz">Fuse source</a> (<a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.8.0.1.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.8.0.1.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.8.0.1.tar.gz.sig">signature</a>).</li>
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.9.0.tar.gz">Fuse source</a> (<a
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.9.0.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.9.0.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.9.0.tar.gz.sig">signature</a>).</li>
    <li>The source code releases above are signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.6.0(.1) releases as I forgot the passphrase for that key <tt>:-(</tt>.</li>
   </ul>
 
@@ -149,26 +155,16 @@ END_SECTION
 #<!-- ======================================================= -->
 
 fuse_section (NULL, "What's new?", <<<END_SECTION
-  <h3>0.8.0.1</h3>
+  <h3>0.9.0</h3>
   <ul>
-    <li>Bug fix release for 0.8.0</li>
-    <li>Fix IN timings and floating bus behaviour.</li>
-    <li>Fix widget UI pokefinder and keyboard help picture.</li>
-    <li>Fix crash if fullscreen mode attempted a resolution higher than the native graphics mode could handle.</li>
-    <li>Ensure ABS, MIN and PATH_MAX are available where needed.</li>
-    <li>Distribute autoload snapshots.</li>
-    <li>Remove flicker when playing back RZX files with embedded snapshots.</li>
-    <li>Remove warnings when building from CVS.</li>
-  </ul>
-  <h3>0.8.0</h3>
-  <ul>
-    <li>Loader improvements to automatically run at full speed while loading, and to automatically start/stop the tape when a loader is detected</li>
-    <li>Improved screen rendering code</li>
-    <li>RZX 'rollback' support</li>
-    <li>DivIDE support</li>
-    <li>Interface I and microdrive emulation</li>
-    <li>TS2068 support</li>
-    <li>Kempston mouse emulation</li>
+    <li>+D disk interface support</li>
+    <li>Improved Beta disk interface support</li>
+    <li>Pentagon 512 and Pentagon 1024 support</li>
+    <li>Hi-Fi beeper emulation</li>
+    <li>Improved Windows support</li>
+    <li>ALSA sound driver</li>
+    <li>AmigaOS support</li>
+    <li>MorphOS support</li>
   </ul>
   <p>See the <a href="http://fuse-emulator.sourceforge.net/fuse.ChangeLog">ChangeLog</a> for full details.</p>
 
