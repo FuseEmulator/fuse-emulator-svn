@@ -28,7 +28,6 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/mman.h>
 #include <unistd.h>
 
 #include <libspectrum.h>
