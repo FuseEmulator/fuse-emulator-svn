@@ -1,6 +1,6 @@
-2007-xx-xx  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+2007-12-18  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
-	* libspectrum 0.x.x released.
+	* libspectrum 0.4.0 released.
 
 	* Add support for loading from WAV files (Fredrick Meunier).
 
