@@ -204,3 +204,5 @@
 	 rzxtool.1,scl2trd.1,snap2tzx.1,snapconv.1,tape2wav.1,tapeconv.1,
 	 tzxlist.1}: update for 0.9.0 release (Stuart).
 20071218 rzxtool.c: fix warning (Stuart).
+20071218 audio2tape.c,listbasic.c,rzxcheck.c,rzxdump.c,snap2tzx.c,snapconv.c,
+	 tape2wav.c,tapeconv.c,tzxlist.c,utils.c: don't include mman.h (Stuart).
