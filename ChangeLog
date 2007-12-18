@@ -1,6 +1,6 @@
-2007-xx-xx  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+2007-12-18  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
-	* Version 0.x.x released
+	* Version 0.9.0 released
 
 	* Add audio2tape and tape2wav utilities to convert between audio
 	  and tape formats (Fredrick Meunier).
