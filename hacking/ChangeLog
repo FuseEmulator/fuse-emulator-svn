@@ -206,3 +206,4 @@
 20071218 rzxtool.c: fix warning (Stuart).
 20071218 audio2tape.c,listbasic.c,rzxcheck.c,rzxdump.c,snap2tzx.c,snapconv.c,
 	 tape2wav.c,tapeconv.c,tzxlist.c,utils.c: don't include mman.h (Stuart).
+20071219 rzxtool.c: fix build without glib (Stuart).
