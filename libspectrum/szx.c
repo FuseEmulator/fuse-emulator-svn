@@ -1998,8 +1998,9 @@ write_if1_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
           libspectrum_snap_interface1_rom_length( snap, 0 ) == 0x4000 )) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
                                "Interface 1 custom ROM must be 8192 or 16384 "
-                               "bytes, supplied ROM is %ld bytes",
-                               libspectrum_snap_interface1_rom_length(
+                               "bytes, supplied ROM is %lu bytes",
+                               (unsigned long)
+			       libspectrum_snap_interface1_rom_length(
                                  snap, 0 ) );
       return LIBSPECTRUM_ERROR_LOGIC;
     }
