@@ -28,7 +28,9 @@
 #include <errno.h>
 #include <unistd.h>
 
+#ifdef HAVE_LIB_GLIB
 #include <glib.h>
+#endif				/* #ifdef HAVE_LIB_GLIB */
 #include <libspectrum.h>
 
 #include "utils.h"
