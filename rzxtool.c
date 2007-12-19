@@ -27,6 +27,7 @@
 
 #include <errno.h>
 #include <unistd.h>
+#include <string.h>
 
 #ifdef HAVE_LIB_GLIB
 #include <glib.h>

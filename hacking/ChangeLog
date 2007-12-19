@@ -209,3 +209,4 @@
 20071219 rzxtool.c: fix build without glib (Stuart).
 20071219 Makefile.am,configure.in: fix build on Win32 with libaudiofile and/or
 	 libgcrypt (Stuart).
+20071219 rzxtool.c: #include <string.h> (Stuart).
