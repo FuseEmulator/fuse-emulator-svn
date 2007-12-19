@@ -588,3 +588,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071205 szx.c: fix writing if1 info to szx snapshots (Fred).
 20071218 ChangeLog,Makefile.am,README,configure.in,doc/libspectrum.{3,txt},
 	 libspectrum.h.in,test/test.c: update for 0.4.0 release (Stuart).
+20071219 szx.c: fix warning (Stuart).
