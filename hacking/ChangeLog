@@ -590,3 +590,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 libspectrum.h.in,test/test.c: update for 0.4.0 release (Stuart).
 20071219 szx.c: fix warning (Stuart).
 20071219 libspectrum.c: avoid warnings when building without gcrypt (Stuart).
+20071219 plusd.c: #include <string.h> (Stuart).
