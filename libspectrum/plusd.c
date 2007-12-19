@@ -26,6 +26,8 @@
 
 #include <config.h>
 
+#include <string.h>
+
 #include "internals.h"
 
 #define PLUSD_HEADER_LENGTH 22
