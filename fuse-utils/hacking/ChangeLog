@@ -213,3 +213,4 @@
 20071219 compat.h: define S_I[RW]{GRP,OTH} to 0 if they're unavailable (Stuart).
 20071219 utils.c: don't try to use uname() on Win32 (Stuart).
 20071219 man/{audio2tape.1,tape2wav.1}: formatting fixes (Stuart).
+20071219 man/{audio2tape.1,tape2wav.1}: more formatting fixes (Stuart).
