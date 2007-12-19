@@ -32,7 +32,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifndef WIN32
 #include <sys/utsname.h>
+#endif
 
 #include <libspectrum.h>
 
@@ -63,9 +66,12 @@ get_creator( libspectrum_creator **creator, const char *program )
 {
   char *custom;
   int version[4] = { 0, 0, 0, 0 };
-  struct utsname buf;
-  libspectrum_error error; int sys_error;
+  libspectrum_error error;
   size_t i;
+
+#ifndef WIN32
+  struct utsname buf;
+  int sys_error;
 
   sys_error = uname( &buf );
   if( sys_error == -1 ) {
@@ -73,6 +79,7 @@ get_creator( libspectrum_creator **creator, const char *program )
 	     strerror( errno ) );
     return 1;
   }
+#endif
 
   error = libspectrum_creator_alloc( creator );
   if( error ) return error;
@@ -100,9 +107,14 @@ get_creator( libspectrum_creator **creator, const char *program )
     return 1;
   }
 
+#ifdef WIN32
+  snprintf( custom, 256, "libspectrum: %s\nsystem: windows\n",
+	    libspectrum_version() );
+#else
   snprintf( custom, 256, "libspectrum: %s\nuname: %s %s %s\n",
 	    libspectrum_version(),
 	    buf.sysname, buf.machine, buf.release );
+#endif
 
   error = libspectrum_creator_set_custom( *creator,
 					  (libspectrum_byte*)custom,
