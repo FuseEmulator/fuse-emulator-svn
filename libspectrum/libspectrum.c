@@ -69,8 +69,10 @@ libspectrum_default_error_function( libspectrum_error error,
 libspectrum_error_function_t libspectrum_error_function =
   libspectrum_default_error_function;
 
+#ifdef HAVE_GCRYPT_H
 static void
 gcrypt_log_handler( void *opaque, int level, const char *format, va_list ap );
+#endif				/* #ifdef HAVE_GCRYPT_H */
 
 /* Initialise the library */
 libspectrum_error
@@ -114,11 +116,13 @@ libspectrum_init( void )
   return LIBSPECTRUM_ERROR_NONE;
 }
 
+#ifdef HAVE_GCRYPT_H
 static void
 gcrypt_log_handler( void *opaque, int level, const char *format, va_list ap )
 {
   /* Do nothing */
 }
+#endif				/* #ifdef HAVE_GCRYPT_H */
 
 int
 libspectrum_check_version( const char *version )
