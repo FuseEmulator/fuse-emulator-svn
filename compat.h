@@ -33,4 +33,18 @@
 #define O_BINARY 0
 #endif				/* #ifndef O_BINARY */
 
+/* Certain operating systems don't define group/other permissions */
+#ifndef S_IRGRP
+#define S_IRGRP 0
+#endif				/* #ifndef S_IRGRP */
+#ifndef S_IWGRP
+#define S_IWGRP 0
+#endif				/* #ifndef S_IWGRP */
+#ifndef S_IROTH
+#define S_IROTH 0
+#endif				/* #ifndef S_IROTH */
+#ifndef S_IWOTH
+#define S_IWOTH 0
+#endif				/* #ifndef S_IWOTH */
+
 #endif				/* #ifndef FUSE_UTILS_COMPAT_H */

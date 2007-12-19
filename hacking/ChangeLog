@@ -210,3 +210,4 @@
 20071219 Makefile.am,configure.in: fix build on Win32 with libaudiofile and/or
 	 libgcrypt (Stuart).
 20071219 rzxtool.c: #include <string.h> (Stuart).
+20071219 compat.h: define S_I[RW]{GRP,OTH} to 0 if they're unavailable (Stuart).
