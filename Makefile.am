@@ -26,12 +26,10 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = hacking \
 	man
 
-bin_PROGRAMS = @AUDIOTOOLS@ \
-	       createhdf \
+bin_PROGRAMS = createhdf \
 	       listbasic \
 	       profile2map \
 	       raw2hdf \
-	       @RZXCHECK@ \
 	       rzxdump \
 	       rzxtool \
 	       scl2trd \
@@ -39,6 +37,14 @@ bin_PROGRAMS = @AUDIOTOOLS@ \
 	       snapconv \
 	       tapeconv \
 	       tzxlist
+
+if BUILD_AUDIOTOOLS
+bin_PROGRAMS += audio2tape tape2wav
+endif
+
+if BUILD_RZXCHECK
+bin_PROGRAMS += rzxcheck
+endif
 
 EXTRA_PROGRAMS = rzxcheck audio2tape tape2wav
 
