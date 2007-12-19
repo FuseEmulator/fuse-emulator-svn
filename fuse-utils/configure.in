@@ -47,10 +47,10 @@ dnl Check that libgcrypt is available
 AC_CHECK_LIB(gcrypt,gcry_check_version,
   AC_DEFINE([HAVE_LIBGCRYPT], 1, [Defined if we've got libgcrypt])
   GCRYPT_LIBS="$LIBS -lgcrypt"
-  RZXCHECK="rzxcheck"
+  gcrypt=yes
 )
 AC_SUBST(GCRYPT_LIBS)
-AC_SUBST(RZXCHECK)
+AM_CONDITIONAL(BUILD_RZXCHECK, test "$gcrypt" = yes)
 
 dnl Check that libspectrum is available
 AC_ARG_WITH(libspectrum-prefix,
@@ -114,9 +114,9 @@ fi
 AM_PATH_AUDIOFILE(
   0.2.3,
   AC_DEFINE([HAVE_LIB_AUDIOFILE], 1, [Defined if we've got audiofile])
-  AUDIOTOOLS="audio2tape tape2wav"
+  audiofile=yes
 )
-AC_SUBST(AUDIOTOOLS)
+AM_CONDITIONAL(BUILD_AUDIOTOOLS, test "$audiofile" = yes)
 
 AC_OUTPUT(Makefile \
 fuse-utils.qpg \
