@@ -2409,3 +2409,4 @@
 20071218 configure.in: generate ui/win32/icons/Makefile (Stuart).
 20071221 BRANCH: Release-0_9_0-branch
 20071221 TAG: Release-0_9_0-pre1 (from Release-0_9_0-branch)
+20071221 display.c: fix copy-and-paste typo (Release-0_9_0-branch).
