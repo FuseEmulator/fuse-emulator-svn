@@ -215,3 +215,6 @@
 20071219 man/{audio2tape.1,tape2wav.1}: formatting fixes (Stuart).
 20071219 man/{audio2tape.1,tape2wav.1}: more formatting fixes (Stuart).
 20071221 man/{audio2tape.1,profile2map.1,tape2wav.1}: man page fixes (Stuart).
+20071221 BRANCH: fuse-utils_0_9_0-branch
+20071221 TAG: fuse-utils_0_9_0pre1 (from fuse-utils_0_9_0-branch).
+
