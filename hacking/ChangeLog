@@ -2412,3 +2412,5 @@
 20071221 display.c: fix copy-and-paste typo (Release-0_9_0-branch).
 20071230 utils.c: recognise periph_beta_active as valid on a .trd open (fixes
          bug #1860344) (Release-0_9_0-branch) (Fred).
+20080102 man/fuse.1: small Xlib update (patch #1861180) (Release-0_9_0-branch)
+         (Gergely Szasz).
