@@ -2416,3 +2416,4 @@
          (Gergely Szasz).
 20080102 disk/disk.[ch]: fix opening of .fdi, .cpc and .td0 files (patch
          #1860368) (Release-0_9_0-branch) (Gergely Szasz).
+20080102 fuse.c: update copyright date (Release-0_9_0-branch) (Stuart Brady).
