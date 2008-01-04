@@ -2421,3 +2421,4 @@
          (Release-0_9_0-branch) (Gergely Szasz).
 20080104 ChangeLog,README: set release date (Release-0_9_0-branch).
 20080104 man/fuse.1: update date (Release-0_9_0-branch) (Stuart).
+20080104 man/fuse.1: change date style ((Release-0_9_0-branch) (Stuart).
