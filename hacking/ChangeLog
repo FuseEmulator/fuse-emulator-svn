@@ -2419,3 +2419,4 @@
 20080102 fuse.c: update copyright date (Release-0_9_0-branch) (Stuart Brady).
 20080103 widget/browse.c: ensure all lines are displayed (patch #1860829)
          (Release-0_9_0-branch) (Gergely Szasz).
+20080104 ChangeLog,README: set release date (Release-0_9_0-branch).
