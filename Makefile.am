@@ -89,4 +89,4 @@ audio2tape_LDADD = @LIBSPEC_LIBS@ @AUDIOFILE_LIBS@
 tape2wav_SOURCES = tape2wav.c utils.c
 tape2wav_LDADD = @LIBSPEC_LIBS@ @AUDIOFILE_LIBS@
 
-noinst_HEADERS = ide.h utils.h
+noinst_HEADERS = compat.h ide.h utils.h
