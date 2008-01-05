@@ -38,4 +38,9 @@ test/complete-tzx.tzx: test/complete-tzx.pl
 test_test_LDADD = libspectrum.la
 
 EXTRA_DIST += \
-	test/Makefile.am
+	test/Makefile.am \
+	test/complete-tzx.pl
+
+CLEANFILES += \
+	test/.libs/test \
+	test/complete-tzx.tzx

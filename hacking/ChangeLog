@@ -595,3 +595,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071221 TAG: libspectrum_0_4_0pre1
 20080104 ChangeLog,README,doc/libspectrum.3: update dates
 	 (libspectrum_0_4_0-branch) (Stuart).
+20080105 test/Makefile.am: distribute complete-tzx.pl and clean up after
+	 ourselves (thanks, make distcheck) (Release-0_4_0-branch).
