@@ -39,7 +39,24 @@ test_test_LDADD = libspectrum.la
 
 EXTRA_DIST += \
 	test/Makefile.am \
-	test/complete-tzx.pl
+	test/complete-tzx.pl \
+	test/empty.csw \
+	test/empty-drb.tzx \
+	test/invalid.gz \
+	test/invalid.szx \
+	test/invalid.tzx \
+	test/invalid-archiveinfo.tzx \
+	test/invalid-custominfo.tzx \
+	test/invalid-gdb.tzx \
+	test/invalid-hardwareinfo.tzx \
+	test/invalid-warajevo-blockoffset.tap \
+	test/jump.tzx \
+	test/loop.tzx \
+	test/loop2.tzx \
+	test/loopend.tzx \
+	test/sp-2000.sna.gz \
+	test/sp-ffff.sna.gz \
+	test/turbo-zeropilot.tzx
 
 CLEANFILES += \
 	test/.libs/test \
