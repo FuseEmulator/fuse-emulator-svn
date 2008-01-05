@@ -790,7 +790,7 @@ static int
 open_fdi( FILE *file, disk_t *d, int preindex )
 {
   int i, j, h, gap;
-  int bpt, bpt_fm, max_bpt, max_bpt_fm;
+  int bpt, bpt_fm, max_bpt = 0, max_bpt_fm = 0;
   int data_offset, track_offset, head_offset, sector_offset;
 
   d->wrprot = head[0x03] == 1 ? 1 : 0;
@@ -883,7 +883,7 @@ static int
 open_cpc( FILE *file, disk_t *d, disk_type_t type, int preindex )
 {
   int i, j, seclen, gap;
-  int bpt, max_bpt, max_bpt_fm;
+  int bpt, max_bpt = 0, max_bpt_fm = 0;
 
   d->sides = head[0x31];
   d->cylinders = head[0x30];
