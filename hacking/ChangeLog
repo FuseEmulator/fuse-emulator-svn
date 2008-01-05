@@ -224,3 +224,4 @@
 	 update dates (fuse-utils_0_9_0-branch) (Stuart).
 20080105 Makefile.am: distribute compat.h (thanks, make distcheck)
 	 (fuse-utils_0_9_0-branch).
+20080105 TAG: fuse-utils_0_9_0
