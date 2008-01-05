@@ -2423,3 +2423,4 @@
 20080104 man/fuse.1: update date (Release-0_9_0-branch) (Stuart).
 20080104 man/fuse.1: change date style (Release-0_9_0-branch) (Stuart).
 20080105 disk/disk.c: initialise variables (Release-0_9_0-branch).
+20080105 TAG: Release-0_9_0
