@@ -124,6 +124,7 @@ fuse_section ("Download", "Where can I get it from?", <<<END_SECTION
   <h3>Source</h3>
   $img
   <ul>
+   <li>First, install <a href="libspectrum.php">libspectrum</a>.</li>
    <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.9.0.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.9.0.tar.gz.sig?download">PGP signature</a>).</li>
    <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.9.0.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.9.0.tar.gz.sig?download">PGP signature</a>). Note that
 you'll still need <a href="libspectrum.php">libspectrum</a> installed to run these.</li>
