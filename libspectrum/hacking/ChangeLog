@@ -593,3 +593,11 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20071219 plusd.c: #include <string.h> (Stuart).
 20071221 BRANCH: libspectrum_0_4_0-branch
 20071221 TAG: libspectrum_0_4_0pre1
+20080104 ChangeLog,README,doc/libspectrum.3: update dates
+	 (libspectrum_0_4_0-branch) (Stuart).
+20080105 test/Makefile.am: distribute complete-tzx.pl and clean up after
+	 ourselves (thanks, make distcheck) (libspectrum_0_4_0-branch).
+20080105 test/Makefile.am: distribute test data files
+         (libspectrum_0_4_0-branch).
+20080105 TAG: libspectrum_0_4_0 (libspectrum_0_4_0-branch).
+20080107 Merge libspectrum_0_4_0-branch changes r3447:3479 to trunk.
