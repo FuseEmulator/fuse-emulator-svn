@@ -218,3 +218,11 @@
 20071221 BRANCH: fuse-utils_0_9_0-branch
 20071221 TAG: fuse-utils_0_9_0pre1 (from fuse-utils_0_9_0-branch).
 20071221 man/tape2wav.1: fix whitespace (Stuart).
+20080104 ChangeLog,README,man/{audio2tape.1,createhdf.1,fuse-utils.1,
+	 listbasic.1,profile2map.1,raw2hdf.1,rzxcheck.1,rzxdump.1,rzxtool.1,
+	 scl2trd.1,snap2tzx.1,snapconv.1,tape2wav.1,tapeconv.1,tzxlist.1}:
+	 update dates (fuse-utils_0_9_0-branch) (Stuart).
+20080105 Makefile.am: distribute compat.h (thanks, make distcheck)
+	 (fuse-utils_0_9_0-branch).
+20080105 TAG: fuse-utils_0_9_0
+20080107 Merge fuse-utils_0_9_0-branch changes r3451:3480 to trunk.
