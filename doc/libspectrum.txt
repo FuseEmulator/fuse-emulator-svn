@@ -12,6 +12,7 @@ handles:
 * Input recordings: .rzx (read/write).
 * Timex cartridges: .dck (read only).
 * IDE hard disk images: .hdf (read/write).
+* Microdrive cartridge images: .mdr (read/write).
 
 There are also some subsidiary functions which may be generally useful
 for Spectrum-related utilities.
