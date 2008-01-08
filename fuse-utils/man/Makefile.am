@@ -35,6 +35,7 @@ man_MANS = audio2tape.1 \
 	   scl2trd.1 \
 	   snap2tzx.1 \
 	   snapconv.1 \
+	   tape2wav.1 \
 	   tapeconv.1 \
 	   tzxlist.1
 
