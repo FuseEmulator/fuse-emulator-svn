@@ -602,3 +602,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080105 TAG: libspectrum_0_4_0 (libspectrum_0_4_0-branch).
 20080107 Merge libspectrum_0_4_0-branch changes r3447:3479 to trunk.
 20080107 doc/libspectrum.txt: add Microdrive support to feature list (Stuart).
+20080109 TODO: remove unused file.
