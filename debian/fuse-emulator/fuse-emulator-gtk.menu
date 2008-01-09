@@ -1,0 +1,3 @@
+?package(fuse-emulator-gtk):needs="X11" section="Applications/Emulators"\
+  title="Fuse emulator (GTK+ version)" command="/usr/bin/fuse-emulator-gtk"
+
