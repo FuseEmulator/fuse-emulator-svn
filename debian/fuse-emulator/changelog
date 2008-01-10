@@ -1,6 +1,13 @@
+fuse-emulator (0.9.0-2) unstable; urgency=low
+
+  * Remove comments from the rules and control files.
+
+ -- Stuart Brady <sdbrady@ntlworld.com>  Thu, 10 Jan 2008 15:14:32 +0000
+
 fuse-emulator (0.9.0-1) unstable; urgency=low
 
   * Initial release.
 
  -- Stuart Brady <sdbrady@ntlworld.com>  Wed, 09 Jan 2008 22:54:33 +0000
+
 

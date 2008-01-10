@@ -75,7 +75,6 @@ build-arch-x11-stamp:
 build-indep: build-indep-stamp
 build-indep-stamp:
 
-	# Add here commands to compile the indep part of the package.
 	#$(MAKE) doc
 	touch $@
 
@@ -109,18 +108,13 @@ install-stamp: build-arch-gtk build-arch-sdl build-arch-x11
 
 	(cd build-x11; $(MAKE) DESTDIR=$(CURDIR)/debian/tmp install)
 	mv debian/tmp/usr/bin/fuse debian/tmp/usr/bin/fuse-emulator-x11
-#	-rm -rf debian/tmp/usr/share/fuse-emulator
-#	mv debian/tmp/usr/share/fuse debian/tmp/usr/share/fuse-emulator
 
-	# Add here commands to install the indep part of the package into
-	# debian/<package>-doc.
 	#INSTALLDOC#
 
 	dh_install
 
 	touch install-stamp
 
-# Build architecture independant packages using the common target.
 binary-indep: build install
 	dh_testdir -i
 	dh_testroot -i
@@ -139,7 +133,6 @@ binary-indep: build install
 	dh_md5sums -i
 	dh_builddeb -i
 
-# Build architecture dependant packages using the common target.
 binary-arch: build install
 	dh_testdir -a
 	dh_testroot -a

@@ -8,10 +8,6 @@ Homepage: http://fuse-emulator.sourceforge.net/
 Vcs-Svn: https://fuse-emulator.svn.sourceforge.net/svnroot/fuse-emulator/trunk/fuse
 Vcs-Browser: http://fuse-emulator.svn.sourceforge.net/viewvc/fuse-emulator/trunk/fuse/
 
-# depends:
-#  more UI libs
-#  ROMs
-
 Package: fuse-emulator-common
 Architecture: all
 Description: ZX Spectrum emulator - common files
@@ -54,9 +50,3 @@ Description: ZX Spectrum emulator (with X11 user interface)
  clones of the ZX Spectrum.
  .
  This is the X11 version of Fuse.
-
-# TODO:
-#  build a separate fuse-emulator-roms package
-#  rename binaries to allow multiple versions to be installed
-#  use the alternatives system to provide a link from fuse-emulator
-#  add fbdev and svgalib builds

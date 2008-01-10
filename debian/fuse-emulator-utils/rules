@@ -14,7 +14,6 @@ DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
 config.status: configure
 	dh_testdir
-	# Add here commands to configure the package.
 ifneq "$(wildcard /usr/share/misc/config.sub)" ""
 	cp -f /usr/share/misc/config.sub config.sub
 endif
@@ -29,9 +28,7 @@ build: build-stamp
 build-stamp:  config.status
 	dh_testdir
 
-	# Add here commands to compile the package.
 	$(MAKE)
-	#docbook-to-man debian/fuse-emulator-utils.sgml > fuse-emulator-utils.1
 
 	touch $@
 
@@ -40,7 +37,6 @@ clean:
 	dh_testroot
 	rm -f build-stamp 
 
-	# Add here commands to clean up after the build process.
 	-$(MAKE) distclean
 	rm -f config.sub config.guess
 
@@ -52,15 +48,11 @@ install: build
 	dh_clean -k 
 	dh_installdirs
 
-	# Add here commands to install the package into debian/fuse-emulator-utils.
 	$(MAKE) DESTDIR=$(CURDIR)/debian/fuse-emulator-utils install
 
 
-# Build architecture-independent files here.
 binary-indep: build install
-# We have nothing to do by default.
 
-# Build architecture-dependent files here.
 binary-arch: build install
 	dh_testdir
 	dh_testroot
