@@ -1,4 +1,4 @@
-fuse-emulator (0.9.0-2) unstable; urgency=low
+fuse-emulator (0.9.0-3) unstable; urgency=low
 
   * Don't use --datadir, as it didn't work.
   * Use dpatch, and add patches:
