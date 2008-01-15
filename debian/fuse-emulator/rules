@@ -9,6 +9,8 @@ export DH_VERBOSE=1
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
+include /usr/share/dpatch/dpatch.make
+
 # These are used for cross-compiling and for saving the configure script
 # from having to guess our platform (since we know it already)
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
@@ -19,10 +21,9 @@ COMMON_CONFIG := --host=$(DEB_HOST_GNU_TYPE) \
 		 --build=$(DEB_BUILD_GNU_TYPE) \
 		 --prefix=/usr --mandir=\$${prefix}/share/man \
 		 --infodir=\$${prefix}/share/info \
-		 --datadir=\$${prefix}/share/fuse-emulator \
 		 LDFLAGS="-Wl,-z,defs"
 
-build: build-arch-gtk build-arch-sdl build-arch-x11 build-indep
+build: patch build-arch-gtk build-arch-sdl build-arch-x11 build-indep
 
 build-arch-gtk: build-arch-gtk-stamp
 build-arch-gtk-stamp:
@@ -78,7 +79,7 @@ build-indep-stamp:
 	#$(MAKE) doc
 	touch $@
 
-clean:
+clean:	unpatch
 	dh_testdir
 	dh_testroot
 
