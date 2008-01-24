@@ -98,7 +98,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
    <li><a href="http://www.openbsd.org/">OpenBSD</a> users can find a port of 0.2.2 in <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/devel/libspectrum/">ports/devel/libspectrum</a>.</li>
    <li><a href="http://en.docs.pld-linux.org/">PLD</a> users have a package of 0.2.1 available.</li>
    <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has made a <a href="libspectrum-0.2.0.1-i386-1spec.tgz">Slackware 9.1</a> (<a href="libspectrum-0.2.0.1-i386-1spec.tgz.md5">md5 sum</a>) package of 0.2.0.1.</li>
-   <li><a href="libspectrum-0.2.2-1.i386.rpm">0.2.2</a> for <a href="http://www.suse.com">SuSE</a> 9.1, with thanks to Cristi&aacute;n Gonz&aacute;lez.</li>
+   <li><a href="libspectrum-0.3.0.1-1.zj.i586.rpm">0.3.0.1</a> for <a href="http://www.suse.com">SuSE</a> 9.3, with thanks to Zoran Jekic.</li>
   </ul>
 
 END_SECTION
