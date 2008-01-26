@@ -599,3 +599,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 ourselves (thanks, make distcheck) (Release_0_4_0-branch).
 20080105 test/Makefile.am: distribute test data files (Release_0_4_0-branch).
 20080105 TAG: libspectrum_0_4_0
+20080127 libspectrum.c: compilation fix for Amiga (part of patch #1712260)
+         (Chris Young) (libspectrum_0_4_0-branch).
