@@ -47,7 +47,8 @@ static const char *gcrypt_version;
 #if defined AMIGA || defined __MORPHOS__
 #include <proto/exec.h>
 #include <proto/xfdmaster.h>
-struct xfdMasterBase *xfdMasterBase;
+
+struct Library *xfdMasterBase;
 
 #ifndef __MORPHOS__
 struct xfdMasterIFace *IxfdMaster;
