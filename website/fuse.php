@@ -147,7 +147,7 @@ href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.9.0.tar.g
    <li><a href="http://www.openbsd.org/">OpenBSD</a> users have version 0.7.0 available from ports as <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse/">ports/emulators/fuse</a>, and <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse-utils/">ports/emulators/fuse-utils/</a>, with thanks to Alexander Yurchenko.</li>
    <li>The <a href="http://en.docs.pld-linux.org/">Polish Linux Distribution</a> has packages of Fuse 0.6.2.1 and the utilities.</li>
    <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has produced a <a href="http://www.slackware.com/">Slackware</a> 9.1 packages of <a href="fuse-0.6.1.1-i386-1spec.tgz">0.6.1.1</a> (<a href="fuse-0.6.1.1-i386-1spec.tgz.md5">md5 sum</a>) and <a href="fuse-utils-0.6.1-i386-1spec.tgz">the utilities</a> (<a href="fuse-utils-0.6.1-i386-1spec.tgz.md5">md5 sum</a>).</li>
-   <li>Zoran Jekic <a href="http://www.suse.com">SuSE</a> 9.3 packages of <a href="fuse-0.8.0.1-1.zj.i586.rpm">0.8.0.1</a> and the <a href="fuse-utils-0.8.0.1-1.zj.i586.rpm">utilities</a>.</li>
+   <li>Zoran Jekic <a href="http://www.suse.com">SuSE</a> 9.3 packages of <a href="fuse-0.9.0-1.zj.i586.rpm">0.9.0</a> and the <a href="fuse-utils-0.9.0-1.zj.i586.rpm">utilities</a>.</li>
   </ul>
 
 END_SECTION
