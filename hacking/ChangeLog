@@ -607,3 +607,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          (Chris Young).
 20080217 libspectrum.c: and matching compilation fix for MorphOS (part of patch
          #1712260) (thanks, Q-Master) (Fred).
+20080217 libspectrum.c: really fix compilation on MorphOS (update to patch
+	 #1712260) (thanks, Q-Master) (Stuart).

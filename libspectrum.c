@@ -53,7 +53,7 @@ struct Library *xfdMasterBase;
 
 struct xfdMasterIFace *IxfdMaster;
 #else 				/* #ifndef __MORPHOS__ */
-struct xfdMasterLibrary *xfdMasterBase;
+struct xfdMasterBase *xfdMasterBase;
 #endif				/* #ifndef __MORPHOS__ */
 
 #endif /* #if defined AMIGA || defined __MORPHOS__ */
