@@ -605,3 +605,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080109 TODO: remove unused file.
 20080127 libspectrum.c: compilation fix for Amiga (part of patch #1712260)
          (Chris Young).
+20080217 libspectrum.c: and matching compilation fix for MorphOS (part of patch
+         #1712260) (thanks, Q-Master) (Fred).
