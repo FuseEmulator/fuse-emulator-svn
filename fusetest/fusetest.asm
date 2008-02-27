@@ -130,6 +130,12 @@ _testdata
 	
 	defb 'High port contention 2', 0
 	defw highporttest2
+
+	defb '0x3ffd read', 0
+	defw hex3ffdreadtest
+	
+	defb '0x7ffd read', 0
+	defw hex7ffdreadtest
 	
 	defb 0
 

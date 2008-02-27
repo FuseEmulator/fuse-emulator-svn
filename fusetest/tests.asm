@@ -325,3 +325,130 @@ _table	defw 0x66a9		; Not used
 	defw 0x66a9 + 0x0700
 
 ENDP
+
+; 0x7ffd read tests
+
+hex3ffdreadtest
+PROC
+	ld hl, 0x3ffd
+	push hl
+	ld hl, _table
+	push hl
+
+	jp hex7ffdreadtest_common
+
+_table	defw 0x0000
+	defw 0x3796
+
+ENDP
+
+hex7ffdreadtest
+PROC
+	ld hl, 0x7ffd
+	push hl
+	ld hl, _table
+	push hl
+
+	jp hex7ffdreadtest_common
+	
+_table	defw 0x0000
+	defw 0x378c
+
+ENDP
+
+hex7ffdreadtest_common
+PROC
+	ld a, (guessmachine_guess)
+	cp 0x01
+	jp nz, _skip
+
+	ld bc, _delay
+	pop hl
+	call guessmachine_table
+
+	ld bc, 0x0002
+	ld de, _scratch
+	ld hl, 0x4002
+	ldir
+
+	ld bc, 0x0002
+	ld hl, 0x5802
+	ldir
+
+	ld bc, 0x0002
+	ld de, 0x4002
+	ld hl, _data
+	ldir
+
+	ld bc, 0x0002
+	ld de, 0x5802
+	ldir
+
+	ld a, (0x5b5c)
+	ld bc, 0x7ffd
+	ld d, 0x07
+	ld e, a
+	
+_loop
+	and 0xf8
+	or d
+	out (c), a
+	ld a, d
+	ld (0xe000), a
+	dec d
+	cp 0x00
+	ld a, e
+	jr nz, _loop
+	
+	call interruptsync
+
+	cp 0x00
+	jr nz, _fail
+
+	ld hl, (_delay)
+	call delay
+
+	pop bc
+	in a,(c)
+
+	ld a, (0xe000)
+	cp 0x00
+
+	ld b, 0x00
+
+_end	push af
+	push bc
+
+	ld a, (0x5b5c)
+	ld bc, 0x7ffd
+	out (c), a
+
+	ld bc, 0x0002
+	ld hl, _scratch
+	ld de, 0x4002
+	ldir
+
+	ld bc, 0x0002
+	ld de, 0x5802
+	ldir
+	
+	pop bc
+	pop af
+	ret
+
+_fail	pop hl
+	ld b, 0x02
+	jr _end
+
+_skip	pop hl
+	pop hl
+	ld b, 0x01
+	ret
+
+_delay	defw 0x0000
+
+_scratch defw 0x0000, 0x0000
+
+_data	defb 0x01, 0x03, 0x02, 0x04
+
+ENDP
