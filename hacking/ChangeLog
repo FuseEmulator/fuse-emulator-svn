@@ -227,3 +227,4 @@
 20080105 TAG: fuse-utils_0_9_0
 20080107 Merge fuse-utils_0_9_0-branch changes r3451:3480 to trunk.
 20080108 man/Makefile.am: install tape2wav.1 (Stuart).
+20080306 .: ignore profile2map.
