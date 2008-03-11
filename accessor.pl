@@ -74,6 +74,12 @@ struct libspectrum_snap {
   int halted;			/* Is the Z80 currently HALTed? */
   int last_instruction_ei;	/* Was the last instruction an EI? */
 
+  /* Custom ROM */
+  int custom_rom;
+  size_t custom_rom_pages;
+  libspectrum_byte* roms[ 4 ];
+  size_t rom_length[ 4 ];
+
   /* RAM */
 
   libspectrum_byte *pages[ SNAPSHOT_RAM_PAGES ];

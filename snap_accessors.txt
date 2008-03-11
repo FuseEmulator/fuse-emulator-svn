@@ -87,6 +87,11 @@ libspectrum_byte plusd_status
 libspectrum_byte* plusd_rom 1
 libspectrum_byte* plusd_ram 1
 
+int custom_rom
+size_t custom_rom_pages
+libspectrum_byte* roms 1
+size_t rom_length 1
+
 libspectrum_byte* pages 1
 
 libspectrum_byte* slt 1
