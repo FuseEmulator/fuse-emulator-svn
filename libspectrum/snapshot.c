@@ -72,6 +72,13 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
   libspectrum_snap_set_halted( *snap, 0 );
   libspectrum_snap_set_last_instruction_ei( *snap, 0 );
 
+  libspectrum_snap_set_custom_rom( *snap, 0 );
+  libspectrum_snap_set_custom_rom_pages( *snap, 0 );
+  for( i = 0; i < 4; i++ ) {
+    libspectrum_snap_set_roms( *snap, i, NULL );
+    libspectrum_snap_set_rom_length( *snap, i, 0 );
+  }
+
   for( i = 0; i < SNAPSHOT_RAM_PAGES; i++ )
     libspectrum_snap_set_pages( *snap, i, NULL );
   for( i = 0; i < SNAPSHOT_SLT_PAGES; i++ ) {
@@ -167,6 +174,9 @@ libspectrum_error
 libspectrum_snap_free( libspectrum_snap *snap )
 {
   size_t i;
+
+  for( i = 0; i < 4; i++ )
+    free( libspectrum_snap_roms( snap, i ) );
 
   for( i = 0; i < SNAPSHOT_RAM_PAGES; i++ )
     free( libspectrum_snap_pages( snap, i ) );

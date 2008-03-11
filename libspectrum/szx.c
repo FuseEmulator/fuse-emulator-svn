@@ -188,6 +188,10 @@ write_ram_page( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, const char *id, const libspectrum_byte *data,
 		size_t data_length, int page, int compress, int extra_flags );
 static libspectrum_error
+write_rom_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		 size_t *length, int *out_flags, libspectrum_snap *snap,
+                 int compress );
+static libspectrum_error
 write_ay_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, libspectrum_snap *snap );
 static libspectrum_error
@@ -982,7 +986,7 @@ read_if1_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   if( data_length < 40 ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_UNKNOWN,
-      "szx_read_if1_chunk: length %lu too short", (unsigned long)data_length
+      "read_if1_chunk: length %lu too short", (unsigned long)data_length
     );
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
@@ -1013,6 +1017,7 @@ read_if1_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
     if( flags & ZXSTIF1F_COMPRESSED ) {
 
 #ifdef HAVE_ZLIB_H
+
       size_t uncompressed_length = 0;
 
       libspectrum_error error =
@@ -1080,6 +1085,202 @@ read_if1_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 }
 
 static libspectrum_error
+szx_set_custom_rom( libspectrum_snap *snap, int page_no,
+                    libspectrum_byte *rom_data, libspectrum_word length )
+{
+  libspectrum_byte *page;
+
+  if( length ) {
+    page = malloc( length );
+    if( !page ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+			       "%s:szx_set_custom_rom: out of memory at %d",
+			       __FILE__, __LINE__ );
+      return LIBSPECTRUM_ERROR_MEMORY;
+    }
+    memcpy( page, rom_data, length );
+
+    libspectrum_snap_set_roms( snap, page_no, page );
+    libspectrum_snap_set_rom_length( snap, page_no, length );
+  }
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+szx_extract_roms( libspectrum_snap *snap, libspectrum_byte *rom_data,
+                  libspectrum_dword length, libspectrum_dword expected_length )
+{
+  libspectrum_error retval = LIBSPECTRUM_ERROR_NONE;
+  int i;
+  const size_t standard_rom_length = 0x4000;
+  size_t num_16k_roms, additional_rom_length;
+
+  if( length != expected_length ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+                             "%s:szx_extract_roms: invalid ROM length %u, "
+                             "expected %u",
+                             __FILE__, length, expected_length );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  num_16k_roms = length / standard_rom_length;
+  additional_rom_length = length % standard_rom_length;
+
+  for( i = 0; i < num_16k_roms; i++ ) {
+    retval = szx_set_custom_rom( snap, i, rom_data + (i * standard_rom_length),
+                                 standard_rom_length );
+  }
+
+  /* Timex 2068 machines have a 16k and an 8k ROM, all other machines just have
+     multiples of 16k ROMs */
+  if( additional_rom_length && retval == LIBSPECTRUM_ERROR_NONE ) {
+    retval = szx_set_custom_rom( snap, i, rom_data + (i * standard_rom_length),
+                                 additional_rom_length );
+  }
+
+  libspectrum_snap_set_custom_rom_pages( snap, num_16k_roms +
+                                         !!additional_rom_length );
+
+  return retval;
+}
+
+static libspectrum_error
+read_rom_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+		const libspectrum_byte **buffer,
+		const libspectrum_byte *end GCC_UNUSED, size_t data_length )
+{
+  libspectrum_word flags;
+  libspectrum_dword expected_length;
+  libspectrum_byte *rom_data = NULL; 
+  libspectrum_error retval = LIBSPECTRUM_ERROR_NONE;
+
+  if( data_length < 6 ) {
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_UNKNOWN,
+      "read_rom_chunk: length %lu too short", (unsigned long)data_length
+    );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  flags = libspectrum_read_word( buffer );
+  expected_length = libspectrum_read_dword( buffer );
+
+  if( flags & ZXSTRF_COMPRESSED ) {
+
+#ifdef HAVE_ZLIB_H
+
+    size_t uncompressed_length = 0;
+
+    libspectrum_error error =
+            libspectrum_zlib_inflate( *buffer, data_length - 6, &rom_data,
+                                      &uncompressed_length );
+    if( error ) return error;
+
+    if( uncompressed_length != expected_length ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+                               "%s:read_rom_chunk: invalid ROM length "
+                               "in compressed file, should be %lu, file "
+                               "has %lu",
+                               __FILE__, 
+                               (unsigned long)expected_length,
+                               (unsigned long)uncompressed_length );
+      return LIBSPECTRUM_ERROR_UNKNOWN;
+    }
+
+    *buffer += data_length - 6;
+
+#else			/* #ifdef HAVE_ZLIB_H */
+
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_UNKNOWN,
+      "%s:read_rom_chunk: zlib needed for decompression\n",
+      __FILE__
+    );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+
+#endif			/* #ifdef HAVE_ZLIB_H */
+
+  } else {
+
+    if( data_length < 6 + expected_length ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+                               "%s:read_rom_chunk: length %lu too short, "
+                               "expected %lu" ,
+                               __FILE__, (unsigned long)data_length,
+                               (unsigned long)6 + expected_length );
+      return LIBSPECTRUM_ERROR_UNKNOWN;
+    }
+
+    rom_data = malloc( expected_length );
+    if( !rom_data ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+                               "%s:read_rom_chunk: out of memory at %d",
+                               __FILE__, __LINE__ );
+      return LIBSPECTRUM_ERROR_MEMORY;
+    }
+
+    memcpy( rom_data, *buffer, expected_length );
+
+    *buffer += expected_length;
+
+  }
+
+  if( expected_length % 0x4000 || ( expected_length / 0x4000 ) > 4 ||
+      expected_length == 0 ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+                               "%s:read_rom_chunk: invalid ROM length %d",
+                               __FILE__, expected_length );
+      return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  libspectrum_snap_set_custom_rom( snap, 1 );
+
+  switch ( libspectrum_snap_machine( snap ) ) {
+  case LIBSPECTRUM_MACHINE_16:
+  case LIBSPECTRUM_MACHINE_48:
+  case LIBSPECTRUM_MACHINE_TC2048:
+    retval = szx_extract_roms( snap, rom_data, expected_length, 0x4000 );
+    break;
+  case LIBSPECTRUM_MACHINE_128:
+  case LIBSPECTRUM_MACHINE_PLUS2:
+  case LIBSPECTRUM_MACHINE_SE:
+    retval = szx_extract_roms( snap, rom_data, expected_length, 0x8000 );
+    break;
+  case LIBSPECTRUM_MACHINE_PLUS2A:
+  case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PLUS3E:
+    retval = szx_extract_roms( snap, rom_data, expected_length, 0x10000 );
+    break;
+  case LIBSPECTRUM_MACHINE_PENT:
+    /* FIXME: This is a conflict with Fuse - szx specs say Pentagon 128k snaps
+       will total 32k, Fuse also has the 'gluck.rom' */
+    retval = szx_extract_roms( snap, rom_data, expected_length, 0x8000 );
+    break;
+  case LIBSPECTRUM_MACHINE_TC2068:
+  case LIBSPECTRUM_MACHINE_TS2068:
+    retval = szx_extract_roms( snap, rom_data, expected_length, 0x6000 );
+    break;
+  case LIBSPECTRUM_MACHINE_SCORP:
+  case LIBSPECTRUM_MACHINE_PENT512:
+  case LIBSPECTRUM_MACHINE_PENT1024:
+    retval = szx_extract_roms( snap, rom_data, expected_length, 0x10000 );
+    break;
+  default:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+                             "%s:read_rom_chunk: don't know correct custom ROM "
+                             "length for this machine",
+                             __FILE__ );
+    retval = LIBSPECTRUM_ERROR_UNKNOWN;
+    break;
+  }
+
+  free( rom_data );
+
+  return retval;
+}
+
+static libspectrum_error
 read_if2r_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 		 const libspectrum_byte **buffer,
 		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
@@ -1097,7 +1298,7 @@ read_if2r_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   if( data_length < 4 ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_UNKNOWN,
-      "szx_read_if2r_chunk: length %lu too short", (unsigned long)data_length
+      "read_if2r_chunk: length %lu too short", (unsigned long)data_length
     );
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
@@ -1208,7 +1409,7 @@ static struct read_chunk_t read_chunks[] = {
   { ZXSTBID_PLUSD,	    read_plsd_chunk },
   { ZXSTBID_PLUSDDISK,	    skip_chunk      },
   { ZXSTBID_RAMPAGE,	    read_ramp_chunk },
-  { ZXSTBID_ROM,	    skip_chunk      },
+  { ZXSTBID_ROM,	    read_rom_chunk  },
   { ZXSTBID_SPECDRUM,	    skip_chunk      },
   { ZXSTBID_SPECREGS,	    read_spcr_chunk },
   { ZXSTBID_TIMEXREGS,	    read_scld_chunk },
@@ -1432,6 +1633,12 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
 
   error = write_keyb_chunk( buffer, &ptr, length, out_flags, snap );
   if( error ) return error;
+
+  if( libspectrum_snap_custom_rom( snap ) ) {
+    error = write_rom_chunk( buffer, &ptr, length, out_flags, snap, compress );
+    if( error ) return error;
+  }
+
 
   error = write_ram_pages( buffer, &ptr, length, snap, compress );
   if( error ) return error;
@@ -1779,6 +1986,149 @@ write_keyb_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   return LIBSPECTRUM_ERROR_NONE;
 }
   
+static libspectrum_error
+write_rom_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *length,
+                 int *out_flags, libspectrum_snap *snap, int compress )
+{
+  libspectrum_error error;
+  size_t i, data_length = 0;
+  size_t uncompressed_data_length = 0;
+  libspectrum_byte *data, *rom_base;
+  libspectrum_byte *compressed_data;
+  int use_compression, flags = 0;
+
+  for( i = 0; i< libspectrum_snap_custom_rom_pages( snap ); i++ ) {
+    data_length += libspectrum_snap_rom_length( snap, i );
+  }
+
+  /* FIXME: Check that we have the expected number of ROMs per the machine
+     type */
+  switch( libspectrum_snap_machine( snap ) ) {
+
+  case LIBSPECTRUM_MACHINE_16:
+  case LIBSPECTRUM_MACHINE_48:
+  case LIBSPECTRUM_MACHINE_TC2048:
+    /* 1 ROM = 16k */
+    if( ( libspectrum_snap_custom_rom_pages( snap ) != 1 ||
+          data_length != 0x4000 ) ) {
+      *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+      return LIBSPECTRUM_ERROR_NONE;
+    }
+    break;
+  case LIBSPECTRUM_MACHINE_128:
+  case LIBSPECTRUM_MACHINE_PLUS2:
+  case LIBSPECTRUM_MACHINE_SE:
+    /* 2 ROMs = 32k */
+    if( ( libspectrum_snap_custom_rom_pages( snap ) != 2 ||
+          data_length != 0x8000 ) ) {
+      *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+      return LIBSPECTRUM_ERROR_NONE;
+    }
+    break;
+  case LIBSPECTRUM_MACHINE_PLUS2A:
+  case LIBSPECTRUM_MACHINE_PLUS3:
+  case LIBSPECTRUM_MACHINE_PLUS3E:
+    /* 4 ROMs = 64k */
+    if( ( libspectrum_snap_custom_rom_pages( snap ) != 4 ||
+          data_length != 0x10000 ) ) {
+      *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+      return LIBSPECTRUM_ERROR_NONE;
+    }
+    break;
+  case LIBSPECTRUM_MACHINE_PENT:
+  case LIBSPECTRUM_MACHINE_PENT512:
+  case LIBSPECTRUM_MACHINE_PENT1024:
+    /* 2 ROMs = 32k */
+    /* FIXME: This is a conflict with Fuse - szx specs say Pentagon 128k snaps
+       will total 32k, Fuse also has the 'gluck.rom' and totals 48k, the szx
+       spec has nothing to say about Pentagon 512k and 1024k */
+    if( ( libspectrum_snap_custom_rom_pages( snap ) != 2 ||
+          data_length != 0x8000 ) ) {
+      *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+      return LIBSPECTRUM_ERROR_NONE;
+    }
+    break;
+  case LIBSPECTRUM_MACHINE_TC2068:
+  case LIBSPECTRUM_MACHINE_TS2068:
+    /* 2 ROMs = 24k */
+    if( ( libspectrum_snap_custom_rom_pages( snap ) != 2 ||
+          data_length != 0x6000 ) ) {
+      *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+      return LIBSPECTRUM_ERROR_NONE;
+    }
+    break;
+  case LIBSPECTRUM_MACHINE_SCORP:
+    /* 4 ROMs = 64k */
+    if( ( libspectrum_snap_custom_rom_pages( snap ) != 4 ||
+          data_length != 0x10000 ) ) {
+      *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+      return LIBSPECTRUM_ERROR_NONE;
+    }
+    break;
+
+  case LIBSPECTRUM_MACHINE_UNKNOWN:
+    libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
+			     "Emulated machine type is set to 'unknown'!" );
+    return LIBSPECTRUM_ERROR_LOGIC;
+  }
+
+  uncompressed_data_length = data_length;
+
+  data = malloc( data_length );
+  if( !data ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+                             "%s:write_rom_chunk: out of memory at %d",
+                             __FILE__, __LINE__ );
+    return LIBSPECTRUM_ERROR_MEMORY;
+  }
+
+  rom_base = data;
+
+  /* Copy the rom data into a single block ready for putting in the szx */
+  for( i = 0; i< libspectrum_snap_custom_rom_pages( snap ); i++ ) {
+    memcpy( rom_base, libspectrum_snap_roms( snap, i ),
+            libspectrum_snap_rom_length( snap, i ) );
+    rom_base += libspectrum_snap_rom_length( snap, i );
+  }
+
+  use_compression = 0;
+  compressed_data = NULL;
+
+#ifdef HAVE_ZLIB_H
+
+  if( compress ) {
+
+    size_t compressed_length;
+
+    error = libspectrum_zlib_compress( data, data_length,
+				       &compressed_data, &compressed_length );
+    if( error ) return error;
+
+    if( compress & LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS ||
+        compressed_length < data_length ) {
+      use_compression = 1;
+      data = compressed_data;
+      data_length = compressed_length;
+    }
+  }
+
+#endif				/* #ifdef HAVE_ZLIB_H */
+
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_ROM, 6+data_length );
+  if( error ) { if( compressed_data ) free( compressed_data ); return error; }
+
+  if( use_compression ) flags |= ZXSTRF_COMPRESSED;
+
+  libspectrum_write_word( ptr, flags );
+  libspectrum_write_dword( ptr, uncompressed_data_length );
+
+  memcpy( *ptr, data, data_length ); *ptr += data_length;
+
+  if( compressed_data ) free( compressed_data );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
 static libspectrum_error
 write_ram_pages( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		 size_t *length, libspectrum_snap *snap, int compress )
