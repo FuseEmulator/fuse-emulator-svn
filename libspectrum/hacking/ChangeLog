@@ -611,3 +611,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 #1712260) (thanks, Q-Master) (Stuart).
 20080311 snapshot.c,snap_accessors.txt,szx.c,accessor.pl: add support for
          saving custom machine ROMs in snapshots (szx only so far) (Fred).
+20080312 szx.c: don't regard 24k ROM blocks as invalid as they are used in the
+         2068s (Fred).
