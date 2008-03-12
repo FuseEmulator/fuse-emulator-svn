@@ -23,19 +23,32 @@ _m48	xor a
 	ld hl, _m48string
 	jr _end
 
-	;; The code section below also tests for bug #1821604 (128K / +3 ULA
-	;; handling slightly broken).
+	;; Distinguish between 128K and +3 by looking at the partial
+	;; decoding of "port 0x7ffd"
 
-_m128	ld a, 0xff		; Distinguish between 128K and +3 by
-	out (0xfe), a		; behaviour of bit 6 of reading from the
-	in a, (0xfe)		; ULA
-	ld b, a
-	ld a, 0xe7
-	out (0xfe), a
-	in a, (0xfe)
-	xor b
-	and 0x40
+_m128	ld a, (0x5b5c)
+	ld bc, 0x7ffd
+	ld d, 0x07
+	ld e, a
+	
+_loop	and 0xf8
+	or d
+	out (c), a
+	ld a, d
+	ld (0xe000), a
+	dec d
+	cp 0x00
+	ld a, e
+	jr nz, _loop
+
+	ld bc, 0x3ffd
+	and 0xf8
+	or 1
+	out (c), a
+	ld a, (0xe000)
+	cp 0x00
 	jr z, _mplus3
+	
 	ld a, 0x01
 	ld hl, _m128string
 	jr _end

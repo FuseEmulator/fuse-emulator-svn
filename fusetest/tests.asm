@@ -280,6 +280,11 @@ PROC
 	ld hl, _table
 	call guessmachine_table
 
+	ld a, (0x5b5c)
+	and 0xf8
+	ld bc, 0x7ffd
+	out (c), a
+
 	ld bc, 0xffff
 	push bc
 
@@ -303,7 +308,6 @@ PROC
 	ld a, (0x5b5c)
 	and 0xf8
 	or 7
-	ld (0x5b5c), a
 	ld bc, 0x7ffd
 	out (c), a
 
@@ -385,21 +389,10 @@ PROC
 	ldir
 
 	ld a, (0x5b5c)
-	ld bc, 0x7ffd
-	ld d, 0x07
-	ld e, a
-	
-_loop
 	and 0xf8
-	or d
+	ld bc, 0x7ffd
 	out (c), a
-	ld a, d
-	ld (0xe000), a
-	dec d
-	cp 0x00
-	ld a, e
-	jr nz, _loop
-	
+
 	call interruptsync
 
 	cp 0x00
