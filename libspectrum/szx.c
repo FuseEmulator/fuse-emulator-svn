@@ -1986,15 +1986,13 @@ write_rom_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *leng
   size_t i, data_length = 0;
   size_t uncompressed_data_length = 0;
   libspectrum_byte *data, *rom_base;
-  libspectrum_byte *compressed_data;
-  int use_compression, flags = 0;
+  int flags = 0;
 
   for( i = 0; i< libspectrum_snap_custom_rom_pages( snap ); i++ ) {
     data_length += libspectrum_snap_rom_length( snap, i );
   }
 
-  /* FIXME: Check that we have the expected number of ROMs per the machine
-     type */
+  /* Check that we have the expected number of ROMs per the machine type */
   switch( libspectrum_snap_machine( snap ) ) {
 
   case LIBSPECTRUM_MACHINE_16:
@@ -2083,13 +2081,11 @@ write_rom_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *leng
     rom_base += libspectrum_snap_rom_length( snap, i );
   }
 
-  use_compression = 0;
-  compressed_data = NULL;
-
 #ifdef HAVE_ZLIB_H
 
   if( compress ) {
 
+    libspectrum_byte *compressed_data;
     size_t compressed_length;
 
     error = libspectrum_zlib_compress( data, data_length,
@@ -2098,25 +2094,28 @@ write_rom_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *leng
 
     if( compress & LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS ||
         compressed_length < data_length ) {
-      use_compression = 1;
+      libspectrum_byte *old_data = data;
+      flags |= ZXSTRF_COMPRESSED;
       data = compressed_data;
       data_length = compressed_length;
+      free( old_data );
+    } else {
+      free( compressed_data );
     }
+
   }
 
 #endif				/* #ifdef HAVE_ZLIB_H */
 
   error = write_chunk_header( buffer, ptr, length, ZXSTBID_ROM, 6+data_length );
-  if( error ) { if( compressed_data ) free( compressed_data ); return error; }
-
-  if( use_compression ) flags |= ZXSTRF_COMPRESSED;
+  if( error ) { free( data ); return error; }
 
   libspectrum_write_word( ptr, flags );
   libspectrum_write_dword( ptr, uncompressed_data_length );
 
   memcpy( *ptr, data, data_length ); *ptr += data_length;
 
-  if( compressed_data ) free( compressed_data );
+  free( data );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
