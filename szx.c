@@ -1226,14 +1226,6 @@ read_rom_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 
   }
 
-  if( expected_length % 0x4000 || ( expected_length / 0x4000 ) > 4 ||
-      expected_length == 0 ) {
-      libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
-                               "%s:read_rom_chunk: invalid ROM length %d",
-                               __FILE__, expected_length );
-      return LIBSPECTRUM_ERROR_UNKNOWN;
-  }
-
   libspectrum_snap_set_custom_rom( snap, 1 );
 
   switch ( libspectrum_snap_machine( snap ) ) {
