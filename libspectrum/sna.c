@@ -319,6 +319,10 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
   if( libspectrum_snap_dock_active( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
 
+  /* We don't save custom ROMs at all */
+  if( libspectrum_snap_custom_rom( snap ) )
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+
   ptr = *buffer;
 
   error = write_header( buffer, &ptr, length, &sp, snap );

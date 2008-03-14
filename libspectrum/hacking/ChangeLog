@@ -614,3 +614,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080312 szx.c: don't regard 24k ROM blocks as invalid as they are used in the
          2068s (Fred).
 20080312 szx.c: try to avoid memory leak on write of custom ROM block (Fred).
+20080315 sna.c,z80.c: note info loss of custom ROM block when writing z80 and
+         sna format snapshots (Fred).

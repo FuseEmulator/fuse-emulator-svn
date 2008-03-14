@@ -1181,6 +1181,11 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
   if( libspectrum_snap_dock_active( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
 
+  /* .z80 format has partial support for writing custom ROMs but we don't use
+     it, if you want that just use szx */
+  if( libspectrum_snap_custom_rom( snap ) )
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+
   error = write_header( buffer, &ptr, length, out_flags, snap );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;
 
