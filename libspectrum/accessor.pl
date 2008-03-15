@@ -119,11 +119,13 @@ struct libspectrum_snap {
   /* Betadisk status */
   int beta_active;
   int beta_paged;
+  int beta_custom_rom;
   int beta_direction;	/* FDC seek direction:
 			      zero => towards lower cylinders (hubwards)
 			  non-zero => towards higher cylinders (rimwards) */
   libspectrum_byte beta_system, beta_track, beta_sector, beta_data,
     beta_status;
+  libspectrum_byte *beta_rom[1];
 
   /* Plus D status */
   int plusd_active;

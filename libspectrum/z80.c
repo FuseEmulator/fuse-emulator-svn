@@ -1166,6 +1166,10 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
   if( libspectrum_snap_plusd_active( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
 
+  /* .z80 format doesn't store Beta info */
+  if( libspectrum_snap_beta_active( snap ) )
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+
   /* .z80 format doesn't store the ZXATASP or ZXCF info */
   if( libspectrum_snap_zxatasp_active( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;

@@ -616,3 +616,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080312 szx.c: try to avoid memory leak on write of custom ROM block (Fred).
 20080315 sna.c,z80.c: note info loss of custom ROM block when writing z80 and
          sna format snapshots (Fred).
+20080315 accessor.pl,sna.c,snap_accessors.txt,snapshot.c,szx.c,z80.c: support
+         for Beta 128 custom ROMs in snapshots (patch #1844606) (Stuart).

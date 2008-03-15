@@ -305,6 +305,14 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
      etc which are not stored in .sna format */
   *out_flags = LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS;
 
+  /* We don't store +D info at all */
+  if( libspectrum_snap_plusd_active( snap ) )
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+
+  /* We don't store Beta info at all */
+  if( libspectrum_snap_beta_active( snap ) )
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+
   /* We don't save the ZXATASP or ZXCF at all */
   if( libspectrum_snap_zxatasp_active( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
