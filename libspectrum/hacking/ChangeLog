@@ -621,4 +621,9 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080319 ide.c: changes to allow DivIDE to support FATware from
          http://www.dusky.sk/zxs/; add ATA/ATAPI commands 0x21, 0x31, 0xA1.
 20080319 ide.c: changes to allow DivIDE to support FATware from
-         http://www.dusky.sk/zxs/; per-drive status and error registers.
+         http://www.dusky.sk/zxs/; per-drive status and error registers, and
+         return 0x00 when reading the command status register of a missing
+         drive.
+20080319 ide.c: changes to allow DivIDE to support FATware from
+         http://www.dusky.sk/zxs/; improved implementation of INITIALIZE
+         DEVICE PARAMETERS command.
