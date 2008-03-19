@@ -131,6 +131,9 @@ typedef struct libspectrum_ide_drive {
   int cylinders;
   int heads;
   int sectors;
+
+  libspectrum_byte error;
+  libspectrum_byte status;
   
 } libspectrum_ide_drive;
 
@@ -146,14 +149,12 @@ struct libspectrum_ide_channel {
   libspectrum_ide_unit selected;
   
   /* Register values */
-  libspectrum_byte error;
   libspectrum_byte feature;
   libspectrum_byte sector_count;
   libspectrum_byte sector;
   libspectrum_byte cylinder_low;
   libspectrum_byte cylinder_high;
   libspectrum_byte head;
-  libspectrum_byte status;
   libspectrum_byte data2;
   
   /* Channel status */
@@ -392,10 +393,27 @@ libspectrum_ide_reset( libspectrum_ide_channel *chn )
     chn->head = 0x00;
 
     /* Diagnostics passed */
-    chn->error = 0x01;
+    if (chn->drive[LIBSPECTRUM_IDE_MASTER].disk)
+      chn->drive[LIBSPECTRUM_IDE_MASTER].error = 0x01;
+    else
+      chn->drive[LIBSPECTRUM_IDE_MASTER].error = 0xff;
+    
+    if (chn->drive[LIBSPECTRUM_IDE_SLAVE].disk)
+      chn->drive[LIBSPECTRUM_IDE_SLAVE].error = 0x01;
+    else
+      chn->drive[LIBSPECTRUM_IDE_SLAVE].error = 0xff;
+    
     
     /* Device ready, no PACKET support */
-    chn->status = 0x72;
+    if (chn->drive[LIBSPECTRUM_IDE_MASTER].disk)
+      chn->drive[LIBSPECTRUM_IDE_MASTER].status = 0x40;
+    else
+      chn->drive[LIBSPECTRUM_IDE_MASTER].status = 0xff;
+    
+    if (chn->drive[LIBSPECTRUM_IDE_SLAVE].disk)
+      chn->drive[LIBSPECTRUM_IDE_SLAVE].status = 0x40;
+    else
+      chn->drive[LIBSPECTRUM_IDE_SLAVE].status = 0xff;
 
     /* Feature is write-only */
     chn->feature = 0xff;
@@ -408,8 +426,10 @@ libspectrum_ide_reset( libspectrum_ide_channel *chn )
     chn->cylinder_low = 0xff;
     chn->cylinder_high = 0xff;
     chn->head = 0xff;
-    chn->error = 0xff;
-    chn->status = 0xff;
+    chn->drive[LIBSPECTRUM_IDE_MASTER].error = 0xff;
+    chn->drive[LIBSPECTRUM_IDE_SLAVE].error = 0xff;
+    chn->drive[LIBSPECTRUM_IDE_MASTER].status = 0xff;
+    chn->drive[LIBSPECTRUM_IDE_SLAVE].status = 0xff;
     chn->feature = 0xff;
 
   }
@@ -527,6 +547,7 @@ static libspectrum_byte
 read_data( libspectrum_ide_channel *chn )
 {
   libspectrum_byte data;
+  libspectrum_ide_drive *drv = &chn->drive[ chn->selected ];
   
   /* Meaningful data is only returned in PIO input phase */
   if( chn->phase != LIBSPECTRUM_IDE_PHASE_PIO_IN ) return 0xff;
@@ -567,7 +588,7 @@ read_data( libspectrum_ide_channel *chn )
     } else {
       /* all sectors done */
       chn->phase = LIBSPECTRUM_IDE_PHASE_READY;
-      chn->status &= ~LIBSPECTRUM_IDE_STATUS_DRQ;
+      drv->status &= ~LIBSPECTRUM_IDE_STATUS_DRQ;
     }
   }
 
@@ -579,23 +600,24 @@ libspectrum_byte
 libspectrum_ide_read( libspectrum_ide_channel *chn,
 		      libspectrum_ide_register reg )
 {
-  /* Only read if the currently-selected drive exists */
-  if( chn->drive[ chn->selected ].disk ) {
+  libspectrum_ide_drive *drv = &chn->drive[ chn->selected ];
 
     switch( reg ) {
 
     case LIBSPECTRUM_IDE_REGISTER_DATA:           return read_data( chn );
     case LIBSPECTRUM_IDE_REGISTER_DATA2:          return chn->data2;
-    case LIBSPECTRUM_IDE_REGISTER_ERROR_FEATURE:  return chn->error;
+    case LIBSPECTRUM_IDE_REGISTER_ERROR_FEATURE:  return drv->error;
     case LIBSPECTRUM_IDE_REGISTER_SECTOR_COUNT:   return chn->sector_count;
     case LIBSPECTRUM_IDE_REGISTER_SECTOR:         return chn->sector;
     case LIBSPECTRUM_IDE_REGISTER_CYLINDER_LOW:   return chn->cylinder_low;
     case LIBSPECTRUM_IDE_REGISTER_CYLINDER_HIGH:  return chn->cylinder_high;
     case LIBSPECTRUM_IDE_REGISTER_HEAD_DRIVE:     return chn->head;
-    case LIBSPECTRUM_IDE_REGISTER_COMMAND_STATUS: return chn->status;
+    case LIBSPECTRUM_IDE_REGISTER_COMMAND_STATUS:
+      if (!drv->disk) return 0x00;
+      else return drv->status;
+      break;
 
     }
-  }
   
   return 0xff;
 }
@@ -605,6 +627,8 @@ libspectrum_ide_read( libspectrum_ide_channel *chn,
 static void
 write_data( libspectrum_ide_channel *chn, libspectrum_byte data )
 {
+  libspectrum_ide_drive *drv = &chn->drive[ chn->selected ];
+
   /* Data register can only be written in PIO output phase */
   if( chn->phase != LIBSPECTRUM_IDE_PHASE_PIO_OUT ) return;
 
@@ -637,8 +661,8 @@ write_data( libspectrum_ide_channel *chn, libspectrum_byte data )
 
     /* Write data to disk */
     if ( write_hdf( chn ) ) {
-      chn->status |= LIBSPECTRUM_IDE_STATUS_ERR;
-      chn->error = LIBSPECTRUM_IDE_ERROR_ABRT | LIBSPECTRUM_IDE_ERROR_UNC;
+      drv->status |= LIBSPECTRUM_IDE_STATUS_ERR;
+      drv->error = LIBSPECTRUM_IDE_ERROR_ABRT | LIBSPECTRUM_IDE_ERROR_UNC;
     }
 
     if( chn->sector_count ) {
@@ -647,7 +671,7 @@ write_data( libspectrum_ide_channel *chn, libspectrum_byte data )
     } else {
       /* all sectors done */
       chn->phase = LIBSPECTRUM_IDE_PHASE_READY;
-      chn->status &= ~LIBSPECTRUM_IDE_STATUS_DRQ;
+      drv->status &= ~LIBSPECTRUM_IDE_STATUS_DRQ;
     }
   }
 
@@ -688,8 +712,8 @@ seek( libspectrum_ide_channel *chn )
   /* Seek to the correct position */
   if( sectornumber < 0                                               ||
       sectornumber >= ( drv->cylinders * drv->heads * drv->sectors )    ) {  
-    chn->status |= LIBSPECTRUM_IDE_STATUS_ERR;
-    chn->error = LIBSPECTRUM_IDE_ERROR_ABRT | LIBSPECTRUM_IDE_ERROR_IDNF;
+    drv->status |= LIBSPECTRUM_IDE_STATUS_ERR;
+    drv->error = LIBSPECTRUM_IDE_ERROR_ABRT | LIBSPECTRUM_IDE_ERROR_IDNF;
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
@@ -697,6 +721,8 @@ seek( libspectrum_ide_channel *chn )
   
   /* advance registers to next sector, for multiple sector accesses */
   chn->sector_count--;
+  if (!chn->sector_count) return LIBSPECTRUM_ERROR_NONE;
+
   if( chn->head & LIBSPECTRUM_IDE_HEAD_LBA ) {
 
     /* increment using LBA scheme */
@@ -777,14 +803,14 @@ identifydevice( libspectrum_ide_channel *chn )
     SET_WORD( chn->buffer, LIBSPECTRUM_IDE_IDENTITY_TOTAL_SECTORS_HI,
 	      ( sector_count & 0xffff0000 ) >> 16 );
   }
-  
+
   /* prevent read_data from trying to read from disk after identity block
      is completely read in */
   chn->sector_count = 0;
 
   /* Initiate the PIO input phase */
   chn->phase = LIBSPECTRUM_IDE_PHASE_PIO_IN;
-  chn->status |= LIBSPECTRUM_IDE_STATUS_DRQ;
+  drv->status |= LIBSPECTRUM_IDE_STATUS_DRQ;
   chn->datacounter = 0;
 }
 
@@ -792,19 +818,21 @@ identifydevice( libspectrum_ide_channel *chn )
 static void
 readsector( libspectrum_ide_channel *chn )
 {
+  libspectrum_ide_drive *drv = &chn->drive[ chn->selected ];
+
   if( seek( chn ) ) return;
 
   /* Read data from disk */
   if( read_hdf( chn ) ) {
     
-    chn->status |= LIBSPECTRUM_IDE_STATUS_ERR;
-    chn->error = LIBSPECTRUM_IDE_ERROR_ABRT | LIBSPECTRUM_IDE_ERROR_UNC;
+    drv->status |= LIBSPECTRUM_IDE_STATUS_ERR;
+    drv->error = LIBSPECTRUM_IDE_ERROR_ABRT | LIBSPECTRUM_IDE_ERROR_UNC;
 
   } else {
 
     /* Initiate the PIO input phase */
     chn->phase = LIBSPECTRUM_IDE_PHASE_PIO_IN;
-    chn->status |= LIBSPECTRUM_IDE_STATUS_DRQ;
+    drv->status |= LIBSPECTRUM_IDE_STATUS_DRQ;
     chn->datacounter = 0;
 
   }
@@ -814,11 +842,13 @@ readsector( libspectrum_ide_channel *chn )
 static void
 writesector( libspectrum_ide_channel *chn )
 {
+  libspectrum_ide_drive *drv = &chn->drive[ chn->selected ];
+
   if( seek( chn ) ) return;
 
   /* Initiate the PIO output phase */
   chn->phase = LIBSPECTRUM_IDE_PHASE_PIO_OUT;
-  chn->status |= LIBSPECTRUM_IDE_STATUS_DRQ;
+  drv->status |= LIBSPECTRUM_IDE_STATUS_DRQ;
   chn->datacounter = 0;
 }
 
@@ -834,21 +864,23 @@ init_device_params( libspectrum_ide_channel *chn )
       ( chn->head & LIBSPECTRUM_IDE_HEAD_HEAD ) == drv->heads - 1 ) return;
       
   /* if not, return ABRT error */
-  chn->status |= LIBSPECTRUM_IDE_STATUS_ERR;
-  chn->error = LIBSPECTRUM_IDE_ERROR_ABRT;
+  drv->status |= LIBSPECTRUM_IDE_STATUS_ERR;
+  drv->error = LIBSPECTRUM_IDE_ERROR_ABRT;
 }
 
 /* Execute a command */
 static void
 execute_command( libspectrum_ide_channel *chn, libspectrum_byte data )
 {
-  if( !chn->drive[ chn->selected].disk ) return;
+  libspectrum_ide_drive *drv = &chn->drive[ chn->selected ];
+
+  if( !drv->disk ) return;
   chn->phase = LIBSPECTRUM_IDE_PHASE_READY;
 
   /* Clear error conditions */
-  chn->error = LIBSPECTRUM_IDE_ERROR_OK;
-  chn->status &= ~(LIBSPECTRUM_IDE_STATUS_ERR | LIBSPECTRUM_IDE_STATUS_BSY);
-  chn->status |= LIBSPECTRUM_IDE_STATUS_DRDY;
+  drv->error = LIBSPECTRUM_IDE_ERROR_OK;
+  drv->status &= ~(LIBSPECTRUM_IDE_STATUS_ERR | LIBSPECTRUM_IDE_STATUS_BSY);
+  drv->status |= LIBSPECTRUM_IDE_STATUS_DRDY;
 
   /* Perform command */
   switch( data ) {
@@ -864,8 +896,8 @@ execute_command( libspectrum_ide_channel *chn, libspectrum_byte data )
       
     /* Unknown/unsupported commands */
   default:
-    chn->status |= LIBSPECTRUM_IDE_STATUS_ERR;
-    chn->error = LIBSPECTRUM_IDE_ERROR_ABRT;
+    drv->status |= LIBSPECTRUM_IDE_STATUS_ERR;
+    drv->error = LIBSPECTRUM_IDE_ERROR_ABRT;
   }
 }
 
