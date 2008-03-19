@@ -857,15 +857,31 @@ static void
 init_device_params( libspectrum_ide_channel *chn )
 {
   libspectrum_ide_drive *drv = &chn->drive[ chn->selected ];
+  int size;
 
-  /* Return success iff the requested geometry matches the actual geometry
-     of the disk */
-  if( chn->sector_count == drv->sectors &&
-      ( chn->head & LIBSPECTRUM_IDE_HEAD_HEAD ) == drv->heads - 1 ) return;
-      
-  /* if not, return ABRT error */
-  drv->status |= LIBSPECTRUM_IDE_STATUS_ERR;
-  drv->error = LIBSPECTRUM_IDE_ERROR_ABRT;
+  if ( !chn->sector_count ) {
+    drv->status |= LIBSPECTRUM_IDE_STATUS_ERR;
+    drv->error = LIBSPECTRUM_IDE_ERROR_ABRT;
+    return;
+  }
+
+  size = drv->heads * drv->sectors * drv->cylinders;
+
+  if ( size > 16514064 ) size = 16514064;
+
+  drv->heads = ( chn->head & LIBSPECTRUM_IDE_HEAD_HEAD ) + 1;
+  drv->sectors = chn->sector_count;
+  drv->cylinders = size / (drv->heads * drv->sectors);
+
+  /* maybe this would be better moved to identify device */
+  if ( drv->cylinders > 65535 ) drv->cylinders = 65535;
+
+  chn->phase = LIBSPECTRUM_IDE_PHASE_READY;
+
+  drv->error = LIBSPECTRUM_IDE_ERROR_OK;
+  drv->status &= ~( LIBSPECTRUM_IDE_STATUS_ERR | LIBSPECTRUM_IDE_STATUS_BSY |
+                    LIBSPECTRUM_IDE_STATUS_DRQ );
+  drv->status |= LIBSPECTRUM_IDE_STATUS_DRDY;
 }
 
 /* Execute a command */
