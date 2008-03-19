@@ -34,9 +34,12 @@
 
 typedef enum libspectrum_ide_command {
   
-  LIBSPECTRUM_IDE_COMMAND_READ_SECTOR = 0x20,
-  LIBSPECTRUM_IDE_COMMAND_WRITE_SECTOR = 0x30,
-  LIBSPECTRUM_IDE_COMMAND_IDENTIFY_DRIVE = 0xec,
+  LIBSPECTRUM_IDE_COMMAND_READ_SECTOR_RETRY = 0x20,
+  LIBSPECTRUM_IDE_COMMAND_READ_SECTOR_NORETRY = 0x21,
+  LIBSPECTRUM_IDE_COMMAND_WRITE_SECTOR_RETRY = 0x30,
+  LIBSPECTRUM_IDE_COMMAND_WRITE_SECTOR_NORETRY = 0x31,
+  LIBSPECTRUM_IDE_COMMAND_IDENTIFY_DRIVE_ATA = 0xec,
+  LIBSPECTRUM_IDE_COMMAND_IDENTIFY_DRIVE_ATAPI = 0xa1,
   LIBSPECTRUM_IDE_COMMAND_INITIALIZE_DEVICE_PARAMETERS = 0x91,
 
 } libspectrum_ide_command;
@@ -850,9 +853,12 @@ execute_command( libspectrum_ide_channel *chn, libspectrum_byte data )
   /* Perform command */
   switch( data ) {
 
-  case LIBSPECTRUM_IDE_COMMAND_READ_SECTOR:    readsector( chn );     break;
-  case LIBSPECTRUM_IDE_COMMAND_WRITE_SECTOR:   writesector( chn );    break;
-  case LIBSPECTRUM_IDE_COMMAND_IDENTIFY_DRIVE: identifydevice( chn ); break;
+  case LIBSPECTRUM_IDE_COMMAND_READ_SECTOR_RETRY:    readsector( chn );     break;
+  case LIBSPECTRUM_IDE_COMMAND_READ_SECTOR_NORETRY:  readsector( chn );     break;
+  case LIBSPECTRUM_IDE_COMMAND_WRITE_SECTOR_RETRY:   writesector( chn );    break;
+  case LIBSPECTRUM_IDE_COMMAND_WRITE_SECTOR_NORETRY: writesector( chn );    break;
+  case LIBSPECTRUM_IDE_COMMAND_IDENTIFY_DRIVE_ATA:   identifydevice( chn ); break;
+  case LIBSPECTRUM_IDE_COMMAND_IDENTIFY_DRIVE_ATAPI: identifydevice( chn ); break;
   case LIBSPECTRUM_IDE_COMMAND_INITIALIZE_DEVICE_PARAMETERS:
     init_device_params( chn ); break;
       
