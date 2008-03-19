@@ -620,3 +620,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          for Beta 128 custom ROMs in snapshots (patch #1844606) (Stuart).
 20080319 ide.c: changes to allow DivIDE to support FATware from
          http://www.dusky.sk/zxs/; add ATA/ATAPI commands 0x21, 0x31, 0xA1.
+20080319 ide.c: changes to allow DivIDE to support FATware from
+         http://www.dusky.sk/zxs/; per-drive status and error registers.
