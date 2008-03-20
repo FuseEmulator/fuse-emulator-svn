@@ -1,4 +1,4 @@
-# Copyright 2007 Philip Kendall <philip-fuse@shadowmagic.org.uk>
+# Copyright 2007-2008 Philip Kendall <philip-fuse@shadowmagic.org.uk>
 
 # This program is licensed under the GNU General Public License. See the
 # file `COPYING' for details
@@ -24,6 +24,7 @@ contention.tap: \
 fusetest.tap: \
 	atiming.asm \
 	delay.asm \
+	first.asm \
 	framelength.asm \
 	fusetest.asm \
 	guessmachine.asm \

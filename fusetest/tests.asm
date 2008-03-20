@@ -1,6 +1,6 @@
 ; Tests run by the test harness
 
-; Copyright 2007 Philip Kendall <philip-fuse@shadowmagic.org.uk>
+; Copyright 2007-2008 Philip Kendall <philip-fuse@shadowmagic.org.uk>
 	
 ; This program is licensed under the GNU General Public License. See the
 ; file `COPYING' for details
@@ -66,10 +66,13 @@ PROC
 	inc hl			; 126
 	ld (hl), _isr / 0x100	; 132
 
-	ld hl, (_delay1)	; 142
+	ld hl, (first_delay_1)	; 142
 	call delay		; 158
 
-				; 48K / 128K / +3 timings
+	ld hl, (_delay1)	; 398
+	call delay		; 414
+
+				; 48K / 128K / +3 early timings
 	ld hl, 0x0000		; 14289 / 14315 / 14322
 	ld de, 0x7fff		; 14299 / 14325 / 14332
 	ld bc, 0x0002		; 14309 / 14335 / 14342
@@ -77,6 +80,9 @@ PROC
 
 	ld hl, (_delay2)	; 14374 / 14400 / 14400
 	call delay		; 14390 / 14416 / 14416
+
+	ld hl, (first_delay_2)	; 69099 / FIXME / FIXME
+	call delay		; 69115 / FIXME / FIXME
 
 	jp atiming		; 69355 / 70375 / 70375
 
@@ -86,8 +92,8 @@ _isr	pop hl
 _fail	ld b, 0x02
 	ret
 
-_table1	defw 0x3733, 0x3733 + 0x001a, 0x3754, 0x3733
-_table2	defw 0xd6b5, 0xd6b5 - 0x001a + 0x03fc, 0xda9b, 0xd6b5 + 0x0700 + 0x0012
+_table1	defw 0x3633, 0x3633 + 0x001a, 0x3654, 0x3633
+_table2	defw 0xd5b5, 0xd5b5 - 0x001a + 0x03fc, 0xd99b, 0xd5b5 + 0x0700 + 0x0012
 
 _delay1	defw 0x0000
 _delay2	defw 0x0000
@@ -120,8 +126,11 @@ contendedin1
 	inc hl			; 126
 	ld (hl), _isr / 0x100	; 132
 
-	ld hl, (contendedin_delay1) ; 142
+	ld hl, (first_delay_1)	; 142
 	call delay		; 158
+
+	ld hl, (contendedin_delay1) ; 398
+	call delay		; 414
 
 				; 48K / 128K / +3 timings
 	pop bc			; 43036 / 43573 / 43574
@@ -129,6 +138,9 @@ contendedin1
 
 	ld hl, (contendedin_delay2) ; 43070 / 43608 / 43596
 	call delay		; 43086 / 43624 / 43608
+
+	ld hl, (first_delay_2)	; 69099 / FIXME / FIXME
+	call delay		; 69115 / FIXME / FIXME
 
 	jp atiming		; 69355 / 70375 / 70735
 
@@ -139,14 +151,14 @@ _isr	ld b, 0x00
 _fail	ld b, 0x02
 	ret
 
-_table1	defw 0xa77e
-	defw 0xa77e + 0x001a + 4 * 0x0080
-	defw 0xa77e + 0x001a + 4 * 0x0080
-	defw 0xa77e
-contendedin_table2 defw 0x669d
-	defw 0x669d - 0x001a - 4 * 0x0080 + 0x03fc
-	defw 0x669d - 0x001a - 4 * 0x0080 + 0x03fc + 0x000c
-	defw 0x669d + 0x0700 + 0x000c
+_table1	defw 0xa67e
+	defw 0xa67e + 0x001a + 4 * 0x0080
+	defw 0xa67e + 0x001a + 4 * 0x0080
+	defw 0xa67e
+contendedin_table2 defw 0x659d
+	defw 0x659d - 0x001a - 4 * 0x0080 + 0x03fc
+	defw 0x659d - 0x001a - 4 * 0x0080 + 0x03fc + 0x000c
+	defw 0x659d + 0x0700 + 0x000c
 
 contendedin_delay1 defw 0x0000
 contendedin_delay2 defw 0x0000
@@ -176,8 +188,11 @@ PROC
 	cp 0x00			; 92
 	jr nz, _fail		; 99
 
-	ld hl, (_delay)		; 106
+	ld hl, (first_delay_1)	; 106
 	call delay		; 122
+
+	ld hl, (_delay)		; 362
+	call delay		; 378
 
 				; 48K / 128K timings
 	ld bc, 0x40ff		; 43019 / 43557
@@ -205,7 +220,7 @@ _skip	ld b, 0x01
 	add a, b
 	ret
 
-_table	defw 0xa791, 0xa791 + 0x001a + 4 * 0x0080
+_table	defw 0xa691, 0xa691 + 0x001a + 4 * 0x0080
 _delay	defw 0x0000
 
 ENDP
@@ -237,14 +252,20 @@ PROC
 	inc hl			; 126
 	ld (hl), _isr / 0x100	; 132
 
-	ld hl, (_delay1)	; 142
+	ld hl, (first_delay_1)	; 142
 	call delay		; 158
+
+	ld hl, (_delay1)	; 398
+	call delay		; 414
 
 				; 48K / 128K / +3 timings
 	call 0x7fff		; 14318 / 14344 / 14346
 
 	ld hl, (_delay2)	; 14355 / 14381 / 14384
 	call delay		; 14371 / 14397 / 14400
+
+	ld hl, (first_delay_2)	; 69099 / FIXME / FIXME
+	call delay		; 69115 / FIXME / FIXME
 	
 	jp atiming		; 69355 / 70375 / 70375
 
@@ -258,14 +279,14 @@ _nop	nop			; 14335 / 14361 / 14363
 	ret			; 14345 / 14371 / 14374
 _nopend
 
-_table1	defw 0x3750
-	defw 0x3750 + 0x001a
-	defw 0x3750 + 0x001a + 0x0002
-	defw 0x3750
-_table2	defw 0xd6c8
-	defw 0xd6c8 - 0x001a + 0x03fc
-	defw 0xd6c8 - 0x001a - 0x0003 + 0x03fc
-	defw 0xd6c8 + 0x0700 + 0x0006
+_table1	defw 0x3650
+	defw 0x3650 + 0x001a
+	defw 0x3650 + 0x001a + 0x0002
+	defw 0x3650
+_table2	defw 0xd5c8
+	defw 0xd5c8 - 0x001a + 0x03fc
+	defw 0xd5c8 - 0x001a - 0x0003 + 0x03fc
+	defw 0xd5c8 + 0x0700 + 0x0006
 
 _delay1	defw 0x0000
 _delay2	defw 0x0000
@@ -290,10 +311,10 @@ PROC
 
 	jp contendedin1
 
-_table	defw 0x66a9
-	defw 0x66a9 - 0x001a - 4 * 0x0080 + 0x03fc
-	defw 0x66a9 - 0x001a - 4 * 0x0080 + 0x03fc
-	defw 0x66a9 + 0x0700
+_table	defw 0x65a9
+	defw 0x65a9 - 0x001a - 4 * 0x0080 + 0x03fc
+	defw 0x65a9 - 0x001a - 4 * 0x0080 + 0x03fc
+	defw 0x65a9 + 0x0700
 
 ENDP
 
@@ -323,10 +344,10 @@ PROC
 _skip	ld b, 0x01
 	ret
 
-_table	defw 0x66a9		; Not used
-	defw 0x66a9 - 0x001a - 4 * 0x0080 + 0x03fc - 0x000c
-	defw 0x66a9 - 0x001a - 4 * 0x0080 + 0x03fc
-	defw 0x66a9 + 0x0700
+_table	defw 0x65a9		; Not used
+	defw 0x65a9 - 0x001a - 4 * 0x0080 + 0x03fc - 0x000c
+	defw 0x65a9 - 0x001a - 4 * 0x0080 + 0x03fc
+	defw 0x65a9 + 0x0700
 
 ENDP
 

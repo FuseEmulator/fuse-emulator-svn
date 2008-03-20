@@ -1,6 +1,6 @@
 ; Fuse regression testing harness
 
-; Copyright 2007 Philip Kendall <philip-fuse@shadowmagic.org.uk>
+; Copyright 2007-2008 Philip Kendall <philip-fuse@shadowmagic.org.uk>
 	
 ; This program is licensed under the GNU General Public License. See the
 ; file `COPYING' for details
@@ -43,8 +43,40 @@ _ok
 	call printstring
 	pop hl
 	call guessmachine
+	
+	ld hl, _offsetstring
+	call printstring
+	call first_contended
+	ld hl, first_offset
+	ld a, (hl)
+	cp 0x80
+	jp nc, _first_fail
+
+_first_digits
+	push af
+	ld hl, _hexstring
+	call printstring
+	pop af
+	call printa
+
+_first2
 	ld a, 0x0d
-	rst 0x10	
+	rst 0x10
+	ld a, 0x0d
+	rst 0x10
+
+	ld hl, first_offset
+	ld a, (hl)
+	add a, 0xe8
+	ld hl, first_delay_1
+	ld (hl), a
+
+	ld hl, first_offset
+	ld a, (hl)
+	neg
+	add a, 0xf8
+	ld hl, first_delay_2
+	ld (hl), a
 
 	ld hl, _testdata
 
@@ -99,6 +131,29 @@ _jumphl ld e,(hl)
 	ld d,(hl)
 	ex de,hl
 	jp (hl)
+
+_first_fail
+	jr z, _first_fail_sync
+	cp 0x81
+	jr z, _first_fail_short
+	cp 0x82
+	jp nz, _first_digits
+	ld hl, _notfound_string
+
+_first_fail2
+	call printstring
+	ld hl, first_offset
+	ld a, 0x08
+	ld (hl), a
+	jp _first2
+
+_first_fail_sync
+	ld hl, _nosync_string
+	jr _first_fail2
+
+_first_fail_short
+	ld hl, _short_string
+	jr _first_fail2
 	
 _passstring defb '... passed', 0x0d, 0
 _failstring1 defb '... failed (0x', 0
@@ -143,6 +198,12 @@ _framestring defb 'Frame length ', 0
 _unknownstring defb 'unknown', 0x0d, 0
 _conststring defb '0x8000 + 0x', 0
 _machinetype defb 'Machine type: ', 0
+_offsetstring defb 'Contention offset: ', 0
+_hexstring defb '0x', 0
+
+_notfound_string defb 'no contention found', 0
+_nosync_string defb 'no sync', 0
+_short_string defb 'negative contention?', 0
 	
 ENDP
 
@@ -154,5 +215,6 @@ INCLUDE atiming.asm
 INCLUDE print.asm
 INCLUDE framelength.asm
 INCLUDE guessmachine.asm
+INCLUDE first.asm
 
 END	main
