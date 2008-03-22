@@ -355,12 +355,13 @@ ENDP
 
 hex3ffdreadtest
 PROC
-	ld hl, 0x3ffd
-	push hl
+	ld de, 0x3ffd
 	ld hl, _table
-	push hl
 
-	jp hex7ffdreadtest_common
+	call hex7ffdreadtest_common
+
+	cp 0x02
+	ret
 
 _table	defw 0x0000
 	defw 0x3696
@@ -369,12 +370,13 @@ ENDP
 
 hex7ffdreadtest
 PROC
-	ld hl, 0x7ffd
-	push hl
+	ld de, 0x7ffd
 	ld hl, _table
-	push hl
 
-	jp hex7ffdreadtest_common
+	call hex7ffdreadtest_common
+
+	cp 0x04
+	ret
 	
 _table	defw 0x0000
 	defw 0x368c
@@ -383,6 +385,9 @@ ENDP
 
 hex7ffdreadtest_common
 PROC
+	push de
+	push hl
+	
 	ld a, (guessmachine_guess)
 	cp 0x01
 	jp nz, _skip
@@ -429,8 +434,6 @@ PROC
 	in a,(c)
 
 	ld a, (0xe000)
-	cp 0x00
-
 	ld b, 0x00
 
 _end	push af
