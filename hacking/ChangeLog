@@ -517,7 +517,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20070904 plusd.c: fix support for +D snapshots (fixes bug #1765021) (Stuart).
 20070904 Makefile.am: rebuild make-perl when config.h is updated (Stuart).
 20070905 Makefile.am: clean generated files on 'make clean' etc. (Stuart).
-20070905 configure.in: add --disable-libaudiofile option (Stuart).
+20070905 configure.in: add --without-libaudiofile option (Stuart).
 20070925 test/invalid-warajevo-blockoffset.tap: reduce to minimal testcase.
 20070925 Makefile.am,test/{Makefile.am,complete-tzx.pl,edges.c,test.c,test.h,
 	 test15.c}: add beginnings of test to check implementation of every
@@ -628,3 +628,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080319 ide.c: changes to allow DivIDE to support FATware from
          http://www.dusky.sk/zxs/; improved implementation of INITIALIZE
          DEVICE PARAMETERS command.
+20080322 configure.in: add --without-libgcrypt option (Stuart).

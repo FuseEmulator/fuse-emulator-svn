@@ -71,8 +71,16 @@ AC_CHECK_HEADERS(
   AC_SEARCH_LIBS(compress2, z zdll)
 )
 
-dnl Check for libgcrypt
-AC_CHECK_HEADERS(gcrypt.h,LIBS="$LIBS -lgcrypt")
+dnl Check whether to use libgcrypt
+AC_MSG_CHECKING(whether to use libgcrypt)
+AC_ARG_WITH(libgcrypt,
+[  --without-libgcrypt     don't use libgcrypt],
+if test "$withval" = no; then libgcrypt=no; else libgcrypt=yes; fi,
+libgcrypt=yes)
+AC_MSG_RESULT($libgcrypt)
+if test "$libgcrypt" = yes; then
+  AC_CHECK_HEADERS(gcrypt.h,LIBS="$LIBS -lgcrypt")
+fi
 
 dnl Check for libbz2 1.0 or greater
 AC_CHECK_HEADER(
