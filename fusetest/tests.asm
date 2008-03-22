@@ -363,7 +363,7 @@ PROC
 	jp hex7ffdreadtest_common
 
 _table	defw 0x0000
-	defw 0x3796
+	defw 0x3696
 
 ENDP
 
@@ -377,7 +377,7 @@ PROC
 	jp hex7ffdreadtest_common
 	
 _table	defw 0x0000
-	defw 0x378c
+	defw 0x368c
 
 ENDP
 
@@ -418,6 +418,9 @@ PROC
 
 	cp 0x00
 	jr nz, _fail
+
+	ld hl, (first_delay_1)
+	call delay
 
 	ld hl, (_delay)
 	call delay
