@@ -457,11 +457,13 @@ _end	push af
 	ret
 
 _fail	pop hl
+	ld a, 0xff
 	ld b, 0x02
 	jr _end
 
 _skip	pop hl
 	pop hl
+	ld a, 0xff
 	ld b, 0x01
 	ret
 
