@@ -151,6 +151,13 @@ write_tape( char *filename, libspectrum_tape *tape )
     pulse_length = balance_tstates / scale;
     balance_tstates = balance_tstates % scale;
 
+    /* TZXs produced by snap2tzx have very tight tolerances, err on the side of
+       producing a pulse that is too long rather than too short */
+    if( balance_tstates > scale>>1 ) {
+      pulse_length++;
+      balance_tstates = 0;
+    }
+
     if( tape_length + pulse_length > length ) {
       length *= 2;
       buffer = realloc( buffer, length );
