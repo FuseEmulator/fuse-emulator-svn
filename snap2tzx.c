@@ -881,7 +881,7 @@ add_rom_block( libspectrum_tape *tape, const libspectrum_byte flag,
   error = libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
   if( error ) { free( buffer ); return error; }
 
-  libspectrum_tape_block_set_pause( block, 0 );
+  libspectrum_tape_block_set_pause( block, 100 );
   libspectrum_tape_block_set_data_length( block, length + 2 );
   libspectrum_tape_block_set_data( block, buffer );
 
@@ -1099,7 +1099,7 @@ add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
   error = libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
   if( error ) { free( *loader ); return error; }
 
-  libspectrum_tape_block_set_pause( block, 0 );
+  libspectrum_tape_block_set_pause( block, 100 );
   libspectrum_tape_block_set_data_length( block, length );
   libspectrum_tape_block_set_data( block, (*loader) );
 
@@ -1147,7 +1147,7 @@ create_turbo_header( libspectrum_tape_block *block, int speed )
   libspectrum_tape_block_set_bit0_length( block, ptr->bit_length );
   libspectrum_tape_block_set_bit1_length( block, ptr->bit_length * 2 );
   libspectrum_tape_block_set_bits_in_last_byte( block, 8 );
-  libspectrum_tape_block_set_pause( block, 0 );
+  libspectrum_tape_block_set_pause( block, 100 );
 
   return 0;
 }
