@@ -230,3 +230,6 @@
 20080306 .: ignore profile2map.
 20080330 tape2wav.c: round up when quantising a pulse to a sample rate
          (fixes bug #1922528) (Fred).
+20080331 snap2tzx.c: add 100ms pause between blocks to ensure there is a
+         decent gap between edges in adjacent blocks (fixes bug #1929571)
+         (Fred).
