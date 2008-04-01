@@ -629,3 +629,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          http://www.dusky.sk/zxs/; improved implementation of INITIALIZE
          DEVICE PARAMETERS command.
 20080322 configure.in: add --without-libgcrypt option (Stuart).
+20080401 libspectrum.h.in,tape.c,test/{edges.c,test.h,test15.c}: add support
+	 for tape acceleration (patch #1880376).

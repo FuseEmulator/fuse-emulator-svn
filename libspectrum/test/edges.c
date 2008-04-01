@@ -1,7 +1,8 @@
 #include "test.h"
 
 test_return_t
-check_edges( const char *filename, test_edge_sequence_t *edges )
+check_edges( const char *filename, test_edge_sequence_t *edges,
+	     int flags_mask )
 {
   libspectrum_byte *buffer = NULL;
   size_t filesize = 0;
@@ -36,6 +37,8 @@ check_edges( const char *filename, test_edge_sequence_t *edges )
       libspectrum_tape_free( tape );
       return TEST_INCOMPLETE;
     }
+
+    flags &= flags_mask;
 
     if( tstates != ptr->length || flags != ptr->flags ) {
       fprintf( stderr, "%s: expected %d tstates and flags %d, got %d tstates and flags %d\n",
