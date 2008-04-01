@@ -22,7 +22,8 @@ typedef struct test_edge_sequence_t {
 int read_file( libspectrum_byte **buffer, size_t *length,
 	       const char *filename );
 
-test_return_t check_edges( const char *filename, test_edge_sequence_t *edges );
+test_return_t check_edges( const char *filename, test_edge_sequence_t *edges,
+			   int flags_mask );
 
 test_return_t test_15( void );
 
