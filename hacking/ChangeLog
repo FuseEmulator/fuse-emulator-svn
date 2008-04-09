@@ -631,3 +631,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080322 configure.in: add --without-libgcrypt option (Stuart).
 20080401 libspectrum.h.in,tape.c,test/{edges.c,test.h,test15.c}: add support
 	 for tape acceleration (patch #1880376).
+20080409 szx.c: write 2 ROMs totalling 32k for Pentagon 128k and 3 ROMs
+         totalling 48k for newer Pentagon models (Fred).

@@ -2074,6 +2074,7 @@ write_rom_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *leng
     }
     break;
   case LIBSPECTRUM_MACHINE_128:
+  case LIBSPECTRUM_MACHINE_PENT:
   case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_SE:
     /* 2 ROMs = 32k */
@@ -2093,15 +2094,11 @@ write_rom_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr, size_t *leng
       return LIBSPECTRUM_ERROR_NONE;
     }
     break;
-  case LIBSPECTRUM_MACHINE_PENT:
   case LIBSPECTRUM_MACHINE_PENT512:
   case LIBSPECTRUM_MACHINE_PENT1024:
-    /* 2 ROMs = 32k */
-    /* FIXME: This is a conflict with Fuse - szx specs say Pentagon 128k snaps
-       will total 32k, Fuse also has the 'gluck.rom' and totals 48k, the szx
-       spec has nothing to say about Pentagon 512k and 1024k */
-    if( ( libspectrum_snap_custom_rom_pages( snap ) != 2 ||
-          data_length != 0x8000 ) ) {
+    /* 3 ROMs = 48k */
+    if( ( libspectrum_snap_custom_rom_pages( snap ) != 3 ||
+          data_length != 0xc000 ) ) {
       *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
       return LIBSPECTRUM_ERROR_NONE;
     }
