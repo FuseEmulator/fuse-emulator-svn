@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # accessor.pl: generate accessor functions
-# Copyright (c) 2003-2004 Philip Kendall
+# Copyright (c) 2003-2008 Philip Kendall
 
 # $Id$
 
@@ -27,7 +27,7 @@ use strict;
 
 print << "CODE";
 /* snap_accessors.c: simple accessor functions for libspectrum_snap
-   Copyright (c) 2003-2004 Philip Kendall
+   Copyright (c) 2003-2008 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -174,6 +174,9 @@ struct libspectrum_snap {
   size_t joystick_active_count;
   libspectrum_joystick joystick_list[ SNAPSHOT_JOYSTICKS ];
   int joystick_inputs[ SNAPSHOT_JOYSTICKS ];
+
+  /* Kempston mouse status */
+  int kempston_mouse_active;
 };
 
 /* Initialise a libspectrum_snap structure */

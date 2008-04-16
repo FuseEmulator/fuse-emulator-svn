@@ -1,5 +1,5 @@
 /* snapshot.c: Snapshot handling routines
-   Copyright (c) 2001-2003 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2008 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -167,6 +167,8 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
     libspectrum_snap_set_joystick_list( *snap, i, LIBSPECTRUM_JOYSTICK_NONE );
     libspectrum_snap_set_joystick_inputs( *snap, i, 0 );
   }
+
+  libspectrum_snap_set_kempston_mouse_active( *snap, 0 );
 
   return LIBSPECTRUM_ERROR_NONE;
 }

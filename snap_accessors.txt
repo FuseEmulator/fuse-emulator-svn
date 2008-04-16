@@ -1,5 +1,5 @@
 # snap_accessors.txt: simple accessors for libspectrum_snap
-# Copyright (c) 2003 Philip Kendall
+# Copyright (c) 2003-2008 Philip Kendall
 
 # $Id$
 
@@ -132,3 +132,5 @@ int issue2
 size_t joystick_active_count
 libspectrum_joystick joystick_list 1
 int joystick_inputs 1
+
+int kempston_mouse_active
