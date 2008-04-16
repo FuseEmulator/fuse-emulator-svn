@@ -566,6 +566,8 @@ The available properties (along with their types) are:
 * libspectrum_joystick joystick_list[ SNAPSHOT_JOYSTICKS ]
 * int joystick_inputs[ SNAPSHOT_JOYSTICKS ]
 
+* int kempston_mouse_active
+
 Most of those should be fairly self-explanatory; those which may not
 be are:
 

@@ -633,3 +633,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 for tape acceleration (patch #1880376).
 20080409 szx.c: write 2 ROMs totalling 32k for Pentagon 128k and 3 ROMs
          totalling 48k for newer Pentagon models (Fred).
+20080417 accessor.pl,doc/libspectrum.txt,snap_accessors.txt,snapshot.c,szx.c:
+         add support for Kempston mouse for szx snapshots (Fred).

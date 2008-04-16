@@ -97,8 +97,18 @@ typedef enum szx_joystick_type {
 } szx_joystick_type;
 
 #define ZXSTBID_IF2ROM "IF2R"
+
 #define ZXSTBID_MOUSE "AMXM"
+typedef enum szx_mouse_type {
+
+  ZXSTM_NONE = 0,
+  ZXSTM_AMX,
+  ZXSTM_KEMPSTON,
+
+} szx_mouse_type;
+
 #define ZXSTBID_ROM "ROM\0"
+
 #define ZXSTBID_ZXPRINTER "ZXPR"
 
 #define ZXSTBID_IF1 "IF1\0"
@@ -170,6 +180,9 @@ write_z80r_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_spcr_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap );
+static libspectrum_error
+write_amxm_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_joy_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -849,6 +862,39 @@ read_keyb_chunk( libspectrum_snap *snap, libspectrum_word version,
 }
 
 static libspectrum_error
+read_amxm_chunk( libspectrum_snap *snap, libspectrum_word version,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
+{
+  if( data_length != 7 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "read_amxm_chunk: unknown length %lu",
+			     (unsigned long)data_length );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  switch( **buffer ) {
+  case ZXSTM_AMX:
+    break;
+  case ZXSTM_KEMPSTON:
+    libspectrum_snap_set_kempston_mouse_active( snap, 1 );
+    break;
+  case ZXSTM_NONE:
+  default:
+    break;
+  }
+  (*buffer)++;
+
+  /* Z80 PIO CTRLA registers for AMX mouse */
+  (*buffer)++; (*buffer)++; (*buffer)++;
+
+  /* Z80 PIO CTRLB registers for AMX mouse */
+  (*buffer)++; (*buffer)++; (*buffer)++;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
 read_ramp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 		 const libspectrum_byte **buffer,
 		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
@@ -1463,7 +1509,7 @@ static struct read_chunk_t read_chunks[] = {
   { ZXSTBID_JOYSTICK,	    read_joy_chunk  },
   { ZXSTBID_KEYBOARD,	    read_keyb_chunk },
   { ZXSTBID_MICRODRIVE,	    skip_chunk      },
-  { ZXSTBID_MOUSE,	    skip_chunk      },
+  { ZXSTBID_MOUSE,	    read_amxm_chunk },
   { ZXSTBID_MULTIFACE,	    skip_chunk      },
   { ZXSTBID_PLUS3DISK,	    skip_chunk      },
   { ZXSTBID_PLUSD,	    read_plsd_chunk },
@@ -1778,6 +1824,11 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
     if( error ) return error;
   }
 
+  if( libspectrum_snap_kempston_mouse_active( snap ) ) {
+    error = write_amxm_chunk( buffer, &ptr, length, snap );
+    if( error ) return error;
+  }
+
   /* Set length to be actual length, not allocated length */
   *length = ptr - *buffer;
 
@@ -2022,6 +2073,29 @@ write_joy_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   write_joystick( ptr, out_flags, snap, LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_1 );
   write_joystick( ptr, out_flags, snap, LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2 );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_amxm_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_error error;
+
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_MOUSE, 7 );
+  if( error ) return error;
+
+  if( libspectrum_snap_kempston_mouse_active( snap ) )
+    *(*ptr)++ = ZXSTM_KEMPSTON;
+  else
+    *(*ptr)++ = ZXSTM_NONE;
+
+  /* Z80 PIO CTRLA registers for AMX mouse */
+  *(*ptr)++ = '\0'; *(*ptr)++ = '\0'; *(*ptr)++ = '\0';
+
+  /* Z80 PIO CTRLB registers for AMX mouse */
+  *(*ptr)++ = '\0'; *(*ptr)++ = '\0'; *(*ptr)++ = '\0';
 
   return LIBSPECTRUM_ERROR_NONE;
 }
