@@ -170,6 +170,8 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
 
   libspectrum_snap_set_kempston_mouse_active( *snap, 0 );
 
+  libspectrum_snap_set_simpleide_active( *snap, 0 );
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 

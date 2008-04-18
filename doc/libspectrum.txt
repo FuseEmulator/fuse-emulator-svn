@@ -568,6 +568,8 @@ The available properties (along with their types) are:
 
 * int kempston_mouse_active
 
+* int simpleide_active
+
 Most of those should be fairly self-explanatory; those which may not
 be are:
 

@@ -158,6 +158,9 @@ static const libspectrum_byte ZXSTPDRT_CUSTOM = 2;
 
 #define ZXSTBID_PLUSDDISK "PDSK"
 
+#define ZXSTBID_SIMPLEIDE "SIDE"
+static const libspectrum_word ZXSTSIDE_ENABLED = 1;
+
 static libspectrum_error
 read_chunk( libspectrum_snap *snap, libspectrum_word version,
 	    const libspectrum_byte **buffer, const libspectrum_byte *end );
@@ -234,6 +237,9 @@ static libspectrum_error
 write_cfrp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap, int page,
 		  int compress );
+static libspectrum_error
+write_side_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap );
 
 #ifdef HAVE_ZLIB_H
 
@@ -688,6 +694,26 @@ read_cfrp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   }
 
   libspectrum_snap_set_zxcf_ram( snap, page, data );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+read_side_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
+{
+  libspectrum_word flags;
+
+  if( data_length != 2 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "%s:read_side_chunk: unknown length %lu",
+			     __FILE__, (unsigned long)data_length );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  flags = libspectrum_read_word( buffer );
+  libspectrum_snap_set_simpleide_active( snap, flags & ZXSTSIDE_ENABLED );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -1516,6 +1542,7 @@ static struct read_chunk_t read_chunks[] = {
   { ZXSTBID_PLUSDDISK,	    skip_chunk      },
   { ZXSTBID_RAMPAGE,	    read_ramp_chunk },
   { ZXSTBID_ROM,	    read_rom_chunk  },
+  { ZXSTBID_SIMPLEIDE,	    read_side_chunk },
   { ZXSTBID_SPECDRUM,	    skip_chunk      },
   { ZXSTBID_SPECREGS,	    read_spcr_chunk },
   { ZXSTBID_TIMEXREGS,	    read_scld_chunk },
@@ -1826,6 +1853,11 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
 
   if( libspectrum_snap_kempston_mouse_active( snap ) ) {
     error = write_amxm_chunk( buffer, &ptr, length, snap );
+    if( error ) return error;
+  }
+
+  if( libspectrum_snap_simpleide_active( snap ) ) {
+    error = write_side_chunk( buffer, &ptr, length, snap );
     if( error ) return error;
   }
 
@@ -2818,6 +2850,21 @@ write_dock_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   error = write_ram_page( buffer, ptr, length, ZXSTBID_DOCK, data, 0x2000,
 			  page, compress, extra_flags );
   if( error ) return error;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_side_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_word flags = 0;
+  libspectrum_error error;
+
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_SIMPLEIDE, 2 );
+
+  flags |= ZXSTSIDE_ENABLED;
+  libspectrum_write_word( ptr, flags );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
