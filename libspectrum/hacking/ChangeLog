@@ -635,3 +635,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          totalling 48k for newer Pentagon models (Fred).
 20080417 accessor.pl,doc/libspectrum.txt,snap_accessors.txt,snapshot.c,szx.c:
          add support for Kempston mouse for szx snapshots (Fred).
+20080418 accessor.pl,doc/libspectrum.txt,snap_accessors.txt,snapshot.c,szx.c:
+         add support for Simple 8-bit IDE interface for szx snapshots (Fred).

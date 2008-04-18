@@ -134,3 +134,5 @@ libspectrum_joystick joystick_list 1
 int joystick_inputs 1
 
 int kempston_mouse_active
+
+int simpleide_active

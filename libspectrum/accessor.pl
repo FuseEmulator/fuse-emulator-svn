@@ -177,6 +177,9 @@ struct libspectrum_snap {
 
   /* Kempston mouse status */
   int kempston_mouse_active;
+
+  /* Simple 8-bit IDE status */
+  int simpleide_active;
 };
 
 /* Initialise a libspectrum_snap structure */
