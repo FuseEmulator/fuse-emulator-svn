@@ -637,3 +637,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          add support for Kempston mouse for szx snapshots (Fred).
 20080418 accessor.pl,doc/libspectrum.txt,snap_accessors.txt,snapshot.c,szx.c:
          add support for Simple 8-bit IDE interface for szx snapshots (Fred).
+20080422 szx.c: don't bother with enabled flag for the Simple 8-bit IDE block
+         on the suggestion of Jon Needle (Fred).
