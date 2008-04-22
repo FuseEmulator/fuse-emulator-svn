@@ -703,17 +703,14 @@ read_side_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 		 const libspectrum_byte **buffer,
 		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
 {
-  libspectrum_word flags;
-
-  if( data_length != 2 ) {
+  if( data_length ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "%s:read_side_chunk: unknown length %lu",
 			     __FILE__, (unsigned long)data_length );
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
-  flags = libspectrum_read_word( buffer );
-  libspectrum_snap_set_simpleide_active( snap, flags & ZXSTSIDE_ENABLED );
+  libspectrum_snap_set_simpleide_active( snap, 1 );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -2858,13 +2855,9 @@ static libspectrum_error
 write_side_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap )
 {
-  libspectrum_word flags = 0;
   libspectrum_error error;
 
-  error = write_chunk_header( buffer, ptr, length, ZXSTBID_SIMPLEIDE, 2 );
-
-  flags |= ZXSTSIDE_ENABLED;
-  libspectrum_write_word( ptr, flags );
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_SIMPLEIDE, 0 );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
