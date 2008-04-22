@@ -313,10 +313,12 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
   if( libspectrum_snap_beta_active( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
 
-  /* We don't save the ZXATASP or ZXCF at all */
+  /* We don't save IDE interface info at all */
   if( libspectrum_snap_zxatasp_active( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
   if( libspectrum_snap_zxcf_active( snap ) )
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+  if( libspectrum_snap_simpleide_active( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
 
   /* We don't save the Interface II ROM at all */
