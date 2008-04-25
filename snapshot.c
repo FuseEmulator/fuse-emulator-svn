@@ -172,6 +172,16 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
 
   libspectrum_snap_set_simpleide_active( *snap, 0 );
 
+  libspectrum_snap_set_divide_active( *snap, 0 );
+  libspectrum_snap_set_divide_eprom_writeprotect( *snap, 0 );
+  libspectrum_snap_set_divide_paged( *snap, 0 );
+  libspectrum_snap_set_divide_control( *snap, 0 );
+  libspectrum_snap_set_divide_pages( *snap, 0 );
+  libspectrum_snap_set_divide_eprom( *snap, 0, NULL );
+  for( i = 0; i < SNAPSHOT_DIVIDE_PAGES; i++ ) {
+    libspectrum_snap_set_divide_ram( *snap, i, NULL );
+  }
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 

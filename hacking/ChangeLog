@@ -641,3 +641,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          on the suggestion of Jon Needle (Fred).
 20080422 sna.c,z80.c: note info loss of Simple 8-bit IDE info when writing z80
          and sna format snapshots (Fred).
+20080425 accessor.pl,doc/libspectrum.txt,internals.h,sna.c,snap_accessors.txt,
+         snapshot.c,szx.c,z80.c: add support for DivIDE interface for szx
+         snapshots (Fred).

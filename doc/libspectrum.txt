@@ -570,6 +570,14 @@ The available properties (along with their types) are:
 
 * int simpleide_active
 
+* int divide_active
+* int divide_eprom_writeprotect
+* int divide_paged
+* libspectrum_byte divide_control
+* size_t divide_pages
+* libspectrum_byte* divide_eprom[1]
+* libspectrum_byte* divide_ram[4]
+
 Most of those should be fairly self-explanatory; those which may not
 be are:
 
