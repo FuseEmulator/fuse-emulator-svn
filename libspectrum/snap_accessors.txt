@@ -136,3 +136,11 @@ int joystick_inputs 1
 int kempston_mouse_active
 
 int simpleide_active
+
+int divide_active
+int divide_eprom_writeprotect
+int divide_paged
+libspectrum_byte divide_control
+size_t divide_pages
+libspectrum_byte* divide_eprom 1
+libspectrum_byte* divide_ram 1

@@ -161,6 +161,13 @@ static const libspectrum_byte ZXSTPDRT_CUSTOM = 2;
 #define ZXSTBID_SIMPLEIDE "SIDE"
 static const libspectrum_word ZXSTSIDE_ENABLED = 1;
 
+#define ZXSTBID_DIVIDE "DIDE"
+static const libspectrum_word ZXSTDIVIDE_EPROM_WRITEPROTECT = 1;
+static const libspectrum_word ZXSTDIVIDE_PAGED = 2;
+static const libspectrum_word ZXSTDIVIDE_COMPRESSED = 4;
+
+#define ZXSTBID_DIVIDERAMPAGE "DIRP"
+
 static libspectrum_error
 read_chunk( libspectrum_snap *snap, libspectrum_word version,
 	    const libspectrum_byte **buffer, const libspectrum_byte *end );
@@ -254,6 +261,13 @@ write_dock_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap, int exrom_dock,
                   const libspectrum_byte *data, int page, int writeable,
                   int compress );
+static libspectrum_error
+write_dide_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap, int compress );
+static libspectrum_error
+write_dirp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap, int page,
+		  int compress );
 
 static libspectrum_error
 write_chunk_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
@@ -1499,6 +1513,124 @@ read_dock_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 }
 
 static libspectrum_error
+read_dide_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
+{
+  libspectrum_error error;
+  libspectrum_word flags;
+  libspectrum_byte *eprom_data = NULL;
+  const size_t expected_length = 0x2000;
+
+  if( data_length < 4 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "%s:read_dide_chunk: unknown length %lu",
+			     __FILE__, (unsigned long)data_length );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  flags = libspectrum_read_word( buffer );
+  libspectrum_snap_set_divide_active( snap, 1 );
+  libspectrum_snap_set_divide_eprom_writeprotect(
+                                      snap,
+                                      !!(flags & ZXSTDIVIDE_EPROM_WRITEPROTECT)
+                                    );
+  libspectrum_snap_set_divide_paged( snap, !!(flags & ZXSTDIVIDE_PAGED) );
+
+  libspectrum_snap_set_divide_control( snap, **buffer ); (*buffer)++;
+  libspectrum_snap_set_divide_pages( snap, **buffer ); (*buffer)++;
+
+  if( flags & ZXSTDIVIDE_COMPRESSED ) {
+
+#ifdef HAVE_ZLIB_H
+
+    size_t uncompressed_length = 0;
+
+    error = libspectrum_zlib_inflate( *buffer, data_length - 4, &eprom_data,
+                                      &uncompressed_length );
+    if( error ) return error;
+
+    if( uncompressed_length != expected_length ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+                               "%s:read_dide_chunk: invalid EPROM length "
+                               "in compressed file, should be %lu, file "
+                               "has %lu",
+                               __FILE__,
+                               (unsigned long)expected_length,
+                               (unsigned long)uncompressed_length );
+      return LIBSPECTRUM_ERROR_UNKNOWN;
+    }
+
+    *buffer += data_length - 4;
+
+#else
+
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_UNKNOWN,
+      "%s:read_dide_chunk: zlib needed for decompression\n",
+      __FILE__
+    );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+
+#endif
+
+  } else {
+
+    if( data_length < 4 + expected_length ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+                               "%s:read_dide_chunk: length %lu too short, "
+                               "expected %lu",
+                               __FILE__, (unsigned long)data_length,
+                               (unsigned long)4 + expected_length );
+      return LIBSPECTRUM_ERROR_UNKNOWN;
+    }
+
+    eprom_data = malloc( expected_length );
+    if( !eprom_data ) {
+      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
+                               "%s:read_dide_chunk: out of memory at %d",
+                               __FILE__, __LINE__ );
+      return LIBSPECTRUM_ERROR_MEMORY;
+    }
+
+    memcpy( eprom_data, *buffer, expected_length );
+
+    *buffer += expected_length;
+
+  }
+
+  libspectrum_snap_set_divide_eprom( snap, 0, eprom_data );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+read_dirp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length )
+{
+  libspectrum_byte *data;
+  size_t page;
+  libspectrum_error error;
+  libspectrum_word flags;
+
+  error = read_ram_page( &data, &page, buffer, data_length, 0x2000, &flags );
+  if( error ) return error;
+
+  if( page >= SNAPSHOT_DIVIDE_PAGES ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+			     "%s:read_dirp_chunk: unknown page number %lu",
+			     __FILE__, (unsigned long)page );
+    free( data );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  libspectrum_snap_set_divide_ram( snap, page, data );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
 skip_chunk( libspectrum_snap *snap GCC_UNUSED,
 	    libspectrum_word version GCC_UNUSED,
 	    const libspectrum_byte **buffer,
@@ -1523,6 +1655,8 @@ static struct read_chunk_t read_chunks[] = {
   { ZXSTBID_BETADISK,	    skip_chunk      },
   { ZXSTBID_COVOX,	    skip_chunk      },
   { ZXSTBID_CREATOR,	    skip_chunk      },
+  { ZXSTBID_DIVIDE,	    read_dide_chunk },
+  { ZXSTBID_DIVIDERAMPAGE,  read_dirp_chunk },
   { ZXSTBID_DOCK,	    read_dock_chunk },
   { ZXSTBID_DSKFILE,	    skip_chunk      },
   { ZXSTBID_GS,		    skip_chunk      },
@@ -1856,6 +1990,16 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
   if( libspectrum_snap_simpleide_active( snap ) ) {
     error = write_side_chunk( buffer, &ptr, length, snap );
     if( error ) return error;
+  }
+
+  if( libspectrum_snap_divide_active( snap ) ) {
+    error = write_dide_chunk( buffer, &ptr, length, snap, compress );
+    if( error ) return error;
+
+    for( i = 0; i < libspectrum_snap_divide_pages( snap ); i++ ) {
+      error = write_dirp_chunk( buffer, &ptr, length, snap, i, compress );
+      if( error ) return error;
+    }
   }
 
   /* Set length to be actual length, not allocated length */
@@ -2858,6 +3002,81 @@ write_side_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   libspectrum_error error;
 
   error = write_chunk_header( buffer, ptr, length, ZXSTBID_SIMPLEIDE, 0 );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_dide_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap, int compress )
+{
+  libspectrum_error error;
+  libspectrum_byte *eprom_data = NULL;
+  libspectrum_byte *compressed_eprom_data = NULL;
+  size_t block_size;
+  libspectrum_word flags = 0;
+  libspectrum_word divide_eprom_length = 0;
+  libspectrum_word uncompressed_eprom_length = 0;
+  int use_compression = 0;
+
+  eprom_data = libspectrum_snap_divide_eprom( snap, 0 );
+  uncompressed_eprom_length = divide_eprom_length = 0x2000;
+
+#ifdef HAVE_ZLIB_H
+
+  if( eprom_data && compress ) {
+
+    size_t compressed_eprom_length;
+
+    error = libspectrum_zlib_compress( eprom_data, uncompressed_eprom_length,
+                                       &compressed_eprom_data,
+                                       &compressed_eprom_length );
+    if( error ) return error;
+
+    if( compress & LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS ||
+        compressed_eprom_length < uncompressed_eprom_length ) {
+      use_compression = 1;
+      eprom_data = compressed_eprom_data;
+      divide_eprom_length = compressed_eprom_length;
+    }
+
+  }
+
+#endif
+
+  block_size = 4 + divide_eprom_length;
+
+  error = write_chunk_header( buffer, ptr, length, ZXSTBID_DIVIDE, block_size );
+
+  if( libspectrum_snap_divide_eprom_writeprotect( snap ) )
+    flags |= ZXSTDIVIDE_EPROM_WRITEPROTECT;
+  if( libspectrum_snap_divide_paged( snap ) ) flags |= ZXSTDIVIDE_PAGED;
+  if( use_compression ) flags |= ZXSTDIVIDE_COMPRESSED;
+  libspectrum_write_word( ptr, flags );
+
+  *(*ptr)++ = libspectrum_snap_divide_control( snap );
+  *(*ptr)++ = libspectrum_snap_divide_pages( snap );
+
+  memcpy( *ptr, eprom_data, divide_eprom_length ); *ptr += divide_eprom_length;
+
+  if( compressed_eprom_data ) free( compressed_eprom_data );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_dirp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap, int page,
+		  int compress )
+{
+  libspectrum_error error;
+  const libspectrum_byte *data;
+
+  data = libspectrum_snap_divide_ram( snap, page );
+
+  error = write_ram_page( buffer, ptr, length, ZXSTBID_DIVIDERAMPAGE, data,
+			  0x2000, page, compress, 0x00 );
+  if( error ) return error;
 
   return LIBSPECTRUM_ERROR_NONE;
 }

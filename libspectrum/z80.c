@@ -1177,6 +1177,8 @@ libspectrum_z80_write2( libspectrum_byte **buffer, size_t *length,
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
   if( libspectrum_snap_simpleide_active( snap ) )
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
+  if( libspectrum_snap_divide_active( snap ) )
+    *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
 
   /* .z80 format may be able to store an IF2 ROM instead of the 48K ROM but
      not for now */

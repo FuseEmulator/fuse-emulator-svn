@@ -180,6 +180,15 @@ struct libspectrum_snap {
 
   /* Simple 8-bit IDE status */
   int simpleide_active;
+
+  /* DivIDE status */
+  int divide_active;
+  int divide_eprom_writeprotect;
+  int divide_paged;
+  libspectrum_byte divide_control;
+  size_t divide_pages;
+  libspectrum_byte* divide_eprom[ 1 ];
+  libspectrum_byte* divide_ram[ SNAPSHOT_DIVIDE_PAGES ];
 };
 
 /* Initialise a libspectrum_snap structure */
