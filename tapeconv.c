@@ -1,5 +1,5 @@
-/* tapeconf.c: Convert .tzx files to .tap files
-   Copyright (c) 2002-2003 Philip Kendall
+/* tapeconv.c: Convert .tzx files to .tap files
+   Copyright (c) 2002-2008 Philip Kendall, Fredrick Meunier
 
    $Id$
 
@@ -34,33 +34,84 @@
 
 #include "utils.h"
 
+#define DESCRIPTION_BUFFER_LEN 0x10
+
 static int get_type_from_string( libspectrum_id_t *type, const char *string );
 static int read_tape( char *filename, libspectrum_tape **tape );
+static int update_archive_file( char *archive_file, libspectrum_tape *tape );
+static int append_scr_file( char *scr_file, libspectrum_tape *tape );
+static int append_inlay_file( char *inlay_file, libspectrum_tape *tape );
 static int write_tape( char *filename, libspectrum_tape *tape );
+static int beautify_tzx_file( libspectrum_tape *tape );
+static int remove_block_type( libspectrum_tape *tape,
+                              libspectrum_tape_type id );
+static int is_filetype( const char* new_filename, const char* type );
 
 char *progname;
+
+char *archive_file = NULL;
+int beautify = 0;
+char *scr_file = NULL;
+char *inlay_file = NULL;
 
 int
 main( int argc, char **argv )
 {
-  int error;
+  int c, error;
   libspectrum_tape *tzx;
 
   progname = argv[0];
 
   error = init_libspectrum(); if( error ) return error;
 
+  while( ( c = getopt( argc, argv, "a:s:i:b" ) ) != -1 ) {
+
+    switch( c ) {
+
+    case 'a': archive_file = optarg ; break;
+    case 'b': beautify = 1; break;
+    case 's': scr_file = optarg ; break;
+    case 'i': inlay_file = optarg ; break;
+
+    }
+
+  }
+
+  argc -= optind;
+  argv += optind;
+
   if( argc < 2 ) {
     fprintf( stderr,
-             "%s: usage: %s <infile> <outfile>\n",
+             "%s: usage: %s [-s <scr file>] [-a <archive info tzx>] "
+             "[-b] [-i <inlay image>] <infile> <outfile>\n",
              progname,
 	     progname );
     return 1;
   }
 
-  if( read_tape( argv[1], &tzx ) ) return 1;
+  if( read_tape( argv[0], &tzx ) ) return 1;
 
-  if( write_tape( argv[2], tzx ) ) {
+  if( archive_file && update_archive_file( archive_file, tzx ) ) {
+    libspectrum_tape_free( tzx );
+    return 1;
+  }
+
+  if( scr_file && append_scr_file( scr_file, tzx ) ) {
+    libspectrum_tape_free( tzx );
+    return 1;
+  }
+
+  if( inlay_file && append_inlay_file( inlay_file, tzx ) ) {
+    libspectrum_tape_free( tzx );
+    return 1;
+  }
+
+  if( beautify && beautify_tzx_file( tzx ) ) {
+    libspectrum_tape_free( tzx );
+    return 1;
+  }
+
+  if( write_tape( argv[1], tzx ) ) {
     libspectrum_tape_free( tzx );
     return 1;
   }
@@ -107,6 +158,180 @@ read_tape( char *filename, libspectrum_tape **tape )
   }
 
   free( buffer );
+
+  return 0;
+}
+
+static int
+remove_block_type( libspectrum_tape *tape, libspectrum_tape_type id )
+{
+  libspectrum_error error;
+  libspectrum_tape_block* block;
+  libspectrum_tape_iterator iterator;
+
+  for( block = libspectrum_tape_iterator_init( &iterator, tape );
+       block;
+       block = libspectrum_tape_iterator_next( &iterator ) ) {
+    if( libspectrum_tape_block_type( block ) == id ) {
+      error = libspectrum_tape_remove_block( tape, iterator );
+      if( error ) return error;
+
+      /* Iterator is invalidated by delete, so start again */
+      block = libspectrum_tape_iterator_init( &iterator, tape );
+    }
+  }
+
+  return 0;
+}
+
+static int
+update_archive_file( char *archive_file, libspectrum_tape *tape )
+{
+  libspectrum_tape_block* info_block;
+  libspectrum_error error;
+  libspectrum_tape *tzx;
+  libspectrum_tape_iterator iterator;
+
+  if( read_tape( archive_file, &tzx ) ) return 1;
+
+  /* Get the new archive block */
+  info_block = libspectrum_tape_iterator_init( &iterator, tzx );
+  while( info_block &&
+         libspectrum_tape_block_type( info_block ) !=
+           LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO ) {
+    info_block = libspectrum_tape_iterator_next( &iterator );
+  }
+
+  if( !info_block ) {
+    libspectrum_tape_free( tzx );
+    return 1;
+  }
+
+  /* Remove any existing archive block */
+  error = remove_block_type( tape, LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO );
+  if( error ) { libspectrum_tape_free( tzx ); return error; }
+
+  /* Finally, put the new info block at the beginning of the block list */
+  error = libspectrum_tape_insert_block( tape, info_block, 0 );
+  if( error ) { libspectrum_tape_free( tzx ); return error; }
+
+  return 0;
+}
+
+static int
+append_scr_file( char *scr_file, libspectrum_tape *tape )
+{
+  libspectrum_tape_block* block;
+  char *description;
+  libspectrum_byte* scr_data; size_t scr_length;
+  libspectrum_byte* custom_block_data; size_t custom_block_length;
+  libspectrum_error error;
+
+  /* Get a new block */
+  error = libspectrum_tape_block_alloc( &block,
+					LIBSPECTRUM_TAPE_BLOCK_CUSTOM );
+  if( error ) return 1;
+
+  /* Get the description */
+  description = malloc( DESCRIPTION_BUFFER_LEN );
+  memcpy( description, "Spectrum Screen ", DESCRIPTION_BUFFER_LEN );
+  libspectrum_tape_block_set_text( block, description );
+
+  /* Read in the data */
+  if( read_file( scr_file, &scr_data, &scr_length ) ) {
+    free( description );
+    free( block );
+    return 1;
+  }
+
+  custom_block_length = scr_length + 2;
+  custom_block_data = malloc( custom_block_length );
+
+  /* Picture description length 0 == "Loading Screen" */
+  custom_block_data[0] = 0;
+  /* Border colour 0 == black */
+  custom_block_data[1] = 0;
+  /* and the SCR itself */
+  memcpy( custom_block_data + 2, scr_data, scr_length );
+
+  libspectrum_tape_block_set_data_length( block, custom_block_length );
+  libspectrum_tape_block_set_data( block, custom_block_data );
+
+  /* Finally, put the block into the block list */
+  error = libspectrum_tape_append_block( tape, block );
+  if( error ) { libspectrum_tape_block_free( block ); return error; }
+
+  return 0;
+}
+
+static int
+beautify_tzx_file( libspectrum_tape *tape )
+{
+  libspectrum_error error;
+
+  /* Remove any existing concat blocks */
+  error = remove_block_type( tape, LIBSPECTRUM_TAPE_BLOCK_CONCAT );
+  if( error ) { return error; }
+
+  return 0;
+}
+
+static int
+is_filetype( const char* new_filename, const char* type )
+{
+  return ( strlen( new_filename ) >= strlen(type) &&
+           !strcasecmp( new_filename + (strlen( new_filename ) - strlen(type) ),
+                        type ) );
+}
+static int
+append_inlay_file( char *inlay_file, libspectrum_tape *tape )
+{
+  libspectrum_tape_block* block;
+  char *description;
+  libspectrum_byte* jpg_data; size_t jpg_length;
+  libspectrum_byte* custom_block_data; size_t custom_block_length;
+  libspectrum_error error;
+
+  /* Get a new block */
+  error = libspectrum_tape_block_alloc( &block,
+					LIBSPECTRUM_TAPE_BLOCK_CUSTOM );
+  if( error ) return 1;
+
+  /* Get the description */
+  description = malloc( DESCRIPTION_BUFFER_LEN );
+  memcpy( description, "Picture        ", DESCRIPTION_BUFFER_LEN );
+  libspectrum_tape_block_set_text( block, description );
+
+  /* Read in the data */
+  if( read_file( inlay_file, &jpg_data, &jpg_length ) ) {
+    free( description );
+    free( block );
+    return 1;
+  }
+
+  custom_block_length = jpg_length + 2;
+  custom_block_data = malloc( custom_block_length );
+
+  /* Picture format */
+  if( is_filetype( inlay_file, ".jpg" ) ) {
+    custom_block_data[0] = 1;
+  } else if( is_filetype( inlay_file, ".gif" ) ) {
+    custom_block_data[0] = 0;
+  } else {
+    return 1;
+  }
+
+  /* Picture description length 0 == "Inlay Card" */
+  custom_block_data[1] = 0;
+  /* and the JPG itself */
+  memcpy( custom_block_data + 2, jpg_data, jpg_length );
+
+  libspectrum_tape_block_set_data_length( block, custom_block_length );
+  libspectrum_tape_block_set_data( block, custom_block_data );
+
+  /* Finally, put the block into the block list */
+  error = libspectrum_tape_append_block( tape, block );
+  if( error ) { libspectrum_tape_block_free( block ); return error; }
 
   return 0;
 }

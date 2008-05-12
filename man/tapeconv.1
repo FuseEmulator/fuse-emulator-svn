@@ -34,6 +34,10 @@ tapeconv \- Sinclair ZX Spectrum tape file converter
 .SH SYNOPSIS
 .PD 0
 .B tapeconv
+.RI "[ \-a " "archive info TZX" " ]"
+.RI "[ \-b ]"
+.RI "[ \-s " "SCR loading screen" " ]"
+.RI "[ \-i " "JPG or GIF inlay image" " ]"
 .I infile outfile
 .PD 1
 .\"
@@ -45,6 +49,23 @@ tapeconv converts between ZX Spectrum tape images.
 .\"------------------------------------------------------------------
 .\"
 .SH OPTIONS
+.TP
+.RI "\-a " "archive info TZX"
+causes the TZX supplied to be scanned for a Archive Info block containing
+author, year of relase etc. information about the file and then added to the
+output TZX.
+.TP
+.RI "[ \-b ]"
+causes the output TZX to be stripped of any concatenation blocks that get
+created when appending TZX files.
+.TP
+.RI "[ \-s " "SCR loading screen" " ]"
+causes the supplied .scr format file to be attached to the TZX as a Custom Info
+block marked as a loading screen.
+.TP
+.RI "[ \-i " "JPG or GIF inlay image" " ]"
+causes the supplied .gif or .jpg format file to be attached to the TZX as a
+Custom Info block marked as a cassette inlay.
 .TP
 .I infile
 specifies the tape file to be converted. This file can be in any of the
