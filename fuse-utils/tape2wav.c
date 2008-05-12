@@ -67,7 +67,7 @@ main( int argc, char **argv )
 
   if( argc < 2 ) {
     fprintf( stderr,
-             "%s: usage: %s <infile> <outfile>\n",
+             "%s: usage: %s [-r rate] <infile> <outfile>\n",
              progname,
 	     progname );
     return 1;

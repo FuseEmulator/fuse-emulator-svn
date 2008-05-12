@@ -236,3 +236,4 @@
 20080512 tapeconv.c,man/tapeconv.1: add options for updating archive info
          blocks, embedding loading screen and cassette inlays during
          conversion (Fred).
+20080512 tape2wav.c: add help text for rate option (Fred).
