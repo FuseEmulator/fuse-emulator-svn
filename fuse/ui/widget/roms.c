@@ -33,6 +33,7 @@
 #include "fuse.h"
 #include "settings.h"
 #include "widget_internals.h"
+#include "widget_standard.h"
 
 static settings_info *widget_settings;
 static widget_roms_info *info;

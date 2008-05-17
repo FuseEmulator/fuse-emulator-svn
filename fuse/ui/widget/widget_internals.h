@@ -62,6 +62,7 @@ int widget_end_all( widget_finish_state state );
 int widget_timer_init( void );
 int widget_timer_end( void );
 
+void widget_putpixel( int x, int y, int colour );
 void widget_rectangle( int x, int y, int w, int h, int col );
 int widget_printstring( int x, int y, int col, const char *s );
 int widget_printstring_fixed( int x, int y, int col, const char *s );
@@ -75,13 +76,7 @@ size_t widget_stringwidth( const char *s );
 size_t widget_substringwidth( const char *s, size_t count );
 size_t widget_charwidth( int c );
 
-void widget_up_arrow( int x, int y, int colour );
-void widget_down_arrow( int x, int y, int colour );
-
 extern widget_finish_state widget_finished;
-
-int widget_dialog( int x, int y, int width, int height );
-int widget_dialog_with_border( int x, int y, int width, int height );
 
 int split_message( const char *message, char ***lines, size_t *count,
 		   const size_t line_length );
@@ -191,14 +186,6 @@ void widget_text_keyhandler( input_key key );
 int widget_text_finish( widget_finish_state finished );
 
 extern char *widget_text_text;	/* The returned text */
-
-/* General functions used by options dialogs */
-extern settings_info widget_options_settings;
-int widget_options_print_option( int number, const char* string, int value );
-int widget_options_print_value( int number, int value );
-int widget_options_print_entry( int number, const char *prefix, int value,
-				const char *suffix );
-int widget_options_finish( widget_finish_state finished );
 
 /* The error widget */
 

@@ -42,7 +42,8 @@ libwidget_a_SOURCES = \
 	roms.c \
 	select.c \
 	text.c \
-	widget.c
+	widget.c \
+	widget_standard.c
 
 INCLUDES = @GTK_CFLAGS@ @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@ @SDL_CFLAGS@
 

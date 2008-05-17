@@ -51,6 +51,10 @@ print Fuse::GPL( 'options.h: options dialog boxes',
 #include "widget.h"
 #endif
 
+#include "widget_internals.h"
+
+int widget_options_finish( widget_finish_state finished );
+
 extern settings_info widget_options_settings;
 
 CODE

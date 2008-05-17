@@ -37,6 +37,7 @@
 #include "fuse.h"
 #include "tape.h"
 #include "widget_internals.h"
+#include "widget_standard.h"
 
 /* The descriptions of the blocks */
 static GSList *blocks;

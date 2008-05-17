@@ -31,6 +31,7 @@
 
 #include "fuse.h"
 #include "widget_internals.h"
+#include "widget_standard.h"
 
 widget_query_t widget_query;
 

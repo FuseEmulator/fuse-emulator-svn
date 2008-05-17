@@ -39,6 +39,7 @@
 #include "widget.h"
 #include "debugger/debugger.h"
 #include "widget_internals.h"
+#include "widget_standard.h"
 #include "z80/z80.h"
 #include "z80/z80_macros.h"
 #include "zxcf.h"

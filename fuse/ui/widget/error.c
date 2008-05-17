@@ -32,6 +32,7 @@
 
 #include "fuse.h"
 #include "widget_internals.h"
+#include "widget_standard.h"
 
 widget_error_t *error_info;
 

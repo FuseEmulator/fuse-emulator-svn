@@ -29,6 +29,7 @@
 #include <ctype.h>
 
 #include "widget_internals.h"
+#include "widget_standard.h"
 
 char *widget_text_text = NULL;	/* What we return the text in */
 

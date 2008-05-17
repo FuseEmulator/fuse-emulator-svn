@@ -45,6 +45,7 @@
 #include "ui/ui.h"
 #include "utils.h"
 #include "widget_internals.h"
+#include "widget_standard.h"
 
 #if defined AMIGA || defined __MORPHOS__
 #include <proto/asl.h>

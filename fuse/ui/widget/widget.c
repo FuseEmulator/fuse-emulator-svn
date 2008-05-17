@@ -42,9 +42,7 @@
 #include "machine.h"
 #include "ui/uidisplay.h"
 #include "keyboard.h"
-#include "options.h"
 #include "periph.h"
-#include "pokefinder/pokefinder.h"
 #include "screenshot.h"
 #include "timer/timer.h"
 #include "utils.h"
@@ -53,8 +51,6 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-
-static void widget_putpixel( int x, int y, int colour );
 
 /* Bitmap font storage */
 typedef struct {
@@ -81,7 +77,7 @@ widget_keyhandler_fn widget_keyhandler;
 /* The data used for recursive widgets */
 typedef struct widget_recurse_t {
 
-  widget_type type;		/* Which type of widget are we? */
+  int type;		/* Which type of widget are we? */
   void *data;			/* What data were we passed? */
 
   int finished;			/* Have we finished this widget yet? */
@@ -89,9 +85,6 @@ typedef struct widget_recurse_t {
 } widget_recurse_t;
 
 static widget_recurse_t widget_return[10]; /* The stack to recurse on */
-
-/* The settings used whilst playing with an options dialog box */
-settings_info widget_options_settings;
 
 static int widget_read_font( const char *filename )
 {
@@ -312,57 +305,6 @@ void widget_rectangle( int x, int y, int w, int h, int col )
         widget_putpixel( x + mx, y + my, col );
 }
 
-void widget_print_checkbox( int x, int y, int value )
-{
-    static const int CHECK_COLOR=7;
-    int z;
-
-    y += 2;
-    x += 6;
-    widget_rectangle( x, y - 1, 3, 3, WIDGET_COLOUR_BACKGROUND );
-    widget_rectangle( x - 5, y, 5, 5, 0 );
-    widget_rectangle( x - 4, y + 1, 3, 3, WIDGET_COLOUR_BACKGROUND );
-    if( value ) {	/* checked */
-      for( z = -1; z < 3; z++ ) {
-        widget_putpixel( x - z, y + z, CHECK_COLOR );
-        widget_putpixel( x - z + 1, y + z, CHECK_COLOR );
-      }
-      widget_putpixel( x - z + 1, y + z, CHECK_COLOR );
-      widget_putpixel( x - z, y + z - 1, CHECK_COLOR );
-      widget_putpixel( x - z, y + z - 2, CHECK_COLOR );
-      widget_putpixel( x - z - 1, y + z - 2, CHECK_COLOR );
-    }
-}
-
-/* Arrows for any scrollable widget */
-void
-widget_up_arrow( int x, int y, int colour )
-{
-  int i, j;
-  x = x * 8;
-  y = y * 8 + 7;
-  for( j = 6; j; --j ) {
-    for( i = (j + 1) / 2; i < 4; ++i ) {
-      widget_putpixel( x +     i, y - j, colour );
-      widget_putpixel( x + 7 - i, y - j, colour );
-    }
-  }
-}
-
-void
-widget_down_arrow( int x, int y, int colour )
-{
-  int i, j;
-  x = x * 8;
-  y = y * 8;
-  for( j = 6; j; --j ) {
-    for( i = (j + 1) / 2; i < 4; ++i ) {
-      widget_putpixel( x +     i, y + j, colour );
-      widget_putpixel( x + 7 - i, y + j, colour );
-    }
-  }
-}
-
 /* Force screen rasters y to (y+h) inclusive to be redrawn */
 void
 widget_display_rasters( int y, int h )
@@ -416,7 +358,7 @@ int widget_end( void )
 /* We don't start in a widget */
 int widget_level = -1;
 
-int widget_do( widget_type which, void *data )
+int widget_do( int which, void *data )
 {
   int error;
 
@@ -502,240 +444,9 @@ widget_finish( void )
   widget_end_all( WIDGET_FINISHED_OK );
 }
 
-int widget_dialog( int x, int y, int width, int height )
-{
-  widget_rectangle( 8*x, 8*y, 8*width, 8*height, WIDGET_COLOUR_BACKGROUND );
-  return 0;
-}
-
-int widget_dialog_with_border( int x, int y, int width, int height )
-{
-  int i;
-
-  widget_rectangle( 8*x-5, 8*y, 8*width+10, 8*height, WIDGET_COLOUR_BACKGROUND );
-
-  for( i = 0; i < 5; ++i) {
-    widget_rectangle (8*x+i-5, 8*y-i-1, 8*width+10-2*i, 1, WIDGET_COLOUR_BACKGROUND );
-    widget_rectangle (8*x+i-5, 8*(y+height)+i, 8*width+10-2*i, 1, WIDGET_COLOUR_BACKGROUND );
-  }
-
-  for( i=(8*x)-1; i<(8*(x+width))+1; i++ ) {
-    widget_putpixel( i, 8 *   y            - 4, WIDGET_COLOUR_FOREGROUND );
-    widget_putpixel( i, 8 * ( y + height ) + 3, WIDGET_COLOUR_FOREGROUND );
-  }
-
-  for( i=(8*y)-1; i<(8*(y+height))+1; i++ ) {
-    widget_putpixel( 8 *   x           - 4, i, WIDGET_COLOUR_FOREGROUND );
-    widget_putpixel( 8 * ( x + width ) + 3, i, WIDGET_COLOUR_FOREGROUND );
-  }
-
-  for( i=0; i<2; i++ ) {
-    widget_putpixel( 8 *   x           - 3 + i, 8 *   y            - 2 - i,
-		     WIDGET_COLOUR_FOREGROUND );
-    widget_putpixel( 8 * ( x + width ) + 2 - i, 8 *   y            - 2 - i,
-		     WIDGET_COLOUR_FOREGROUND );
-    widget_putpixel( 8 *   x           - 3 + i, 8 * ( y + height ) + 1 + i,
-		     WIDGET_COLOUR_FOREGROUND );
-    widget_putpixel( 8 * ( x + width ) + 2 - i, 8 * ( y + height ) + 1 + i,
-		     WIDGET_COLOUR_FOREGROUND );
-  }
-
-  widget_display_lines( y-1, height+2 );
-
-  return 0;
-}
-
-static void
+void
 widget_putpixel( int x, int y, int colour )
 {
   uidisplay_putpixel( x + DISPLAY_BORDER_ASPECT_WIDTH, y + DISPLAY_BORDER_HEIGHT,
                       colour );
-}
-
-/* General functions used by the options dialogs */
-
-static int widget_options_print_label( int number, const char *string );
-static int widget_options_print_data( int number, const char *string );
-
-int widget_options_print_option( int number, const char* string, int value )
-{
-  widget_options_print_label( number, string );
-  widget_options_print_value( number, value );
-  return 0;
-}
-
-static int widget_options_print_label( int number, const char *string )
-{
-  char buffer[128];
-  size_t l, w;
-
-  snprintf( buffer, sizeof( buffer ), "%s", string );
-  l = strlen( buffer );
-
-  if( l >= sizeof( buffer ) )
-    l = sizeof( buffer ) - 1;
-  while( ( w = widget_substringwidth( string, l ) ) >= 224 )
-    --l;
-  buffer[l] = '\0';
-  w = widget_printstring( 17, number*8+28, WIDGET_COLOUR_FOREGROUND, buffer )
-      - 1;
-  while ((w += 3) < 240)
-    widget_putpixel (w, number*8+35, 0);
-  return 0;
-}
-
-int widget_options_print_value( int number, int value )
-{
-  widget_rectangle( 233, number * 8 + 28, 7, 8, WIDGET_COLOUR_BACKGROUND );
-  widget_print_checkbox( 233, number * 8 + 28, value );
-  widget_display_rasters( number * 8 + 28, 8 );
-  return 0;
-}
-
-static int widget_options_print_data( int number, const char *string )
-{
-  size_t width = widget_stringwidth( string );
-  widget_rectangle( 240 - width - 2, number * 8 + 28, width + 2, 8,
-  		    WIDGET_COLOUR_BACKGROUND );
-  widget_printstring( 240 - width, number * 8 + 28,
-		      WIDGET_COLOUR_FOREGROUND, string );
-  widget_display_rasters( number * 8 + 28, 8 );
-
-  return 0;
-}
-
-int
-widget_options_print_entry( int number, const char *prefix, int value,
-			    const char *suffix )
-{
-  char buffer[128];
-  widget_options_print_label( number, prefix );
-  snprintf( buffer, sizeof( buffer ), "%d %s", value, suffix );
-  return widget_options_print_data( number, buffer );
-}
-
-int widget_options_finish( widget_finish_state finished )
-{
-  int error;
-
-  /* If we exited normally, actually set the options */
-  if( finished == WIDGET_FINISHED_OK ) {
-    error = settings_copy( &settings_current, &widget_options_settings );
-    settings_free( &widget_options_settings );
-    memset( &widget_options_settings, 0, sizeof( settings_info ) );
-    if( error ) return error;
-
-    /* Bring the peripherals list into sync with the new options */
-    periph_update();
-    /* make the needed UI changes */
-    uidisplay_hotswap_gfx_mode();
-  }
-
-  return 0;
-}
-
-/* The widgets actually available. Make sure the order here matches the
-   order defined in enum widget_type (widget.h) */
-
-widget_t widget_data[] = {
-
-  { widget_filesel_load_draw, widget_filesel_finish, widget_filesel_keyhandler  },
-  { widget_filesel_save_draw, widget_filesel_finish, widget_filesel_keyhandler  },
-  { widget_general_draw,  widget_options_finish, widget_general_keyhandler  },
-  { widget_picture_draw,  NULL,                  widget_picture_keyhandler  },
-  { widget_menu_draw,	  NULL,			 widget_menu_keyhandler     },
-  { widget_select_draw,   widget_select_finish,  widget_select_keyhandler   },
-  { widget_sound_draw,	  widget_options_finish, widget_sound_keyhandler    },
-  { widget_error_draw,	  NULL,			 widget_error_keyhandler    },
-  { widget_rzx_draw,      widget_options_finish, widget_rzx_keyhandler      },
-  { widget_browse_draw,   widget_browse_finish,  widget_browse_keyhandler   },
-  { widget_text_draw,	  widget_text_finish,	 widget_text_keyhandler     },
-  { widget_debugger_draw, NULL,			 widget_debugger_keyhandler },
-  { widget_pokefinder_draw, NULL,		 widget_pokefinder_keyhandler },
-  { widget_memory_draw,   NULL,			 widget_memory_keyhandler   },
-  { widget_roms_draw,     widget_roms_finish,	 widget_roms_keyhandler     },
-  { widget_peripherals_draw, widget_options_finish,
-			                      widget_peripherals_keyhandler },
-  { widget_query_draw,    NULL,			 widget_query_keyhandler    },
-  { widget_query_save_draw,NULL,		 widget_query_save_keyhandler },
-};
-
-#ifndef UI_SDL
-/* The statusbar handling functions */
-/* TODO: make these do something useful */
-int
-ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
-{
-  return 0;
-}
-
-#ifndef UI_X
-int
-ui_statusbar_update_speed( float speed )
-{
-  return 0;
-}
-#endif
-#endif                          /* #ifndef UI_SDL */
-
-/* Tape browser update function. The dialog box is created every time it
-   is displayed, so no need to do anything here */
-int
-ui_tape_browser_update( ui_tape_browser_update_type change,
-                        libspectrum_tape_block *block )
-{
-  return 0;
-}
-
-ui_confirm_save_t
-ui_confirm_save_specific( const char *message )
-{
-  if( widget_do( WIDGET_TYPE_QUERY_SAVE, (void *) message ) )
-    return UI_CONFIRM_SAVE_CANCEL;
-  return widget_query.save;
-}
-
-/* FIXME: make this do something useful */
-int
-ui_get_rollback_point( GSList *points )
-{
-  return -1;
-}
-
-static const char *joystick_connection[] = {
-  "None",
-  "Keyboard",
-  "Joystick 1",
-  "Joystick 2",
-};
-
-ui_confirm_joystick_t
-ui_confirm_joystick( libspectrum_joystick libspectrum_type, int inputs )
-{
-  widget_select_t info;
-  int error;
-  char title[80];
-
-  if( !settings_current.joy_prompt ) return UI_CONFIRM_JOYSTICK_NONE;
-
-  snprintf( title, sizeof( title ), "Configure %s joystick",
-	    libspectrum_joystick_name( libspectrum_type ) );
-
-  info.title = title;
-  info.options = joystick_connection;
-  info.count = sizeof( joystick_connection    ) /
-	       sizeof( joystick_connection[0] );
-  info.current = UI_CONFIRM_JOYSTICK_NONE;
-
-  error = widget_do( WIDGET_TYPE_SELECT, &info );
-  if( error ) return UI_CONFIRM_JOYSTICK_NONE;
-
-  return (ui_confirm_joystick_t)info.result;
-}
-
-int
-ui_widgets_reset( void )
-{
-  pokefinder_clear();
-  return 0;
 }

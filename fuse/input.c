@@ -29,7 +29,6 @@
 #include "input.h"
 #include "joystick.h"
 #include "keyboard.h"
-#include "menu.h"
 #include "settings.h"
 #include "snapshot.h"
 #include "tape.h"
@@ -118,59 +117,7 @@ keypress( const input_event_key_t *event )
   }
 
 #ifdef USE_WIDGET
-  switch( event->native_key ) {
-  case INPUT_KEY_F1:
-    fuse_emulation_pause();
-    widget_do( WIDGET_TYPE_MENU, &widget_menu );
-    fuse_emulation_unpause();
-    break;
-  case INPUT_KEY_F2:
-    fuse_emulation_pause();
-    menu_file_savesnapshot( 0 );
-    fuse_emulation_unpause();
-    break;
-  case INPUT_KEY_F3:
-    fuse_emulation_pause();
-    menu_file_open( 0 );
-    fuse_emulation_unpause();
-    break;
-  case INPUT_KEY_F4:
-    fuse_emulation_pause();
-    menu_options_general( 0 );
-    fuse_emulation_unpause();
-    break;
-  case INPUT_KEY_F5:
-    fuse_emulation_pause();
-    menu_machine_reset( 0 );
-    fuse_emulation_unpause();
-    break;
-  case INPUT_KEY_F6:
-    fuse_emulation_pause();
-    menu_media_tape_write( 0 );
-    fuse_emulation_unpause();
-    break;
-  case INPUT_KEY_F7:
-    fuse_emulation_pause();
-    menu_media_tape_open( 0 );
-    fuse_emulation_unpause();
-    break;
-  case INPUT_KEY_F8:
-    menu_media_tape_play( 0 );
-    break;
-  case INPUT_KEY_F9:
-    fuse_emulation_pause();
-    menu_machine_select( 0 );
-    fuse_emulation_unpause();
-    break;
-  case INPUT_KEY_F10:
-    fuse_emulation_pause();
-    menu_file_exit( 0 );
-    fuse_emulation_unpause();
-    break;
-
-  default: break;		/* Remove gcc warning */
-
-  }
+  widget_shortcuts( event->native_key );
 #endif				/* #ifdef USE_WIDGET */
 
   return 0;

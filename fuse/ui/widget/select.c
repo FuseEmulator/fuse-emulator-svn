@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "widget_internals.h"
+#include "widget_standard.h"
 
 /* Data for drawing the cursor */
 static size_t highlight_line;

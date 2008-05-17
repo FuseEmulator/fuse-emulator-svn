@@ -34,6 +34,7 @@
 #include "ui/ui.h"
 #include "widget.h"
 #include "widget_internals.h"
+#include "widget_standard.h"
 
 #define MAX_POSSIBLE 8
 #define FEW_ENOUGH() (pokefinder_count && pokefinder_count <= MAX_POSSIBLE)
