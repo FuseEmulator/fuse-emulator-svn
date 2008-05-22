@@ -644,3 +644,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080425 accessor.pl,doc/libspectrum.txt,internals.h,sna.c,snap_accessors.txt,
          snapshot.c,szx.c,z80.c: add support for DivIDE interface for szx
          snapshots (Fred).
+20080425 sna.c: select the Pentagon 128 for 128k sna files (fixes bug #1958647)
+         (Fred).
