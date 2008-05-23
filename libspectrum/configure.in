@@ -113,6 +113,8 @@ if test "$glib" = yes; then
   fi
 fi
 
+AM_CONDITIONAL(USE_MYGLIB, test "$glib" = no)
+
 dnl If it appears we're using gcc as our compiler, turn on warnings
 if test "$ac_cv_prog_gcc" = yes; then
   CFLAGS="$CFLAGS -Wall"

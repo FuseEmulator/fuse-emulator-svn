@@ -21,10 +21,10 @@
 ##
 ## E-mail: philip-fuse@shadowmagic.org.uk
 
-noinst_LTLIBRARIES = myglib/libmyglib.la
-
-myglib_libmyglib_la_SOURCES = \
+if USE_MYGLIB
+libspectrum_la_SOURCES += \
 	myglib/ghash.c \
 	myglib/gslist.c
+endif
 
 EXTRA_DIST += myglib/Makefile.am
