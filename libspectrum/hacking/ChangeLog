@@ -646,3 +646,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          snapshots (Fred).
 20080522 sna.c: select the Pentagon 128 for 128k sna files (fixes bug #1958647)
          (Fred).
+20080524 Makefile.am,configure.in,myglib/Makefile.am: don't use a libtool
+         library as some operating systems (e.g. OpenSolaris) don't like the
+         empty myglib.la we produce when glib proper is being used instead
+         (Fred).
