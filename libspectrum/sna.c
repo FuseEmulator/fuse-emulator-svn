@@ -94,7 +94,7 @@ identify_machine( size_t buffer_length, libspectrum_snap *snap )
     break;
   case 131103:
   case 147487:
-    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_128 );
+    libspectrum_snap_set_machine( snap, LIBSPECTRUM_MACHINE_PENT );
     break;
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
@@ -352,18 +352,18 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
     error = write_48k_sna( buffer, &ptr, length, sp, snap );
     break;
     
+  case LIBSPECTRUM_MACHINE_128:
+  case LIBSPECTRUM_MACHINE_PENT512:
+  case LIBSPECTRUM_MACHINE_PENT1024:
+  case LIBSPECTRUM_MACHINE_PLUS2:
   case LIBSPECTRUM_MACHINE_PLUS2A:
   case LIBSPECTRUM_MACHINE_PLUS3:
   case LIBSPECTRUM_MACHINE_PLUS3E:
-  case LIBSPECTRUM_MACHINE_PENT:
-  case LIBSPECTRUM_MACHINE_PENT512:
-  case LIBSPECTRUM_MACHINE_PENT1024:
   case LIBSPECTRUM_MACHINE_SCORP:
   case LIBSPECTRUM_MACHINE_SE:
     *out_flags |= LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS;
     /* Fall through */
-  case LIBSPECTRUM_MACHINE_PLUS2:
-  case LIBSPECTRUM_MACHINE_128:
+  case LIBSPECTRUM_MACHINE_PENT:
     error = write_128k_sna( buffer, &ptr, length, snap );
     break;
 
