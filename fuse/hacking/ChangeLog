@@ -2648,3 +2648,5 @@
 	 memory pool code.
 20080524 compat/unix/osname.c: some implementations of uname return a
          non-negative number on success (Fred).
+20080529 ui/widget/menu.c: allow more widget menus to be navigated by keybaord/
+         joystick with code from fuzegiz (sweetlilmr).
