@@ -2650,3 +2650,4 @@
          non-negative number on success (Fred).
 20080529 ui/widget/menu.c: allow more widget menus to be navigated by keybaord/
          joystick with code from fuzegiz (sweetlilmr).
+20080530 ui/widget/menu.c: add widget_standard.h header (Fred).

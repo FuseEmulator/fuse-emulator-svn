@@ -48,6 +48,7 @@
 #include "ui/uidisplay.h"
 #include "utils.h"
 #include "widget_internals.h"
+#include "widget_standard.h"
 
 widget_menu_entry *menu;
 static size_t highlight_line = 0;
