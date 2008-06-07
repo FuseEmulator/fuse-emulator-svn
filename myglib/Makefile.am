@@ -23,6 +23,7 @@
 
 if USE_MYGLIB
 libspectrum_la_SOURCES += \
+	myglib/garray.c \
 	myglib/ghash.c \
 	myglib/gslist.c
 endif
