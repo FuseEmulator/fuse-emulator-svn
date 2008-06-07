@@ -650,3 +650,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          library as some operating systems (e.g. OpenSolaris) don't like the
          empty myglib.la we produce when glib proper is being used instead
          (Fred).
+20080607 make-perl.c,myglib/{Makefile.am,garray.c}: add GArray replacement
+	 code.
