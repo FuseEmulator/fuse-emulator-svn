@@ -257,4 +257,28 @@ g_int_equal (gconstpointer v1,
   return *((const gint*) v1) == *((const gint*) v2);
 }
 
+guint
+g_str_hash (gconstpointer v)
+{
+  /* 31 bit hash function */
+  const signed char *p = v;
+  uint32_t h = *p;
+
+  if (h)
+    for (p += 1; *p != '\0'; p++)
+      h = (h << 5) - h + *p;
+
+  return h;
+}
+
+gboolean
+g_str_equal (gconstpointer v1,
+             gconstpointer v2)
+{
+  const gchar *string1 = v1;
+  const gchar *string2 = v2;
+
+  return strcmp (string1, string2) == 0;
+}
+
 #endif				/* #ifndef HAVE_LIB_GLIB */

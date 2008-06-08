@@ -652,3 +652,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          (Fred).
 20080607 make-perl.c,myglib/{Makefile.am,garray.c}: add GArray replacement
 	 code.
+20080608 make-perl.c,myglib/ghash.c: add support functions for using
+	 strings as hash table keys.
