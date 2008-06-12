@@ -267,13 +267,9 @@ libspectrum_error
 libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
 				 libspectrum_byte *buffer, size_t length )
 {
-  libspectrum_microdrive_block b;
-  libspectrum_byte label[10];
-  libspectrum_byte n;
-  int e, nolabel;
-  
   if( length < LIBSPECTRUM_MICRODRIVE_BLOCK_LEN * 10 ||
-     ( length % LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ) > 1 ) {
+     ( length % LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ) > 1 ||
+       length > MDR_LENGTH ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
       "libspectrum_microdrive_mdr_read: not enough data in buffer"
@@ -281,8 +277,6 @@ libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  length = length > MDR_LENGTH ? MDR_LENGTH : length;
-  
   memcpy( microdrive->data, buffer, length ); buffer += length;
 
   if( ( length % LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ) == 1 )
@@ -293,38 +287,6 @@ libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
   libspectrum_microdrive_set_cartridge_len( microdrive,
 				length / LIBSPECTRUM_MICRODRIVE_BLOCK_LEN );
  
-  n = libspectrum_microdrive_cartridge_len( microdrive );
-  nolabel = 1;	/* No real label ! */
-  
-  while( n > 0 ) {
-    n--;
-    if( ( e = libspectrum_microdrive_checksum( microdrive, n ) ) > 0 ) {
-      libspectrum_print_error(
-        LIBSPECTRUM_ERROR_CORRUPT,
-        "libspectrum_microdrive_mdr_read: %s checksum error in #%d record",
-	e == 1 ? "record header" : e == 2 ? "data header" : "data",
-	n
-      );
-      return LIBSPECTRUM_ERROR_CORRUPT;
-    }
-
-    libspectrum_microdrive_get_block( microdrive, 0, &b );
-
-    if( !nolabel && memcmp( label, b.hdbnam, 10 ) ) {
-      libspectrum_print_error(
-        LIBSPECTRUM_ERROR_CORRUPT,
-        "libspectrum_microdrive_mdr_read: inconsistent labels in #%d record",
-	n
-      );
-      return LIBSPECTRUM_ERROR_CORRUPT;
-    }
-
-    if( e == 0 && nolabel ) {
-      memcpy( label, b.hdbnam, 10 );
-      nolabel = 0;
-    }
-  }
-  
   return LIBSPECTRUM_ERROR_NONE;
 }
 
