@@ -654,3 +654,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 code.
 20080608 make-perl.c,myglib/ghash.c: add support functions for using
 	 strings as hash table keys.
+20080612 microdrive.c: don't refuse to load mdr files with bad checksums, the
+         if1 ROM takes care of them (Gergely Szasz).
