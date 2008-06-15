@@ -111,11 +111,19 @@ if test "$glib" = yes; then
   fi
 fi
 
-AM_PATH_AUDIOFILE(
-  0.2.3,
-  AC_DEFINE([HAVE_LIB_AUDIOFILE], 1, [Defined if we've got audiofile])
-  audiofile=yes
-)
+# Look for audiofile (default=yes)
+AC_MSG_CHECKING(whether to use audiofile)
+AC_ARG_WITH(audiofile,
+[  --without-audiofile     don't use audiofile],
+if test "$withval" = no; then audiofile=no; else audiofile=yes; fi,
+audiofile=yes)
+AC_MSG_RESULT($audiofile)
+if test "$audiofile" = yes; then
+  AM_PATH_AUDIOFILE(
+    0.2.3,
+    AC_DEFINE([HAVE_LIB_AUDIOFILE], 1, [Defined if we've got audiofile])
+  )
+fi
 AM_CONDITIONAL(BUILD_AUDIOTOOLS, test "$audiofile" = yes)
 
 AC_OUTPUT(Makefile \
