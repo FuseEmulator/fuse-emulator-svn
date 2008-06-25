@@ -185,7 +185,7 @@ play_tape( const char *filename )
 static test_return_t
 test_1( void )
 {
-  return read_tape( "invalid.tzx", LIBSPECTRUM_ERROR_UNKNOWN );
+  return read_tape( STATIC_TEST_PATH( "invalid.tzx" ), LIBSPECTRUM_ERROR_UNKNOWN );
 }
 
 /* Test for bugs #1720238: TZX turbo blocks with zero pilot pulses and
@@ -196,7 +196,7 @@ test_2( void )
   libspectrum_byte *buffer = NULL;
   size_t filesize = 0;
   libspectrum_tape *tape;
-  const char *filename = "turbo-zeropilot.tzx";
+  const char *filename = STATIC_TEST_PATH( "turbo-zeropilot.tzx" );
   libspectrum_dword tstates;
   int flags;
 
@@ -271,7 +271,7 @@ test_3( void )
 static test_return_t
 test_4( void )
 {
-  const char *filename = "invalid.gz";
+  const char *filename = STATIC_TEST_PATH( "invalid.gz" );
   return read_snap( filename, filename, LIBSPECTRUM_ERROR_UNKNOWN );
 }
 
@@ -279,14 +279,14 @@ test_4( void )
 static test_return_t
 test_5( void )
 {
-  return read_snap( "invalid.gz", NULL, LIBSPECTRUM_ERROR_UNKNOWN );
+  return read_snap( STATIC_TEST_PATH( "invalid.gz" ), NULL, LIBSPECTRUM_ERROR_UNKNOWN );
 }
 
 /* Test for bug #1753938: pointer wraparound causes segfault */
 static test_return_t
 test_6( void )
 {
-  const char *filename = "invalid.szx";
+  const char *filename = STATIC_TEST_PATH( "invalid.szx" );
   return read_snap( filename, filename, LIBSPECTRUM_ERROR_CORRUPT );
 }
 
@@ -294,42 +294,42 @@ test_6( void )
 static test_return_t
 test_7( void )
 {
-  return read_tape( "invalid-gdb.tzx", LIBSPECTRUM_ERROR_CORRUPT );
+  return read_tape( STATIC_TEST_PATH( "invalid-gdb.tzx" ), LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 /* Test for bug #1755372: empty DRB causes segfault */
 static test_return_t
 test_8( void )
 {
-  return read_tape( "empty-drb.tzx", LIBSPECTRUM_ERROR_NONE );
+  return read_tape( STATIC_TEST_PATH( "empty-drb.tzx" ), LIBSPECTRUM_ERROR_NONE );
 }
 
 /* Test for bug #1755539: problems with invalid archive info block */
 static test_return_t
 test_9( void )
 {
-  return read_tape( "invalid-archiveinfo.tzx", LIBSPECTRUM_ERROR_CORRUPT );
+  return read_tape( STATIC_TEST_PATH( "invalid-archiveinfo.tzx" ), LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 /* Test for bug #1755545: invalid hardware info blocks can leak memory */
 static test_return_t
 test_10( void )
 {
-  return read_tape( "invalid-hardwareinfo.tzx", LIBSPECTRUM_ERROR_CORRUPT );
+  return read_tape( STATIC_TEST_PATH( "invalid-hardwareinfo.tzx" ), LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 /* Test for bug #1756375: invalid Warajevo tape block offset causes segfault */
 static test_return_t
 test_11( void )
 {
-  return read_tape( "invalid-warajevo-blockoffset.tap", LIBSPECTRUM_ERROR_CORRUPT );
+  return read_tape( STATIC_TEST_PATH( "invalid-warajevo-blockoffset.tap" ), LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 /* Test for bug #1757587: invalid custom info block causes memory leak */
 static test_return_t
 test_12( void )
 {
-  return read_tape( "invalid-custominfo.tzx", LIBSPECTRUM_ERROR_CORRUPT );
+  return read_tape( STATIC_TEST_PATH( "invalid-custominfo.tzx" ), LIBSPECTRUM_ERROR_CORRUPT );
 }
 
 /* Test for bug #1758860: loop end without a loop start block accesses
@@ -340,7 +340,7 @@ test_13( void )
   libspectrum_byte *buffer = NULL;
   size_t filesize = 0;
   libspectrum_tape *tape;
-  const char *filename = "loopend.tzx";
+  const char *filename = STATIC_TEST_PATH( "loopend.tzx" );
   libspectrum_dword tstates;
   int flags;
 
@@ -374,28 +374,28 @@ test_13( void )
 static test_return_t
 test_14( void )
 {
-  return play_tape( "loop.tzx" );
+  return play_tape( STATIC_TEST_PATH( "loop.tzx" ) );
 }
 
 /* Test for bug #1802607: TZX loop blocks still broken */
 static test_return_t
 test_16( void )
 {
-  return play_tape( "loop2.tzx" );
+  return play_tape( STATIC_TEST_PATH( "loop2.tzx" ) );
 }
 
 /* Test for bug #1802618: TZX jump blocks broken */
 static test_return_t
 test_17( void )
 {
-  return play_tape( "jump.tzx" );
+  return play_tape( STATIC_TEST_PATH( "jump.tzx" ) );
 }
 
 /* Test for bug #1821425: crashes writing and reading empty CSW files */
 static test_return_t
 test_18( void )
 {
-  return play_tape( "empty.csw" );
+  return play_tape( STATIC_TEST_PATH( "empty.csw" ) );
 }
 
 /* Test for bug #1828945: .tap writing code does not handle all block types */
@@ -405,7 +405,7 @@ test_19( void )
   libspectrum_byte *buffer = NULL;
   size_t length = 0;
   libspectrum_tape *tape;
-  const char *filename = "complete-tzx.tzx";
+  const char *filename = DYNAMIC_TEST_PATH( "complete-tzx.tzx" );
   test_return_t r;
 
   r = load_tape( &tape, filename, LIBSPECTRUM_ERROR_NONE );
@@ -431,14 +431,14 @@ test_19( void )
 static test_return_t
 test_20( void )
 {
-  const char *filename = "sp-2000.sna.gz";
+  const char *filename = STATIC_TEST_PATH( "sp-2000.sna.gz" );
   return read_snap( filename, filename, LIBSPECTRUM_ERROR_CORRUPT );
 } 
   
 static test_return_t
 test_21( void )
 {
-  const char *filename = "sp-ffff.sna.gz";
+  const char *filename = STATIC_TEST_PATH( "sp-ffff.sna.gz" );
   return read_snap( filename, filename, LIBSPECTRUM_ERROR_CORRUPT );
 } 
 

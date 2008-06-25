@@ -656,3 +656,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 strings as hash table keys.
 20080612 microdrive.c: don't refuse to load mdr files with bad checksums, the
          if1 ROM takes care of them (Gergely Szasz).
+20080623 test/{Makefile.am,test.[ch],test15.c}: enable tests to be run if
+         configured outside the top level directory.

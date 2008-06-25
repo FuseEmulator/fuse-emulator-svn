@@ -28,6 +28,8 @@ test_test_SOURCES = \
 	test/test.c \
 	test/test15.c
 
+test_test_CFLAGS = -DSRCDIR='"$(srcdir)"'
+
 noinst_DATA += test/complete-tzx.tzx
 
 noinst_HEADERS += test/test.h
