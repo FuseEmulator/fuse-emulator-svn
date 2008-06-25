@@ -442,6 +442,87 @@ test_21( void )
   return read_snap( filename, filename, LIBSPECTRUM_ERROR_CORRUPT );
 } 
 
+/* Tests for bug #2002682: .mdr code does not correctly handle write protect
+   flag */
+static test_return_t
+test_22( void )
+{
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0;
+  libspectrum_microdrive *mdr;
+  const char *filename = STATIC_TEST_PATH( "writeprotected.mdr" );
+  test_return_t r;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  /* writeprotected.mdr deliberately includes an extra 0 on the end;
+     we want this in the buffer so we know what happens if we read off the
+     end of the file; however, we don't want it in the length */
+  filesize--;
+
+  if( libspectrum_microdrive_alloc( &mdr ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_microdrive_mdr_read( mdr, buffer, filesize ) ) {
+    libspectrum_microdrive_free( mdr );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer );
+
+  r = libspectrum_microdrive_write_protect( mdr ) ? TEST_PASS : TEST_FAIL;
+
+  libspectrum_microdrive_free( mdr );
+
+  return r;
+}
+
+static test_return_t
+test_23( void )
+{
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0, length;
+  libspectrum_microdrive *mdr;
+  const char *filename = STATIC_TEST_PATH( "writeprotected.mdr" );
+  test_return_t r;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  /* writeprotected.mdr deliberately includes an extra 0 on the end;
+     we want this in the buffer so we know what happens if we read off the
+     end of the file; however, we don't want it in the length */
+  filesize--;
+
+  if( libspectrum_microdrive_alloc( &mdr ) ) {
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_microdrive_mdr_read( mdr, buffer, filesize ) ) {
+    libspectrum_microdrive_free( mdr );
+    free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  free( buffer ); buffer = NULL;
+
+  if( libspectrum_microdrive_mdr_write( mdr, &buffer, &length ) ) {
+    libspectrum_microdrive_free( mdr );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_microdrive_free( mdr );
+
+  r = ( length == filesize && buffer[ length - 1 ] == 1 ) ? TEST_PASS : TEST_FAIL;
+
+  free( buffer );
+
+  return r;
+}
+
 struct test_description {
 
   test_fn test;
@@ -472,6 +553,8 @@ static struct test_description tests[] = {
   { test_19, "Complete TZX to TAP conversion", 0 },
   { test_20, "SNA file with SP < 0x4000", 0 },
   { test_21, "SNA file with SP = 0xffff", 0 },
+  { test_22, "MDR write protection 1", 0 },
+  { test_23, "MDR write protection 2", 0 },
 };
 
 static size_t test_count = sizeof( tests ) / sizeof( tests[0] );

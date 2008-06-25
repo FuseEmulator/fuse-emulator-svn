@@ -656,5 +656,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 strings as hash table keys.
 20080612 microdrive.c: don't refuse to load mdr files with bad checksums, the
          if1 ROM takes care of them (Gergely Szasz).
-20080623 test/{Makefile.am,test.[ch],test15.c}: enable tests to be run if
+20080625 test/{Makefile.am,test.[ch],test15.c}: enable tests to be run if
          configured outside the top level directory.
+20080625 test/{test.c,writeprotected.mdr}: add tests for bug #2002682: .mdr
+	 code does not correctly handle write protect flag.
