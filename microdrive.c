@@ -267,6 +267,8 @@ libspectrum_error
 libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
 				 libspectrum_byte *buffer, size_t length )
 {
+  size_t data_length;
+
   if( length < LIBSPECTRUM_MICRODRIVE_BLOCK_LEN * 10 ||
      ( length % LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ) > 1 ||
        length > MDR_LENGTH ) {
@@ -277,7 +279,9 @@ libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  memcpy( microdrive->data, buffer, length ); buffer += length;
+  data_length = length - ( length % LIBSPECTRUM_MICRODRIVE_BLOCK_LEN );
+
+  memcpy( microdrive->data, buffer, data_length ); buffer += data_length;
 
   if( ( length % LIBSPECTRUM_MICRODRIVE_BLOCK_LEN ) == 1 )
     libspectrum_microdrive_set_write_protect( microdrive, *buffer );
@@ -285,7 +289,7 @@ libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
     libspectrum_microdrive_set_write_protect( microdrive, 0 );
 
   libspectrum_microdrive_set_cartridge_len( microdrive,
-				length / LIBSPECTRUM_MICRODRIVE_BLOCK_LEN );
+			      data_length / LIBSPECTRUM_MICRODRIVE_BLOCK_LEN );
  
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -294,8 +298,8 @@ libspectrum_error
 libspectrum_microdrive_mdr_write( const libspectrum_microdrive *microdrive,
 				  libspectrum_byte **buffer, size_t *length )
 {
-  *buffer = malloc( *length = microdrive->cartridge_len * 
-				    LIBSPECTRUM_MICRODRIVE_BLOCK_LEN + 1 );
+  *length = microdrive->cartridge_len * LIBSPECTRUM_MICRODRIVE_BLOCK_LEN;
+  *buffer = malloc( *length + 1 );
   if( !*buffer ) {
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_MEMORY,
@@ -306,9 +310,10 @@ libspectrum_microdrive_mdr_write( const libspectrum_microdrive *microdrive,
   }
 
   memcpy( *buffer, microdrive->data, *length );
-
   
   (*buffer)[ *length ] = microdrive->write_protect;
+
+  (*length)++;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
