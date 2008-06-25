@@ -115,6 +115,6 @@ complete_edges_list[] =
 test_return_t
 test_15( void )
 {
-  return check_edges( "complete-tzx.tzx", complete_edges_list,
+  return check_edges( DYNAMIC_TEST_PATH( "complete-tzx.tzx" ), complete_edges_list,
 		      LIBSPECTRUM_TAPE_FLAGS_STOP | LIBSPECTRUM_TAPE_FLAGS_STOP48 );
 }
