@@ -661,3 +661,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080625 test/{test.c,writeprotected.mdr}: add tests for bug #2002682: .mdr
 	 code does not correctly handle write protect flag.
 20080625 microdrive.c: fix write protect flag handling (fixes bug #2002682).
+20080630 libspectrum.h.in: fix prototype for libspectrum_ide_alloc (Fred).
