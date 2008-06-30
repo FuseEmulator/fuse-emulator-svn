@@ -120,12 +120,7 @@ get_hash( gcry_sexp_t *hash, const libspectrum_byte *data, size_t data_length )
   gcry_mpi_t hash_mpi;
   
   digest_length = gcry_md_get_algo_dlen( HASH_ALGORITHM );
-  digest = malloc( digest_length );
-  if( !digest ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "get_hash: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  digest = libspectrum_malloc( digest_length );
 
   gcry_md_hash_buffer( HASH_ALGORITHM, digest, data, data_length );
 
@@ -136,11 +131,11 @@ get_hash( gcry_sexp_t *hash, const libspectrum_byte *data, size_t data_length )
 			     "get_hash: error creating hash MPI: %s",
 			     gcry_strerror( error )
     );
-    free( digest );
+    libspectrum_free( digest );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
-  free( digest );
+  libspectrum_free( digest );
 
   error = gcry_sexp_build( hash, NULL, hash_format, hash_mpi );
   if( error ) {
@@ -275,19 +270,14 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
 
   length += length_s; *signature_length = length;
 
-  *signature = malloc( length );
-  if( signature == NULL ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "serialise_mpis: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  *signature = libspectrum_malloc( length );
 
   error = gcry_mpi_print( GCRYMPI_FMT_PGP, *signature, length, &length, r );
   if( error ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "serialise_mpis: printing r: %s",
 			     gcry_strerror( error ) );
-    free( *signature );
+    libspectrum_free( *signature );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -297,7 +287,7 @@ serialise_mpis( libspectrum_byte **signature, size_t *signature_length,
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "serialise_mpis: printing s: %s",
 			     gcry_strerror( error ) );
-    free( *signature );
+    libspectrum_free( *signature );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 

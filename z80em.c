@@ -54,16 +54,8 @@ libspectrum_z80em_read( libspectrum_tape *tape,
     return LIBSPECTRUM_ERROR_SIGNATURE;
   }
 
-  /* Claim memory for the block */
-  block = malloc( sizeof( *block ) );
-  if( !block ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_z80em_read: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE );
 
-  /* Set the block type */
-  block->type = LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE;
   z80em_block = &block->types.rle_pulse;
   z80em_block->scale = 7; /* 1 time unit == 7 clock ticks */
 
@@ -72,13 +64,7 @@ libspectrum_z80em_read( libspectrum_tape *tape,
 
   /* Claim memory for the data (it's one big lump) */
   z80em_block->length = length;
-  z80em_block->data = malloc( length );
-  if( !z80em_block->data ) {
-    free( block );
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_z80em_read: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  z80em_block->data = libspectrum_malloc( length );
 
   /* Copy the data across */
   memcpy( z80em_block->data, buffer, length );
@@ -86,7 +72,7 @@ libspectrum_z80em_read( libspectrum_tape *tape,
   /* Put the block into the block list */
   error = libspectrum_tape_append_block( tape, block );
   if( error ) {
-    free( z80em_block->data );
+    libspectrum_free( z80em_block->data );
     libspectrum_tape_block_free( block );
     return error;
   }

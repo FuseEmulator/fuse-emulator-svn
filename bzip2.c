@@ -44,13 +44,7 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
   /* Known length, so we can use the easy method */
   if( *outlength ) {
 
-    (*outptr) = malloc( *outlength );
-    if( !(*outptr) ) {
-      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			       "out of memory at %s:%d", __FILE__, __LINE__ );
-      return LIBSPECTRUM_ERROR_MEMORY;
-    }
-
+    *outptr = libspectrum_malloc( *outlength );
     length2 = *outlength;
 
     error = BZ2_bzBuffToBuffDecompress( (char*)*outptr, &length2, (char*)bzptr,
@@ -72,12 +66,7 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
 
     length = bzlength;
 
-    *outptr = malloc( length );
-    if( !(*outptr) ) {
-      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			       "out of memory at %s:%d", __FILE__, __LINE__ );
-      return LIBSPECTRUM_ERROR_MEMORY;
-    }
+    *outptr = libspectrum_malloc( length );
 
     /* Use standard memory allocation/free routines */
     stream.bzalloc = NULL; stream.bzfree = NULL; stream.opaque = NULL;
@@ -90,7 +79,7 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
 	libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 				 "out of memory at %s:%d",
 				 __FILE__, __LINE__ );
-	free( *outptr );
+	libspectrum_free( *outptr );
 	return LIBSPECTRUM_ERROR_MEMORY;
 
       default:
@@ -98,7 +87,7 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
           LIBSPECTRUM_ERROR_LOGIC,
 	  "bzip2_inflate: serious error from BZ2_bzDecompressInit: %d", error
 	);
-	free( *outptr );
+	libspectrum_free( *outptr );
 	return LIBSPECTRUM_ERROR_LOGIC;
 
       }
@@ -120,25 +109,17 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
 	    LIBSPECTRUM_ERROR_LOGIC,
 	    "bzip2_inflate: error from BZ2_bzDecompressEnd: %d", error
 	  );
-	  free( *outptr );
+	  libspectrum_free( *outptr );
 	  return LIBSPECTRUM_ERROR_LOGIC;
 	}
 	*outlength = stream.total_out_lo32;
-	*outptr = realloc( *outptr, *outlength );
+	*outptr = libspectrum_realloc( *outptr, *outlength );
 	return LIBSPECTRUM_ERROR_NONE;
 
       case BZ_OK:		/* More output space required */
 
 	length += bzlength;
-	ptr = realloc( *outptr, length );
-	if( !ptr ) {
-	  libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-				   "out of memory at %s:%d",
-				   __FILE__, __LINE__ );
-	  BZ2_bzDecompressEnd( &stream );
-	  free( *outptr );
-	  return LIBSPECTRUM_ERROR_MEMORY;
-	}
+	ptr = libspectrum_realloc( *outptr, length );
 	*outptr = ptr;
 	stream.next_out = (char*)*outptr + stream.total_out_lo32;
 	stream.avail_out += bzlength;
@@ -150,7 +131,7 @@ libspectrum_bzip2_inflate( const libspectrum_byte *bzptr, size_t bzlength,
 	  "bzip2_inflate: serious error from BZ2_bzDecompress: %d", error
 	);
 	BZ2_bzDecompressEnd( &stream );
-	free( *outptr );
+	libspectrum_free( *outptr );
 	return LIBSPECTRUM_ERROR_LOGIC;
       }
     }				/* Matches while( 1 ) { ... } */

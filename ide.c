@@ -190,18 +190,13 @@ static void execute_command( libspectrum_ide_channel *chn,
 
 
 /* Initialise a libspectrum_ide_channel structure */
-libspectrum_error
+void
 libspectrum_ide_alloc( libspectrum_ide_channel **chn,
 		       libspectrum_ide_databus databus )
 {
   libspectrum_ide_channel *channel;
 
-  channel = malloc( sizeof( libspectrum_ide_channel ) );
-  if( !channel ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_ide_alloc: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  channel = libspectrum_malloc( sizeof( *channel ) );
 
   *chn = channel;
 
@@ -213,8 +208,6 @@ libspectrum_ide_alloc( libspectrum_ide_channel **chn,
     g_hash_table_new( g_int_hash, g_int_equal );
   channel->cache[ LIBSPECTRUM_IDE_SLAVE  ] =
     g_hash_table_new( g_int_hash, g_int_equal );
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 /* Free all memory used by a libspectrum_ide_channel structure */
@@ -229,7 +222,7 @@ libspectrum_ide_free( libspectrum_ide_channel *chn )
   g_hash_table_destroy( chn->cache[ LIBSPECTRUM_IDE_SLAVE  ] );
   
   /* Free the channel structure */
-  free( chn );
+  libspectrum_free( chn );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -314,7 +307,7 @@ write_to_disk( gpointer key, gpointer value, gpointer user_data )
   if( fwrite( buffer, 1, drv->sector_size, drv->disk ) != drv->sector_size )
     return FALSE;
 
-  free( key ); free( value );
+  libspectrum_free( key ); libspectrum_free( value );
 
   return TRUE;	/* TRUE => remove key/value pair from hash */
 }
@@ -340,8 +333,8 @@ libspectrum_ide_commit( libspectrum_ide_channel *chn,
 static gboolean
 clear_cache( gpointer key, gpointer value, gpointer user_data GCC_UNUSED )
 {
-  free( key );
-  free( value );
+  libspectrum_free( key );
+  libspectrum_free( value );
   return TRUE;
 }
 
@@ -511,20 +504,8 @@ write_hdf( libspectrum_ide_channel *chn )
 
     gint *key;
 
-    key = malloc( sizeof( gint ) );
-    if( !key ) {
-      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			       "out of memory at %s:%d", __FILE__, __LINE__ );
-      return 1;
-    }
-
-    buffer = malloc( drv->sector_size * sizeof( libspectrum_byte ) );
-    if( !buffer ) {
-      free( key );
-      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			       "out of memory at %s:%d", __FILE__, __LINE__ );
-      return 1;
-    }
+    key = libspectrum_malloc( sizeof( *key ) );
+    buffer = libspectrum_malloc( drv->sector_size * sizeof( *buffer ) );
 
     *key = chn->sector_number;
     g_hash_table_insert( cache, key, buffer );

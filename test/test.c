@@ -38,13 +38,7 @@ read_file( libspectrum_byte **buffer, size_t *length, const char *filename )
   }
 
   *length = info.st_size;
-
-  *buffer = malloc( *length );
-  if( !*buffer ) {
-    fprintf( stderr, "%s: out of memory allocating %lu bytes at %s:%d\n",
-	     progname, (unsigned long)*length, __func__, __LINE__ );
-    return -ENOMEM;
-  }
+  *buffer = libspectrum_malloc( *length );
 
   bytes = read( fd, *buffer, *length );
   if( bytes == -1 ) {
@@ -75,21 +69,18 @@ load_tape( libspectrum_tape **tape, const char *filename,
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  if( libspectrum_tape_alloc( tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
+  libspectrum_tape_alloc( tape );
 
   if( libspectrum_tape_read( *tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) != expected_result ) {
     fprintf( stderr, "%s: reading `%s' did not give expected result\n",
 	     progname, filename );
     libspectrum_tape_free( *tape );
-    free( buffer );
+    libspectrum_free( buffer );
     return TEST_INCOMPLETE;
   }
 
-  free( buffer );
+  libspectrum_free( buffer );
 
   return TEST_PASS;
 }
@@ -118,21 +109,18 @@ read_snap( const char *filename, const char *filename_to_pass,
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  if( libspectrum_snap_alloc( &snap ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
+  libspectrum_snap_alloc( &snap );
 
   if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename_to_pass ) != expected_result ) {
     fprintf( stderr, "%s: reading `%s' did not give expected result\n",
 	     progname, filename );
     libspectrum_snap_free( snap );
-    free( buffer );
+    libspectrum_free( buffer );
     return TEST_INCOMPLETE;
   }
 
-  free( buffer );
+  libspectrum_free( buffer );
 
   if( libspectrum_snap_free( snap ) ) return TEST_INCOMPLETE;
 
@@ -150,19 +138,16 @@ play_tape( const char *filename )
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
+  libspectrum_tape_alloc( &tape );
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) ) {
     libspectrum_tape_free( tape );
-    free( buffer );
+    libspectrum_free( buffer );
     return TEST_INCOMPLETE;
   }
 
-  free( buffer );
+  libspectrum_free( buffer );
 
   do {
 
@@ -202,19 +187,16 @@ test_2( void )
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
+  libspectrum_tape_alloc( &tape );
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) ) {
     libspectrum_tape_free( tape );
-    free( buffer );
+    libspectrum_free( buffer );
     return TEST_INCOMPLETE;
   }
 
-  free( buffer );
+  libspectrum_free( buffer );
 
   if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) {
     libspectrum_tape_free( tape );
@@ -248,7 +230,7 @@ test_3( void )
   libspectrum_byte *buffer = (libspectrum_byte*)1;
   size_t length = 0;
 
-  if( libspectrum_tape_alloc( &tape ) ) return TEST_INCOMPLETE;
+  libspectrum_tape_alloc( &tape );
 
   if( libspectrum_tape_write( &buffer, &length, tape, LIBSPECTRUM_ID_TAPE_TAP ) ) {
     libspectrum_tape_free( tape );
@@ -346,19 +328,16 @@ test_13( void )
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
+  libspectrum_tape_alloc( &tape );
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) ) {
     libspectrum_tape_free( tape );
-    free( buffer );
+    libspectrum_free( buffer );
     return TEST_INCOMPLETE;
   }
 
-  free( buffer );
+  libspectrum_free( buffer );
 
   if( libspectrum_tape_get_next_edge( &tstates, &flags, tape ) ) {
     libspectrum_tape_free( tape );
@@ -419,7 +398,7 @@ test_19( void )
     return TEST_INCOMPLETE;
   }
 
-  free( buffer );
+  libspectrum_free( buffer );
 
   if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
 
@@ -460,18 +439,15 @@ test_22( void )
      end of the file; however, we don't want it in the length */
   filesize--;
 
-  if( libspectrum_microdrive_alloc( &mdr ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
+  libspectrum_microdrive_alloc( &mdr );
 
   if( libspectrum_microdrive_mdr_read( mdr, buffer, filesize ) ) {
     libspectrum_microdrive_free( mdr );
-    free( buffer );
+    libspectrum_free( buffer );
     return TEST_INCOMPLETE;
   }
 
-  free( buffer );
+  libspectrum_free( buffer );
 
   r = libspectrum_microdrive_write_protect( mdr ) ? TEST_PASS : TEST_FAIL;
 
@@ -496,29 +472,23 @@ test_23( void )
      end of the file; however, we don't want it in the length */
   filesize--;
 
-  if( libspectrum_microdrive_alloc( &mdr ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
+  libspectrum_microdrive_alloc( &mdr );
 
   if( libspectrum_microdrive_mdr_read( mdr, buffer, filesize ) ) {
     libspectrum_microdrive_free( mdr );
-    free( buffer );
+    libspectrum_free( buffer );
     return TEST_INCOMPLETE;
   }
 
-  free( buffer ); buffer = NULL;
+  libspectrum_free( buffer ); buffer = NULL;
 
-  if( libspectrum_microdrive_mdr_write( mdr, &buffer, &length ) ) {
-    libspectrum_microdrive_free( mdr );
-    return TEST_INCOMPLETE;
-  }
+  libspectrum_microdrive_mdr_write( mdr, &buffer, &length );
 
   libspectrum_microdrive_free( mdr );
 
   r = ( length == filesize && buffer[ length - 1 ] == 1 ) ? TEST_PASS : TEST_FAIL;
 
-  free( buffer );
+  libspectrum_free( buffer );
 
   return r;
 }

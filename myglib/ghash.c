@@ -8,7 +8,7 @@
    files for a list of changes.  These files are distributed with GLib
    at ftp://ftp.gtk.org/pub/gtk/.
 
-   Modified by Philip Kendall 2004.
+   Modified by Philip Kendall 2004-2008.
 
    $Id$
 
@@ -67,19 +67,12 @@ g_hash_table_new (GHashFunc	hash_func,
   GHashTable *hash_table;
   guint i;
 
-  hash_table = malloc (sizeof (GHashTable));
-  if (!hash_table)
-    return NULL;
+  hash_table = libspectrum_malloc (sizeof (GHashTable));
 
   hash_table->nnodes = 0;
   hash_table->hash_func = hash_func;
   hash_table->key_equal_func = key_equal_func;
-  hash_table->nodes = malloc (HASH_TABLE_SIZE * sizeof (GHashNode*));
-  if (!hash_table->nodes)
-    {
-      free (hash_table);
-      return NULL;
-    }
+  hash_table->nodes = libspectrum_malloc (HASH_TABLE_SIZE * sizeof (GHashNode*));
 
   for (i = 0; i < HASH_TABLE_SIZE; i++)
     hash_table->nodes[i] = NULL;
@@ -110,8 +103,8 @@ g_hash_table_destroy (GHashTable *hash_table)
   for (i = 0; i < HASH_TABLE_SIZE; i++)
     g_hash_nodes_destroy (hash_table->nodes[i]);
   
-  free (hash_table->nodes);
-  free (hash_table);
+  libspectrum_free (hash_table->nodes);
+  libspectrum_free (hash_table);
 }
 
 static GHashNode**
@@ -149,9 +142,7 @@ g_hash_node_new (gpointer key,
 
   if (!node_free_list)
     {
-      node_free_list = malloc (1024 * sizeof (GHashNode));
-      if (!node_free_list)
-	return NULL;
+      node_free_list = libspectrum_malloc (1024 * sizeof (GHashNode));
 
       for(i = 0; i < 1023; i++ )
 	node_free_list[i].next = &node_free_list[i+1];

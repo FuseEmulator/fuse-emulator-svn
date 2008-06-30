@@ -42,27 +42,19 @@ struct libspectrum_creator {
 
 };
 
-libspectrum_error
+void
 libspectrum_creator_alloc( libspectrum_creator **creator )
 {
-  *creator = malloc( sizeof( libspectrum_creator ) );
-  if( !(*creator) ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "out of memory in libspectrum_creator_alloc" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
+  *creator = libspectrum_malloc( sizeof( **creator ) );
   (*creator)->custom = NULL;
   (*creator)->custom_length = 0;
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 libspectrum_error
 libspectrum_creator_free( libspectrum_creator *creator )
 {
-  if( creator->custom ) free( creator->custom );
-  free( creator );
+  if( creator->custom ) libspectrum_free( creator->custom );
+  libspectrum_free( creator );
 
   return LIBSPECTRUM_ERROR_NONE;
 }

@@ -79,19 +79,11 @@ libspectrum_wav_read( libspectrum_tape *tape, const char *filename )
   tape_length = length;
   if( tape_length%8 ) tape_length += 8 - (tape_length%8);
 
-  buffer = calloc( tape_length, 1);
-  if( !buffer ) {
-    afCloseFile( handle );
-    libspectrum_print_error(
-      LIBSPECTRUM_ERROR_MEMORY,
-      "libspectrum_wav_read: failed to allocate memory for block data"
-    );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  buffer = libspectrum_calloc( tape_length, sizeof( *buffer ) );
 
   frames = afReadFrames( handle, track, buffer, length );
   if( frames == -1 ) {
-    free( buffer );
+    libspectrum_free( buffer );
     afCloseFile( handle );
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
@@ -101,7 +93,7 @@ libspectrum_wav_read( libspectrum_tape *tape, const char *filename )
   }
 
   if( !length ) {
-    free( buffer );
+    libspectrum_free( buffer );
     afCloseFile( handle );
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
@@ -111,7 +103,7 @@ libspectrum_wav_read( libspectrum_tape *tape, const char *filename )
   }
 
   if( frames != length ) {
-    free( buffer );
+    libspectrum_free( buffer );
     afCloseFile( handle );
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
@@ -121,10 +113,7 @@ libspectrum_wav_read( libspectrum_tape *tape, const char *filename )
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  /* Get a new block */
-  error = libspectrum_tape_block_alloc( &block,
-                                        LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
-  if( error ) return error;
+  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
 
   /* 44100 Hz 79 t-states 22050 Hz 158 t-states */
   libspectrum_tape_block_set_bit_length( block,
@@ -133,7 +122,7 @@ libspectrum_wav_read( libspectrum_tape *tape, const char *filename )
   libspectrum_tape_block_set_bits_in_last_byte( block, length%8 ? length%8 : 8 );
   libspectrum_tape_block_set_data_length( block, tape_length/8 );
 
-  tape_buffer = calloc( tape_length/8, 1 );
+  tape_buffer = libspectrum_calloc( tape_length/8, sizeof( *tape_buffer ) );
 
   libspectrum_byte *from = buffer;
   libspectrum_byte *to = tape_buffer;
@@ -152,13 +141,13 @@ libspectrum_wav_read( libspectrum_tape *tape, const char *filename )
   /* Finally, put the block into the block list */
   error = libspectrum_tape_append_block( tape, block );
   if( error ) {
-    free( buffer );
+    libspectrum_free( buffer );
     libspectrum_tape_block_free( block );
     return error;
   }
 
   if( afCloseFile( handle ) ) {
-    free( buffer );
+    libspectrum_free( buffer );
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_UNKNOWN,
       "libspectrum_wav_read: failed to close audio file"
@@ -166,7 +155,7 @@ libspectrum_wav_read( libspectrum_tape *tape, const char *filename )
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
-  free( buffer );
+  libspectrum_free( buffer );
 
   /* Successful completion */
   return LIBSPECTRUM_ERROR_NONE;

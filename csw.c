@@ -54,8 +54,7 @@ libspectrum_csw_read( libspectrum_tape *tape,
   }
 
   /* Claim memory for the block */
-  block = malloc( sizeof( *block ) );
-  if( !block ) goto csw_nomem;
+  block = libspectrum_malloc( sizeof( *block ) );
 
   /* Set the block type */
   block->type = LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE;
@@ -126,8 +125,7 @@ libspectrum_csw_read( libspectrum_tape *tape,
   } else {
     /* Claim memory for the data (it's one big lump) */
     csw_block->length = length;
-    csw_block->data = malloc( length );
-    if( !csw_block->data ) goto csw_nomem;
+    csw_block->data = libspectrum_malloc( length );
 
     /* Copy the data across */
     memcpy( csw_block->data, buffer, length );
@@ -136,7 +134,7 @@ libspectrum_csw_read( libspectrum_tape *tape,
   /* Put the block into the block list */
   error = libspectrum_tape_append_block( tape, block );
   if( error ) {
-    free (csw_block->data);
+    libspectrum_free( csw_block->data );
     libspectrum_tape_block_free( block );
     return error;
   }
@@ -147,25 +145,19 @@ libspectrum_csw_read( libspectrum_tape *tape,
   /* Error returns */
 
  csw_bad_compress:
-  free( block );
+  libspectrum_free( block );
   libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
 			   "libspectrum_csw_read: unknown compression type" );
   return LIBSPECTRUM_ERROR_CORRUPT;
 
- csw_nomem:
-  free( block );
-  libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			   "libspectrum_csw_read: out of memory" );
-  return LIBSPECTRUM_ERROR_MEMORY;
-
  csw_short:
-  free( block );
+  libspectrum_free( block );
   libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			   "libspectrum_csw_read: not enough data in buffer" );
   return LIBSPECTRUM_ERROR_CORRUPT;
 
  csw_empty:
-  free( block );
+  libspectrum_free( block );
   /* Successful completion */
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -257,8 +249,7 @@ csw_write_body( libspectrum_byte **buffer, size_t *length,
   libspectrum_tape_block_state it;
   libspectrum_byte *length_ptr; 
 
-  error = libspectrum_make_room( &data, 8192, &data_ptr, &data_size );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  libspectrum_make_room( &data, 8192, &data_ptr, &data_size );
 
   if( libspectrum_tape_block_internal_init( &it, tape ) ) {
     while( !(flags & LIBSPECTRUM_TAPE_FLAGS_STOP) ) {
@@ -279,14 +270,8 @@ csw_write_body( libspectrum_byte **buffer, size_t *length,
       balance_tstates = balance_tstates % scale;
 
       if( pulse_length ) {
-        if( data_size < (data_length + 1 + sizeof(libspectrum_dword) ) ) {
-          error = libspectrum_make_room( &data, data_size*2,
-                                         &data_ptr, &data_size );
-          if( error != LIBSPECTRUM_ERROR_NONE ) {
-            free( data );
-            return error;
-          }
-        }
+        if( data_size < (data_length + 1 + sizeof(libspectrum_dword) ) )
+          libspectrum_make_room( &data, data_size*2, &data_ptr, &data_size );
           
         if( pulse_length <= 0xff ) {
           *data_ptr++ = pulse_length;
@@ -313,7 +298,7 @@ csw_write_body( libspectrum_byte **buffer, size_t *length,
 
     error = libspectrum_zlib_compress( data, data_length,
                                        &compressed_data, &compressed_length );
-    free( data );
+    libspectrum_free( data );
     if( error ) return error;
 
     data = compressed_data;
@@ -322,16 +307,9 @@ csw_write_body( libspectrum_byte **buffer, size_t *length,
 #endif
 
   if( data_length ) {
-    error = libspectrum_make_room( buffer, data_length, &ptr, length );
-    if( error != LIBSPECTRUM_ERROR_NONE ) {
-      free( data );
-      return error;
-    }
-
-    /* Write out the data */
+    libspectrum_make_room( buffer, data_length, &ptr, length );
     memcpy( ptr, data, data_length ); ptr += data_length;
-
-    free( data );
+    libspectrum_free( data );
   }
 
   return LIBSPECTRUM_ERROR_NONE;
@@ -350,8 +328,7 @@ libspectrum_csw_write( libspectrum_byte **buffer, size_t *length,
   size_t signature_length = strlen( libspectrum_csw_signature );
 
   /* First, write the .csw signature and the rest of the header */
-  error = libspectrum_make_room( buffer, signature_length + 29, &ptr, length );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  libspectrum_make_room( buffer, signature_length + 29, &ptr, length );
 
   memcpy( ptr, libspectrum_csw_signature, signature_length );
   ptr += signature_length;
