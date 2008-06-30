@@ -822,7 +822,8 @@ rzx_read_snapshot( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
 {
   rzx_block_t *block;
   libspectrum_snap *snap;
-  size_t blocklength, snaplength; libspectrum_error error;
+  size_t blocklength, snaplength;
+  libspectrum_error error = LIBSPECTRUM_ERROR_NONE;
   libspectrum_dword flags;
   const libspectrum_byte *snap_ptr;
   int done;

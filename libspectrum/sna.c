@@ -286,7 +286,7 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
 		       int *out_flags, libspectrum_snap *snap,
 		       int in_flags GCC_UNUSED )
 {
-  libspectrum_error error;
+  libspectrum_error error = LIBSPECTRUM_ERROR_NONE;
   libspectrum_byte *ptr, *sp;
 
   /* Minor info loss already due to things like tstate count, halted state,

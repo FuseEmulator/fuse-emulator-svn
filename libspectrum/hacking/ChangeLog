@@ -663,3 +663,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080625 microdrive.c: fix write protect flag handling (fixes bug #2002682).
 20080630 libspectrum.h.in: fix prototype for libspectrum_ide_alloc (Fred).
 20080630 myglib/{garray.c,ghash.c}: add <string.h> to elimiate warnings (Fred).
+20080630 rzx.c,sna.c: initialise error as it can be used unintialised (Fred).
