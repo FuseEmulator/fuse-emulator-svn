@@ -131,11 +131,7 @@ process_tape( char *filename )
 
   error = read_file( filename, &buffer, &length ); if( error ) return error;
 
-  error = libspectrum_tape_alloc( &tape );
-  if( error != LIBSPECTRUM_ERROR_NONE ) {
-    free( buffer );
-    return 1;
-  }
+  libspectrum_tape_alloc( &tape );
 
   error = libspectrum_tape_read( tape, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
                                  filename );

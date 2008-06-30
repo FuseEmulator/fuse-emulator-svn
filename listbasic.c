@@ -136,7 +136,7 @@ parse_snapshot_file( const unsigned char *buffer, size_t length,
 
   int error;
 
-  error = libspectrum_snap_alloc( &snap ); if( error ) return error;
+  libspectrum_snap_alloc( &snap );
 
   error = libspectrum_snap_read( snap, buffer, length, type, NULL );
   if( error ) { libspectrum_snap_free( snap ); return error; }
@@ -202,7 +202,7 @@ parse_tape_file( const unsigned char *buffer, size_t length,
 
   int error;
 
-  error = libspectrum_tape_alloc( &tape ); if( error ) return error;
+  libspectrum_tape_alloc( &tape );
 
   error = libspectrum_tape_read( tape, buffer, length, type, NULL );
   if( error ) { libspectrum_tape_free( tape ); return error; }
