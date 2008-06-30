@@ -36,6 +36,7 @@
 
 #ifndef HAVE_LIB_GLIB		/* Use this iff we're not using the 
 				   `proper' glib */
+#include <string.h>
 
 #include "internals.h"
 
