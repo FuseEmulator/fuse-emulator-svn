@@ -480,7 +480,7 @@ load_snap( libspectrum_snap **snap, const char *filename )
   int error;
   unsigned char *buffer; size_t length;
 
-  libspectrum_snap_alloc( snap );
+  *snap = libspectrum_snap_alloc();
 
   if( read_file( filename, &buffer, &length ) ) {
     libspectrum_snap_free( *snap );
@@ -878,7 +878,7 @@ add_rom_block( libspectrum_tape *tape, const libspectrum_byte flag,
     return 1;
   }
 
-  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
+  block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_ROM );
 
   libspectrum_tape_block_set_pause( block, 100 );
   libspectrum_tape_block_set_data_length( block, length + 2 );
@@ -1095,7 +1095,7 @@ add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
     return 1;
   }
 
-  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
+  block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_ROM );
 
   libspectrum_tape_block_set_pause( block, 100 );
   libspectrum_tape_block_set_data_length( block, length );
@@ -1192,7 +1192,7 @@ add_page( libspectrum_tape *tape, libspectrum_snap *snap, int page,
   size_t page_length, compressed_length, reverse_offset;
   libspectrum_byte table_byte, *buffer;
 
-  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_TURBO );
+  block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_TURBO );
 
   error = create_turbo_header( block, settings->speed ); if( error ) {
     libspectrum_tape_block_free( block );
@@ -1488,12 +1488,10 @@ write_tape( libspectrum_tape *tape, const char *filename )
 static int
 convert_snap( libspectrum_snap *snap, const settings_t *settings )
 {
-  libspectrum_tape *tape;
+  libspectrum_tape *tape = libspectrum_tape_alloc();
   int error;
 
   print_verbose( "\nCreating TZX file:\n" );
-
-  libspectrum_tape_alloc( &tape );
 
   error = create_main_header( tape, settings->loader_name );
   if( error ) { libspectrum_tape_free( tape ); return error; }

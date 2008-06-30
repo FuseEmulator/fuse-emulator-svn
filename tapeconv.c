@@ -146,7 +146,7 @@ read_tape( char *filename, libspectrum_tape **tape )
 
   if( read_file( filename, &buffer, &length ) ) return 1;
 
-  libspectrum_tape_alloc( tape );
+  *tape = libspectrum_tape_alloc();
 
   if( libspectrum_tape_read( *tape, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
                              filename ) ) {
@@ -224,8 +224,7 @@ append_scr_file( char *scr_file, libspectrum_tape *tape )
   libspectrum_byte* custom_block_data; size_t custom_block_length;
   libspectrum_error error;
 
-  /* Get a new block */
-  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_CUSTOM );
+  block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_CUSTOM );
 
   /* Get the description */
   description = malloc( DESCRIPTION_BUFFER_LEN );
@@ -287,8 +286,7 @@ append_inlay_file( char *inlay_file, libspectrum_tape *tape )
   libspectrum_byte* custom_block_data; size_t custom_block_length;
   libspectrum_error error;
 
-  /* Get a new block */
-  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_CUSTOM );
+  block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_CUSTOM );
 
   /* Get the description */
   description = malloc( DESCRIPTION_BUFFER_LEN );

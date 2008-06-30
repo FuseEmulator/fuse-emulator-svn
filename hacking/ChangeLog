@@ -239,3 +239,6 @@
 20080512 tape2wav.c: add help text for rate option (Fred).
 20080614 configure.in: add --without-audiofile (patch #1982487)
          (José Manuel Ferrer Ortiz).
+20080630 audio2tape.c,listbasic.c,rzxcheck.c,rzxtool.c,snap2tzx.c,snapconv.c,
+	 tape2wav.c,tapeconv.c,tzxlist.c,utils.c: handle new allocator returns
+	 object style API from libspectrum.

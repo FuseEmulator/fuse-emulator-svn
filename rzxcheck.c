@@ -63,7 +63,7 @@ main( int argc, char **argv )
   }
   rzxfile = argv[1];
 
-  libspectrum_rzx_alloc( &rzx );
+  rzx = libspectrum_rzx_alloc();
 
   if( read_file( rzxfile, &buffer, &length ) ) return 16;
 
