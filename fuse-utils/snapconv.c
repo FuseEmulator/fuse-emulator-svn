@@ -77,7 +77,7 @@ main( int argc, char **argv )
 
   error = init_libspectrum(); if( error ) return error;
 
-  error = libspectrum_snap_alloc( &snap ); if( error ) return error;
+  libspectrum_snap_alloc( &snap );
 
   if( read_file( argv[0], &buffer, &length ) ) {
     libspectrum_snap_free( snap );

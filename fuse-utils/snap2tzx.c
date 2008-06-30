@@ -480,7 +480,7 @@ load_snap( libspectrum_snap **snap, const char *filename )
   int error;
   unsigned char *buffer; size_t length;
 
-  error = libspectrum_snap_alloc( snap ); if( error ) return error;
+  libspectrum_snap_alloc( snap );
 
   if( read_file( filename, &buffer, &length ) ) {
     libspectrum_snap_free( *snap );
@@ -878,8 +878,7 @@ add_rom_block( libspectrum_tape *tape, const libspectrum_byte flag,
     return 1;
   }
 
-  error = libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
-  if( error ) { free( buffer ); return error; }
+  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
 
   libspectrum_tape_block_set_pause( block, 100 );
   libspectrum_tape_block_set_data_length( block, length + 2 );
@@ -1096,8 +1095,7 @@ add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
     return 1;
   }
 
-  error = libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
-  if( error ) { free( *loader ); return error; }
+  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
 
   libspectrum_tape_block_set_pause( block, 100 );
   libspectrum_tape_block_set_data_length( block, length );
@@ -1118,7 +1116,7 @@ add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
 
   /* Put the loader into the buffer */
   error2 = create_loader( basic + basic_length, snap, settings );
-  if( error2 ) { libspectrum_tape_block_free( block ); return error; }
+  if( error2 ) { libspectrum_tape_block_free( block ); return error2; }
   
   /* We don't calculate the checksum yet as we need to do it after
      we've put the page lengths in the data */
@@ -1194,8 +1192,7 @@ add_page( libspectrum_tape *tape, libspectrum_snap *snap, int page,
   size_t page_length, compressed_length, reverse_offset;
   libspectrum_byte table_byte, *buffer;
 
-  error = libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_TURBO );
-  if( error ) return error;
+  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_TURBO );
 
   error = create_turbo_header( block, settings->speed ); if( error ) {
     libspectrum_tape_block_free( block );
@@ -1496,7 +1493,7 @@ convert_snap( libspectrum_snap *snap, const settings_t *settings )
 
   print_verbose( "\nCreating TZX file:\n" );
 
-  error = libspectrum_tape_alloc( &tape ); if( error ) return error;
+  libspectrum_tape_alloc( &tape );
 
   error = create_main_header( tape, settings->loader_name );
   if( error ) { libspectrum_tape_free( tape ); return error; }

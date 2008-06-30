@@ -81,8 +81,7 @@ get_creator( libspectrum_creator **creator, const char *program )
   }
 #endif
 
-  error = libspectrum_creator_alloc( creator );
-  if( error ) return error;
+  libspectrum_creator_alloc( creator );
 
   error = libspectrum_creator_set_program( *creator, program );
   if( error ) { libspectrum_creator_free( *creator ); return error; }
