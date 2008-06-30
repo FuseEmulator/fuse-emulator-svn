@@ -389,7 +389,7 @@ main( int argc, char *argv[] )
   error = read_file( options.rzxfile, &buffer, &length );
   if( error ) return error;
 
-  libspectrum_rzx_alloc( &rzx );
+  rzx = libspectrum_rzx_alloc();
 
   error = libspectrum_rzx_read( rzx, buffer, length );
   if( error ) return error;

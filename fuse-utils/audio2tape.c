@@ -185,7 +185,7 @@ read_tape( glm get_level_method, char *filename, libspectrum_tape **tape )
   /* The track we're using in the file */
   int track = AF_DEFAULT_TRACK; 
 
-  libspectrum_tape_alloc( tape );
+  *tape = libspectrum_tape_alloc();
 
   handle = afOpenFile( filename, "r", NULL );
   if( handle == AF_NULL_FILEHANDLE ) {
@@ -237,9 +237,8 @@ read_tape( glm get_level_method, char *filename, libspectrum_tape **tape )
     return 1;
   }
 
-  /* Get a new block */
-  libspectrum_tape_block* block;
-  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
+  libspectrum_tape_block *block = 
+    libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
 
   /* 44100 Hz 79 t-states 22050 Hz 158 t-states */
   libspectrum_tape_block_set_bit_length( block,

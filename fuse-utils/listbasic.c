@@ -131,12 +131,10 @@ int
 parse_snapshot_file( const unsigned char *buffer, size_t length,
 		     libspectrum_id_t type )
 {
-  libspectrum_snap *snap;
+  libspectrum_snap *snap = libspectrum_snap_alloc();
   libspectrum_word program_address;
 
   int error;
-
-  libspectrum_snap_alloc( &snap );
 
   error = libspectrum_snap_read( snap, buffer, length, type, NULL );
   if( error ) { libspectrum_snap_free( snap ); return error; }
@@ -194,15 +192,13 @@ int
 parse_tape_file( const unsigned char *buffer, size_t length,
 		 libspectrum_id_t type )
 {
-  libspectrum_tape *tape;
+  libspectrum_tape *tape = libspectrum_tape_alloc();
   libspectrum_tape_iterator iterator;
   libspectrum_tape_block *tape_block;
   libspectrum_byte *data;
   libspectrum_word program_length;
 
   int error;
-
-  libspectrum_tape_alloc( &tape );
 
   error = libspectrum_tape_read( tape, buffer, length, type, NULL );
   if( error ) { libspectrum_tape_free( tape ); return error; }

@@ -92,7 +92,7 @@ read_tape( char *filename, libspectrum_tape **tape )
 
   if( read_file( filename, &buffer, &length ) ) return 1;
 
-  libspectrum_tape_alloc( tape );
+  *tape = libspectrum_tape_alloc();
 
   if( libspectrum_tape_read( *tape, buffer, length, LIBSPECTRUM_ID_UNKNOWN,
                              filename ) ) {
