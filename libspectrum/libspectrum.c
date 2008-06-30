@@ -461,7 +461,7 @@ libspectrum_identify_file_with_class(
 						new_length );
   if( error ) return error;
 
-  free( new_filename ); free( new_buffer );
+  libspectrum_free( new_filename ); libspectrum_free( new_buffer );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -747,7 +747,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
     error = libspectrum_bzip2_inflate( old_buffer, old_length,
 				       new_buffer, new_length );
     if( error ) {
-      if( new_filename ) free( *new_filename );
+      if( new_filename ) libspectrum_free( *new_filename );
       return error;
     }
 
@@ -757,7 +757,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
       LIBSPECTRUM_ERROR_UNKNOWN,
       "libbz2 not available to decompress bzipped file"
     );
-    if( new_filename ) free( *new_filename );
+    if( new_filename ) libspectrum_free( *new_filename );
     return LIBSPECTRUM_ERROR_UNKNOWN;
 
 #endif				/* #ifdef HAVE_LIBBZ2 */
@@ -778,7 +778,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
     error = libspectrum_gzip_inflate( old_buffer, old_length,
 				      new_buffer, new_length );
     if( error ) {
-      if( new_filename ) free( *new_filename );
+      if( new_filename ) libspectrum_free( *new_filename );
       return error;
     }
 
@@ -786,7 +786,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "zlib not available to decompress gzipped file" );
-    if( new_filename ) free( *new_filename );
+    if( new_filename ) libspectrum_free( *new_filename );
     return LIBSPECTRUM_ERROR_UNKNOWN;
 
 #endif				/* #ifdef HAVE_ZLIB_H */
@@ -827,7 +827,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 #else				/* #ifndef __MORPHOS__ */
               if( xfdDecrunchBuffer( xfdobj ) ) {
 #endif				/* #ifndef __MORPHOS__ */
-                *new_buffer = malloc( xfdobj->xfdbi_TargetBufSaveLen );
+                *new_buffer = libspectrum_malloc( xfdobj->xfdbi_TargetBufSaveLen );
                 *new_length = xfdobj->xfdbi_TargetBufSaveLen;
                 memcpy( *new_buffer, xfdobj->xfdbi_TargetBuffer, *new_length );
 #ifndef __MORPHOS__
@@ -869,7 +869,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "unknown compressed type %d", type );
-    if( new_filename ) free( *new_filename );
+    if( new_filename ) libspectrum_free( *new_filename );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
@@ -879,7 +879,7 @@ libspectrum_uncompress_file( unsigned char **new_buffer, size_t *new_length,
 /* Ensure there is room for `requested' characters after the current
    position `ptr' in `buffer'. If not, realloc() and update the
    pointers as necessary */
-int
+void
 libspectrum_make_room( libspectrum_byte **dest, size_t requested,
 		       libspectrum_byte **ptr, size_t *allocated )
 {
@@ -890,14 +890,12 @@ libspectrum_make_room( libspectrum_byte **dest, size_t requested,
   if( *allocated == 0 ) {
 
     (*allocated) = requested;
-
-    *dest = (libspectrum_byte*)malloc( requested * sizeof(libspectrum_byte) );
-    if( *dest == NULL ) return 1;
+    *dest = libspectrum_malloc( requested * sizeof( **dest ) );
 
   } else {
 
     /* If there's already enough room here, just return */
-    if( current_length + requested <= (*allocated) ) return 0;
+    if( current_length + requested <= (*allocated) ) return;
 
     /* Make the new size the maximum of the new needed size and the
      old allocated size * 2 */
@@ -906,17 +904,11 @@ libspectrum_make_room( libspectrum_byte **dest, size_t requested,
       current_length + requested :
       2 * (*allocated);
 
-    *dest = (libspectrum_byte*)
-      realloc( *dest, (*allocated) * sizeof( libspectrum_byte ) );
-    if( *dest == NULL ) return 1;
-
+    *dest = libspectrum_realloc( *dest, *allocated * sizeof( **dest ) );
   }
 
   /* Update the secondary pointer to the block */
   *ptr = *dest + current_length;
-
-  return 0;
-
 }
 
 /* Read an LSB word from 'buffer' */

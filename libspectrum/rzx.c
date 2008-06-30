@@ -142,10 +142,10 @@ static libspectrum_error
 rzx_read_sign_end( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
 		   const libspectrum_byte *end );
 
-static libspectrum_error
+static void
 rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, ptrdiff_t *sign_offset, int sign );
-static libspectrum_error
+static void
 rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		   size_t *length, libspectrum_creator *creator );
 static libspectrum_error
@@ -175,19 +175,11 @@ const libspectrum_word libspectrum_rzx_repeat_frame = 0xffff;
  * Generic block handling routines
  */
 
-static libspectrum_error
+static void
 block_alloc( rzx_block_t **block, libspectrum_rzx_block_id type )
 {
-  *block = malloc( sizeof( **block ) );
-  if( !*block ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "out of memory at %s:%d", __FILE__, __LINE__ );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
+  *block = libspectrum_malloc( sizeof( **block ) );
   (*block)->type = type;
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
@@ -202,18 +194,18 @@ block_free( rzx_block_t *block )
   case LIBSPECTRUM_RZX_INPUT_BLOCK:
     input = &( block->types.input );
     for( i = 0; i < input->count; i++ )
-      if( !input->frames[i].repeat_last ) free( input->frames[i].in_bytes );
-    free( input->frames );
-    free( block );
+      if( !input->frames[i].repeat_last ) libspectrum_free( input->frames[i].in_bytes );
+    libspectrum_free( input->frames );
+    libspectrum_free( block );
     return LIBSPECTRUM_ERROR_NONE;
 
   case LIBSPECTRUM_RZX_SNAPSHOT_BLOCK:
     libspectrum_snap_free( block->types.snap );
-    free( block );
+    libspectrum_free( block );
     return LIBSPECTRUM_ERROR_NONE;
 
   case LIBSPECTRUM_RZX_SIGN_START_BLOCK:
-    free( block );
+    libspectrum_free( block );
     return LIBSPECTRUM_ERROR_NONE;
 
   case LIBSPECTRUM_RZX_SIGN_END_BLOCK:
@@ -224,7 +216,7 @@ block_free( rzx_block_t *block )
     gcry_mpi_release( signature->s );
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
-    free( block );
+    libspectrum_free( block );
     return LIBSPECTRUM_ERROR_NONE;
 
   case LIBSPECTRUM_RZX_CREATOR_BLOCK:
@@ -257,33 +249,22 @@ find_block( gconstpointer a, gconstpointer b )
  * Main routines
  */
 
-libspectrum_error
+void
 libspectrum_rzx_alloc( libspectrum_rzx **rzx )
 {
-  *rzx = malloc( sizeof( **rzx ) );
-  if( !*rzx ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_rzx_alloc: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
+  *rzx = libspectrum_malloc( sizeof( **rzx ) );
   (*rzx)->blocks = NULL;
   (*rzx)->current_block = NULL;
   (*rzx)->current_input = NULL;
-
   (*rzx)->signed_start = NULL;
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
-libspectrum_error
+void
 libspectrum_rzx_start_input( libspectrum_rzx *rzx, libspectrum_dword tstates )
 {
   rzx_block_t *block;
-  libspectrum_error error;
 
-  error = block_alloc( &block, LIBSPECTRUM_RZX_INPUT_BLOCK );
-  if( error ) return error;
+  block_alloc( &block, LIBSPECTRUM_RZX_INPUT_BLOCK );
 
   rzx->current_input = &( block->types.input );
 
@@ -293,8 +274,6 @@ libspectrum_rzx_start_input( libspectrum_rzx *rzx, libspectrum_dword tstates )
   rzx->current_input->count = 0;
 
   rzx->blocks = g_slist_append( rzx->blocks, block );
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 libspectrum_error
@@ -314,8 +293,7 @@ libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap )
   error = libspectrum_rzx_stop_input( rzx );
   if( error ) return error;
 
-  error = block_alloc( &block, LIBSPECTRUM_RZX_SNAPSHOT_BLOCK );
-  if( error ) return error;
+  block_alloc( &block, LIBSPECTRUM_RZX_SNAPSHOT_BLOCK );
 
   block->types.snap = snap;
 
@@ -461,8 +439,7 @@ libspectrum_rzx_store_frame( libspectrum_rzx *rzx, size_t instructions,
 
     if( count ) {
 
-      frame->in_bytes = malloc( count * sizeof( *( frame->in_bytes ) ) );
-      if( !frame->in_bytes ) return LIBSPECTRUM_ERROR_MEMORY;
+      frame->in_bytes = libspectrum_malloc( count * sizeof( *( frame->in_bytes ) ) );
 
       memcpy( frame->in_bytes, in_bytes,
 	      count * sizeof( *( frame->in_bytes ) ) );
@@ -712,7 +689,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
   ptr = buffer; end = buffer + length;
 
   error = rzx_read_header( &ptr, end );
-  if( error != LIBSPECTRUM_ERROR_NONE ) { free( new_buffer ); return error; }
+  if( error != LIBSPECTRUM_ERROR_NONE ) { libspectrum_free( new_buffer ); return error; }
 
   rzx->signed_start = ptr;
 
@@ -727,7 +704,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
     case LIBSPECTRUM_RZX_CREATOR_BLOCK:
       error = rzx_read_creator( &ptr, end );
       if( error != LIBSPECTRUM_ERROR_NONE ) {
-	free( new_buffer );
+	libspectrum_free( new_buffer );
 	return error;
       }
       break;
@@ -735,7 +712,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
     case LIBSPECTRUM_RZX_SNAPSHOT_BLOCK:
       error = rzx_read_snapshot( rzx, &ptr, end );
       if( error != LIBSPECTRUM_ERROR_NONE ) {
-	free( new_buffer );
+	libspectrum_free( new_buffer );
 	return error;
       }
       break;
@@ -743,7 +720,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
     case LIBSPECTRUM_RZX_INPUT_BLOCK:
       error = rzx_read_input( rzx, &ptr, end );
       if( error != LIBSPECTRUM_ERROR_NONE ) {
-	free( new_buffer );
+	libspectrum_free( new_buffer );
 	return error;
       }
       break;
@@ -751,7 +728,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
     case LIBSPECTRUM_RZX_SIGN_START_BLOCK:
       error = rzx_read_sign_start( rzx, &ptr, end );
       if( error != LIBSPECTRUM_ERROR_NONE ) {
-	free( new_buffer );
+	libspectrum_free( new_buffer );
 	return error;
       }
       break;
@@ -759,7 +736,7 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
     case LIBSPECTRUM_RZX_SIGN_END_BLOCK:
       error = rzx_read_sign_end( rzx, &ptr, end );
       if( error != LIBSPECTRUM_ERROR_NONE ) {
-	free( new_buffer );
+	libspectrum_free( new_buffer );
 	return error;
       }
       break;
@@ -769,12 +746,12 @@ libspectrum_rzx_read( libspectrum_rzx *rzx, const libspectrum_byte *buffer,
 	LIBSPECTRUM_ERROR_UNKNOWN,
         "libspectrum_rzx_read: unknown RZX block ID 0x%02x", id
       );
-      free( new_buffer );
+      libspectrum_free( new_buffer );
       return LIBSPECTRUM_ERROR_UNKNOWN;
     }
   }
 
-  free( new_buffer );
+  libspectrum_free( new_buffer );
   return LIBSPECTRUM_ERROR_NONE;
 }
 
@@ -902,7 +879,7 @@ rzx_read_snapshot( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
         LIBSPECTRUM_ERROR_CORRUPT,
         "rzx_read_snapshot: compressed snapshot has wrong length"
       );
-      free( gzsnap );
+      libspectrum_free( gzsnap );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }   
     snap_ptr = gzsnap;
@@ -932,17 +909,8 @@ rzx_read_snapshot( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
 
   }
 
-  /* Get a block to store the data in */
-  error = block_alloc( &block, LIBSPECTRUM_RZX_SNAPSHOT_BLOCK );
-  if( error ) return error;
-
-  /* Initialise the snap */
-  error = libspectrum_snap_alloc( &block->types.snap );
-  if( error != LIBSPECTRUM_ERROR_NONE ) {
-    if( compressed ) free( gzsnap );
-    block_free( block );
-    return error;
-  }
+  block_alloc( &block, LIBSPECTRUM_RZX_SNAPSHOT_BLOCK );
+  libspectrum_snap_alloc( &block->types.snap );
 
   snap = block->types.snap;
 
@@ -959,19 +927,19 @@ rzx_read_snapshot( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
       LIBSPECTRUM_ERROR_UNKNOWN,
       "%s:rzx_read_snapshot: unrecognised snapshot format", __FILE__
     );
-    if( compressed ) free( gzsnap );
+    if( compressed ) libspectrum_free( gzsnap );
     block_free( block );
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
   if( error != LIBSPECTRUM_ERROR_NONE ) {
-    if( compressed ) free( gzsnap );
+    if( compressed ) libspectrum_free( gzsnap );
     block_free( block );
     return error;
   }
 
   /* Free the decompressed data (if we created it) */
-  if( compressed ) free( gzsnap );
+  if( compressed ) libspectrum_free( gzsnap );
 
   /* Skip over the data */
   (*ptr) += blocklength - 9;
@@ -998,8 +966,7 @@ rzx_read_input( libspectrum_rzx *rzx,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  error = block_alloc( &rzx_block, LIBSPECTRUM_RZX_INPUT_BLOCK );
-  if( error ) return error;
+  block_alloc( &rzx_block, LIBSPECTRUM_RZX_INPUT_BLOCK );
 
   block = &( rzx_block->types.input );
 
@@ -1011,13 +978,7 @@ rzx_read_input( libspectrum_rzx *rzx,
   (*ptr)++;
 
   /* Allocate memory for the frames */
-  block->frames = malloc( block->count * sizeof( *block->frames ) );
-  if( !block->frames ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "rzx_read_input: out of memory" );
-    free( rzx_block );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  block->frames = libspectrum_malloc( block->count * sizeof( *block->frames ) );
   block->allocated = block->count;
 
   /* Fetch the T-state counter and the flags */
@@ -1040,7 +1001,7 @@ rzx_read_input( libspectrum_rzx *rzx,
     if( end - (*ptr) < (ptrdiff_t)blocklength ) {
       libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			       "rzx_read_input: not enough data in buffer" );
-      free( rzx_block );
+      libspectrum_free( rzx_block );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
 
@@ -1055,15 +1016,15 @@ rzx_read_input( libspectrum_rzx *rzx,
     data_ptr = data;
 
     error = rzx_read_frames( block, &data_ptr, data + data_length );
-    if( error ) { free( rzx_block ); free( data ); return error; }
+    if( error ) { libspectrum_free( rzx_block ); libspectrum_free( data ); return error; }
 
-    free( data );
+    libspectrum_free( data );
 
 #else				/* #ifdef HAVE_ZLIB_H */
 
     libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
 			     "rzx_read_input: zlib needed for decompression" );
-    free( rzx_block );
+    libspectrum_free( rzx_block );
     return LIBSPECTRUM_ERROR_UNKNOWN;
 
 #endif				/* #ifdef HAVE_ZLIB_H */
@@ -1071,7 +1032,7 @@ rzx_read_input( libspectrum_rzx *rzx,
   } else {			/* Data not compressed */
 
     error = rzx_read_frames( block, ptr, end );
-    if( error ) { free( rzx_block ); return error; }
+    if( error ) { libspectrum_free( rzx_block ); return error; }
   }
 
   rzx->blocks = g_slist_append( rzx->blocks, rzx_block );
@@ -1093,7 +1054,7 @@ rzx_read_frames( input_block_t *block, const libspectrum_byte **ptr,
       libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			       "rzx_read_frames: not enough data in buffer" );
       for( j=0; j<i; j++ ) {
-	if( !block->frames[i].repeat_last ) free( block->frames[j].in_bytes );
+	if( !block->frames[i].repeat_last ) libspectrum_free( block->frames[j].in_bytes );
       }
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
@@ -1112,7 +1073,7 @@ rzx_read_frames( input_block_t *block, const libspectrum_byte **ptr,
       libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			       "rzx_read_frames: not enough data in buffer" );
       for( j=0; j<i; j++ ) {
-	if( !block->frames[i].repeat_last ) free( block->frames[j].in_bytes );
+	if( !block->frames[i].repeat_last ) libspectrum_free( block->frames[j].in_bytes );
       }
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
@@ -1120,16 +1081,7 @@ rzx_read_frames( input_block_t *block, const libspectrum_byte **ptr,
     if( block->frames[i].count ) {
 
       block->frames[i].in_bytes =
-	malloc( block->frames[i].count * sizeof( libspectrum_byte ) );
-      if( !block->frames[i].in_bytes ) {
-	libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-				 "rzx_read_input: out of memory" );
-	for( j=0; j<i; j++ ) {
-	  if( !block->frames[i].repeat_last ) free( block->frames[j].in_bytes );
-	}
-	return LIBSPECTRUM_ERROR_MEMORY;
-      }
-
+	libspectrum_malloc( block->frames[i].count * sizeof( libspectrum_byte ) );
       memcpy( block->frames[i].in_bytes, *ptr, block->frames[i].count );
 
     } else {
@@ -1148,7 +1100,6 @@ rzx_read_sign_start( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
 {
   rzx_block_t *block;
   libspectrum_dword length;
-  libspectrum_error error;
 
   /* Check we've got enough data for the length */
 
@@ -1182,8 +1133,7 @@ rzx_read_sign_start( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  error = block_alloc( &block, LIBSPECTRUM_RZX_SIGN_START_BLOCK );
-  if( error ) return error;
+  block_alloc( &block, LIBSPECTRUM_RZX_SIGN_START_BLOCK );
 
   block->types.keyid = libspectrum_read_dword( ptr );
 
@@ -1205,7 +1155,6 @@ rzx_read_sign_end( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
   rzx_block_t *block;
   signature_block_t *signature;
   size_t length;
-  libspectrum_error error;
 
   /* Check we've got enough data for the length */
   if( end - (*ptr) < 4 ) {
@@ -1225,8 +1174,7 @@ rzx_read_sign_end( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  error = block_alloc( &block, LIBSPECTRUM_RZX_SIGN_END_BLOCK );
-  if( error ) return error;
+  block_alloc( &block, LIBSPECTRUM_RZX_SIGN_END_BLOCK );
 
   signature = &( block->types.signature );
 
@@ -1243,7 +1191,7 @@ rzx_read_sign_end( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
       libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			       "error reading 'r': %s",
 			       gcry_strerror( error ) );
-      free( block );
+      libspectrum_free( block );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
     (*ptr) += mpi_length; length -= mpi_length;
@@ -1255,7 +1203,7 @@ rzx_read_sign_end( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
 			       "error reading 's': %s",
 			       gcry_strerror( error ) );
       gcry_mpi_release( signature->r );
-      free( block );
+      libspectrum_free( block );
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
     (*ptr) += mpi_length; length -= mpi_length;
@@ -1282,13 +1230,9 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
   GSList *list;
   ptrdiff_t sign_offset;
 
-  error = rzx_write_header( buffer, &ptr, length, &sign_offset, key ? 1 : 0 );
-  if( error != LIBSPECTRUM_ERROR_NONE ) return error;
+  rzx_write_header( buffer, &ptr, length, &sign_offset, key ? 1 : 0 );
 
-  if( creator ) {
-    error = rzx_write_creator( buffer, &ptr, length, creator );
-    if( error != LIBSPECTRUM_ERROR_NONE ) return error;
-  }
+  if( creator ) rzx_write_creator( buffer, &ptr, length, creator );
 
   if( key ) {
     error = rzx_write_signed_start( buffer, &ptr, length, key, creator );
@@ -1332,21 +1276,13 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-static libspectrum_error
+static void
 rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, ptrdiff_t *sign_offset, int sign )
 {
-  libspectrum_error error;
   size_t signature_length = strlen( rzx_signature );
 
-  error = libspectrum_make_room( buffer, strlen( rzx_signature ) + 6, ptr,
-				 length );
-  if( error != LIBSPECTRUM_ERROR_NONE ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "rzx_write_header: out of memory" );
-    return error;
-  }
-
+  libspectrum_make_room( buffer, strlen( rzx_signature ) + 6, ptr, length );
   memcpy( *ptr, rzx_signature, signature_length ); *ptr += signature_length;
 
   *(*ptr)++ = 0;		/* Major version number */
@@ -1364,25 +1300,18 @@ rzx_write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   *(*ptr)++ = 12;		/* Minor version number */
   libspectrum_write_dword( ptr, 0 );
 #endif				/* #ifdef HAVE_GCRYPT_H */
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
-static libspectrum_error
+static void
 rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		   size_t *length, libspectrum_creator *creator )
 {
-  libspectrum_error error;
   size_t custom_length, block_length;
 
   custom_length = libspectrum_creator_custom_length( creator );
   block_length = 29 + custom_length;
 
-  error = libspectrum_make_room( buffer, block_length, ptr, length );
-  if( error != LIBSPECTRUM_ERROR_NONE ) {
-    libspectrum_print_error( error, "rzx_write_creator: out of memory" );
-    return error;
-  }
+  libspectrum_make_room( buffer, block_length, ptr, length );
 
   *(*ptr)++ = LIBSPECTRUM_RZX_CREATOR_BLOCK;
   libspectrum_write_dword( ptr, block_length );	/* Block length */
@@ -1396,8 +1325,6 @@ rzx_write_creator( libspectrum_byte **buffer, libspectrum_byte **ptr,
     memcpy( *ptr, libspectrum_creator_custom( creator ), custom_length );
     (*ptr) += custom_length;
   }
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
@@ -1423,7 +1350,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
     if( error ) return error;
 
     if( flags & LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS ) {
-      free( snap_buffer ); snap_length = 0;
+      libspectrum_free( snap_buffer ); snap_length = 0;
       snap_format = LIBSPECTRUM_ID_SNAPSHOT_SZX;
       error = libspectrum_snap_write( &snap_buffer, &snap_length, &flags, snap,
 				      snap_format, creator, 0 );
@@ -1449,11 +1376,11 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
     error = libspectrum_zlib_compress( snap_buffer, snap_length,
 				       &gzsnap, &gzlength );
     if( error != LIBSPECTRUM_ERROR_NONE ) {
-      free( snap_buffer );
+      libspectrum_free( snap_buffer );
       return error;
     }
 
-    error = libspectrum_make_room( buffer, 17 + gzlength, ptr, length );
+    libspectrum_make_room( buffer, 17 + gzlength, ptr, length );
 
 #else				/* #ifdef HAVE_ZLIB_H */
 
@@ -1464,14 +1391,7 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 #endif				/* #ifdef HAVE_ZLIB_H */
 
   } else {
-    error = libspectrum_make_room( buffer, 17 + snap_length, ptr, length );
-  }
-
-  if( error != LIBSPECTRUM_ERROR_NONE ) {
-    if( gzsnap ) free( gzsnap ); free( snap_buffer );
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "rzx_write_snapshot: out of memory" );
-    return error;
+    libspectrum_make_room( buffer, 17 + snap_length, ptr, length );
   }
 
   *(*ptr)++ = LIBSPECTRUM_RZX_SNAPSHOT_BLOCK;
@@ -1503,12 +1423,12 @@ rzx_write_snapshot( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   if( compress ) {
     memcpy( *ptr, gzsnap, gzlength ); (*ptr) += gzlength;
-    free( gzsnap );
+    libspectrum_free( gzsnap );
   } else {
     memcpy( *ptr, snap_buffer, snap_length ); (*ptr) += snap_length;
   }
 
-  free( snap_buffer );
+  libspectrum_free( snap_buffer );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -1522,11 +1442,7 @@ rzx_write_input( input_block_t *block, libspectrum_byte **buffer,
   size_t length_offset, data_offset, flags_offset;
   libspectrum_byte *length_ptr; 
 
-  error = libspectrum_make_room( buffer, 18, ptr, length );
-  if( error != LIBSPECTRUM_ERROR_NONE ) {
-    libspectrum_print_error( error, "rzx_write_input: out of memory" );
-    return error;
-  }
+  libspectrum_make_room( buffer, 18, ptr, length );
 
   *(*ptr)++ = LIBSPECTRUM_RZX_INPUT_BLOCK;
 
@@ -1558,12 +1474,7 @@ rzx_write_input( input_block_t *block, libspectrum_byte **buffer,
 
     libspectrum_rzx_frame_t *frame = &block->frames[i];
 
-    error = libspectrum_make_room( buffer, 4, ptr, length );
-    if( error ) {
-      libspectrum_print_error( error, "rzx_write_input: out of memory" );
-      return error;
-    }
-
+    libspectrum_make_room( buffer, 4, ptr, length );
     libspectrum_write_word( ptr, frame->instructions );
 
     if( frame->repeat_last ) {
@@ -1574,11 +1485,7 @@ rzx_write_input( input_block_t *block, libspectrum_byte **buffer,
 
       libspectrum_write_word( ptr, frame->count );
 
-      error = libspectrum_make_room( buffer, frame->count, ptr, length );
-      if( error != LIBSPECTRUM_ERROR_NONE ) {
-	libspectrum_print_error( error, "rzx_write_input: out of memory" );
-	return error;
-      }
+      libspectrum_make_room( buffer, frame->count, ptr, length );
       memcpy( *ptr, frame->in_bytes, frame->count ); (*ptr) += frame->count;
     }
   }
@@ -1611,7 +1518,7 @@ rzx_write_input( input_block_t *block, libspectrum_byte **buffer,
       *ptr = *buffer + data_offset + gzlength;
     }
 
-    free( gzsnap );
+    libspectrum_free( gzsnap );
 
 #else				/* #ifdef HAVE_ZLIB_H */
 
@@ -1632,14 +1539,8 @@ rzx_write_signed_start( libspectrum_byte **buffer, libspectrum_byte **ptr,
 			libspectrum_creator *creator )
 {
 #ifdef HAVE_GCRYPT_H
-  libspectrum_error error;
   
-  error = libspectrum_make_room( buffer, 13, ptr, length );
-  if( error != LIBSPECTRUM_ERROR_NONE ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "rzx_write_signed_start: out of memory" );
-    return error;
-  }
+  libspectrum_make_room( buffer, 13, ptr, length );
 
   /* Block ID */
   *(*ptr)++ = LIBSPECTRUM_RZX_SIGN_START_BLOCK;
@@ -1686,12 +1587,7 @@ rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
 				 (*ptr) - ( *buffer + sign_offset ), key );
   if( error ) return error;
 
-  error = libspectrum_make_room( buffer, sig_length + 5, ptr, length );
-  if( error != LIBSPECTRUM_ERROR_NONE ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "rzx_write_signed_end: out of memory" );
-    return error;
-  }
+  libspectrum_make_room( buffer, sig_length + 5, ptr, length );
 
   /* Block ID */
   *(*ptr)++ = LIBSPECTRUM_RZX_SIGN_END_BLOCK;
@@ -1702,7 +1598,7 @@ rzx_write_signed_end( libspectrum_byte **buffer, libspectrum_byte **ptr,
   /* Write the signature */
   memcpy( *ptr, signature, sig_length ); (*ptr) += sig_length;
 
-  free( signature );
+  libspectrum_free( signature );
 
 #endif				/* #ifdef HAVE_GCRYPT_H */
 

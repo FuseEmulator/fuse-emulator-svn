@@ -118,6 +118,27 @@ libspectrum_error WIN32_DLL
 libspectrum_default_error_function( libspectrum_error error,
 				    const char *format, va_list ap );
 
+/* Memory allocators */
+
+typedef void* (*libspectrum_malloc_fn_t)( size_t size );
+typedef void* (*libspectrum_calloc_fn_t)( size_t nmemb, size_t size );
+typedef void* (*libspectrum_realloc_fn_t)( void *ptr, size_t size );
+typedef void (*libspectrum_free_fn_t)( void *ptr );
+
+typedef struct libspectrum_mem_vtable_t {
+  libspectrum_malloc_fn_t malloc;
+  libspectrum_calloc_fn_t calloc;
+  libspectrum_realloc_fn_t realloc;
+  libspectrum_free_fn_t free;
+} libspectrum_mem_vtable_t;
+
+void* libspectrum_malloc( size_t size );
+void* libspectrum_calloc( size_t nmemb, size_t size );
+void* libspectrum_realloc( void *ptr, size_t size );
+void libspectrum_free( void *ptr );
+
+void libspectrum_mem_set_vtable( libspectrum_mem_vtable_t *table );
+
 /* Attempt to identify a given file */
 
 /* Various types of file we might manage to identify */
@@ -334,7 +355,7 @@ libspectrum_timings_tstates_per_frame( libspectrum_machine machine );
 
 typedef struct libspectrum_creator libspectrum_creator;
 
-libspectrum_error WIN32_DLL
+void WIN32_DLL
 libspectrum_creator_alloc( libspectrum_creator **creator );
 libspectrum_error WIN32_DLL
 libspectrum_creator_free( libspectrum_creator *creator );
@@ -379,7 +400,7 @@ libspectrum_creator_custom_length( libspectrum_creator *creator );
 
 typedef struct libspectrum_snap libspectrum_snap;
 
-libspectrum_error WIN32_DLL libspectrum_snap_alloc( libspectrum_snap **snap );
+void WIN32_DLL libspectrum_snap_alloc( libspectrum_snap **snap );
 libspectrum_error WIN32_DLL libspectrum_snap_free( libspectrum_snap *snap );
 
 /* Read in a snapshot, optionally guessing what type it is */
@@ -522,7 +543,7 @@ typedef enum libspectrum_tape_state_type {
 } libspectrum_tape_state_type;
 
 /* Routines to manipulate tape blocks */
-libspectrum_error WIN32_DLL
+void WIN32_DLL
 libspectrum_tape_block_alloc( libspectrum_tape_block **block,
 			      libspectrum_tape_type type );
 libspectrum_error WIN32_DLL
@@ -550,7 +571,7 @@ LIBSPECTRUM_TAPE_ACCESSORS
 /* A linked list of tape blocks */
 typedef struct libspectrum_tape libspectrum_tape;
 
-libspectrum_error WIN32_DLL libspectrum_tape_alloc( libspectrum_tape **tape );
+void WIN32_DLL libspectrum_tape_alloc( libspectrum_tape **tape );
 libspectrum_error WIN32_DLL libspectrum_tape_clear( libspectrum_tape *tape );
 libspectrum_error WIN32_DLL libspectrum_tape_free( libspectrum_tape *tape );
 
@@ -693,10 +714,10 @@ libspectrum_word WIN32_DLL libspectrum_tape_generalised_data_symbol_pulse( const
 
 typedef struct libspectrum_rzx libspectrum_rzx;
 
-libspectrum_error WIN32_DLL libspectrum_rzx_alloc( libspectrum_rzx **rzx );
+void WIN32_DLL libspectrum_rzx_alloc( libspectrum_rzx **rzx );
 libspectrum_error WIN32_DLL libspectrum_rzx_free( libspectrum_rzx *rzx );
 
-libspectrum_error WIN32_DLL
+void WIN32_DLL
 libspectrum_rzx_start_input( libspectrum_rzx *rzx, libspectrum_dword tstates );
 libspectrum_error WIN32_DLL
 libspectrum_rzx_stop_input( libspectrum_rzx *rzx );
@@ -759,8 +780,6 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
 		       libspectrum_creator *creator, int compress,
 		       libspectrum_rzx_dsa_key *key );
 
-libspectrum_error WIN32_DLL libspectrum_rzx_alloc( libspectrum_rzx **rzx );
-
 /* Something to step through all the blocks in an input recording */
 typedef struct _GSList *libspectrum_rzx_iterator;
 
@@ -815,7 +834,7 @@ typedef struct libspectrum_microdrive libspectrum_microdrive;
 
 /* Constructor/destructor */
 
-libspectrum_error WIN32_DLL
+void WIN32_DLL
 libspectrum_microdrive_alloc( libspectrum_microdrive **microdrive );
 libspectrum_error WIN32_DLL
 libspectrum_microdrive_free( libspectrum_microdrive *microdrive );
@@ -849,7 +868,7 @@ libspectrum_microdrive_checksum( libspectrum_microdrive *microdrive,
 libspectrum_error WIN32_DLL
 libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
 				 libspectrum_byte *buffer, size_t length );
-libspectrum_error WIN32_DLL
+void WIN32_DLL
 libspectrum_microdrive_mdr_write( const libspectrum_microdrive *microdrive,
 				  libspectrum_byte **buffer, size_t *length );
 
@@ -885,7 +904,7 @@ typedef struct libspectrum_dck {
   libspectrum_dck_block *dck[256];	/* dck block data */
 } libspectrum_dck;
 
-libspectrum_error WIN32_DLL libspectrum_dck_alloc( libspectrum_dck **dck );
+void WIN32_DLL libspectrum_dck_alloc( libspectrum_dck **dck );
 libspectrum_error WIN32_DLL
 libspectrum_dck_free( libspectrum_dck *dck, int keep_pages );
 
@@ -945,7 +964,7 @@ typedef enum libspectrum_ide_register {
 
 typedef struct libspectrum_ide_channel libspectrum_ide_channel;
 
-libspectrum_error WIN32_DLL
+void WIN32_DLL
 libspectrum_ide_alloc( libspectrum_ide_channel **chn,
 		       libspectrum_ide_databus databus );
 libspectrum_error WIN32_DLL

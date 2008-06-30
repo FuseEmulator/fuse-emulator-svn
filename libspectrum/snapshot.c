@@ -38,13 +38,12 @@ const int LIBSPECTRUM_FLAG_SNAPSHOT_MINOR_INFO_LOSS = 1 << 0;
 const int LIBSPECTRUM_FLAG_SNAPSHOT_MAJOR_INFO_LOSS = 1 << 1;
 
 /* Initialise a libspectrum_snap structure */
-libspectrum_error
+void
 libspectrum_snap_alloc( libspectrum_snap **snap )
 {
   size_t i;
-  libspectrum_error error;
 
-  error = libspectrum_snap_alloc_internal( snap ); if( error ) return error;
+  libspectrum_snap_alloc_internal( snap );
 
   libspectrum_snap_set_a   ( *snap, 0x00 );
   libspectrum_snap_set_f   ( *snap, 0x00 );
@@ -181,8 +180,6 @@ libspectrum_snap_alloc( libspectrum_snap **snap )
   for( i = 0; i < SNAPSHOT_DIVIDE_PAGES; i++ ) {
     libspectrum_snap_set_divide_ram( *snap, i, NULL );
   }
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 /* Free all memory used by a libspectrum_snap structure (destructor...) */
@@ -192,38 +189,38 @@ libspectrum_snap_free( libspectrum_snap *snap )
   size_t i;
 
   for( i = 0; i < 4; i++ )
-    free( libspectrum_snap_roms( snap, i ) );
+    libspectrum_free( libspectrum_snap_roms( snap, i ) );
 
   for( i = 0; i < SNAPSHOT_RAM_PAGES; i++ )
-    free( libspectrum_snap_pages( snap, i ) );
+    libspectrum_free( libspectrum_snap_pages( snap, i ) );
 
   for( i = 0; i < SNAPSHOT_SLT_PAGES; i++ )
-    free( libspectrum_snap_slt( snap, i ) );
+    libspectrum_free( libspectrum_snap_slt( snap, i ) );
 
-  free( libspectrum_snap_slt_screen( snap ) );
+  libspectrum_free( libspectrum_snap_slt_screen( snap ) );
 
   for( i = 0; i < SNAPSHOT_ZXCF_PAGES; i++ )
-    free( libspectrum_snap_zxcf_ram( snap, i ) );
+    libspectrum_free( libspectrum_snap_zxcf_ram( snap, i ) );
 
-  free( libspectrum_snap_interface2_rom( snap, 0 ) );
+  libspectrum_free( libspectrum_snap_interface2_rom( snap, 0 ) );
 
   for( i = 0; i < SNAPSHOT_DOCK_EXROM_PAGES; i++ ) {
-    free( libspectrum_snap_dock_cart( snap, i ) );
-    free( libspectrum_snap_exrom_cart( snap, i ) );
+    libspectrum_free( libspectrum_snap_dock_cart( snap, i ) );
+    libspectrum_free( libspectrum_snap_exrom_cart( snap, i ) );
   }
 
   if( libspectrum_snap_beta_rom( snap, 0 ) )
-    free( libspectrum_snap_beta_rom( snap, 0 ) );
+    libspectrum_free( libspectrum_snap_beta_rom( snap, 0 ) );
 
   if( libspectrum_snap_plusd_rom( snap, 0 ) )
-    free( libspectrum_snap_plusd_rom( snap, 0 ) );
+    libspectrum_free( libspectrum_snap_plusd_rom( snap, 0 ) );
   if( libspectrum_snap_plusd_ram( snap, 0 ) )
-    free( libspectrum_snap_plusd_ram( snap, 0 ) );
+    libspectrum_free( libspectrum_snap_plusd_ram( snap, 0 ) );
 
   if( libspectrum_snap_interface1_rom( snap, 0 ) )
-    free( libspectrum_snap_interface1_rom( snap, 0 ) );
+    libspectrum_free( libspectrum_snap_interface1_rom( snap, 0 ) );
 
-  free( snap );
+  libspectrum_free( snap );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -310,11 +307,11 @@ libspectrum_snap_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "libspectrum_snap_read: unknown snapshot type %d",
 			     type );
-    free( new_buffer );
+    libspectrum_free( new_buffer );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
-  free( new_buffer );
+  libspectrum_free( new_buffer );
   return error;
 }
 
@@ -358,12 +355,12 @@ libspectrum_snap_write( libspectrum_byte **buffer, size_t *length,
 
 /* Given a 48K memory dump `data', place it into the
    appropriate bits of `snap' for a 48K machine */
-int
+libspectrum_error
 libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 				const libspectrum_byte* data )
 {
   libspectrum_byte *buffer[3];
-  size_t i, j;
+  size_t i;
 
   /* If any of the three pages are already occupied, barf */
   if( libspectrum_snap_pages( snap, 5 ) ||
@@ -376,19 +373,8 @@ libspectrum_split_to_48k_pages( libspectrum_snap *snap,
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
-  for( i = 0; i < 3; i++ ) {
-    buffer[i] = malloc( 0x4000 * sizeof( libspectrum_byte ) );
-
-    if( !buffer[i] ) {
-      for( j = 0; j < i; j++ ) free( buffer[i] );
-      libspectrum_print_error(
-        LIBSPECTRUM_ERROR_MEMORY,
-	"libspectrum_split_to_48k_pages: out of memory"
-      );
-      return LIBSPECTRUM_ERROR_MEMORY;
-    }
-
-  }
+  for( i = 0; i < 3; i++ )
+    buffer[i] = libspectrum_malloc( 0x4000 * sizeof( libspectrum_byte ) );
 
   libspectrum_snap_set_pages( snap, 5, buffer[0] );
   libspectrum_snap_set_pages( snap, 2, buffer[1] );

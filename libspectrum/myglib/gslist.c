@@ -40,7 +40,21 @@ static
 gint	last_function		(gconstpointer	 a,
 				 gconstpointer	 b);
 
+static int FREE_LIST_ALLOCATE_CHUNK = 1024;
+
 GSList * free_list = NULL;
+
+static
+void    allocate_free   ( void ) {
+    if(!free_list) {
+        int i;
+        free_list=libspectrum_malloc(FREE_LIST_ALLOCATE_CHUNK*sizeof(GSList));
+        for(i=0;i<FREE_LIST_ALLOCATE_CHUNK-1;i++)
+            free_list[i].next=&free_list[i+1];
+        free_list[FREE_LIST_ALLOCATE_CHUNK-1].next=NULL;
+    }
+}
+
 
 GSList* g_slist_insert	(GSList		*list,
 			 gpointer	 data,
@@ -55,14 +69,7 @@ GSList* g_slist_insert	(GSList		*list,
   else if (position == 0)
     return g_slist_prepend (list, data);
 
-
-    if(!free_list) {
-        int i;
-        free_list=(GSList *)malloc(1024*sizeof(GSList));
-        for(i=0;i<1023;i++)
-            free_list[i].next=&free_list[i+1];
-        free_list[1023].next=NULL;
-    }
+  allocate_free();
 
   new_list = free_list;
   free_list=free_list->next;
@@ -106,14 +113,7 @@ GSList* g_slist_insert_sorted	(GSList		*list,
   GSList *new_list;
   gint cmp;
 
-    if(!free_list) {
-        int i;
-        free_list=(GSList *)malloc(1024*sizeof(GSList));
-        for(i=0;i<1023;i++)
-            free_list[i].next=&free_list[i+1];
-        free_list[1023].next=NULL;
-    }
-
+  allocate_free();
 
   if(!func) return list;
 

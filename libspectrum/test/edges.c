@@ -12,19 +12,16 @@ check_edges( const char *filename, test_edge_sequence_t *edges,
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  if( libspectrum_tape_alloc( &tape ) ) {
-    free( buffer );
-    return TEST_INCOMPLETE;
-  }
+  libspectrum_tape_alloc( &tape );
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) != LIBSPECTRUM_ERROR_NONE ) {
     libspectrum_tape_free( tape );
-    free( buffer );
+    libspectrum_free( buffer );
     return TEST_INCOMPLETE;
   }
 
-  free( buffer );
+  libspectrum_free( buffer );
 
   while( 1 ) {
 

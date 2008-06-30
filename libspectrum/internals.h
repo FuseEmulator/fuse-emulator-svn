@@ -63,8 +63,8 @@ libspectrum_print_error( libspectrum_error error, const char *format, ... )
      GCC_PRINTF( 2, 3 );
 
 /* Acquire more memory for a buffer */
-int libspectrum_make_room( libspectrum_byte **dest, size_t requested,
-			   libspectrum_byte **ptr, size_t *allocated );
+void libspectrum_make_room( libspectrum_byte **dest, size_t requested,
+			    libspectrum_byte **ptr, size_t *allocated );
 
 /* Read and write (d)words */
 libspectrum_word libspectrum_read_word( const libspectrum_byte **buffer );
@@ -115,7 +115,7 @@ int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 
 /* Get memory for a snap */
 
-libspectrum_error libspectrum_snap_alloc_internal( libspectrum_snap **snap );
+void libspectrum_snap_alloc_internal( libspectrum_snap **snap );
 
 /* Format specific snapshot routines */
 

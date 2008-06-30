@@ -39,11 +39,10 @@ g_array_new( gboolean zero_terminated, gboolean clear, guint element_size )
   if( zero_terminated || clear ) {
     fprintf( stderr, "%s: zero_terminated and clear options not supported\n",
 	     __func__ );
-    return NULL;
+    abort();
   }
 
-  array = malloc( sizeof( *array ) );
-  if( !array ) return NULL;
+  array = libspectrum_malloc( sizeof( *array ) );
 
   array->element_size = element_size;
   array->data = NULL;
@@ -61,8 +60,7 @@ expand_array( GArray *array, guint len )
   if( new_size < 2 * array->allocated ) new_size = 2 * array->allocated;
   if( new_size < 8 ) new_size = 8;
 
-  new_data = realloc( array->data, new_size * array->element_size );
-  if( !new_data ) return 0;
+  new_data = libspectrum_realloc( array->data, new_size * array->element_size );
 
   array->data = new_data;
   array->allocated = new_size;

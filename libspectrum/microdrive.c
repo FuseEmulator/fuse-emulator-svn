@@ -63,27 +63,17 @@ static const size_t MDR_LENGTH = LIBSPECTRUM_MICRODRIVE_CARTRIDGE_LENGTH + 1;
 /* Constructor/destructor */
 
 /* Allocate a microdrive image */
-libspectrum_error
+void
 libspectrum_microdrive_alloc( libspectrum_microdrive **microdrive )
 {
-  *microdrive = malloc( sizeof( **microdrive ) );
-  if( !*microdrive ) {
-    libspectrum_print_error(
-      LIBSPECTRUM_ERROR_MEMORY,
-      "libspectrum_microdrive_alloc: out of memory at %s:%d", __FILE__,
-      __LINE__
-    );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
-  return LIBSPECTRUM_ERROR_NONE;
+  *microdrive = libspectrum_malloc( sizeof( **microdrive ) );
 }
 
 /* Free a microdrive image */
 libspectrum_error
 libspectrum_microdrive_free( libspectrum_microdrive *microdrive )
 {
-  free( microdrive );
+  libspectrum_free( microdrive );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -294,26 +284,16 @@ libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-libspectrum_error
+void
 libspectrum_microdrive_mdr_write( const libspectrum_microdrive *microdrive,
 				  libspectrum_byte **buffer, size_t *length )
 {
   *length = microdrive->cartridge_len * LIBSPECTRUM_MICRODRIVE_BLOCK_LEN;
-  *buffer = malloc( *length + 1 );
-  if( !*buffer ) {
-    libspectrum_print_error(
-      LIBSPECTRUM_ERROR_MEMORY,
-      "libspectrum_microdrive_mdr_write: out of memory at %s:%d", __FILE__,
-      __LINE__
-    );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  *buffer = libspectrum_malloc( ( *length + 1 ) * sizeof( **buffer ) );
 
   memcpy( *buffer, microdrive->data, *length );
-  
+
   (*buffer)[ *length ] = microdrive->write_protect;
 
   (*length)++;
-
-  return LIBSPECTRUM_ERROR_NONE;
 }

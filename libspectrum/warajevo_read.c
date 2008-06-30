@@ -454,9 +454,7 @@ read_rom_block( libspectrum_tape *tape, const libspectrum_byte *ptr,
   const libspectrum_byte *data; libspectrum_byte *block_data;
   size_t i, length;
 
-  /* Get memory for a new block */
-  error = libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
-  if( error ) return error;
+  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
 
   size = lsb2word( ptr + offset + 8 );
 
@@ -475,7 +473,7 @@ read_rom_block( libspectrum_tape *tape, const libspectrum_byte *ptr,
 
   /* Have we got enough bytes left in buffer? */
   if( end - data < (ptrdiff_t)block_size ) {
-    free( block );
+    libspectrum_free( block );
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
       "warajevo_read_rom_block: not enough data in buffer"
@@ -484,13 +482,7 @@ read_rom_block( libspectrum_tape *tape, const libspectrum_byte *ptr,
   }
 
   /* Allocate memory for the data */
-  block_data = malloc( length * sizeof( libspectrum_byte ) );
-  if( !block_data ) {
-    free( block );
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-                             "warajevo_read_rom_block: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  block_data = libspectrum_malloc( length * sizeof( *block_data ) );
   libspectrum_tape_block_set_data( block, block_data );
 
   /* Add flag */
@@ -500,7 +492,7 @@ read_rom_block( libspectrum_tape *tape, const libspectrum_byte *ptr,
 
     error = decompress_block( block_data + 1, data, end,
 			      lsb2word( ptr + offset + 15 ), length - 2 );
-    if( error ) { free( block_data ); free( block ); return error; }
+    if( error ) { libspectrum_free( block_data ); libspectrum_free( block ); return error; }
   } else {
     /* Uncompressed block: just copy the data across */
     memcpy( block_data + 1, data, length - 2 );
@@ -533,10 +525,7 @@ read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
   status_type status;
   size_t length, bit_length; libspectrum_byte *block_data;
 
-  /* Get memory for a new block */
-  error = libspectrum_tape_block_alloc( &block,
-					LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
-  if( error ) return error;
+  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
 
   decompressed_size = lsb2word( ptr + offset + 11 );
   compressed_size = lsb2word( ptr + offset + 13 );
@@ -546,7 +535,7 @@ read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
 
   /* Have we got enough bytes left in buffer? */
   if( end - data < (ptrdiff_t)compressed_size ) {
-    free( block );
+    libspectrum_free( block );
     libspectrum_print_error(
       LIBSPECTRUM_ERROR_CORRUPT,
       "warajevo_read_raw_data: not enough data in buffer"
@@ -555,20 +544,14 @@ read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
   }
 
   /* Allocate memory for the data */
-  block_data = malloc( length * sizeof( libspectrum_byte ) );
-  if( !block_data ) {
-    free( block );
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-                             "warajevo_read_raw_data: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
+  block_data = libspectrum_malloc( length * sizeof( libspectrum_byte ) );
   libspectrum_tape_block_set_data( block, block_data );
 
   if( compressed_size != decompressed_size ) {
 
     error = decompress_block( block_data, data, end,
 			      lsb2word( ptr + offset + 15 ), length );
-    if( error ) { free( block_data ); free( block ); return error; }
+    if( error ) { libspectrum_free( block_data ); libspectrum_free( block ); return error; }
   } else {
     /* Uncompressed block: just copy the data across */
     memcpy( block_data, data, length );
@@ -586,7 +569,7 @@ read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
     libspectrum_print_error( LIBSPECTRUM_ERROR_LOGIC,
 			     "read_raw_data: unknown frequency %d",
 			     status.bits.frequency );
-    free( block_data ); free( block );
+    libspectrum_free( block_data ); libspectrum_free( block );
     return LIBSPECTRUM_ERROR_LOGIC;
   }
   libspectrum_tape_block_set_bit_length( block, bit_length );

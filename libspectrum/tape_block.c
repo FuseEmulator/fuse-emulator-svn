@@ -55,20 +55,12 @@ static libspectrum_error
 generalised_data_init( libspectrum_tape_generalised_data_block *block,
                        libspectrum_tape_generalised_data_block_state *state );
 
-libspectrum_error
+void
 libspectrum_tape_block_alloc( libspectrum_tape_block **block,
 			      libspectrum_tape_type type )
 {
-  (*block) = malloc( sizeof( libspectrum_tape_block ) );
-  if( !(*block) ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_tape_block_alloc: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
+  *block = libspectrum_malloc( sizeof( **block ) );
   libspectrum_tape_block_set_type( *block, type );
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 static void
@@ -78,9 +70,9 @@ free_symbol_table( libspectrum_tape_generalised_data_symbol_table *table )
 
   if( table->symbols ) {
     for( i = 0; i < table->symbols_in_table; i++ )
-      free( table->symbols[ i ].lengths );
+      libspectrum_free( table->symbols[ i ].lengths );
 
-    free( table->symbols );
+    libspectrum_free( table->symbols );
   }
 }
 
@@ -93,34 +85,34 @@ libspectrum_tape_block_free( libspectrum_tape_block *block )
   switch( block->type ) {
 
   case LIBSPECTRUM_TAPE_BLOCK_ROM:
-    free( block->types.rom.data );
+    libspectrum_free( block->types.rom.data );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_TURBO:
-    free( block->types.turbo.data );
+    libspectrum_free( block->types.turbo.data );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PULSES:
-    free( block->types.pulses.lengths );
+    libspectrum_free( block->types.pulses.lengths );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
-    free( block->types.pure_data.data );
+    libspectrum_free( block->types.pure_data.data );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
-    free( block->types.raw_data.data );
+    libspectrum_free( block->types.raw_data.data );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
     free_symbol_table( &block->types.generalised_data.pilot_table );
     free_symbol_table( &block->types.generalised_data.data_table );
-    free( block->types.generalised_data.pilot_symbols );
-    free( block->types.generalised_data.pilot_repeats );
-    free( block->types.generalised_data.data );
+    libspectrum_free( block->types.generalised_data.pilot_symbols );
+    libspectrum_free( block->types.generalised_data.pilot_repeats );
+    libspectrum_free( block->types.generalised_data.data );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
     break;
   case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
-    free( block->types.group_start.name );
+    libspectrum_free( block->types.group_start.name );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
     break;
@@ -133,43 +125,43 @@ libspectrum_tape_block_free( libspectrum_tape_block *block )
 
   case LIBSPECTRUM_TAPE_BLOCK_SELECT:
     for( i=0; i<block->types.select.count; i++ ) {
-      free( block->types.select.descriptions[i] );
+      libspectrum_free( block->types.select.descriptions[i] );
     }
-    free( block->types.select.descriptions );
-    free( block->types.select.offsets );
+    libspectrum_free( block->types.select.descriptions );
+    libspectrum_free( block->types.select.offsets );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_STOP48:
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
-    free( block->types.comment.text );
+    libspectrum_free( block->types.comment.text );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
-    free( block->types.message.text );
+    libspectrum_free( block->types.message.text );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
     for( i=0; i<block->types.archive_info.count; i++ ) {
-      free( block->types.archive_info.strings[i] );
+      libspectrum_free( block->types.archive_info.strings[i] );
     }
-    free( block->types.archive_info.ids );
-    free( block->types.archive_info.strings );
+    libspectrum_free( block->types.archive_info.ids );
+    libspectrum_free( block->types.archive_info.strings );
     break;
   case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
-    free( block->types.hardware.types  );
-    free( block->types.hardware.ids    );
-    free( block->types.hardware.values );
+    libspectrum_free( block->types.hardware.types  );
+    libspectrum_free( block->types.hardware.ids    );
+    libspectrum_free( block->types.hardware.values );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
-    free( block->types.custom.description );
-    free( block->types.custom.data );
+    libspectrum_free( block->types.custom.description );
+    libspectrum_free( block->types.custom.data );
     break;
 
     /* Block types not present in .tzx follow here */
 
   case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
-    free( block->types.rle_pulse.data );
+    libspectrum_free( block->types.rle_pulse.data );
     break;
 
   case LIBSPECTRUM_TAPE_BLOCK_CONCAT: /* This should never occur */
@@ -180,7 +172,7 @@ libspectrum_tape_block_free( libspectrum_tape_block *block )
     return LIBSPECTRUM_ERROR_LOGIC;
   }
 
-  free( block );
+  libspectrum_free( block );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -417,26 +409,13 @@ libspectrum_tape_block_read_symbol_table(
     }
 
 
-    table->symbols = malloc( table->symbols_in_table *
-			     sizeof( *table->symbols ) );
-    if( !table->symbols ) {
-      libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY, "%s: out of memory",
-			       __func__ );
-      return LIBSPECTRUM_ERROR_MEMORY;
-    }
+    table->symbols = libspectrum_malloc( table->symbols_in_table * sizeof( *table->symbols ) );
 
     for( i = 0, symbol = table->symbols;
 	 i < table->symbols_in_table;
 	 i++, symbol++ ) {
       symbol->edge_type = **ptr; (*ptr)++;
-      symbol->lengths = malloc( table->max_pulses * sizeof( *symbol->lengths ) );
-      if( !symbol->lengths ) {
-	for( j = 0; j < i; j++ ) free( table->symbols[ j ].lengths );
-	free( table->symbols );
-	libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-				 "%s:%d: out of memory", __func__, __LINE__ );
-	return LIBSPECTRUM_ERROR_MEMORY;
-      }
+      symbol->lengths = libspectrum_malloc( table->max_pulses * sizeof( *symbol->lengths ) );
       for( j = 0; j < table->max_pulses; j++ ) {
 	symbol->lengths[ j ] = (*ptr)[0] + (*ptr)[1] * 0x100;
 	(*ptr) += 2;

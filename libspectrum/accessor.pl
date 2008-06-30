@@ -192,17 +192,10 @@ struct libspectrum_snap {
 };
 
 /* Initialise a libspectrum_snap structure */
-libspectrum_error
+void
 libspectrum_snap_alloc_internal( libspectrum_snap **snap )
 {
-  (*snap) = malloc( sizeof( libspectrum_snap ) );
-  if( !(*snap) ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_snap_alloc: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
-  return LIBSPECTRUM_ERROR_NONE;
+  *snap = libspectrum_malloc( sizeof( **snap ) );
 }
 CODE
 

@@ -113,21 +113,13 @@ rle_pulse_edge( libspectrum_tape_rle_pulse_block *block,
 /*** Function definitions ****/
 
 /* Allocate a list of blocks */
-libspectrum_error
+void
 libspectrum_tape_alloc( libspectrum_tape **tape )
 {
-  (*tape) = (libspectrum_tape*)malloc( sizeof( libspectrum_tape ) );
-  if( !(*tape) ) {
-    libspectrum_print_error( LIBSPECTRUM_ERROR_MEMORY,
-			     "libspectrum_tape_alloc: out of memory" );
-    return LIBSPECTRUM_ERROR_MEMORY;
-  }
-
+  *tape = libspectrum_malloc( sizeof( **tape ) );
   (*tape)->blocks = NULL;
   libspectrum_tape_iterator_init( &((*tape)->state.current_block), *tape );
   (*tape)->state.loop_block = NULL;
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 /* Free the memory used by a list of blocks, but not the object itself */
@@ -151,7 +143,7 @@ libspectrum_tape_free( libspectrum_tape *tape )
   error = libspectrum_tape_clear( tape );
   if( error ) return error;
 
-  free( tape );
+  libspectrum_free( tape );
   
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -244,11 +236,11 @@ libspectrum_tape_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   default:
     libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
 			     "libspectrum_tape_read: not a tape file" );
-    free( new_buffer );
+    libspectrum_free( new_buffer );
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  free( new_buffer );
+  libspectrum_free( new_buffer );
   return error;
 }
 

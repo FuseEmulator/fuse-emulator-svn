@@ -116,14 +116,14 @@ libspectrum_sp_read( libspectrum_snap *snap, const libspectrum_byte *buffer,
 
   /* Get me 48K of zero-ed memory and then copy in the bits that were
      represented in the snap */
-  memory = calloc( 0xc000, sizeof( libspectrum_byte ) );
+  memory = libspectrum_calloc( 0xc000, sizeof( libspectrum_byte ) );
 
   memcpy( &memory[ start ], buffer, memory_length );
 
   error = libspectrum_split_to_48k_pages( snap, memory );
-  if( error ) { free( memory ); return error; }
+  if( error ) { libspectrum_free( memory ); return error; }
 
-  free( memory );
+  libspectrum_free( memory );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
