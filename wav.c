@@ -113,7 +113,7 @@ libspectrum_wav_read( libspectrum_tape *tape, const char *filename )
     return LIBSPECTRUM_ERROR_CORRUPT;
   }
 
-  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
+  block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
 
   /* 44100 Hz 79 t-states 22050 Hz 158 t-states */
   libspectrum_tape_block_set_bit_length( block,

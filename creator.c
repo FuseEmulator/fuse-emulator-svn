@@ -42,12 +42,13 @@ struct libspectrum_creator {
 
 };
 
-void
-libspectrum_creator_alloc( libspectrum_creator **creator )
+libspectrum_creator*
+libspectrum_creator_alloc( void )
 {
-  *creator = libspectrum_malloc( sizeof( **creator ) );
-  (*creator)->custom = NULL;
-  (*creator)->custom_length = 0;
+  libspectrum_creator *creator = libspectrum_malloc( sizeof( *creator ) );
+  creator->custom = NULL;
+  creator->custom_length = 0;
+  return creator;
 }
 
 libspectrum_error

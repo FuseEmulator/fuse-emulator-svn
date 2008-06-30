@@ -54,7 +54,7 @@ libspectrum_z80em_read( libspectrum_tape *tape,
     return LIBSPECTRUM_ERROR_SIGNATURE;
   }
 
-  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE );
+  block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE );
 
   z80em_block = &block->types.rle_pulse;
   z80em_block->scale = 7; /* 1 time unit == 7 clock ticks */

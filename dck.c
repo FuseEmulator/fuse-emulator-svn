@@ -66,12 +66,13 @@ libspectrum_dck_block_free( libspectrum_dck_block *dck, int keep_pages )
 }
 
 /* Initialise a libspectrum_dck structure (constructor!) */
-void
-libspectrum_dck_alloc( libspectrum_dck **dck )
+libspectrum_dck*
+libspectrum_dck_alloc( void )
 {
+  libspectrum_dck *dck = libspectrum_malloc( sizeof( *dck ) );
   size_t i;
-  *dck = libspectrum_malloc( sizeof( **dck ) );
-  for( i=0; i<256; i++ ) (*dck)->dck[i] = NULL;
+  for( i=0; i<256; i++ ) dck->dck[i] = NULL;
+  return dck;
 }
 
 /* Free all memory used by a libspectrum_dck structure (destructor...) */

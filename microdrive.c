@@ -63,10 +63,10 @@ static const size_t MDR_LENGTH = LIBSPECTRUM_MICRODRIVE_CARTRIDGE_LENGTH + 1;
 /* Constructor/destructor */
 
 /* Allocate a microdrive image */
-void
-libspectrum_microdrive_alloc( libspectrum_microdrive **microdrive )
+libspectrum_microdrive*
+libspectrum_microdrive_alloc( void )
 {
-  *microdrive = libspectrum_malloc( sizeof( **microdrive ) );
+  return libspectrum_malloc( sizeof( libspectrum_microdrive ) );
 }
 
 /* Free a microdrive image */

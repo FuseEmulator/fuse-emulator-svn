@@ -75,7 +75,7 @@ internal_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
       return LIBSPECTRUM_ERROR_CORRUPT;
     }
 
-    libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
+    block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_ROM );
 
     /* Get the length, and move along the buffer */
     data_length = ptr[0] + ptr[1] * 0x100;

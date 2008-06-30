@@ -192,10 +192,10 @@ struct libspectrum_snap {
 };
 
 /* Initialise a libspectrum_snap structure */
-void
-libspectrum_snap_alloc_internal( libspectrum_snap **snap )
+libspectrum_snap*
+libspectrum_snap_alloc_internal( void )
 {
-  *snap = libspectrum_malloc( sizeof( **snap ) );
+  return libspectrum_malloc( sizeof( libspectrum_snap ) );
 }
 CODE
 

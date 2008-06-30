@@ -113,13 +113,14 @@ rle_pulse_edge( libspectrum_tape_rle_pulse_block *block,
 /*** Function definitions ****/
 
 /* Allocate a list of blocks */
-void
-libspectrum_tape_alloc( libspectrum_tape **tape )
+libspectrum_tape*
+libspectrum_tape_alloc( void )
 {
-  *tape = libspectrum_malloc( sizeof( **tape ) );
-  (*tape)->blocks = NULL;
-  libspectrum_tape_iterator_init( &((*tape)->state.current_block), *tape );
-  (*tape)->state.loop_block = NULL;
+  libspectrum_tape *tape = libspectrum_malloc( sizeof( *tape ) );
+  tape->blocks = NULL;
+  libspectrum_tape_iterator_init( &(tape->state.current_block), tape );
+  tape->state.loop_block = NULL;
+  return tape;
 }
 
 /* Free the memory used by a list of blocks, but not the object itself */

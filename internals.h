@@ -115,7 +115,7 @@ int libspectrum_split_to_48k_pages( libspectrum_snap *snap,
 
 /* Get memory for a snap */
 
-void libspectrum_snap_alloc_internal( libspectrum_snap **snap );
+libspectrum_snap* libspectrum_snap_alloc_internal( void );
 
 /* Format specific snapshot routines */
 

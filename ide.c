@@ -190,15 +190,12 @@ static void execute_command( libspectrum_ide_channel *chn,
 
 
 /* Initialise a libspectrum_ide_channel structure */
-void
-libspectrum_ide_alloc( libspectrum_ide_channel **chn,
-		       libspectrum_ide_databus databus )
+libspectrum_ide_channel*
+libspectrum_ide_alloc( libspectrum_ide_databus databus )
 {
   libspectrum_ide_channel *channel;
 
   channel = libspectrum_malloc( sizeof( *channel ) );
-
-  *chn = channel;
 
   channel->databus = databus;
   channel->drive[ LIBSPECTRUM_IDE_MASTER ].disk = NULL;
@@ -208,6 +205,8 @@ libspectrum_ide_alloc( libspectrum_ide_channel **chn,
     g_hash_table_new( g_int_hash, g_int_equal );
   channel->cache[ LIBSPECTRUM_IDE_SLAVE  ] =
     g_hash_table_new( g_int_hash, g_int_equal );
+
+  return channel;
 }
 
 /* Free all memory used by a libspectrum_ide_channel structure */

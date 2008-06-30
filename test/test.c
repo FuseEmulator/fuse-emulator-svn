@@ -69,7 +69,7 @@ load_tape( libspectrum_tape **tape, const char *filename,
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  libspectrum_tape_alloc( tape );
+  *tape = libspectrum_tape_alloc();
 
   if( libspectrum_tape_read( *tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) != expected_result ) {
@@ -109,7 +109,7 @@ read_snap( const char *filename, const char *filename_to_pass,
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  libspectrum_snap_alloc( &snap );
+  snap = libspectrum_snap_alloc();
 
   if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename_to_pass ) != expected_result ) {
@@ -138,7 +138,7 @@ play_tape( const char *filename )
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  libspectrum_tape_alloc( &tape );
+  tape = libspectrum_tape_alloc();
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) ) {
@@ -187,7 +187,7 @@ test_2( void )
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  libspectrum_tape_alloc( &tape );
+  tape = libspectrum_tape_alloc();
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) ) {
@@ -230,7 +230,7 @@ test_3( void )
   libspectrum_byte *buffer = (libspectrum_byte*)1;
   size_t length = 0;
 
-  libspectrum_tape_alloc( &tape );
+  tape = libspectrum_tape_alloc();
 
   if( libspectrum_tape_write( &buffer, &length, tape, LIBSPECTRUM_ID_TAPE_TAP ) ) {
     libspectrum_tape_free( tape );
@@ -328,7 +328,7 @@ test_13( void )
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  libspectrum_tape_alloc( &tape );
+  tape = libspectrum_tape_alloc();
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) ) {
@@ -439,7 +439,7 @@ test_22( void )
      end of the file; however, we don't want it in the length */
   filesize--;
 
-  libspectrum_microdrive_alloc( &mdr );
+  mdr = libspectrum_microdrive_alloc();
 
   if( libspectrum_microdrive_mdr_read( mdr, buffer, filesize ) ) {
     libspectrum_microdrive_free( mdr );
@@ -472,7 +472,7 @@ test_23( void )
      end of the file; however, we don't want it in the length */
   filesize--;
 
-  libspectrum_microdrive_alloc( &mdr );
+  mdr = libspectrum_microdrive_alloc();
 
   if( libspectrum_microdrive_mdr_read( mdr, buffer, filesize ) ) {
     libspectrum_microdrive_free( mdr );

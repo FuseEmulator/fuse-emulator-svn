@@ -55,12 +55,12 @@ static libspectrum_error
 generalised_data_init( libspectrum_tape_generalised_data_block *block,
                        libspectrum_tape_generalised_data_block_state *state );
 
-void
-libspectrum_tape_block_alloc( libspectrum_tape_block **block,
-			      libspectrum_tape_type type )
+libspectrum_tape_block*
+libspectrum_tape_block_alloc( libspectrum_tape_type type )
 {
-  *block = libspectrum_malloc( sizeof( **block ) );
-  libspectrum_tape_block_set_type( *block, type );
+  libspectrum_tape_block *block = libspectrum_malloc( sizeof( *block ) );
+  libspectrum_tape_block_set_type( block, type );
+  return block;
 }
 
 static void

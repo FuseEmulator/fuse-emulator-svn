@@ -12,7 +12,7 @@ check_edges( const char *filename, test_edge_sequence_t *edges,
 
   if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
 
-  libspectrum_tape_alloc( &tape );
+  tape = libspectrum_tape_alloc();
 
   if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
 			     filename ) != LIBSPECTRUM_ERROR_NONE ) {
