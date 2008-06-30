@@ -447,14 +447,13 @@ static libspectrum_error
 read_rom_block( libspectrum_tape *tape, const libspectrum_byte *ptr,
 		const libspectrum_byte *end, size_t offset )
 {
-  libspectrum_tape_block* block;
+  libspectrum_tape_block *block =
+    libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_ROM );
   libspectrum_error error;
   libspectrum_word size;
   libspectrum_word block_size;
   const libspectrum_byte *data; libspectrum_byte *block_data;
   size_t i, length;
-
-  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_ROM );
 
   size = lsb2word( ptr + offset + 8 );
 
@@ -518,14 +517,13 @@ static libspectrum_error
 read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
 	       const libspectrum_byte *end, size_t offset )
 {
-  libspectrum_tape_block* block;
+  libspectrum_tape_block *block =
+    libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
   libspectrum_error error;
   libspectrum_word compressed_size, decompressed_size;
   const libspectrum_byte *data = ptr + offset + 17;
   status_type status;
   size_t length, bit_length; libspectrum_byte *block_data;
-
-  libspectrum_tape_block_alloc( &block, LIBSPECTRUM_TAPE_BLOCK_RAW_DATA );
 
   decompressed_size = lsb2word( ptr + offset + 11 );
   compressed_size = lsb2word( ptr + offset + 13 );

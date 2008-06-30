@@ -249,14 +249,15 @@ find_block( gconstpointer a, gconstpointer b )
  * Main routines
  */
 
-void
-libspectrum_rzx_alloc( libspectrum_rzx **rzx )
+libspectrum_rzx*
+libspectrum_rzx_alloc( void )
 {
-  *rzx = libspectrum_malloc( sizeof( **rzx ) );
-  (*rzx)->blocks = NULL;
-  (*rzx)->current_block = NULL;
-  (*rzx)->current_input = NULL;
-  (*rzx)->signed_start = NULL;
+  libspectrum_rzx *rzx = libspectrum_malloc( sizeof( *rzx ) );
+  rzx->blocks = NULL;
+  rzx->current_block = NULL;
+  rzx->current_input = NULL;
+  rzx->signed_start = NULL;
+  return rzx;
 }
 
 void
@@ -910,7 +911,7 @@ rzx_read_snapshot( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
   }
 
   block_alloc( &block, LIBSPECTRUM_RZX_SNAPSHOT_BLOCK );
-  libspectrum_snap_alloc( &block->types.snap );
+  block->types.snap = libspectrum_snap_alloc();
 
   snap = block->types.snap;
 
