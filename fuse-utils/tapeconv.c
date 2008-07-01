@@ -162,7 +162,6 @@ read_tape( char *filename, libspectrum_tape **tape )
 static int
 remove_block_type( libspectrum_tape *tape, libspectrum_tape_type id )
 {
-  libspectrum_error error;
   libspectrum_tape_block* block;
   libspectrum_tape_iterator iterator;
 
@@ -170,8 +169,7 @@ remove_block_type( libspectrum_tape *tape, libspectrum_tape_type id )
        block;
        block = libspectrum_tape_iterator_next( &iterator ) ) {
     if( libspectrum_tape_block_type( block ) == id ) {
-      error = libspectrum_tape_remove_block( tape, iterator );
-      if( error ) return error;
+      libspectrum_tape_remove_block( tape, iterator );
 
       /* Iterator is invalidated by delete, so start again */
       block = libspectrum_tape_iterator_init( &iterator, tape );
@@ -222,7 +220,6 @@ append_scr_file( char *scr_file, libspectrum_tape *tape )
   char *description;
   libspectrum_byte* scr_data; size_t scr_length;
   libspectrum_byte* custom_block_data; size_t custom_block_length;
-  libspectrum_error error;
 
   block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_CUSTOM );
 
@@ -252,8 +249,7 @@ append_scr_file( char *scr_file, libspectrum_tape *tape )
   libspectrum_tape_block_set_data( block, custom_block_data );
 
   /* Finally, put the block into the block list */
-  error = libspectrum_tape_append_block( tape, block );
-  if( error ) { libspectrum_tape_block_free( block ); return error; }
+  libspectrum_tape_append_block( tape, block );
 
   return 0;
 }
@@ -284,7 +280,6 @@ append_inlay_file( char *inlay_file, libspectrum_tape *tape )
   char *description;
   libspectrum_byte* jpg_data; size_t jpg_length;
   libspectrum_byte* custom_block_data; size_t custom_block_length;
-  libspectrum_error error;
 
   block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_CUSTOM );
 
@@ -321,8 +316,7 @@ append_inlay_file( char *inlay_file, libspectrum_tape *tape )
   libspectrum_tape_block_set_data( block, custom_block_data );
 
   /* Finally, put the block into the block list */
-  error = libspectrum_tape_append_block( tape, block );
-  if( error ) { libspectrum_tape_block_free( block ); return error; }
+  libspectrum_tape_append_block( tape, block );
 
   return 0;
 }
