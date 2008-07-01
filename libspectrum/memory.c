@@ -77,6 +77,7 @@ void
 libspectrum_mem_set_vtable( libspectrum_mem_vtable_t *table )
 {
   libspectrum_malloc_fn = table->malloc;
+  libspectrum_calloc_fn = table->calloc;
   libspectrum_realloc_fn = table->realloc;
   libspectrum_free_fn = table->free;
 
