@@ -792,13 +792,10 @@ raw_data_edge( libspectrum_tape_raw_data_block *block,
                libspectrum_tape_raw_data_block_state *state,
 	       libspectrum_dword *tstates, int *end_of_block )
 {
-  int error;
-
   switch (state->state) {
   case LIBSPECTRUM_TAPE_STATE_DATA1:
     *tstates = state->bit_tstates;
-    error = libspectrum_tape_raw_data_next_bit( block, state );
-    if( error ) return error;
+    libspectrum_tape_raw_data_next_bit( block, state );
     break;
 
   case LIBSPECTRUM_TAPE_STATE_PAUSE:
@@ -817,7 +814,7 @@ raw_data_edge( libspectrum_tape_raw_data_block *block,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-libspectrum_error
+void
 libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block,
                              libspectrum_tape_raw_data_block_state *state )
 {
@@ -825,7 +822,7 @@ libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block,
 
   if( state->bytes_through_block == block->length ) {
     state->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
-    return LIBSPECTRUM_ERROR_NONE;
+    return;
   }
 
   state->state = LIBSPECTRUM_TAPE_STATE_DATA1;
@@ -847,8 +844,6 @@ libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block,
 
   state->bit_tstates = length * block->bit_length;
   state->last_bit ^= 0x80;
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_byte
@@ -1110,7 +1105,7 @@ libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-libspectrum_error
+void
 libspectrum_tape_append_block( libspectrum_tape *tape,
 			       libspectrum_tape_block *block )
 {
@@ -1123,19 +1118,14 @@ libspectrum_tape_append_block( libspectrum_tape *tape,
     tape->state.current_block = tape->blocks;
     libspectrum_tape_block_init( tape->blocks->data, &(tape->state) );
   }
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
-libspectrum_error
+void
 libspectrum_tape_remove_block( libspectrum_tape *tape,
 			       libspectrum_tape_iterator it )
 {
   if( it->data ) libspectrum_tape_block_free( it->data );
-
   tape->blocks = g_slist_delete_link( tape->blocks, it );
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 libspectrum_error

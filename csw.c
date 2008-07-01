@@ -131,13 +131,7 @@ libspectrum_csw_read( libspectrum_tape *tape,
     memcpy( csw_block->data, buffer, length );
   }
 
-  /* Put the block into the block list */
-  error = libspectrum_tape_append_block( tape, block );
-  if( error ) {
-    libspectrum_free( csw_block->data );
-    libspectrum_tape_block_free( block );
-    return error;
-  }
+  libspectrum_tape_append_block( tape, block );
 
   /* Successful completion */
   return LIBSPECTRUM_ERROR_NONE;

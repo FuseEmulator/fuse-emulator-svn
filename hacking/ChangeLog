@@ -664,3 +664,8 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080630 libspectrum.h.in: fix prototype for libspectrum_ide_alloc (Fred).
 20080630 myglib/{garray.c,ghash.c}: add <string.h> to elimiate warnings (Fred).
 20080630 rzx.c,sna.c: initialise error as it can be used unintialised (Fred).
+20080701 csw.c,libspectrum.h.in,tap.c,tape.c,tape_block.[ch],tzx_read.c,
+         tzx_write.c,warajevo_read.c,wav.c,z80em.c: various functions
+         (notably tzx_write_bytes) could never fail but returned an error
+         code anyway, which we faithfully checked through many levels of code.
+         Stop doing this as it just makes the code less readable.

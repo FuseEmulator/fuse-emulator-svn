@@ -416,7 +416,7 @@ struct libspectrum_tape_block_state {
 libspectrum_error
 libspectrum_tape_pure_data_next_bit( libspectrum_tape_pure_data_block *block,
                              libspectrum_tape_pure_data_block_state *state );
-libspectrum_error
+void
 libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block,
                              libspectrum_tape_raw_data_block_state *state );
 

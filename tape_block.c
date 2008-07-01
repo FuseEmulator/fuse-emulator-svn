@@ -48,7 +48,7 @@ turbo_init( libspectrum_tape_turbo_block *block,
 static libspectrum_error
 pure_data_init( libspectrum_tape_pure_data_block *block,
                 libspectrum_tape_pure_data_block_state *state );
-static libspectrum_error
+static void
 raw_data_init( libspectrum_tape_raw_data_block *block,
                libspectrum_tape_raw_data_block_state *state );
 static libspectrum_error
@@ -214,8 +214,8 @@ libspectrum_tape_block_init( libspectrum_tape_block *block,
     return pure_data_init( &(block->types.pure_data),
                            &(state->block_state.pure_data) );
   case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
-    return raw_data_init( &(block->types.raw_data),
-                          &(state->block_state.raw_data) );
+    raw_data_init( &(block->types.raw_data), &(state->block_state.raw_data) );
+    return LIBSPECTRUM_ERROR_NONE;
   case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
     return generalised_data_init( &(block->types.generalised_data),
                                   &(state->block_state.generalised_data) );
@@ -296,12 +296,10 @@ pure_data_init( libspectrum_tape_pure_data_block *block,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-static libspectrum_error
+static void
 raw_data_init( libspectrum_tape_raw_data_block *block,
                libspectrum_tape_raw_data_block_state *state )
 {
-  libspectrum_error error;
-
   if( block->data ) {
 
     /* We're just before the start of the data */
@@ -309,16 +307,13 @@ raw_data_init( libspectrum_tape_raw_data_block *block,
     state->bytes_through_block = -1; state->bits_through_byte = 7;
     state->last_bit = 0x80 & block->data[0];
     /* Set up the next bit */
-    error = libspectrum_tape_raw_data_next_bit( block, state );
-    if( error ) return error;
+    libspectrum_tape_raw_data_next_bit( block, state );
 
   } else {
 
     state->state = LIBSPECTRUM_TAPE_STATE_PAUSE;
 
   }
-
-  return LIBSPECTRUM_ERROR_NONE;
 }
 
 static libspectrum_error
