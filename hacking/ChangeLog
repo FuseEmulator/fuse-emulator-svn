@@ -242,3 +242,5 @@
 20080630 audio2tape.c,listbasic.c,rzxcheck.c,rzxtool.c,snap2tzx.c,snapconv.c,
 	 tape2wav.c,tapeconv.c,tzxlist.c,utils.c: handle new allocator returns
 	 object style API from libspectrum.
+20080701 audio2tape.c,snap2tzx.c,tapeconv.c: handle new void return values
+         tape API from libspectrum (Fred).

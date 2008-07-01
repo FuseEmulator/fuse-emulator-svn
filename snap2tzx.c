@@ -870,8 +870,6 @@ add_rom_block( libspectrum_tape *tape, const libspectrum_byte flag,
 {
   libspectrum_byte *buffer;
   libspectrum_tape_block *block;
-  int error;
-
   buffer = malloc( ( length + 2 ) * sizeof( libspectrum_byte ) );
   if( !buffer ) {
     print_error( "out of memory at %s:%d", __FILE__, __LINE__ );
@@ -888,11 +886,7 @@ add_rom_block( libspectrum_tape *tape, const libspectrum_byte flag,
   memcpy( buffer + 1, data, length );
   buffer[ length + 1 ] = calc_checksum( buffer, length + 1 );
 
-  error = libspectrum_tape_append_block( tape, block );
-  if( error ) {
-    libspectrum_tape_block_free( block );
-    return error;
-  }
+  libspectrum_tape_append_block( tape, block );
 
   return 0;
 }
@@ -1082,7 +1076,6 @@ add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
 		  libspectrum_snap *snap, const settings_t *settings )
 {
   libspectrum_tape_block *block;
-  libspectrum_error error;
   libspectrum_byte *basic;
   size_t length;
   int error2;
@@ -1122,8 +1115,7 @@ add_loader_block( libspectrum_tape *tape, libspectrum_byte **loader,
      we've put the page lengths in the data */
 
   /* But put the block into the tape anyway */
-  error = libspectrum_tape_append_block( tape, block );
-  if( error ) { libspectrum_tape_block_free( block ); return error; }
+  libspectrum_tape_append_block( tape, block );
 
   return 0;
 }
@@ -1331,8 +1323,7 @@ add_page( libspectrum_tape *tape, libspectrum_snap *snap, int page,
 
   (*loader_table_entry)++;
 
-  error = libspectrum_tape_append_block( tape, block );
-  if( error ) { libspectrum_tape_block_free( block ); return error; }
+  libspectrum_tape_append_block( tape, block );
 
   return 0;
 }

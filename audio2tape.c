@@ -177,7 +177,6 @@ read_tape( glm get_level_method, char *filename, libspectrum_tape **tape )
 {
   libspectrum_byte *buffer; size_t length;
   libspectrum_byte *tape_buffer; size_t tape_length;
-  libspectrum_error error;
 
   /* Our filehandle from libaudiofile */
   AFfilehandle handle;
@@ -267,11 +266,7 @@ read_tape( glm get_level_method, char *filename, libspectrum_tape **tape )
   libspectrum_tape_block_set_data( block, tape_buffer );
 
   /* Finally, put the block into the block list */
-  error = libspectrum_tape_append_block( *tape, block );
-  if( error ) {
-    libspectrum_tape_block_free( block );
-    return error;
-  }
+  libspectrum_tape_append_block( *tape, block );
 
   if( afCloseFile( handle ) ) {
     free( buffer );
