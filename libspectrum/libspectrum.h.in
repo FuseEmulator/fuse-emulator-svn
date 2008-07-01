@@ -623,15 +623,15 @@ libspectrum_error WIN32_DLL
 libspectrum_tape_nth_block( libspectrum_tape *tape, int n );
 
 /* Append a block to the current tape */
-libspectrum_error WIN32_DLL
+void WIN32_DLL
 libspectrum_tape_append_block( libspectrum_tape *tape,
 			       libspectrum_tape_block *block );
 
-libspectrum_error
+void WIN32_DLL
 libspectrum_tape_remove_block( libspectrum_tape *tape,
 			       libspectrum_tape_iterator it );
 
-libspectrum_error
+libspectrum_error WIN32_DLL
 libspectrum_tape_insert_block( libspectrum_tape *tape,
 			       libspectrum_tape_block *block,
 			       size_t position );

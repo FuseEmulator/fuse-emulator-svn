@@ -36,7 +36,6 @@ libspectrum_z80em_read( libspectrum_tape *tape,
 {
   libspectrum_tape_block *block;
   libspectrum_tape_rle_pulse_block *z80em_block;
-  libspectrum_error error;
 
   static const char id[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0Raw tape sample";
 
@@ -69,13 +68,7 @@ libspectrum_z80em_read( libspectrum_tape *tape,
   /* Copy the data across */
   memcpy( z80em_block->data, buffer, length );
 
-  /* Put the block into the block list */
-  error = libspectrum_tape_append_block( tape, block );
-  if( error ) {
-    libspectrum_free( z80em_block->data );
-    libspectrum_tape_block_free( block );
-    return error;
-  }
+  libspectrum_tape_append_block( tape, block );
 
   return LIBSPECTRUM_ERROR_NONE;
 }
