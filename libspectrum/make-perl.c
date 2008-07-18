@@ -228,12 +228,12 @@ int main(void)
 "  size_t allocated;\n"
 "};\n"
 "\n"
-"GArray* g_array_new( gboolean zero_terminated, gboolean clear,\n"
+"GArray* WIN32_DLL g_array_new( gboolean zero_terminated, gboolean clear,\n"
 "		      guint element_size );\n"
 "#define g_array_append_val(a,v) g_array_append_vals( a, &(v), 1 );\n"
-"GArray* g_array_append_vals( GArray *array, gconstpointer data, guint len );\n"
+"GArray* WIN32_DLL g_array_append_vals( GArray *array, gconstpointer data, guint len );\n"
 "#define g_array_index(a,t,i) (*(((t*)a->data)+i))\n"
-"GArray* g_array_set_size( GArray *array, guint length );\n"
+"GArray* WIN32_DLL g_array_set_size( GArray *array, guint length );\n"
 "\n" );
   if( sizeof( void* ) == sizeof( int ) ) {
     printf( "#define GINT_TO_POINTER(i)      ((gpointer)  (i))\n" );

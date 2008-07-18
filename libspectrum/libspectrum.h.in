@@ -132,12 +132,12 @@ typedef struct libspectrum_mem_vtable_t {
   libspectrum_free_fn_t free;
 } libspectrum_mem_vtable_t;
 
-void* libspectrum_malloc( size_t size );
-void* libspectrum_calloc( size_t nmemb, size_t size );
-void* libspectrum_realloc( void *ptr, size_t size );
-void libspectrum_free( void *ptr );
+void* WIN32_DLL libspectrum_malloc( size_t size );
+void* WIN32_DLL libspectrum_calloc( size_t nmemb, size_t size );
+void* WIN32_DLL libspectrum_realloc( void *ptr, size_t size );
+void WIN32_DLL libspectrum_free( void *ptr );
 
-void libspectrum_mem_set_vtable( libspectrum_mem_vtable_t *table );
+void WIN32_DLL libspectrum_mem_set_vtable( libspectrum_mem_vtable_t *table );
 
 /* Attempt to identify a given file */
 

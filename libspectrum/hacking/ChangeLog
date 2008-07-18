@@ -670,3 +670,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          code anyway, which we faithfully checked through many levels of code.
          Stop doing this as it just makes the code less readable.
 20080701 memory.c: allow calloc function to be changed.
+20080717 make-perl.c,libspectrum.h.in: Win32: fix functions export for dll
+	 (Marek).
