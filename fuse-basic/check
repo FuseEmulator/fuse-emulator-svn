@@ -1,0 +1,7 @@
+#!/bin/bash
+
+IFS=''
+
+for f in tests/*.bas; do
+  echo `./basic $f` | cmp ${f%bas}out
+done
