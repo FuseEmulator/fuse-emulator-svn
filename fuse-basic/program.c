@@ -136,7 +136,7 @@ program_add_line( struct program *program, struct line *line )
   return BASIC_ERROR_NONE;
 }
 
-/* Comparision function to keep program sorted in line number order */
+/* Comparison function to keep program sorted in line number order */
 static gint
 sort_by_line_number( gconstpointer a, gconstpointer b )
 {

@@ -112,7 +112,7 @@
 %token <token>     NUMEXP_ONE_ARG /* One which takes one numerical argument */
 %token <token>     NUMEXP_TWO_ARG /* Two numerical arguments */
 %token <token>	   NUMEXP_STREXP /* One string argument */
-%token <token>	   COMPARISION   /* Comparision operator */
+%token <token>	   COMPARISON    /* Comparison operator */
 
 %token <token>	   STREXP_NUMEXP /* A strexp which takes one numexp arg */
 %token <token>	   STREXP_STREXP /* A strexp which takes one strexp arg */
@@ -160,7 +160,7 @@
 %left OR_TOKEN
 %left AND_TOKEN
 %left NOT_TOKEN
-%left COMPARISION '='
+%left COMPARISON '='
 %left '+' '-'
 %left TIMES_DIVIDE
 %left NEG		/* Unary minus; also used for unary plus */
@@ -341,7 +341,7 @@ numexp:   number { $$ = malloc( sizeof( *$$ ) );
           { if( numexp_new_twoarg( &($$), '^', $1, $3 ) != BASIC_ERROR_NONE )
 	      YYERROR;
 	  }
-        | numexp COMPARISION numexp
+        | numexp COMPARISON numexp
           { if( numexp_new_twoarg( &($$), $2, $1, $3 ) != BASIC_ERROR_NONE )
 	      YYERROR;
 	  }

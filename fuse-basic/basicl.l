@@ -69,11 +69,11 @@ DIGIT	[0-9]
 "/"		{ yylval.token = '/'; return TIMES_DIVIDE; }
 "^"		{ return '^'; }
 
-"<"		{ yylval.token = '<'; return COMPARISION; }
-">"		{ yylval.token = '>'; return COMPARISION; }
-"<>"		{ yylval.token = NE; return COMPARISION; }
-"<="		{ yylval.token = LE; return COMPARISION; }
-">="		{ yylval.token = GE; return COMPARISION; }
+"<"		{ yylval.token = '<'; return COMPARISON; }
+">"		{ yylval.token = '>'; return COMPARISON; }
+"<>"		{ yylval.token = NE; return COMPARISON; }
+"<="		{ yylval.token = LE; return COMPARISON; }
+">="		{ yylval.token = GE; return COMPARISON; }
 
 RND		{ yylval.token = RND; return NUMEXP_NO_ARG; }
 PI		{ yylval.token = PI; return NUMEXP_NO_ARG; }
