@@ -672,3 +672,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080701 memory.c: allow calloc function to be changed.
 20080717 make-perl.c,libspectrum.h.in: Win32: fix functions export for dll
 	 (Marek).
+20080821 sna.c: make 128Kb SNA files actually loadable again.
