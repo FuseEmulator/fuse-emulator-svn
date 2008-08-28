@@ -49,6 +49,21 @@ If you're using version of libspectrum from CVS rather than one of the
 released tarballs, you'll need to run `autogen.sh' before running
 'configure' for the first time.
 
+Compiling for the Wii
+---------------------
+
+To compile for the Wii, first make sure the dev tools are in your path
+(export PATH=$PATH:$DEVKITPPC/bin). Then, use this configure line:
+
+./configure --target=powerpc-gekko --host=powerpc-gekko \
+	    --prefix=$DEVKITPPC \
+	    --without-gcrypt --without-glib --without-libaudiofile
+
+That is assuming you don't have gcrypt, glib and libaudiofile for the
+Wii. At the time of writing, those haven't been ported yet.
+
+Then, type "make" and if everything went well, "make install".
+
 Philip Kendall <philip-fuse@shadowmagic.org.uk>
 5 January 2008
 
