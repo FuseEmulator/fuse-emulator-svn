@@ -116,6 +116,8 @@ libspectrum_init( void )
 
 #endif				/* #ifdef HAVE_GCRYPT_H */
 
+  libspectrum_init_bits_set();
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 

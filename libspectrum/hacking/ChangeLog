@@ -673,3 +673,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080717 make-perl.c,libspectrum.h.in: Win32: fix functions export for dll
 	 (Marek).
 20080821 sna.c: make 128Kb SNA files actually loadable again.
+20080911 internals.h,libspectrum.{c,h.in},tape_block.c,test/test.c: add
+	 function to get block length.

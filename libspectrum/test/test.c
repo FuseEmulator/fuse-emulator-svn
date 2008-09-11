@@ -493,6 +493,75 @@ test_23( void )
   return r;
 }
 
+static test_return_t
+test_24( void )
+{
+  const char *filename = DYNAMIC_TEST_PATH( "complete-tzx.tzx" );
+  libspectrum_byte *buffer;
+  size_t filesize;
+  libspectrum_tape *tape;
+  libspectrum_tape_iterator it;
+  libspectrum_tape_block *block;
+  libspectrum_dword expected_sizes[20] = {
+    8214888,	/* ROM */
+    3494155,	/* Turbo */
+    356310,	/* Pure tone */
+    1761,	/* Pulses */
+    1992829,	/* Pure data */
+    2159539,	/* Pause */
+    0,		/* Group start */
+    0,		/* Group end */
+    0,		/* Jump */
+    205434,	/* Pure tone */
+    0,		/* Loop start */
+    154845,	/* Pure tone */
+    0,		/* Loop end */
+    0,		/* Stop tape if in 48K mode */
+    0,		/* Comment */
+    0,		/* Message */
+    0,		/* Archive info */
+    0,		/* Hardware */
+    0,		/* Custom info */
+    771620,	/* Pure tone */
+  };
+  libspectrum_dword *next_size = &expected_sizes[ 0 ];
+  test_return_t r = TEST_PASS;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  tape = libspectrum_tape_alloc();
+
+  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename ) ) {
+    libspectrum_tape_free( tape );
+    libspectrum_free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_free( buffer );
+
+  block = libspectrum_tape_iterator_init( &it, tape );
+
+  while( block )
+  {
+    libspectrum_dword actual_size = libspectrum_tape_block_length( block ); 
+
+    if( actual_size != *next_size )
+    {
+      fprintf( stderr, "%s: block had length %lu, but expected %lu\n", progname, (unsigned long)actual_size, (unsigned long)*next_size );
+      r = TEST_FAIL;
+      break;
+    }
+
+    block = libspectrum_tape_iterator_next( &it );
+    next_size++;
+  }
+
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
+
+  return r;
+}
+
 struct test_description {
 
   test_fn test;
@@ -525,6 +594,7 @@ static struct test_description tests[] = {
   { test_21, "SNA file with SP = 0xffff", 0 },
   { test_22, "MDR write protection 1", 0 },
   { test_23, "MDR write protection 2", 0 },
+  { test_24, "Complete TZX timings", 0 },
 };
 
 static size_t test_count = sizeof( tests ) / sizeof( tests[0] );
