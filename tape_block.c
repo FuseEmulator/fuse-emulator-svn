@@ -438,3 +438,117 @@ libspectrum_tape_block_zero( libspectrum_tape_block *block )
   }
 }
 
+/* Give the length of a tape block */
+
+static int bits_set[ 256 ];
+
+void
+libspectrum_init_bits_set( void )
+{
+  int i, j;
+
+  /* Not big or clever, but easy to understand */
+
+  for( i = 0; i < 256; i++ ) {
+    int data = i;
+    bits_set[ i ] = 0;
+    for( j = 0; j < 8; j++ ) {
+      if( data & 0x01 ) bits_set[ i ]++;
+      data >>= 1;
+    }
+  }
+}
+
+static libspectrum_dword
+rom_block_length( libspectrum_tape_rom_block *rom )
+{
+  libspectrum_dword length = ( rom->pause * 69888 ) / 20;
+  size_t i;
+
+  for( i = 0; i < rom->length; i++ ) {
+    libspectrum_byte data = rom->data[ i ];
+    length += ( 2 * 1710 ) * bits_set[ data ] + ( 2 * 855 ) * ( 8 - bits_set[ data ] );
+  }
+
+  return length;
+}
+
+static libspectrum_dword
+turbo_block_length( libspectrum_tape_turbo_block *turbo )
+{
+  libspectrum_dword length =
+    turbo->pilot_pulses * turbo->pilot_length +
+    turbo->sync1_length + turbo->sync2_length +
+    ( turbo->pause * 69888 ) / 20;
+  size_t i;
+
+  /* FIXME: needs to handle bits in last byte correctly */
+  for( i = 0; i < turbo->length; i++ ) {
+    libspectrum_byte data = turbo->data[ i ];
+    length += ( 2 * turbo->bit1_length ) * bits_set[ data ] + ( 2 * turbo->bit0_length ) * ( 8 - bits_set[ data ] );
+  }
+    
+  return length;
+}
+
+static libspectrum_dword
+pulses_block_length( libspectrum_tape_pulses_block *pulses )
+{
+  libspectrum_dword length = 0;
+  size_t i;
+
+  for( i = 0; i < pulses->count; i++ ) length += pulses->lengths[ i ];
+
+  return length;
+}
+
+static libspectrum_dword
+pure_data_block_length( libspectrum_tape_pure_data_block *pure_data )
+{
+  libspectrum_dword length = ( pure_data->pause * 69888 ) / 20;
+  size_t i;
+
+  /* FIXME: needs to handle bits in last byte correctly */
+  for( i = 0; i < pure_data->length; i++ ) {
+    libspectrum_byte data = pure_data->data[ i ];
+    length += ( 2 * pure_data->bit1_length ) * bits_set[ data ] + ( 2 * pure_data->bit0_length ) * ( 8 - bits_set[ data ] );
+  }
+    
+  return length;
+}
+
+libspectrum_dword
+libspectrum_tape_block_length( libspectrum_tape_block *block )
+{
+  libspectrum_tape_pure_tone_block *pure_tone;
+
+  switch( block->type ) {
+  case LIBSPECTRUM_TAPE_BLOCK_ROM:
+    return rom_block_length( &block->types.rom );
+  case LIBSPECTRUM_TAPE_BLOCK_TURBO:
+    return turbo_block_length( &block->types.turbo );
+  case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
+    pure_tone = &block->types.pure_tone;
+    return pure_tone->pulses * pure_tone->length;
+  case LIBSPECTRUM_TAPE_BLOCK_PULSES:
+    return pulses_block_length( &block->types.pulses );
+  case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
+    return pure_data_block_length( &block->types.pure_data );
+  case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
+    return ( block->types.pause.length * 69888 ) / 20;
+  case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
+  case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
+  case LIBSPECTRUM_TAPE_BLOCK_JUMP:
+  case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
+  case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
+  case LIBSPECTRUM_TAPE_BLOCK_STOP48:
+  case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
+  case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
+  case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
+  case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
+  case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
+    return 0;
+  default:
+    return -1;
+  }
+}

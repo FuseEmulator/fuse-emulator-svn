@@ -163,6 +163,8 @@ libspectrum_tape_block_read_symbol_table(
   libspectrum_tape_generalised_data_symbol_table *table,
   const libspectrum_byte **ptr, size_t length );
 
+void libspectrum_init_bits_set( void );
+
 /* Format specific tape routines */
   
 libspectrum_error
