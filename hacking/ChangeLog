@@ -252,3 +252,4 @@
          when processing audio file (Fred).
 20080922 converter/romloader.cc: custom timings were only initialised when stats
          were enabled (Fred).
+20080922 importer/soundfile.cc: initialise frequency table to 0 (Fred).

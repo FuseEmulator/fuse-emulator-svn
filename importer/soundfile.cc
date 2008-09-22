@@ -42,6 +42,9 @@ soundfile::soundfile( std::string filename, trigger* edge_detector,
     throw audio2tape_exception("missing edge detector");
 
   amplitude_frequency_table.reserve(256);
+  for( size_t i = 0; i < amplitude_frequency_table.capacity(); i++ ) {
+    amplitude_frequency_table[i] = 0;
+  }
 
   /* The track we're using in the file */
   int track = AF_DEFAULT_TRACK; 
