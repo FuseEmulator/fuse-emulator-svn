@@ -83,7 +83,10 @@ tapeconv_LDADD = @LIBSPEC_LIBS@
 tzxlist_SOURCES = tzxlist.c utils.c
 tzxlist_LDADD = @LIBSPEC_LIBS@
 
-audio2tape_SOURCES = audio2tape.c utils.c
+audio2tape_SOURCES = audio2tape.cc importer/soundfile.cc importer/trigger.cc \
+                     converter/romloader.cc converter/findpilot.cc \
+                     converter/findsync1.cc converter/getsync2.cc \
+                     converter/getpulse1.cc converter/getpulse2.cc utils.c
 audio2tape_LDADD = @LIBSPEC_LIBS@ @AUDIOFILE_LIBS@
 
 tape2wav_SOURCES = tape2wav.c utils.c
