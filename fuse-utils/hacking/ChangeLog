@@ -244,3 +244,9 @@
 	 object style API from libspectrum.
 20080701 audio2tape.c,snap2tzx.c,tapeconv.c: handle new void return values
          tape API from libspectrum (Fred).
+20080922 Makefile.am,audio2tape.[c|cc|h],configure.in,
+         converter/{findpilot.[cc|h],findsync1.[cc|h],getpulse1.[cc|h],
+         getpulse2.[cc|h],getsync2.[cc|h],romloader.[cc|h],romloaderstate.h},
+         importer/{interpolator.h,schmitt.h,simple.h,soundfile.[cc|h],
+         trigger.[cc|h]},man/audio2tape.1: add facility to recognise ROM blocks
+         when processing audio file (Fred).
