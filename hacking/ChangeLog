@@ -250,3 +250,5 @@
          importer/{interpolator.h,schmitt.h,simple.h,soundfile.[cc|h],
          trigger.[cc|h]},man/audio2tape.1: add facility to recognise ROM blocks
          when processing audio file (Fred).
+20080922 converter/romloader.cc: custom timings were only initialised when stats
+         were enabled (Fred).
