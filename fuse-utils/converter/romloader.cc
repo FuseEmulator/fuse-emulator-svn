@@ -211,23 +211,25 @@ romloader::end_block( double end_marker, double end_tstates )
   rom_block new_block;
   new_block.tstate_start = first_pilot_tstates;
   new_block.tstate_end = end_marker + end_tstates;
-  std::cout << "First block tstate:" << new_block.tstate_start/3500000.0 << "\n";
-  std::cout << "Last block tstate:" << new_block.tstate_end/3500000.0 << "\n";
+  std::cout << "First block seconds: " <<
+    new_block.tstate_start/source_machine_hz << "\n";
+  std::cout << "Last block seconds: " <<
+    new_block.tstate_end/source_machine_hz << "\n";
   new_block.pilot_count = pilot_pulses.size();
   new_block.sync1_length = sync1_length;
   new_block.sync2_length = sync2_length;
   new_block.pause_length = end_marker;
   new_block.data = data;
   bool valid = check_checksum();
+  stats ( "pilot", pilot_pulses, PILOT_LENGTH, new_block.pilot_length );
+  stats ( "zero", zero_pulses, ZERO, new_block.zero_length );
+  stats ( "one", one_pulses, ONE, new_block.one_length );
   if( show_stats ) {
-    stats ( "pilot", pilot_pulses, PILOT_LENGTH, new_block.pilot_length );
     std::cout << "pilot count:" << pilot_pulses.size() << "\n";
     std::cout << "Sync1 pulse:" << new_block.sync1_length << " tstates, "
       << (double)new_block.sync1_length/SYNC1*100 << "% of expected\n";
     std::cout << "Sync2 pulse:" << new_block.sync2_length << " tstates, "
       << (double)new_block.sync2_length/SYNC2*100 << "% of expected\n";
-    stats ( "zero", zero_pulses, ZERO, new_block.zero_length );
-    stats ( "one", one_pulses, ONE, new_block.one_length );
   }
 
   blocks.push_back( new_block );
@@ -273,12 +275,14 @@ romloader::stats( std::string type, pulse_list& data, int standardPulse,
     total += *i;
   }
   average = total/data.size();
-  std::cout << "shortest " << type << " pulse:" << low << " tstates, longest "
-    << type << " pulse:" << high << " tstates\n";
-  std::cout << "shortest " << type << " pulse "
-    << (double)low/standardPulse*100 << "% of expected, longest " << type
-    << " pulse " << (double)high/standardPulse*100 << "% of expected\n";
-  std::cout << "average " << type << " pulse:" << average << "\n";
+  if( show_stats ) {
+    std::cout << "shortest " << type << " pulse:" << low << " tstates, longest "
+      << type << " pulse:" << high << " tstates\n";
+    std::cout << "shortest " << type << " pulse "
+      << (double)low/standardPulse*100 << "% of expected, longest " << type
+      << " pulse " << (double)high/standardPulse*100 << "% of expected\n";
+    std::cout << "average " << type << " pulse:" << average << "\n";
+  }
 }
 
 void
