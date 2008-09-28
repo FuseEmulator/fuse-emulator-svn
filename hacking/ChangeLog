@@ -675,3 +675,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080821 sna.c: make 128Kb SNA files actually loadable again.
 20080911 internals.h,libspectrum.{c,h.in},tape_block.c,test/test.c: add
 	 function to get block length.
+20080928 internals.h,tape.c,tape_block.[ch],test/test.c: extend timing support
+         to raw data blocks, RLE pulse blocks and the block o' doom (Fred).

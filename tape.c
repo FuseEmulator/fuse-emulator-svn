@@ -1,5 +1,5 @@
 /* tape.c: Routines for handling tape files
-   Copyright (c) 2001-2007 Philip Kendall, Darren Salt, Fredrick Meunier
+   Copyright (c) 2001-2008 Philip Kendall, Darren Salt, Fredrick Meunier
 
    $Id$
 
@@ -45,11 +45,11 @@ struct libspectrum_tape {
 /*** Constants ***/
 
 /* The timings for the standard ROM loader */
-static const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_PILOT = 2168; /*Pilot*/
-static const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC1 =  667; /*Sync 1*/
-static const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC2 =  735; /*Sync 2*/
-static const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA0 =  855; /*Reset*/
-static const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA1 = 1710; /*Set*/
+const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_PILOT = 2168; /*Pilot*/
+const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC1 =  667; /*Sync 1*/
+const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC2 =  735; /*Sync 2*/
+const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA0 =  855; /*Reset*/
+const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA1 = 1710; /*Set*/
 
 /*** Local function prototypes ***/
 
@@ -95,12 +95,6 @@ static libspectrum_error
 raw_data_edge( libspectrum_tape_raw_data_block *block,
                libspectrum_tape_raw_data_block_state *state,
 	       libspectrum_dword *tstates, int *end_of_block );
-
-static libspectrum_error
-generalised_data_edge( libspectrum_tape_generalised_data_block *block,
-                       libspectrum_tape_generalised_data_block_state *state,
-		       libspectrum_dword *tstates, int *end_of_block,
-		       int *flags );
 
 static libspectrum_error
 jump_blocks( libspectrum_tape *tape, int offset );
@@ -816,7 +810,7 @@ raw_data_edge( libspectrum_tape_raw_data_block *block,
 
 void
 libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block,
-                             libspectrum_tape_raw_data_block_state *state )
+                                    libspectrum_tape_raw_data_block_state *state )
 {
   int length = 0;
 
@@ -903,7 +897,7 @@ set_tstates_and_flags( libspectrum_tape_generalised_data_symbol *symbol,
   }
 }
 
-static libspectrum_error
+libspectrum_error
 generalised_data_edge( libspectrum_tape_generalised_data_block *block,
                        libspectrum_tape_generalised_data_block_state *state,
 		       libspectrum_dword *tstates, int *end_of_block,

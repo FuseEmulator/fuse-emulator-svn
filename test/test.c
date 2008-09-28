@@ -503,12 +503,12 @@ test_24( void )
   libspectrum_tape_iterator it;
   libspectrum_tape_block *block;
   libspectrum_dword expected_sizes[20] = {
-    8214888,	/* ROM */
-    3494155,	/* Turbo */
+    8228020,	/* ROM */
+    3493371,	/* Turbo */
     356310,	/* Pure tone */
     1761,	/* Pulses */
-    1992829,	/* Pure data */
-    2159539,	/* Pause */
+    1993724,	/* Pure data */
+    2163000,	/* Pause */
     0,		/* Group start */
     0,		/* Group end */
     0,		/* Jump */

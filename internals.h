@@ -1,6 +1,6 @@
 /* internals.h: functions which need to be called inter-file by libspectrum
                 routines, but not by user code
-   Copyright (c) 2001-2007 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2008 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -151,6 +151,15 @@ libspectrum_error
 libspectrum_zxs_read( libspectrum_snap *snap,
 		      const libspectrum_byte *buffer, size_t buffer_length );
 
+/*** Tape constants ***/
+
+/* The timings for the standard ROM loader */
+extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_PILOT;
+extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC1;
+extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC2;
+extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA0;
+extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA1;
+
 /* Tape routines */
 
 void libspectrum_tape_block_zero( libspectrum_tape_block *block );
@@ -202,13 +211,6 @@ libspectrum_csw_write( libspectrum_byte **buffer, size_t *length,
 libspectrum_error
 libspectrum_wav_read( libspectrum_tape *tape, const char *filename );
 
-/* Crypto functions */
-
-libspectrum_error
-libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
-		       libspectrum_byte *data, size_t data_length,
-		       libspectrum_rzx_dsa_key *key );
-
 libspectrum_tape_block*
 libspectrum_tape_block_internal_init(
                                 libspectrum_tape_block_state *iterator,
@@ -218,5 +220,12 @@ libspectrum_error
 libspectrum_tape_get_next_edge_internal( libspectrum_dword *tstates, int *flags,
                                          libspectrum_tape *tape,
                                          libspectrum_tape_block_state *it );
+
+/* Crypto functions */
+
+libspectrum_error
+libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
+		       libspectrum_byte *data, size_t data_length,
+		       libspectrum_rzx_dsa_key *key );
 
 #endif				/* #ifndef LIBSPECTRUM_INTERNALS_H */
