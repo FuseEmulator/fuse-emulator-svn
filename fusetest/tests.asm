@@ -60,6 +60,7 @@ PROC
         ld a, 0x07
         out (c), a
         ld a, (de)
+        dec hl
         ld (hl), a
         pop bc
         ld a, c
