@@ -168,11 +168,11 @@ _testdata
 	defb 'DAA', 0
 	defw daatest
 
-	defb 'LDIR', 0
-	defw ldirtest
-
         defb 'OUTI', 0
         defw outitest
+
+	defb 'LDIR', 0
+	defw ldirtest
 
 	defb 'Contended IN', 0
 	defw contendedintest
