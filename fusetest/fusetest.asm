@@ -171,6 +171,9 @@ _testdata
 	defb 'LDIR', 0
 	defw ldirtest
 
+        defb 'OUTI', 0
+        defw outitest
+
 	defb 'Contended IN', 0
 	defw contendedintest
 

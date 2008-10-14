@@ -44,6 +44,32 @@ PROC
 	ret
 ENDP
 
+; Check the behaviour of the undocumented flags after OUTI (revision 3634)
+
+outitest
+PROC
+        ld de, _data
+        ld hl, 0x40fd
+        ld a, (hl)
+        ld (de), a
+        ld a, 0x12
+        ld (hl), a
+        ld bc, 0x01fe
+        outi
+        push af
+        ld a, 0x07
+        out (c), a
+        ld a, (de)
+        ld (hl), a
+        pop bc
+        ld a, c
+        ld b, 0x00
+        cp 0x55
+        ret
+
+_data   defb 0x00
+ENDP
+
 ; Check the behaviour of LDIR at contended memory boundary (revision 2841).
 	
 ldirtest
