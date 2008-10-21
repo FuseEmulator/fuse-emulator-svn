@@ -677,3 +677,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 function to get block length.
 20080928 internals.h,tape.c,tape_block.[ch],test/test.c: extend timing support
          to raw data blocks, RLE pulse blocks and the block o' doom (Fred).
+20081020 tape_block.c: remove warning.
