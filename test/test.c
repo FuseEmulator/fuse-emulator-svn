@@ -562,6 +562,69 @@ test_24( void )
   return r;
 }
 
+static test_return_t
+test_25( void )
+{
+  const char *filename = STATIC_TEST_PATH( "empty.z80" );
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0, length = 0;
+  libspectrum_snap *snap;
+  int flags;
+  test_return_t r = TEST_INCOMPLETE;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  snap = libspectrum_snap_alloc();
+
+  if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename ) != LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: reading `%s' failed\n", progname, filename );
+    libspectrum_snap_free( snap );
+    libspectrum_free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_free( buffer );
+  buffer = NULL;
+
+  if( libspectrum_snap_write( &buffer, &length, &flags, snap,
+                              LIBSPECTRUM_ID_SNAPSHOT_SNA, NULL, 0 ) != 
+      LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: serialising to SNA failed\n", progname );
+    libspectrum_snap_free( snap );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_snap_free( snap );
+  snap = libspectrum_snap_alloc();
+
+  if( libspectrum_snap_read( snap, buffer, length, LIBSPECTRUM_ID_SNAPSHOT_SNA,
+                             NULL ) != LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: restoring from SNA failed\n", progname );
+    libspectrum_snap_free( snap );
+    libspectrum_free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_free( buffer );
+
+  if( libspectrum_snap_pc( snap ) != 0x1234 ) {
+    fprintf( stderr, "%s: PC is 0x%04x, not the expected 0x1234\n", progname,
+             libspectrum_snap_pc( snap ) );
+    r = TEST_FAIL;
+  } else if( libspectrum_snap_sp( snap ) != 0x8000 ) {
+    fprintf( stderr, "%s: SP is 0x%04x, not the expected 0x8000\n", progname,
+             libspectrum_snap_sp( snap ) );
+    r = TEST_FAIL;
+  } else {
+    r = TEST_PASS;
+  }
+
+  libspectrum_snap_free( snap );
+
+  return r;
+}
+
 struct test_description {
 
   test_fn test;
@@ -595,6 +658,7 @@ static struct test_description tests[] = {
   { test_22, "MDR write protection 1", 0 },
   { test_23, "MDR write protection 2", 0 },
   { test_24, "Complete TZX timings", 0 },
+  { test_25, "Writing SNA file", 0 },
 };
 
 static size_t test_count = sizeof( tests ) / sizeof( tests[0] );
