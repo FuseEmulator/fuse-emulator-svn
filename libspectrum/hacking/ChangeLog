@@ -678,3 +678,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080928 internals.h,tape.c,tape_block.[ch],test/test.c: extend timing support
          to raw data blocks, RLE pulse blocks and the block o' doom (Fred).
 20081020 tape_block.c: remove warning.
+20081021 sna.c,test/{empty.z80,test.c}: SP wasn't being decremented and
+         could have been written to freed memory.
