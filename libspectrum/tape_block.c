@@ -37,6 +37,8 @@
 static const size_t LIBSPECTRUM_TAPE_PILOTS_HEADER = 0x1f7f;
 static const size_t LIBSPECTRUM_TAPE_PILOTS_DATA   = 0x0c97;
 
+#define TZX_HZ 3500000
+
 /* Functions to initialise block types */
 
 static libspectrum_error
@@ -486,8 +488,7 @@ convert_pulses_to_tstates( libspectrum_dword set_bit_length,
 static libspectrum_dword
 convert_ms_to_tstates( libspectrum_dword ms )
 {
-  static const libspectrum_dword tzx_hz = 3500000;
-  static const libspectrum_dword tstates_per_ms = tzx_hz / 1000;
+  static const libspectrum_dword tstates_per_ms = TZX_HZ / 1000;
   return ms * tstates_per_ms;
 }
 
