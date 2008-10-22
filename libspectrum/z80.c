@@ -197,13 +197,6 @@ enum slt_type {
 };
 
 libspectrum_error
-libspectrum_z80_read( libspectrum_snap *snap,
-	              const libspectrum_byte *buffer, size_t buffer_length )
-{
-  return internal_z80_read( snap, buffer, buffer_length );
-}
-
-libspectrum_error
 internal_z80_read( libspectrum_snap *snap,
 		   const libspectrum_byte *buffer, size_t buffer_length )
 {
@@ -1107,16 +1100,6 @@ read_v2_block( const libspectrum_byte *buffer, libspectrum_byte **block,
 
   return LIBSPECTRUM_ERROR_NONE;
 
-}
-
-/* DEPRECATED: use libspectrum_snap_write() instead */
-libspectrum_error
-libspectrum_z80_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_snap *snap )
-{
-  int out_flags;
-
-  return libspectrum_z80_write2( buffer, length, &out_flags, snap, 0 );
 }
 
 libspectrum_error

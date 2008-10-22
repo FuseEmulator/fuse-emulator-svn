@@ -695,34 +695,6 @@ format will make any use of this information.
 The only formats for which serialisation is supported are .sna, .szx
 and .z80.
 
-Deprecated snapshot routines
-----------------------------
-
-There are also three format-specific functions. However, *these
-functions are deprecated and should not be used in new code*:
-
-libspectrum_error libspectrum_sna_read( libspectrum_snap *snap,
-		                        const libspectrum_byte *buffer,
-				        size_t buffer_length )
-
-Take the .sna snapshot of length `buffer_length' bytes at `buffer' and
-convert it to a `libspectrum_snap' structure.
-
-libspectrum_error libspectrum_z80_read( libspectrum_snap *snap,
-		                        const libspectrum_byte *buffer,
-					size_t buffer_length )
-
-Similarly for a .z80 snapshot.
-
-libspectrum_error libspectrum_z80_write( libspectrum_byte **buffer,
-					 size_t *length,
-					 libspectrum_snap *snap )
-
-Take the snapshot in `snap' and serialise it into a .z80 file at
-'*buffer'. On entry, '*buffer' is assumed to be allocated '*length'
-bytes, and will grow if necessary; if '*length' is zero, '*buffer' can
-be uninitialised on entry.
-
 Tape functions
 ==============
 
@@ -831,50 +803,6 @@ libspectrum_tape_select_next_block( libspectrum_tape *tape )
 
 Move the tape along so it points to the next block, initialise that
 block and return it.
-
-Deprecated tape routines
-------------------------
-
-*These functions are deprecated and should not be used in new code*:
-
-libspectrum_error
-libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-	              const size_t length )
-
-Form a tape object in `tape' from the .tap file of `length' bytes
-starting at `buffer'. This routine deals with the `normal' (Z80-style)
-.tap files, not with Warajevo .tap files.
-
-libspectrum_error
-libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_tape *tape )
-
-Attempt to convert the tape in `tape' to a .tap file in `*buffer', which
-has previously been allocated `*length' bytes by user code.  The .tap
-format can handle only standard speed loading blocks; a best guess
-attempt will be made to convert other blocks, but the resultant .tap
-file probably won't work.
-
-libspectrum_error
-libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-		      const size_t length )
-
-Just as `libspectrum_tap_read', but for .tzx format files.
-
-libspectrum_error
-libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_tape *tape )
-
-Just as `libspectrum_tap_write', but for .tzx files. The conversion to
-.tzx format is not lossy as it is with converting to .tap.
-
-libspectrum_error
-libspectrum_warajevo_read( libspectrum_tape *tape,
-			   const libspectrum_byte *buffer,
-			   const size_t length )
-
-Just as `libspectrum_tap_read', but for Warajevo-style .tap files.
-There is no currently no function to write a Warajevo-style .tap file.
 
 Tape iterators
 --------------

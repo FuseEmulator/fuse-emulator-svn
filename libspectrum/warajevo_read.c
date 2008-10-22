@@ -205,13 +205,6 @@ internal_warajevo_read( libspectrum_tape *tape,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-libspectrum_error
-libspectrum_warajevo_read( libspectrum_tape *tape,
-			   const libspectrum_byte *buffer, size_t length )
-{
-  return internal_warajevo_read( tape, buffer, length );
-}
-
 static libspectrum_error
 get_next_block( size_t *offset, const libspectrum_byte *buffer,
 		const libspectrum_byte *end, libspectrum_tape *tape )

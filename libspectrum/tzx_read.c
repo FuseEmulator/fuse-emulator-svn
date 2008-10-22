@@ -251,13 +251,6 @@ internal_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-libspectrum_error
-libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-		      const size_t length )
-{
-  return internal_tzx_read( tape, buffer, length );
-}
-
 static libspectrum_error
 tzx_read_rom_block( libspectrum_tape *tape, const libspectrum_byte **ptr,
 		    const libspectrum_byte *end )

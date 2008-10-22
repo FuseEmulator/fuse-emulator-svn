@@ -449,24 +449,6 @@ extern const int WIN32_DLL LIBSPECTRUM_JOYSTICK_INPUT_JOYSTICK_2;
 /* Accessor functions */
 LIBSPECTRUM_SNAP_ACCESSORS
 
-/* DEPRECATED: use libspectrum_snap_read() instead */
-DEPRECATED
-libspectrum_error WIN32_DLL
-libspectrum_sna_read( libspectrum_snap *snap,
-	              const libspectrum_byte *buffer, size_t buffer_length );
-
-/* DEPRECATED: use libspectrum_snap_read() instead */
-DEPRECATED
-libspectrum_error WIN32_DLL
-libspectrum_z80_read( libspectrum_snap *snap,
-	              const libspectrum_byte *buffer, size_t buffer_length );
-
-/* DEPRECATED: use libspectrum_snap_write() instead */
-DEPRECATED
-libspectrum_error WIN32_DLL
-libspectrum_z80_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_snap *snap );
-
 /*
  * Tape handling routines
  */
@@ -638,42 +620,6 @@ libspectrum_error WIN32_DLL
 libspectrum_tape_insert_block( libspectrum_tape *tape,
 			       libspectrum_tape_block *block,
 			       size_t position );
-
-/*** Routines for .tap format files ***/
-
-/* DEPRECATED: use libspectrum_tape_read() instead */
-DEPRECATED
-libspectrum_error WIN32_DLL
-libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-		      const size_t length );
-
-/* DEPRECATED: use libspectrum_tape_write() instead */
-DEPRECATED
-libspectrum_error WIN32_DLL
-libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_tape *tape );
-
-/*** Routines for .tzx format files ***/
-
-/* DEPRECATED: use libspectrum_tape_read() instead */
-DEPRECATED
-libspectrum_error WIN32_DLL
-libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-		      const size_t length );
-
-/* DEPRECATED: use libspectrum_tape_write() instead */
-DEPRECATED
-libspectrum_error WIN32_DLL
-libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_tape *tape );
-
-/*** Routines for Warajevo .tap format files ***/
-
-/* DEPRECATED: use libspectrum_tape_read() instead */
-DEPRECATED
-libspectrum_error WIN32_DLL
-libspectrum_warajevo_read( libspectrum_tape *tape,
-			   const libspectrum_byte *buffer, size_t length );
 
 /*** Routines for iterating through a tape ***/
 
