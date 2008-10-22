@@ -61,13 +61,6 @@ static libspectrum_error
 write_page( libspectrum_byte *buffer, libspectrum_snap *snap, int page );
 
 libspectrum_error
-libspectrum_sna_read( libspectrum_snap *snap,
-	              const libspectrum_byte *buffer, size_t buffer_length )
-{
-  return internal_sna_read( snap, buffer, buffer_length );
-}
-
-libspectrum_error
 internal_sna_read( libspectrum_snap *snap,
 		   const libspectrum_byte *buffer, size_t buffer_length )
 {
