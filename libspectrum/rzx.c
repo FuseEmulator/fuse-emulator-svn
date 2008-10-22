@@ -1,5 +1,5 @@
 /* rzx.c: routines for dealing with .rzx files
-   Copyright (c) 2002-2005 Philip Kendall
+   Copyright (c) 2002-2008 Philip Kendall
 
    $Id$
 
@@ -79,6 +79,13 @@ typedef struct input_block_t {
 
 } input_block_t;
 
+typedef struct snapshot_block_t {
+
+  libspectrum_snap *snap;
+  int automatic;
+
+} snapshot_block_t;
+
 typedef struct signature_block_t {
 
   size_t length;	/* Length of the signed data from rzx->signed_start */
@@ -96,7 +103,7 @@ typedef struct rzx_block_t {
   union {
 
     input_block_t input;
-    libspectrum_snap *snap;
+    snapshot_block_t snap;
     libspectrum_dword keyid;
     signature_block_t signature;
 
@@ -200,7 +207,7 @@ block_free( rzx_block_t *block )
     return LIBSPECTRUM_ERROR_NONE;
 
   case LIBSPECTRUM_RZX_SNAPSHOT_BLOCK:
-    libspectrum_snap_free( block->types.snap );
+    libspectrum_snap_free( block->types.snap.snap );
     libspectrum_free( block );
     return LIBSPECTRUM_ERROR_NONE;
 
@@ -286,7 +293,7 @@ libspectrum_rzx_stop_input( libspectrum_rzx *rzx )
 }
 
 libspectrum_error
-libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap )
+libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap, int automatic )
 {
   rzx_block_t *block;
   libspectrum_error error;
@@ -296,7 +303,8 @@ libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap )
 
   block_alloc( &block, LIBSPECTRUM_RZX_SNAPSHOT_BLOCK );
 
-  block->types.snap = snap;
+  block->types.snap.snap = snap;
+  block->types.snap.automatic = automatic;
 
   rzx->blocks = g_slist_append( rzx->blocks, block );
 
@@ -340,7 +348,7 @@ libspectrum_rzx_rollback( libspectrum_rzx *rzx, libspectrum_snap **snap )
   previous->next = NULL;
 
   block = previous->data;
-  *snap = block->types.snap;
+  *snap = block->types.snap.snap;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -379,7 +387,7 @@ libspectrum_rzx_rollback_to( libspectrum_rzx *rzx, libspectrum_snap **snap,
   previous->next = NULL;
 
   block = previous->data;
-  *snap = block->types.snap;
+  *snap = block->types.snap.snap;
 
   return LIBSPECTRUM_ERROR_NONE;
 }
@@ -492,7 +500,7 @@ libspectrum_rzx_start_playback( libspectrum_rzx *rzx, int which,
       block = previous->data;
 
       if( block->type == LIBSPECTRUM_RZX_SNAPSHOT_BLOCK )
-	*snap = block->types.snap;
+	*snap = block->types.snap.snap;
     }
 
     return LIBSPECTRUM_ERROR_NONE;
@@ -539,7 +547,7 @@ libspectrum_rzx_playback_frame( libspectrum_rzx *rzx, int *finished,
 	rzx->current_block = it;
 	break;
       } else if( block->type == LIBSPECTRUM_RZX_SNAPSHOT_BLOCK ) {
-	*snap = block->types.snap;
+	*snap = block->types.snap.snap;
       }
 
     }
@@ -912,9 +920,10 @@ rzx_read_snapshot( libspectrum_rzx *rzx, const libspectrum_byte **ptr,
   }
 
   block_alloc( &block, LIBSPECTRUM_RZX_SNAPSHOT_BLOCK );
-  block->types.snap = libspectrum_snap_alloc();
+  block->types.snap.snap = libspectrum_snap_alloc();
+  block->types.snap.automatic = 0;
 
-  snap = block->types.snap;
+  snap = block->types.snap.snap;
 
   for( done = 0, type = snapshot_strings; type->format; type++ ) {
     if( !strncasecmp( (char*)*ptr, type->string, 4 ) ) {
@@ -1248,7 +1257,7 @@ libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
     switch( block->type ) {
 
     case LIBSPECTRUM_RZX_SNAPSHOT_BLOCK:
-      error = rzx_write_snapshot( buffer, &ptr, length, block->types.snap,
+      error = rzx_write_snapshot( buffer, &ptr, length, block->types.snap.snap,
 				  snap_format, creator, compress );
       if( error != LIBSPECTRUM_ERROR_NONE ) return error;
       break;
@@ -1664,5 +1673,15 @@ libspectrum_rzx_iterator_get_snap( libspectrum_rzx_iterator it )
 
   if( block->type != LIBSPECTRUM_RZX_SNAPSHOT_BLOCK ) return NULL;
 
-  return block->types.snap;
+  return block->types.snap.snap;
+}
+
+int
+libspectrum_rzx_iterator_snap_is_automatic( libspectrum_rzx_iterator it )
+{
+  rzx_block_t *block = it->data;
+
+  if( block->type != LIBSPECTRUM_RZX_SNAPSHOT_BLOCK ) return 0;
+
+  return block->types.snap.automatic;
 }
