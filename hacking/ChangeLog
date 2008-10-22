@@ -680,8 +680,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20081020 tape_block.c: remove warning.
 20081021 sna.c,test/{empty.z80,test.c}: SP wasn't being decremented and
          could have been written to freed memory.
-20081022 libspectrum.h.in,sna.c,tap.c,tzx_read.c,tzx_write.c,warajevo_read.c,
-         z80.c: remove deprecated functions libspectrum_sna_read(),
-         libspectrum_z80_read(),libspectrum_z80_write(),libspectrum_tap_read(),
-         libspectrum_tap_write(),libspectrum_tzx_read(),
-         libspectrum_tzx_write() and libspectrum_warajevo_read() (Fred).
+20081021 libspectrum.h.in,rzx.c: add "automatic" flag to snapshots in RZX
+	 files.
