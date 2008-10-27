@@ -688,3 +688,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20081021 libspectrum.h.in,rzx.c: add "automatic" flag to snapshots in RZX
 	 files.
 20081027 ChangeLog: bring up to date.
+20081027 libspectrum.h.in: Win32: fixed dll export for
+	 libspectrum_tape_block_length (Marek).
