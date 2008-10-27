@@ -546,7 +546,7 @@ libspectrum_tape_block_description( char *buffer, size_t length,
 int WIN32_DLL
 libspectrum_tape_block_metadata( libspectrum_tape_block *block );
 
-libspectrum_dword
+libspectrum_dword WIN32_DLL
 libspectrum_tape_block_length( libspectrum_tape_block *block );
 
 /* Accessor functions */
