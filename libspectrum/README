@@ -42,12 +42,12 @@ For updates for libspectrum, its homepage is at:
 
 http://fuse-emulator.sourceforge.net/libspectrum.php
 
-Compiling from CVS
-------------------
+Compiling from Subversion
+-------------------------
 
-If you're using version of libspectrum from CVS rather than one of the
-released tarballs, you'll need to run `autogen.sh' before running
-'configure' for the first time.
+If you're using version of libspectrum from Subversion rather than one
+of the released tarballs, you'll need to run `autogen.sh' before
+running 'configure' for the first time.
 
 Philip Kendall <philip-fuse@shadowmagic.org.uk>
 5 January 2008
