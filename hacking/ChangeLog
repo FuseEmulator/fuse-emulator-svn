@@ -687,3 +687,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          libspectrum_tzx_write() and libspectrum_warajevo_read() (Fred).
 20081021 libspectrum.h.in,rzx.c: add "automatic" flag to snapshots in RZX
 	 files.
+20081027 ChangeLog: bring up to date.
