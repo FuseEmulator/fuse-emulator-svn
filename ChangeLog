@@ -13,6 +13,9 @@
 	* tapeconv: add options for embedding metadata into the created
 	  file (Fredrick Meunier).
 
+        * tape2wav: ensure pulses do not get rounded down inappropriately
+          (Fredrick Meunier).
+
 	* Allow building without libaudiofile (José Manuel Ferrer Ortiz).
 
 2008-01-05  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
