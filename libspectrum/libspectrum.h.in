@@ -155,7 +155,10 @@ typedef enum libspectrum_id_t {
 
   /* Below here, present only in 0.1.1 and later */
 
+  /* The next entry is deprecated in favour of the more specific
+     LIBSPECTRUM_ID_DISK_CPC and LIBSPECTRUM_ID_DISK_ECPC */
   LIBSPECTRUM_ID_DISK_DSK,		/* .dsk +3 disk image */
+
   LIBSPECTRUM_ID_DISK_SCL,		/* .scl TR-DOS disk image */
   LIBSPECTRUM_ID_DISK_TRD,		/* .trd TR-DOS disk image */
   LIBSPECTRUM_ID_CARTRIDGE_DCK,		/* .dck Timex cartridge image */
@@ -187,6 +190,7 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_TAPE_Z80EM,		/* Z80Em tape image */
 
   /* Below here, present only in 0.4.0 and later */
+
   LIBSPECTRUM_ID_TAPE_WAV,		/* .wav tape image */
   LIBSPECTRUM_ID_TAPE_SPC,		/* SP-style .spc tape image */
   LIBSPECTRUM_ID_TAPE_STA,		/* Speculator-style .sta tape image */
@@ -194,6 +198,15 @@ typedef enum libspectrum_id_t {
   LIBSPECTRUM_ID_COMPRESSED_XFD,	/* xfdmaster (Amiga) compressed file */
   LIBSPECTRUM_ID_DISK_IMG,		/* .img DISCiPLE/+D disk image */
   LIBSPECTRUM_ID_DISK_MGT,		/* .mgt DISCiPLE/+D disk image */
+
+  /* Below here, present only in 0.5.0 and later */
+
+  LIBSPECTRUM_ID_DISK_UDI,		/* .udi generic disk image */
+  LIBSPECTRUM_ID_DISK_FDI,		/* .fdi generic disk image */
+  LIBSPECTRUM_ID_DISK_CPC,		/* .dsk plain CPC +3 disk image */
+  LIBSPECTRUM_ID_DISK_ECPC,		/* .dsk extended CPC +3 disk image */
+  LIBSPECTRUM_ID_DISK_SAD,		/* .sad generic disk image */
+  LIBSPECTRUM_ID_DISK_TD0,		/* .td0 generic disk image */
 
 } libspectrum_id_t;
 
@@ -225,6 +238,10 @@ typedef enum libspectrum_class_t {
   /* Below here, present only in 0.4.0 and later */
 
   LIBSPECTRUM_CLASS_DISK_PLUSD,		/* DISCiPLE/+D disk image */
+
+  /* Below here, present only in 0.5.0 and later */
+
+  LIBSPECTRUM_CLASS_DISK_GENERIC,	/* generic disk image */
 
 } libspectrum_class_t;
 
