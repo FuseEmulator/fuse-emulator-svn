@@ -692,3 +692,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 libspectrum_tape_block_length (Marek).
 20081027 doc/libspectrum.txt: bring up to date.
 20081027 README: haven't been using CVS for a while now.
+20081108 doc/libspectrum.txt,libspectrum.c,libspectrum.h.in: allow for
+	 identification of more disk images (part of patch #2233744)
+	 (Gergely Szasz).

@@ -10,6 +10,8 @@ handles:
 * Tape images: .tzx, .tap, .spc, .sta and .ltp (read/write) and
   Warajevo .tap, Z80Em and CSW version 1 (read only). 
 * Input recordings: .rzx (read/write).
+* Disk images: .dsk (both plain and extended), .fdi, .sad, .scl, .td0,
+  .trd and .udi (identification only).
 * Timex cartridges: .dck (read only).
 * IDE hard disk images: .hdf (read/write).
 * Microdrive cartridge images: .mdr (read/write).
@@ -270,8 +272,14 @@ LIBSPECTRUM_ID_COMPRESSED_BZ2	A bzip2 compressed file
 LIBSPECTRUM_ID_COMPRESSED_GZ	A gzip compressed file
 
 LIBSPECTRUM_ID_DISK_DSK		A .dsk +3 disk file
+LIBSPECTRUM_ID_DISK_CPC		A plain .dsk +3 disk file
+LIBSPECTRUM_ID_DISK_ECPC	An extended .dsk +3 disk file
+LIBSPECTRUM_ID_DISK_FDI		A .fdi generic disk file
+LIBSPECTRUM_ID_DISK_SAD		A .sad generic disk file
 LIBSPECTRUM_ID_DISK_SCL		A .scl TRDOS disk file
 LIBSPECTRUM_ID_DISK_TRD		A .trd TRDOS disk file
+LIBSPECTRUM_ID_DISK_TD0		A .td0 generic disk file
+LIBSPECTRUM_ID_DISK_UDI		A .udi generic disk file
 
 LIBSPECTRUM_ID_HARDDISK_HDF	A .hdf IDE hard disk image
 
@@ -295,6 +303,11 @@ LIBSPECTRUM_ID_TAPE_Z80EM	A Z80Em tape image
 LIBSPECTRUM_ID_TAPE_SPC		An SP-style .spc tape image
 LIBSPECTRUM_ID_TAPE_STA		A Speculator-style .sta tape image
 LIBSPECTRUM_ID_TAPE_LTP		A Nuclear ZX-style .ltp tape image
+
+Versions of libspectrum previous to 0.5.0 used LIBSPECTRUM_ID_DISK_DSK
+for both plain and extended .dsk images, but this is now deprecated in
+favour of the more specific LIBSPECTRUM_ID_DISK_CPC and
+LIBSPECTRUM_ID_DISK_ECPC.
 
 `libspectrum_identify_file_raw' looks for defined signatures in the
 file as well as the extension of the filename and a couple of
@@ -326,6 +339,8 @@ LIBSPECTRUM_CLASS_UNKNOWN		An unknown file type
 
 LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX	A Timex dock cartridge
 LIBSPECTRUM_CLASS_CARTRIDGE_IF2		An Interface II cartridge
+LIBSPECTRUM_CLASS_DISK_GENERIC		A generic disk image
+LIBSPECTRUM_CLASS_DISK_PLUSD		An MGT/+D disk image
 LIBSPECTRUM_CLASS_DISK_PLUS3		A +3 disk image
 LIBSPECTRUM_CLASS_DISK_TRDOS		A TRDOS disk image
 LIBSPECTRUM_CLASS_HARDDISK		An IDE hard disk image
