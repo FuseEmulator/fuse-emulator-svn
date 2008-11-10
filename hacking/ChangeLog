@@ -696,3 +696,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 identification of more disk images (part of patch #2233744)
 	 (Gergely Szasz).
 20081109 doc/cvs-tags: document 0.5.0 branch tag.
+20081110 doc/libspectrum.txt: minor documentation updates
+         (libspectrum_0_5_0-branch).

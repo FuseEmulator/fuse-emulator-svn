@@ -213,6 +213,12 @@ LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK
 LIBSPECTRUM_MACHINE_CAPABILITY_NTSC
   This machine has an NTSC video output.
 
+LIBSPECTRUM_MACHINE_CAPABILITY_PENT1024_MEMORY
+  This machine has 1024K of memory accessible as on the Pentagon 1024.
+
+LIBSPECTRUM_MACHINE_CAPABILITY_PENT512_MEMORY
+  This machine has 512K of memory accessible as on the Pentagon 512.
+
 LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY
   This machine can change into all-RAM configurations as the +2A/+3.
 
@@ -1254,11 +1260,11 @@ information on this. Files compressed with bzip2 or gzip will be
 automatically and transparently decompressed.
 
 libspectrum_error
-libspectrum_rzx_write2( libspectrum_byte **buffer, size_t *length,
-			libspectrum_rzx *rzx,
-		        libspectrum_byte *snap, libspectrum_id_t snap_format,
-			libspectrum_creator *creator,
-		        int compress, libspectrum_rzx_dsa_key *key )
+libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_rzx *rzx,
+		       libspectrum_byte *snap, libspectrum_id_t snap_format,
+		       libspectrum_creator *creator,
+		       int compress, libspectrum_rzx_dsa_key *key )
 
 Given input recording data in `rzx' and a snapshot in `snap', create a
 .rzx file in `*buffer'. If no embedded snapshot is required, set
