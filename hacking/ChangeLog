@@ -2929,3 +2929,5 @@ snapshot.c: use the fully encapsulated libspectrum_snap
 	 #2248067) (Gergely Szasz).
 20081115 man/fuse.1: add debugger variables and print command
 	 (Release-0_10_0-branch).
+20081115 Makefile.am,hacking/Makefile.am,ui/win32/Makefile.am: make sure
+	 all files are distributed (Release-0_10_0-branch).
