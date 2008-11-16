@@ -256,3 +256,4 @@
 20080928 tzxlist.c: add block and tape lengths to output (Fred).
 20081027 ChangeLog: bring up to date.
 20081109 hacking/cvs-tags: document 0.10.0 branch.
+20081116 tape2wav.c: fix buffer overflow in tape2wav (Jiri Benc).

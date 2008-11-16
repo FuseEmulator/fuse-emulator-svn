@@ -155,7 +155,7 @@ write_tape( char *filename, libspectrum_tape *tape )
       balance_tstates = 0;
     }
 
-    if( tape_length + pulse_length > length ) {
+    while( tape_length + pulse_length > length ) {
       length *= 2;
       buffer = realloc( buffer, length );
       if( !buffer ) {
