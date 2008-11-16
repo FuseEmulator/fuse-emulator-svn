@@ -2931,3 +2931,6 @@ snapshot.c: use the fully encapsulated libspectrum_snap
 	 (Release-0_10_0-branch).
 20081115 Makefile.am,hacking/Makefile.am,ui/win32/Makefile.am: make sure
 	 all files are distributed (Release-0_10_0-branch).
+20081116 ChangeLog,machines/{specplus2a.c,specplus3.c}: reading from the
+	 AY data port on the +2A/+3 is the same as reading from the
+         register port (thanks, Mark Woodmass).
