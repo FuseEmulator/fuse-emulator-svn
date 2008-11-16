@@ -5,10 +5,10 @@
 ; This program is licensed under the GNU General Public License. See the
 ; file `COPYING' for details
 
-; IM2 table from 0xfe00 to 0xff00
+; IM2 table from 0xbe00 to 0xbf00 (inclusive!)
 interruptsync_location equ 0xbe
 
-; IM2 routine at 0xfdfd
+; IM2 routine at 0xbdbd
 interruptsync_isrbyte equ interruptsync_location - 1
 sync_isr equ interruptsync_isrbyte * 0x0101
 

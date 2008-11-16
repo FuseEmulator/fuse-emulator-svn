@@ -378,6 +378,57 @@ _table	defw 0x65a9		; Not used
 
 ENDP
 
+; 0xbffd read test
+
+hexbffdreadtest
+PROC
+	ld a, (guessmachine_guess)
+	cp 0x01
+	jr c, _skip
+
+	ld bc, _result
+	ld hl, _table
+	call guessmachine_table
+	dec bc
+	ld a, (bc)
+	ld d, a
+
+	ld bc, 0xfffd
+	ld a, 0x0b
+	out (c), a
+
+	ld bc, 0xbffd
+	ld a, 0x55
+	out (c), a
+
+	; Sync with interrupts to ensure we get 0xff back from the
+        ; floating bus
+	ld hl, sync_isr + 1
+	ld (hl), _isr % 0x100
+	inc hl
+	ld (hl), _isr / 0x100
+	ei
+	halt
+
+	in a, (c)
+	sub d
+	ld b, 0x00
+	ret
+
+_table	defw 0x0000	; 48K (not used)
+	defw 0x00ff	; 128K/+2
+	defw 0x0055	; +2A/+3
+	defw 0x00ff	; Pentagon
+
+_result	defw 0x0000
+
+_isr	ei
+	ret
+
+_skip	ld b, 0x01
+        ret
+ENDP
+
 ; 0x7ffd read tests
 
 hex3ffdreadtest
