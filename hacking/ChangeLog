@@ -258,3 +258,4 @@
 20081109 hacking/cvs-tags: document 0.10.0 branch.
 20081116 tape2wav.c: fix buffer overflow in tape2wav (Jiri Benc).
 20081116 convertor/romloader.cc: add missing #include <limits>.
+20081117 ocnfigure.in: bump version number for 0.10.0-pre1 release (fuse-utils_0_10_0-branch).
