@@ -108,6 +108,7 @@ if test "$glib" = yes; then
       1.2.0,
       AC_DEFINE([HAVE_LIB_GLIB], 1, [Defined if we've got glib])
       LIBS="$LIBS `glib-config --libs`",
+      glib=no
       AC_MSG_WARN(glib not found - using internal replacement)
     )
   fi

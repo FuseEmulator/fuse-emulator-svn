@@ -702,3 +702,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (libspectrum_0_5_0-branch).
 20081118 test/Makefile.am: distribute empty.z80 and writeprotected.mdr test
          data files (Fred).
+20081118 configure.in: set glib status off if we can't find it (thanks, Chris
+         Young) (Fred).
