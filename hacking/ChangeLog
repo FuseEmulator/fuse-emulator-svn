@@ -2936,3 +2936,5 @@ snapshot.c: use the fully encapsulated libspectrum_snap
          register port (thanks, Mark Woodmass).
 20081117 ocnfigure.in: bump version number for 0.10.0-pre1 release
 	 (Release_0_10_0-branch).
+20081118 rzx.c: don't autosave rzx snapshots when we are recording in compo
+         mode (Fred).
