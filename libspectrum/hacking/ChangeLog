@@ -698,3 +698,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20081109 doc/cvs-tags: document 0.5.0 branch tag.
 20081118 test/Makefile.am: distribute empty.z80 and writeprotected.mdr test
          data files (Fred).
+20070411 configure.in: update version number for 0.5.0 release (Fred).
