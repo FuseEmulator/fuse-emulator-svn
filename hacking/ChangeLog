@@ -2938,3 +2938,5 @@ snapshot.c: use the fully encapsulated libspectrum_snap
 	 (Release_0_10_0-branch).
 20081118 rzx.c: don't autosave rzx snapshots when we are recording in compo
          mode (Fred).
+20081120 compat/amiga/paths.c: implement compat_is_absolute_path for Amiga
+         (final part of patch #1712260) (Chris Young).
