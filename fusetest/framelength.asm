@@ -22,10 +22,9 @@ PROC
 	
 	;; Phase 1: work out ( frame length - 0x8000 ) / 0x100
 _phase1
-	push af			; 32768 + n * 256 + 12
-	ld hl, 209		; 32768 + n * 256 + 23
-	call delay		; 32768 + n * 256 + 33
-	pop af			; 32768 + n * 256 + 242
+        ld b, 0x12              ; 32768 + n * 256 + 12
+_here   djnz _here              ; 32768 + n * 256 + 19
+        nop                     ; 32768 + n * 256 + 248
 	inc a			; 32768 + n * 256 + 252
 	jr _phase1		; 32768 + n * 256 + 256
 
