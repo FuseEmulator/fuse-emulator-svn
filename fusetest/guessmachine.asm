@@ -3,7 +3,11 @@
 
 guessmachine
 PROC
-	ld bc, 0x9100
+        ld bc, 0x6540
+        sbc hl, bc
+        jr z, _mts2068
+
+	ld bc, 0x9100 - 0x6540
 	sbc hl, bc
 	jr z, _m48
 	
@@ -60,6 +64,10 @@ _mplus3	ld a, 0x02
 _mpent	ld a, 0x03
 	ld hl, _mpentstring
 
+_mts2068
+        ld a, 0x04
+        ld hl, _mts2068string
+
 _end	ld (guessmachine_guess), a
 	call printstring
 	ret
@@ -68,6 +76,8 @@ _m48string defb '48K', 0x0d, 0
 _m128string defb '128K', 0x0d, 0
 _mplus3string defb '+3', 0x0d, 0
 _mpentstring defb 'Pentagon', 0x0d, 0
+_mts2068string defb 'TS2068', 0x0d, 0
+
 _unknown defb 'unknown', 0x0d, 0
 
 ENDP

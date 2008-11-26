@@ -487,6 +487,14 @@ PROC
 	in a,(c)
 
 	ld a, (0xe000)
+
+        ; If we selected page 7, it's highly likely an emulator wrote
+        ; 0xff to 0x7ffd. This is unfortunate as it pages in the 128K ROM
+        ; and then locks us out from changing this. All we can really do
+        ; is hang...
+        cp 0x07
+        jr z, _hang
+
 	ld b, 0x00
 
 _end	push af
@@ -513,6 +521,9 @@ _fail	pop hl
 	ld a, 0xff
 	ld b, 0x01
 	jr _end
+
+_hang   di
+        halt
 
 _delay	defw 0x0000
 

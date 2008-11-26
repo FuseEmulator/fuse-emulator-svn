@@ -180,51 +180,51 @@ _incompletestring1 defb '... incomplete (B=0x', 0
 
 _testdata
 	defb 'BIT n,(IX+d)', 0
-        defb 0x0f
+        defb 0x1f
 	defw bitnixtest
 
 	defb 'DAA', 0
-        defb 0x0f
+        defb 0x1f
 	defw daatest
 
         defb 'OUTI', 0
-        defb 0x0f
+        defb 0x1f
         defw outitest
 
 	defb 'LDIR', 0
-        defb 0x0f
+        defb 0x1f
 	defw ldirtest
 
 	defb 'Contended IN', 0
-        defb 0x0f
+        defb 0x1f
 	defw contendedintest
 
 	defb 'Floating bus', 0
-        defb 0x03
+        defb 0x13
 	defw floatingbustest
 
 	defb 'Contended memory', 0
-        defb 0x0f
+        defb 0x1f
 	defw contendedmemorytest
 
 	defb 'High port contention 1', 0
-        defb 0x0f
+        defb 0x1f
 	defw highporttest1
 
 	defb 'High port contention 2', 0
-        defb 0x0f
+        defb 0x1f
 	defw highporttest2
 
 	defb '0xbffd read', 0
-        defb 0x0f
+        defb 0x1f
 	defw hexbffdreadtest
 
 	defb '0x3ffd read', 0
-        defb 0x02
+        defb 0x12
 	defw hex3ffdreadtest
 
 	defb '0x7ffd read', 0
-        defb 0x02
+        defb 0x12
 	defw hex7ffdreadtest
 
 	defb 0
