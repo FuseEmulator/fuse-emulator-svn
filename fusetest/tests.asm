@@ -10,10 +10,11 @@
 bitnixtest
 PROC
 	ld ix, _data - 0x44
+        scf                     ; BIT n, <foo> does not affect carry flag
 	bit 5, (ix+0x44)
 	push af
 	pop bc
-	ld a, 0x30
+	ld a, 0x31
 	cp c
 	ret z
 	ld b, 0x00
@@ -116,7 +117,7 @@ PROC
 _isr	pop hl
 	ret
 
-_fail	ld b, 0x02
+_fail	ld b, 0x01
 	ret
 
 _table1	defw 0x3633, 0x3633 + 0x001a, 0x3654, 0x3633
@@ -175,7 +176,7 @@ _isr	ld b, 0x00
 	pop hl
 	ret
 
-_fail	ld b, 0x02
+_fail	ld b, 0x01
 	ret
 
 _table1	defw 0xa67e
@@ -196,11 +197,6 @@ ENDP
 
 floatingbustest
 PROC
-	; No point running this test on the +3 or Pentagon
-	ld a, (guessmachine_guess)
-	cp 0x02
-	jr nc, _skip
-
 	ld bc, _delay
 	ld hl, _table
 	call guessmachine_table
@@ -240,11 +236,7 @@ PROC
 _fail	pop bc
 	ld hl, 0x5a0f
 	ld (hl), b
-	ld b, 0x02
-	ret
-
-_skip	ld b, 0x01
-	add a, b
+	ld b, 0x01
 	ret
 
 _table	defw 0xa691, 0xa691 + 0x001a + 4 * 0x0080
@@ -299,7 +291,7 @@ PROC
 _isr	pop hl
 	ret
 
-_fail	ld b, 0x02
+_fail	ld b, 0x01
 	ret
 	
 _nop	nop			; 14335 / 14361 / 14363
@@ -349,10 +341,6 @@ ENDP
 
 highporttest2
 PROC
-	ld a, (guessmachine_guess)
-	cp 0x01
-	jr c, _skip
-	
 	ld a, (0x5b5c)
 	and 0xf8
 	or 7
@@ -368,9 +356,6 @@ PROC
 
 	jp contendedin1
 
-_skip	ld b, 0x01
-	ret
-
 _table	defw 0x65a9		; Not used
 	defw 0x65a9 - 0x001a - 4 * 0x0080 + 0x03fc - 0x000c
 	defw 0x65a9 - 0x001a - 4 * 0x0080 + 0x03fc
@@ -382,10 +367,6 @@ ENDP
 
 hexbffdreadtest
 PROC
-	ld a, (guessmachine_guess)
-	cp 0x01
-	jr c, _skip
-
 	ld bc, _result
 	ld hl, _table
 	call guessmachine_table
@@ -415,7 +396,7 @@ PROC
 	ld b, 0x00
 	ret
 
-_table	defw 0x0000	; 48K (not used)
+_table	defw 0x00ff	; 48K
 	defw 0x00ff	; 128K/+2
 	defw 0x0055	; +2A/+3
 	defw 0x00ff	; Pentagon
@@ -425,8 +406,6 @@ _result	defw 0x0000
 _isr	ei
 	ret
 
-_skip	ld b, 0x01
-        ret
 ENDP
 
 ; 0x7ffd read tests
@@ -465,10 +444,6 @@ hex7ffdreadtest_common
 PROC
 	push de
 	push hl
-	
-	ld a, (guessmachine_guess)
-	cp 0x01
-	jp nz, _skip
 
 	ld bc, _delay
 	pop hl
@@ -536,14 +511,8 @@ _end	push af
 
 _fail	pop hl
 	ld a, 0xff
-	ld b, 0x02
-	jr _end
-
-_skip	pop hl
-	pop hl
-	ld a, 0xff
 	ld b, 0x01
-	ret
+	jr _end
 
 _delay	defw 0x0000
 

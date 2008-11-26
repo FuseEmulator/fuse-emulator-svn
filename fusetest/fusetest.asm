@@ -86,7 +86,19 @@ _test	ld a,(hl)
 
 	call printstring
 	inc hl
+
+        ; See if we should run this test on this machine
+        ld a, (guessmachine_guess)
+        ld b, a
+        inc b
+        ld a, (hl)
+_loop   rra
+        djnz _loop
+
+        inc hl
 	push hl
+        jr nc, _skip
+
 	call _jumphl
 
 	jr z, _pass
@@ -95,8 +107,9 @@ _test	ld a,(hl)
 	cp 0x00
 	jr z, _fail
 
-	; B != 0 => skipped, etc
-_skip	ld hl, _skipstring1
+	; B != 0 => incomplete etc
+_incomplete
+	ld hl, _incompletestring1
 	call printstring
 	ld a, b
 	call printa
@@ -104,6 +117,10 @@ _skip	ld hl, _skipstring1
 	call printstring
 	pop af
 	jr _next
+
+_skip   ld hl, _skipstring1
+        call printstring
+        jr _next
 
 _fail	ld hl, _failstring1
 	call printstring
@@ -154,50 +171,62 @@ _first_fail_sync
 _first_fail_short
 	ld hl, _short_string
 	jr _first_fail2
-	
+
 _passstring defb '... passed', 0x0d, 0
 _failstring1 defb '... failed (0x', 0
 _failstring2 defb ')', 0x0d, 0
-
-_skipstring1 defb '... skipped (B=0x', 0
+_skipstring1 defb '... skipped', 0x0d, 0
+_incompletestring1 defb '... incomplete (B=0x', 0
 
 _testdata
 	defb 'BIT n,(IX+d)', 0
+        defb 0x0f
 	defw bitnixtest
 
 	defb 'DAA', 0
+        defb 0x0f
 	defw daatest
 
         defb 'OUTI', 0
+        defb 0x0f
         defw outitest
 
 	defb 'LDIR', 0
+        defb 0x0f
 	defw ldirtest
 
 	defb 'Contended IN', 0
+        defb 0x0f
 	defw contendedintest
 
 	defb 'Floating bus', 0
+        defb 0x03
 	defw floatingbustest
 
 	defb 'Contended memory', 0
+        defb 0x0f
 	defw contendedmemorytest
 
 	defb 'High port contention 1', 0
+        defb 0x0f
 	defw highporttest1
-	
+
 	defb 'High port contention 2', 0
+        defb 0x0f
 	defw highporttest2
 
 	defb '0xbffd read', 0
+        defb 0x0f
 	defw hexbffdreadtest
 
 	defb '0x3ffd read', 0
+        defb 0x02
 	defw hex3ffdreadtest
-	
+
 	defb '0x7ffd read', 0
+        defb 0x02
 	defw hex7ffdreadtest
-	
+
 	defb 0
 
 _framestring defb 'Frame length ', 0
