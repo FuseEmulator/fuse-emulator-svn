@@ -267,3 +267,7 @@
          converter/{romloader.cc,romloaderstate.cc,romloaderstate.h},
          importer/{interpolator.h,soundfile.cc}: add warnings for C++ and clean
          up warnings thus produced (Fred).
+20081129 configure.in,man/{audio2tape.1,createhdf.1,fuse-utils.1,listbasic.1,
+	 profile2map.1,raw2hdf.1,rzxcheck.1,rzxdump.1,rzxtool.1,scl2trd.1,
+	 snap2tzx.1,snapconv.1,tape2wav.1,tapeconv.1,tzxlist.1},README: final
+	 tweaks for 0.10.0 (fuse-utils_0_10_0-branch).
