@@ -1,5 +1,5 @@
-/* romloaderstate.h: Abstract base class for ROM loader states cf the GoF
-                     State Pattern
+/* romloaderstate.cc: Abstract base class for ROM loader states cf the GoF
+                      State Pattern
    Copyright (c) 2008 Fredrick Meunier
 
    $Id$
@@ -24,16 +24,6 @@
 
 */
 
-#ifndef ROMLOADERSTATE_H
-#define ROMLOADERSTATE_H
+#include "romloaderstate.h"
 
-class romloader;
-
-class romloaderstate {
-  public:
-    virtual ~romloaderstate();
-    virtual void handle_pulse( romloader* loader, double tstates,
-                               unsigned int pulse_length ) = 0;
-};
-
-#endif /* #ifndef ROMLOADERSTATE_H */
+romloaderstate::~romloaderstate() {}

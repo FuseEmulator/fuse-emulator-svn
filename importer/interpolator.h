@@ -38,9 +38,9 @@ public:
   interpolator( libspectrum_byte *samples, size_t samples_length, double rate,
                 double source_rate ) :
     source_sample_rate(source_rate),
-    source_length(samples_length),
     sample_rate(rate),
-    pulses(samples) {
+    pulses(samples),
+    source_length(samples_length) {
       length = floor( source_length * source_sample_rate/sample_rate );
     }
 
