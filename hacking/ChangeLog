@@ -2938,8 +2938,16 @@ snapshot.c: use the fully encapsulated libspectrum_snap
 	 (Release_0_10_0-branch).
 20081118 rzx.c: don't autosave rzx snapshots when we are recording in compo
          mode (Fred).
+20081119 disk/{disk.c,upd_fdc.c}: fix READ_DIAG emlation bugs to support
+         LERM Plus-3-Mate (fixes bug #2312217) (Gergely Szasz).
 20081120 compat/amiga/paths.c: implement compat_is_absolute_path for Amiga
          (final part of patch #1712260) (Chris Young).
 20081120 utils.c: don't switch machine on autoloading a Timex dock cart if we
          can already support them (Fred).
+20081122 disk/disk.c: fix a track length calculation bug (more of bug #2312217)
+         (Gergely Szasz).
 20081125 scld.c: fix loading of dock/exrom information from snapshots (Fred).
+20081129 disk/disk.c: limit weak sector handling to fix Coin-Op Hits (more of
+         bug #2312217) (Gergely Szasz).
+20081129 disk/disk.c: one instance of plus3_fix wasn't updated (thanks, Stuart
+         Brady) (Fred).

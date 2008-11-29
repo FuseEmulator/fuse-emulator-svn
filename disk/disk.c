@@ -966,6 +966,13 @@ open_fdi( buffer_t *buffer, disk_t *d, int preindex )
   return d->status = DISK_OK;
 }
 
+#define CPC_ISSUE_NONE 0
+#define CPC_ISSUE_1 1
+#define CPC_ISSUE_2 2
+#define CPC_ISSUE_3 3
+#define CPC_ISSUE_4 4
+#define CPC_ISSUE_5 5
+
 static int
 open_cpc( buffer_t *buffer, disk_t *d, int preindex )
 {
@@ -1009,35 +1016,45 @@ open_cpc( buffer_t *buffer, disk_t *d, int preindex )
 				      256 * buff[ 0x1f + 8 * j ]
 				    : 0x80 << buff[ 0x1b + 8 * j ];
       idlen = 0x80 << buff[ 0x1b + 8 * j ];	/* sector length from ID */
-      bpt += calc_sectorlen( gap == GAP_MINIMAL_MFM ? 1 : 0, idlen, gap );
-      trlen += seclen;
+      if( idlen != 0 && idlen <= ( 0x80 << 0x08 ) && 		/* idlen is o.k. */
+          seclen > idlen && seclen % idlen )			/* seclen != N * len */
+	return d->status = DISK_OPEN;
+
+      bpt += calc_sectorlen( gap == GAP_MINIMAL_MFM ? 1 : 0, seclen > idlen ? idlen : seclen, gap );
       if( i < 84 && d->flag & DISK_FLAG_PLUS3_CPC ) {
         if( j == 0 && buff[ 0x1b + 8 * j ] == 6 && seclen > 6144 )
-	  plus3_fix = 4;
-        else if( j == 0 && buff[ 0x1b + 8 * j ] == 6 )
-	  plus3_fix = 1;
+	  plus3_fix = CPC_ISSUE_4;
+	else if( j == 0 && buff[ 0x1b + 8 * j ] == 6 )
+	  plus3_fix = CPC_ISSUE_1;
 	else if( j == 0 &&
 		 buff[ 0x18 + 8 * j ] == j && buff[ 0x19 + 8 * j ] == j &&
 		 buff[ 0x1a + 8 * j ] == j && buff[ 0x1b + 8 * j ] == j ) 
-	  plus3_fix = 3;
-	else if( j == 1 && plus3_fix == 1 && buff[ 0x1b + 8 * j ] == 2 )
-	  plus3_fix = 2;
-	else if( j > 1 && plus3_fix == 2 && buff[ 0x1b + 8 * j ] != 2 )
-	  plus3_fix = 0;
-	else if( j > 0 && plus3_fix == 3 &&
+	  plus3_fix = CPC_ISSUE_3;
+	else if( j == 1 && plus3_fix == CPC_ISSUE_1 &&
+                 buff[ 0x1b + 8 * j ] == 2 )
+	  plus3_fix = CPC_ISSUE_2;
+	else if( i == 38 && j == 0 && buff[ 0x1b + 8 * j ] == 2 )
+	  plus3_fix = CPC_ISSUE_5;
+	else if( j > 1 && plus3_fix == CPC_ISSUE_2 && buff[ 0x1b + 8 * j ] != 2 )
+	  plus3_fix = CPC_ISSUE_NONE;
+	else if( j > 0 && plus3_fix == CPC_ISSUE_3 &&
 		 ( buff[ 0x18 + 8 * j ] != j || buff[ 0x19 + 8 * j ] != j ||
 		   buff[ 0x1a + 8 * j ] != j || buff[ 0x1b + 8 * j ] != j ) )
-	  plus3_fix = 0;
-	else if( j > 10 && plus3_fix == 2 )
-	  plus3_fix = 0;
+	  plus3_fix = CPC_ISSUE_NONE;
+	else if( j > 10 && plus3_fix == CPC_ISSUE_2 )
+	  plus3_fix = CPC_ISSUE_NONE;
+	else if( i == 38 && j > 0 && plus3_fix == CPC_ISSUE_5 &&
+		 buff[ 0x1b + 8 * j ] != 2 - ( j & 1 ) )
+	  plus3_fix = CPC_ISSUE_NONE;
       }
+      trlen += seclen;
       if( seclen == 0x80 )		/* every 128byte length sector padded */
 	sector_pad++;
     }
     if( i < 84 ) {
       fix[i] = plus3_fix;
-      if( fix[i] == 4 )      bpt = 6500;/* Type 1 variant DD+ (e.g. Coin Op Hits) */
-      else if( fix[i] != 0 ) bpt = 6250;/* we assume a standard DD track */
+      if( fix[i] == CPC_ISSUE_4 )         bpt = 6500;/* Type 1 variant DD+ (e.g. Coin Op Hits) */
+      else if( fix[i] != CPC_ISSUE_NONE ) bpt = 6250;/* we assume a standard DD track */
     }
     buffer->index += trlen + sector_pad * 128 + 256;
     if( bpt > max_bpt )
@@ -1064,19 +1081,15 @@ open_cpc( buffer_t *buffer, disk_t *d, int preindex )
     if( preindex)
       preindex_add( d, gap );
     postindex_add( d, gap );
-    trlen = 0;
+
     for( j = 0; j < hdrb[0x15]; j++ ) {			/* each sector */
       seclen = d->type == DISK_ECPC ? hdrb[ 0x1e + 8 * j ] +	/* data length in sector */
 				      256 * hdrb[ 0x1f + 8 * j ]
 				    : 0x80 << hdrb[ 0x1b + 8 * j ];
       idlen = 0x80 << hdrb[ 0x1b + 8 * j ];		/* sector length from ID */
 
-      trlen += seclen;
       if( idlen == 0 || idlen > ( 0x80 << 0x08 ) )      /* error in sector length code -> ignore */
         idlen = seclen;
-
-      if( seclen > idlen && seclen % idlen )		/* seclen != N * len */
-	return d->status = DISK_OPEN;
 
       if( i < 84 && fix[i] == 2 && j == 0 ) {	/* repositionate the dummy track  */
         d->i = 8;
@@ -1086,35 +1099,49 @@ open_cpc( buffer_t *buffer, disk_t *d, int preindex )
                  hdrb[ 0x1c + 8 * j ] & 0x20 && !( hdrb[ 0x1d + 8 * j ] & 0x20 ) ? 
                  CRC_ERROR : CRC_OK );
 
-      if( i < 84 && fix[i] == 1 && j == 0 ) {	/* 6144 */
+      if( i < 84 && fix[i] == CPC_ISSUE_1 && j == 0 ) {	/* 6144 */
         data_add( d, buffer, NULL, seclen, 
 		hdrb[ 0x1d + 8 * j ] & 0x40 ? DDAM : NO_DDAM, gap, 
 		hdrb[ 0x1c + 8 * j ] & 0x20 && hdrb[ 0x1d + 8 * j ] & 0x20 ?
 		CRC_ERROR : CRC_OK, 0x00 );
-      } else if( i < 84 && fix[i] == 2 && j == 0 ) {	/* 6144, 10x512 */
+      } else if( i < 84 && fix[i] == CPC_ISSUE_2 && j == 0 ) {	/* 6144, 10x512 */
         datamark_add( d, hdrb[ 0x1d + 8 * j ] & 0x40 ? DDAM : NO_DDAM, gap );
         gap_add( d, 2, gap );
         buffer->index += seclen;
-      } else if( i < 84 && fix[i] == 3 ) {	/* 128, 256, 512, ... 4096k */
+      } else if( i < 84 && fix[i] == CPC_ISSUE_3 ) {	/* 128, 256, 512, ... 4096k */
         data_add( d, buffer, NULL, 128, 
 		hdrb[ 0x1d + 8 * j ] & 0x40 ? DDAM : NO_DDAM, gap, 
 		hdrb[ 0x1c + 8 * j ] & 0x20 && hdrb[ 0x1d + 8 * j ] & 0x20 ?
 		CRC_ERROR : CRC_OK, 0x00 );
         buffer->index += seclen - 128;
-      } else if( i < 84 && fix[i] == 4 ) {	/* Nx8192 (max 6384 byte ) */
+      } else if( i < 84 && fix[i] == CPC_ISSUE_4 ) {	/* Nx8192 (max 6384 byte ) */
         data_add( d, buffer, NULL, 6384,
 		hdrb[ 0x1d + 8 * j ] & 0x40 ? DDAM : NO_DDAM, gap, 
 		hdrb[ 0x1c + 8 * j ] & 0x20 && hdrb[ 0x1d + 8 * j ] & 0x20 ?
 		CRC_ERROR : CRC_OK, 0x00 );
         buffer->index += seclen - 6384;
+      } else if( i < 84 && fix[i] == CPC_ISSUE_5 ) {	/* 9x512 */
+      /* 512 256 512 256 512 256 512 256 512 */
+        if( idlen == 256 ) {
+          data_add( d, NULL, buff, 512,
+		hdrb[ 0x1d + 8 * j ] & 0x40 ? DDAM : NO_DDAM, gap,
+		hdrb[ 0x1c + 8 * j ] & 0x20 && hdrb[ 0x1d + 8 * j ] & 0x20 ?
+		CRC_ERROR : CRC_OK, 0x00 );
+	  buffer->index += idlen;
+        } else {
+          data_add( d, buffer, NULL, idlen,
+		hdrb[ 0x1d + 8 * j ] & 0x40 ? DDAM : NO_DDAM, gap,
+		hdrb[ 0x1c + 8 * j ] & 0x20 && hdrb[ 0x1d + 8 * j ] & 0x20 ?
+		CRC_ERROR : CRC_OK, 0x00 );
+	}
       } else {
-        data_add( d, buffer, NULL, seclen > idlen ? idlen : seclen, 
-		hdrb[ 0x1d + 8 * j ] & 0x40 ? DDAM : NO_DDAM, gap, 
+        data_add( d, buffer, NULL, seclen > idlen ? idlen : seclen,
+		hdrb[ 0x1d + 8 * j ] & 0x40 ? DDAM : NO_DDAM, gap,
 		hdrb[ 0x1c + 8 * j ] & 0x20 && hdrb[ 0x1d + 8 * j ] & 0x20 ?
 		CRC_ERROR : CRC_OK, 0x00 );
         if( seclen > idlen ) {		/* weak sector with multiple copy  */
-          buffer->index +=( seclen / ( 0x80 << hdrb[ 0x1b + 8 * j ] ) - 1 ) * 
-				( 0x80 << hdrb[ 0x1b + 8 * j ] );
+          buffer->index +=( seclen / ( 0x80 << hdrb[ 0x1b + 8 * j ] ) - 1 ) *
+				     ( 0x80 << hdrb[ 0x1b + 8 * j ] );
 					/* ( ( N * len ) / len - 1 ) * len */
         }
       }
