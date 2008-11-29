@@ -704,3 +704,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          data files (Fred).
 20081118 configure.in: set glib status off if we can't find it (thanks, Chris
          Young) (Fred).
+20081129 timings.c: correct first contended tstate for TS2068 based on updated
+         fusetest from Phil (Fred).
