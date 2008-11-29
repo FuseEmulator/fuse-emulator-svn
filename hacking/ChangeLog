@@ -261,3 +261,5 @@
 20081117 ocnfigure.in: bump version number for 0.10.0-pre1 release (fuse-utils_0_10_0-branch).
 20081119 Makefile.am: Distribute audio2tape.h importer/{schmitt.h,simple.h,
          soundfile.h} converter/romloader.h (thanks, Chris Young) (Fred).
+20081129 configure.in: also set CXXFLAGS for --with-local-prefix (fixes bug
+         #2358508) (Fred).
