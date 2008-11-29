@@ -221,7 +221,7 @@ romloader::end_block( double end_marker, double end_tstates )
   new_block.sync2_length = sync2_length;
   new_block.pause_length = end_marker;
   new_block.data = data;
-  bool valid = check_checksum();
+  check_checksum();
   stats ( "pilot", pilot_pulses, PILOT_LENGTH, new_block.pilot_length );
   stats ( "zero", zero_pulses, ZERO, new_block.zero_length );
   stats ( "one", one_pulses, ONE, new_block.one_length );
@@ -250,8 +250,10 @@ bool
 romloader::check_checksum()
 {
   libspectrum_byte checksum = 0;
-  for( int i = 0; i < data.size()-1; i++ ) {
-    checksum ^= data[i];
+  if( data.size() ) {
+    for( size_t i = 0; i < data.size()-1; i++ ) {
+      checksum ^= data[i];
+    }
   }
 
   bool retval = checksum == data[data.size()-1];
