@@ -62,7 +62,7 @@ soundfile::soundfile( std::string filename, trigger* edge_detector,
     throw audio2tape_exception("couldn't set virtual sample format");
   }
 
-  size_t length = afGetFrameCount( handle, track );
+  int length = afGetFrameCount( handle, track );
 
   libspectrum_byte *buffer = (libspectrum_byte *)malloc(length);
 
@@ -94,9 +94,6 @@ soundfile::soundfile( std::string filename, trigger* edge_detector,
   for( libspectrum_byte* byte = buffer; byte < buffer+length; byte++ ) {
     amplitude_frequency_table[*byte]++;
   }
-
-  /* 44100 Hz 79 t-states 22050 Hz 158 t-states */
-  double bit_length = source_machine_hz/sample_rate;
 
   interpolator upsampler( buffer, length, afGetRate( handle, track ),
                           source_machine_hz );

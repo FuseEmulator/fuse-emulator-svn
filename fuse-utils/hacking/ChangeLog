@@ -261,3 +261,7 @@
          soundfile.h} converter/romloader.h (thanks, Chris Young) (Fred).
 20081129 configure.in: also set CXXFLAGS for --with-local-prefix (fixes bug
          #2358508) (Fred).
+20081129 Makefile.am,audio2tape.cc,configure.in,
+         converter/{romloader.cc,romloaderstate.cc,romloaderstate.h},
+         importer/{interpolator.h,soundfile.cc}: add warnings for C++ and clean
+         up warnings thus produced (Fred).
