@@ -708,3 +708,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          fusetest from Phil (Fred).
 20081129 configure.in,doc/libspectrum.{3,txt},hacking/ChangeLog,Makefile.am,
 	 README: final tweaks for 0.5.0 release (libspectrum_0_5_0-branch).
+20081130 ChangeLog: add reference to TS2068 timing update
+         (libspectrum_0_5_0-branch) (Fred).
