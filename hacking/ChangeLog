@@ -2951,3 +2951,5 @@ snapshot.c: use the fully encapsulated libspectrum_snap
          bug #2312217) (Gergely Szasz).
 20081129 disk/disk.c: one instance of plus3_fix wasn't updated (thanks, Stuart
          Brady) (Fred).
+20081129 configure.in,man/fuse.1,README: final tweaks for 0.10.0 release
+	 (Release_0_10_0-branch).
