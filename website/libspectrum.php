@@ -1,7 +1,7 @@
 <?php
 
 /* libspectrum.php: the libspectrum 'home' page
-   Copyright (c) 1999-2007 Darren Salt, Philip Kendall
+   Copyright (c) 1999-2008 Darren Salt, Philip Kendall
 
    $Id$
 
@@ -82,14 +82,14 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
 
   <h3>Source</h3>
   <ul>
-   <li><a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.4.0.tar.gz?download">libspectrum-0.4.0.tar.gz</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.4.0.tar.gz.sig?download">PGP signature</a>) or from <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.4.0.tar.gz">World of Spectrum</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.4.0.tar.gz.sig">signature</a>).</li>
+   <li><a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.5.0.tar.gz?download">libspectrum-0.5.0.tar.gz</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/libspectrum-0.5.0.tar.gz.sig?download">PGP signature</a>) or from <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.5.0.tar.gz">World of Spectrum</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/libspectrum-0.5.0.tar.gz.sig">signature</a>).</li>
    <li>The source code release above is signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.1.1 release as I forgot the passphrase for that key <tt>:-(</tt>.</li>
   </ul>
 
   <h3>Binaries</h3>
   <p>Packages are available for some Unix distributions; in general, any problems which are specific to the packages should be sent to the package maintainer.</p>
   <ul>
-   <li><a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">Debian stable</a> (Debian 4.0, "Etch"), <a href="http://www.youmustbejoking.demon.co.uk/progs.testing.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.oldstable.html">Debian 3.1 ("Sarge")</a> (all 0.2.2) or <a href="http://www.youmustbejoking.demon.co.uk/progs.woody.html">Debian 3.0 ("Woody")</a> (0.2.0.1) by Darren Salt.</li>
+   <li><a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">Debian stable</a> (Debian 4.0, "Etch"), <a href="http://www.youmustbejoking.demon.co.uk/progs.testing.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a> or <a href="http://www.youmustbejoking.demon.co.uk/progs.oldstable.html">Debian 3.1 ("Sarge")</a> (all 0.2.2) by Darren Salt.</li>
    <li><a href="https://admin.fedoraproject.org/pkgdb/packages/name/libspectrum">Fedora</a> (0.4.0)</li>
    <li><a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/libspectrum/">FreeBSD</a> (0.4.0)</li>
    <li><a href="http://packages.gentoo.org/package/app-emulation/libspectrum?full_cat">Gentoo</a> (0.4.0)</li>
