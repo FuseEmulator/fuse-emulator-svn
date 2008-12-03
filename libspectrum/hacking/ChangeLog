@@ -696,9 +696,19 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 identification of more disk images (part of patch #2233744)
 	 (Gergely Szasz).
 20081109 doc/cvs-tags: document 0.5.0 branch tag.
+20081110 doc/libspectrum.txt: minor documentation updates
+         (libspectrum_0_5_0-branch).
+20081117 configure.in: bump version number for 0.5.0-pre1 release
+	 (libspectrum_0_5_0-branch).
 20081118 test/Makefile.am: distribute empty.z80 and writeprotected.mdr test
          data files (Fred).
 20081118 configure.in: set glib status off if we can't find it (thanks, Chris
          Young) (Fred).
 20081129 timings.c: correct first contended tstate for TS2068 based on updated
          fusetest from Phil (Fred).
+20081129 configure.in,doc/libspectrum.{3,txt},hacking/ChangeLog,Makefile.am,
+	 README: final tweaks for 0.5.0 release (libspectrum_0_5_0-branch).
+20081130 ChangeLog: add reference to TS2068 timing update
+         (libspectrum_0_5_0-branch) (Fred).
+20081203 ChangeLog,Makefile.am,README,doc/libspectrum.{3,txt},hacking/ChangeLog,
+	 configure.in: merge libspectrum_0_5_0-branch changes onto trunk.

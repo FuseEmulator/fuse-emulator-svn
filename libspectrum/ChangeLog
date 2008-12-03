@@ -42,6 +42,8 @@
 
 	* Remove deprecated functions (Fredrick Meunier).
 
+	* Tweak timings for TS2068 (Fredrick Meunier; thanks Philip Kendall).
+
 2008-01-05  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
 	* libspectrum 0.4.0 released.
