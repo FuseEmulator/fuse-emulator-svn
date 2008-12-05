@@ -278,3 +278,5 @@
 	 fuse-utils_0_10_0-branch changes onto trunk.
 20081205 Makefile.am: Distribute converter/romloaderstate.h (thanks, Chris
          Young) (Fred).
+20081206 Makefile.am: Distribute the rest of converter/*.h and interpolator/*.h
+         (thanks, Lucuan Langa) (Fred).

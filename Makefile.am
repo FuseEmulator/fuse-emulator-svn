@@ -93,6 +93,9 @@ audio2tape_LDADD = @LIBSPEC_LIBS@ @AUDIOFILE_LIBS@
 tape2wav_SOURCES = tape2wav.c utils.c
 tape2wav_LDADD = @LIBSPEC_LIBS@ @AUDIOFILE_LIBS@
 
-noinst_HEADERS = compat.h ide.h utils.h audio2tape.h importer/schmitt.h \
-                 importer/simple.h importer/soundfile.h converter/romloader.h \
+noinst_HEADERS = compat.h ide.h utils.h audio2tape.h importer/interpolator.h \
+                 importer/schmitt.h importer/simple.h importer/soundfile.h \
+                 converter/findpilot.h converter/findsync1.h \
+                 converter/getpulse1.h converter/getpulse2.h \
+                 converter/getsync2.h converter/romloader.h \
                  converter/romloaderstate.h
