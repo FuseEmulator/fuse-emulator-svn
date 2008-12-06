@@ -271,7 +271,9 @@
 	 profile2map.1,raw2hdf.1,rzxcheck.1,rzxdump.1,rzxtool.1,scl2trd.1,
 	 snap2tzx.1,snapconv.1,tape2wav.1,tapeconv.1,tzxlist.1},README: final
 	 tweaks for 0.10.0 (fuse-utils_0_10_0-branch).
-20081205 Makefile.am: Distribute converter/romloaderstate.h (thanks, Chris
+20081205 Makefile.am: distribute converter/romloaderstate.h (thanks, Chris
          Young) (Fred).
-20081206 Makefile.am: Distribute the rest of converter/*.h and interpolator/*.h
+20081206 Makefile.am: distribute the rest of converter/*.h and interpolator/*.h
          (thanks, Lucuan Langa) (Fred).
+20081206 Makefile.am,configure.in: distribute importer/trigger.h, fix
+         compilation when audiofile isn't present (Fred, sigh).
