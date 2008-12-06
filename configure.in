@@ -127,7 +127,8 @@ AC_MSG_RESULT($audiofile)
 if test "$audiofile" = yes; then
   AM_PATH_AUDIOFILE(
     0.2.3,
-    AC_DEFINE([HAVE_LIB_AUDIOFILE], 1, [Defined if we've got audiofile])
+    AC_DEFINE([HAVE_LIB_AUDIOFILE], 1, [Defined if we've got audiofile]),
+    audiofile=no
   )
 fi
 AM_CONDITIONAL(BUILD_AUDIOTOOLS, test "$audiofile" = yes)
