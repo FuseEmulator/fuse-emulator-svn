@@ -125,12 +125,12 @@ fuse_section ("Download", "Where can I get it from?", <<<END_SECTION
   $img
   <ul>
    <li>First, install <a href="libspectrum.php">libspectrum</a>.</li>
-   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0.tar.gz.sig?download">PGP signature</a>).</li>
-   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.10.0.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.10.0.tar.gz.sig?download">PGP signature</a>). Note that
+   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0.1.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0.1.tar.gz.sig?download">PGP signature</a>).</li>
+   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.10.0.1.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.10.0.1.tar.gz.sig?download">PGP signature</a>). Note that
 you'll still need <a href="libspectrum.php">libspectrum</a> installed to run these.</li>
    <li>The above are also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.10.0.tar.gz">Fuse source</a> (<a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.10.0.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.10.0.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.10.0.tar.gz.sig">signature</a>).</li>
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.10.0.1.tar.gz">Fuse source</a> (<a
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.10.0.1.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.10.0.1.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.10.0.1.tar.gz.sig">signature</a>).</li>
    <li>The source code releases above are signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.6.0(.1) releases as I forgot the passphrase for that key <tt>:-(</tt>.</li>
   </ul>
 
@@ -155,6 +155,12 @@ END_SECTION
 #<!-- ======================================================= -->
 
 fuse_section (NULL, "What's new?", <<<END_SECTION
+  <h3>0.10.0.1</h3>
+  <ul>
+    <li>Stop corruption when overwriting an existing file</li>
+    <li>Ensure all header files are distributed</li>
+  </ul>
+
   <h3>0.10.0</h3>
   <ul>
     <li>Improved upd765 FDC emulation</li>
