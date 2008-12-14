@@ -35,14 +35,6 @@ AC_C_BIGENDIAN
 dnl Check for header files
 AC_CHECK_HEADERS(strings.h)
 
-dnl Allow the user to say that various libraries are in one place
-AC_ARG_WITH(local-prefix,
-[  --with-local-prefix=PFX local libraries installed in PFX (optional)],
-CFLAGS="$CFLAGS -I$withval/include"; LDFLAGS="$LDFLAGS -L$withval/lib",
-if test "$prefix" != "NONE"; then
-  CFLAGS="$CFLAGS -I$prefix/include"; LDFLAGS="$LDFLAGS -L$prefix/lib"
-fi)
-
 dnl Check that libgdos is available
 AC_ARG_WITH(libgdos-prefix,
 [  --with-libgdos-prefix=PFX where libgdos is installed (optional)],
