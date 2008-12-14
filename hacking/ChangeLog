@@ -712,3 +712,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          (libspectrum_0_5_0-branch) (Fred).
 20081203 ChangeLog,Makefile.am,README,doc/libspectrum.{3,txt},hacking/ChangeLog,
 	 configure.in: merge libspectrum_0_5_0-branch changes onto trunk.
+20081214 libspectrum.c: loosen signature checks for .dsk files (Gergely;
+	 thanks, zx81 and Simon Owen).
