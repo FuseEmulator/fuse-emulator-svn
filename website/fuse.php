@@ -73,8 +73,77 @@ END_SECTION
 #<!-- ======================================================= -->
 
 $img = mk_image('screens/f-rzx.png', 330, 266);
-fuse_section ("Requirements", "What do I need to run Fuse?", <<<END_SECTION
-  <h3> Unix, Linux, BSD etc.</h3>
+fuse_section ("Download", "Downloads", <<<END_SECTION
+  <p>Fuse is licensed under the <a href="COPYING">GNU General Public License</a>, version 2 or later. Please read this before downloading Fuse if you're not already familiar with it.</p>
+
+  <h3>Unix</h3>
+  <p>Packages are available for some Unix distributions; in general, any problems which are specific to the packages should be sent to the package maintainer.</p>
+  <ul>
+   <li><a href="http://fedoraproject.org/index.html">Fedora</a> has <a href="https://admin.fedoraproject.org/pkgdb/packages/name/fuse-emulator">packages</a> of 0.10.0.1 available.</li>
+   <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.10.0 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a>.</li>
+   <li>Nokia's <a href="http://maemo.org/">Maemo</a> platform has a port of <a href="http://maemo.org/downloads/product/OS2008/fuse-emulator/">0.10.0.1</a> available by Alberto Garcia.</li>
+   <li><a href="http://www.netbsd.org/">NetBSD</a> users can get version 0.10.0 from <a href="http://www.pkgsrc.org/">pkgsrc</a> (the NetBSD Packages Collection) as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse/">emulators/fuse</a> and <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse-utils/">emulators/fuse-utils</a>.</li>
+  </ul>
+  <p>Packages of older versions of Fuse are also available for some other distributions:</p>
+  <ul>
+   <li><a href="http://www.gentoo.org/">Gentoo</a> users have an <a href="http://packages.gentoo.org/package/app-emulation/fuse?full_cat">ebuild</a> of 0.9.0 available.</li>
+   <li><a href="http://www.mandriva.com/">Mandriva</a> packages of 0.9.0 are available from the <a href="http://plf.zarb.org/">PLF</a>, or Miguel Barrio Orsikowsky has some <a href="http://www.speccy.org/sinclairmania/arch/emu/mandrake/">older versions</a> available.</li>
+   <li>Zoran Jekic has produced <a href="http://www.suse.com">SuSE</a> 11.3 packages of <a href="fuse-0.9.0-1.zj.i586.rpm">0.9.0</a> and the <a href="fuse-utils-0.9.0-1.zj.i586.rpm">utilities</a>.</li>
+   <li>Unofficial packages for <a href="http://www.debian.org/">Debian</a>, by Darren Salt: <a href="http://www.youmustbejoking.demon.co.uk/progs.etch.html">stable</a> (Debian 4.0, "Etch"), <a href="http://www.youmustbejoking.demon.co.uk/progs.lenny.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.sid.html">unstable</a> or <a href="http://www.youmustbejoking.demon.co.uk/progs.sarge.html">Debian 3.1 ("Sarge")</a> (all 0.7.0).</li>
+   <li><a href="http://www.openbsd.org/">OpenBSD</a> users have version 0.7.0 available from ports as <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse/">ports/emulators/fuse</a>, and <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse-utils/">ports/emulators/fuse-utils/</a>, with thanks to Alexander Yurchenko.</li>
+   <li>The <a href="http://en.docs.pld-linux.org/">Polish Linux Distribution</a> has packages of Fuse 0.6.2.1 and the utilities.</li>
+   <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has produced a <a href="http://www.slackware.com/">Slackware</a> 9.1 packages of <a href="fuse-0.6.1.1-i386-1spec.tgz">0.6.1.1</a> (<a href="fuse-0.6.1.1-i386-1spec.tgz.md5">md5 sum</a>) and <a href="fuse-utils-0.6.1-i386-1spec.tgz">the utilities</a> (<a href="fuse-utils-0.6.1-i386-1spec.tgz.md5">md5 sum</a>).</li>
+  </ul>
+
+  <h3>Mac OS X</h3>
+  <p>A native port to OS X by <a href="mailto:fredm@spamcop.net">Fredrick Meunier</a> is available on its own SourceForge project <a href="http://fuse-for-macosx.sourceforge.net//">here</a>, as well as a Spotlight importer for Mac OS X 10.4 Tiger users. Alternatively, the original version of Fuse will compile on OS X 10.3 (Panther) or later.</p>
+
+  <h3>Windows</h3>
+  <p>A port to Windows of 0.10.0 by Marek Januszewski and Stuart Brady is available <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0-setup.exe?download">here</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0-setup.exe.sha1?download">SHA1 hash</a>). This is also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/pc/windows/fuse-0.10.0-setup.exe">Fuse</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/pc/windows/fuse-0.10.0-setup.exe.sha1">signature</a>).</p>
+
+  <h3>AmigaOS 4</h3>
+  <p>Chris Young has ported Fuse 0.10.0 to AmigaOS 4, with binaries available from Aminet as <a href="http://aminet.net/package/misc/emu/fuse.lha">misc/emu/fuse.lha</a>.</p>
+
+  <h3>MorphOS</h3>
+  <p>Q-Master has ported Fuse 0.10.0 to MorphOS, with <a href="http://www.amirus.org.ru/files/fuse_0.10.0_morphos.lha">binaries available from AmiRUS</a>.</p>
+
+  <h3>PSP</h3>
+  <p>Akop Karapetyan has ported Fuse to the PSP. Binaries and source, based on Fuse 0.9.0, are available from the <a href="http://psp.akop.org/fuse">Fuse PSP</a> page.</p>
+
+  <h3>GP2X</h3>
+  <p>Ben O'Steen has made a GP2X port, based on Fuse 0.6. Binaries and source are available from <a href="http://www.zen71790.zen.co.uk/#fuse">his homepage</a>.</p>
+
+  <h3>XBox</h3>
+  <p>Crabfists's has made an Xbox port, based on Fuse 0.6. Binaries and source are available from the <a href="http://sourceforge.net/projects/fusex/">FuseX project</a> at SourceForge.</p>
+
+  <h3>PocketPC</h3>
+  <p>Anders Holmberg's ported Fuse 0.4 to the PocketPC as <a href="http://pocketclive.emuunlim.com/">PocketClive</a>.</p>
+
+  <h3>Smartphone</h3>
+  <p>Keith Orbell's then ported PocketClive to the Smartphone as <a href="http://www.aooa27.dsl.pipex.com/FuseSP.htm">FuseSP</a>.</p>
+
+END_SECTION
+);
+
+#<!-- ======================================================= -->
+
+$img = mk_image('screens/f-nongtk.png', 330, 266);
+fuse_section ("Source", "Source", <<<END_SECTION
+  <h3>Installing Fuse</h3>
+  $img
+  <ul>
+   <li>First, check the requirements below and ensure all the libraries you want/need are installed.</li>
+   <li>Secondly, install <a href="libspectrum.php">libspectrum</a>.</li>
+   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0.1.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0.1.tar.gz.sig?download">PGP signature</a>).</li>
+   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.10.0.1.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.10.0.1.tar.gz.sig?download">PGP signature</a>). Note that
+you'll still need <a href="libspectrum.php">libspectrum</a> installed to run these.</li>
+   <li>The above are also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.10.0.1.tar.gz">Fuse source</a> (<a
+href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.10.0.1.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.10.0.1.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.10.0.1.tar.gz.sig">signature</a>).</li>
+   <li>The source code releases above are signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.6.0(.1) releases as I forgot the passphrase for that key <tt>:-(</tt>.</li>
+  </ul>
+
+  <h3>Requirements</h3>
   $img
   <dl>
    <dt>Required:</dt>
@@ -99,55 +168,6 @@ fuse_section ("Requirements", "What do I need to run Fuse?", <<<END_SECTION
     </ul>
    </dd>
   </dl>
-
-  <h3>Mac OS X</h3>
-  <p>A native port to OS X by <a href="mailto:fredm@spamcop.net">Fredrick Meunier</a> is available on its own SourceForge project <a href="http://fuse-for-macosx.sourceforge.net//">here</a>, as well as a Spotlight importer for Mac OS X 10.4 Tiger users. Alternatively, the original version of Fuse will compile on OS X 10.3 (Panther) or later.</p>
-
-  <h3>Windows</h3>
-  <p>A port to Windows by Marek Januszewski and Stuart Brady is available <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0-setup.exe?download">here</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0-setup.exe.sha1?download">SHA1 hash</a>). This is also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/pc/windows/fuse-0.10.0-setup.exe">Fuse</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/pc/windows/fuse-0.10.0-setup.exe.sha1">signature</a>).</p>
-
-  <h3>AmigaOS 4</h3>
-  <p>Chris Young has ported Fuse to AmigaOS 4, with binaries available from Aminet as <a href="http://aminet.net/package/misc/emu/fuse.lha">misc/emu/fuse.lha</a>.</p>
-
-  <h3>MorphOS</h3>
-  <p>Q-Master has ported Fuse to MorphOS, with <a href="http://www.amirus.org.ru/files/fuse_0.8.0.1_cvs3109_morphos.lha">binaries available from AmiRUS</a>.</p>
-
-END_SECTION
-);
-
-#<!-- ======================================================= -->
-
-$img = mk_image('screens/f-nongtk.png', 330, 266);
-fuse_section ("Download", "Where can I get it from?", <<<END_SECTION
-  <p>Fuse is licensed under the <a href="COPYING">GNU General Public License</a>. Please read this before downloading Fuse if you're not already familiar with it.</p>
-
-  <h3>Source</h3>
-  $img
-  <ul>
-   <li>First, install <a href="libspectrum.php">libspectrum</a>.</li>
-   <li>Get the <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0.1.tar.gz?download">source code</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0.1.tar.gz.sig?download">PGP signature</a>).</li>
-   <li>The utilities which were previously packaged with Fuse are now available in their <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.10.0.1.tar.gz?download">own package</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-utils-0.10.0.1.tar.gz.sig?download">PGP signature</a>). Note that
-you'll still need <a href="libspectrum.php">libspectrum</a> installed to run these.</li>
-   <li>The above are also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.10.0.1.tar.gz">Fuse source</a> (<a
-href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-0.10.0.1.tar.gz.sig">signature</a>), <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.10.0.1.tar.gz">utils source</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/unix/fuse-utils-0.10.0.1.tar.gz.sig">signature</a>).</li>
-   <li>The source code releases above are signed with the <a href="http://wwwkeys.pgp.net:11371/pks/lookup?op=get&amp;search=0xD0767AB9">Fuse Release Key, ID <tt>D0767AB9</tt></a>, which has fingerprint <tt>064E 0BA9 688F 2699 3267 B1E5 1043 EEEB D076 7AB9</tt>. This is different from the key used to sign the 0.6.0(.1) releases as I forgot the passphrase for that key <tt>:-(</tt>.</li>
-  </ul>
-
-  <h3>Binaries</h3>
-  <p>Packages are available for some Unix distributions; in general, any problems which are specific to the packages should be sent to the package maintainer.</p>
-  <ul>
-   <li>Unofficial packages for <a href="http://www.debian.org/">Debian</a>, by Darren Salt: <a href="http://www.youmustbejoking.demon.co.uk/progs.etch.html">stable</a> (Debian 4.0, "Etch"), <a href="http://www.youmustbejoking.demon.co.uk/progs.lenny.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.sid.html">unstable</a> or <a href="http://www.youmustbejoking.demon.co.uk/progs.sarge.html">Debian 3.1 ("Sarge")</a> (all 0.7.0).</li>
-   <li><a href="http://fedoraproject.org/index.html">Fedora</a> has <a href="https://admin.fedoraproject.org/pkgdb/packages/name/fuse-emulator">packages</a> of 0.10.0 available.</li>
-   <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.10.0 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a>.</li>
-   <li><a href="http://www.gentoo.org/">Gentoo</a> users have an <a href="http://packages.gentoo.org/package/app-emulation/fuse?full_cat">ebuild</a> of 0.9.0 available.</li>
-   <li><a href="http://www.mandriva.com/">Mandriva</a> packages of 0.9.0 are available from the <a href="http://plf.zarb.org/">PLF</a>, or Miguel Barrio Orsikowsky has some <a href="http://www.speccy.org/sinclairmania/arch/emu/mandrake/">older versions</a> available.</li>
-   <li><a href="http://www.netbsd.org/">NetBSD</a> users can get version 0.10.0 from <a href="http://www.pkgsrc.org/">pkgsrc</a> (the NetBSD Packages Collection) as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse/">emulators/fuse</a> and <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse-utils/">emulators/fuse-utils</a>.</li>
-   <li><a href="http://www.openbsd.org/">OpenBSD</a> users have version 0.7.0 available from ports as <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse/">ports/emulators/fuse</a>, and <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse-utils/">ports/emulators/fuse-utils/</a>, with thanks to Alexander Yurchenko.</li>
-   <li>The <a href="http://en.docs.pld-linux.org/">Polish Linux Distribution</a> has packages of Fuse 0.6.2.1 and the utilities.</li>
-   <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has produced a <a href="http://www.slackware.com/">Slackware</a> 9.1 packages of <a href="fuse-0.6.1.1-i386-1spec.tgz">0.6.1.1</a> (<a href="fuse-0.6.1.1-i386-1spec.tgz.md5">md5 sum</a>) and <a href="fuse-utils-0.6.1-i386-1spec.tgz">the utilities</a> (<a href="fuse-utils-0.6.1-i386-1spec.tgz.md5">md5 sum</a>).</li>
-   <li>Zoran Jekic has produced <a href="http://www.suse.com">SuSE</a> 11.3 packages of <a href="fuse-0.9.0-1.zj.i586.rpm">0.9.0</a> and the <a href="fuse-utils-0.9.0-1.zj.i586.rpm">utilities</a>.</li>
-  </ul>
 
 END_SECTION
 );
@@ -194,12 +214,8 @@ END_SECTION
 fuse_section ("Related projects", "Are there any related projects?", <<<END_SECTION
   <ul>
    <li><a href="libspectrum.php">libspectrum</a> is the library used by Fuse to handle various file formats.</li>
-   <li>Alexander Shabarshin is working on <a href="http://robots.ural.net/nedopc/sprinter/">SPRINT</a>, an emulator of the <a href="http://www.interface1.net/zx/clones/peters.html">Peters Plus</a> super-Speccy, the <a href="http://www.petersplus.com/sprinter/">Sprinter</a>. SPRINT is using Fuse's Z80 core for its CPU emulation.</li>
+   <li>Alexander Shabarshin's <a href="http://robots.ural.net/nedopc/sprinter/">SPRINT</a>, an emulator of the <a href="http://www.interface1.net/zx/clones/peters.html">Peters Plus</a> super-Speccy, the <a href="http://www.petersplus.com/sprinter/">Sprinter</a>. SPRINT is using Fuse's Z80 core for its CPU emulation.</li>
    <li>Mike Wynne's ZX81 emulator, <a href="http://www.chuntey.com/eightyone/">EightyOne</a> is also using Fuse's Z80 core.</li>
-   <li>Crabfists's Xbox port, <a href="http://sourceforge.net/projects/fusex/">FuseX</a>.</li>
-   <li>Ben O'Steen's GP2X port, <a href="http://www.zen71790.zen.co.uk/#fuse">Fuse-GP2X</a>.</li>
-   <li>Keith Orbell's Smartphone port, <a href="http://www.aooa27.dsl.pipex.com/FuseSP.htm">FuseSP</a>.</li>
-   <li>Anders Holmberg's PocketPC port, <a href="http://pocketclive.emuunlim.com/">PocketClive</a>.</li>
    <li><a href="http://sourceforge.net/projects/z80ex/">z80ex</a>, a Z80 emulation library based on Fuse's Z80 core, used by zemu and <a href="http://pocketspeccy.narod.ru/">PocketSpeccy</a>.</li>
   </ul>
 
