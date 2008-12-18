@@ -217,8 +217,9 @@ END_SECTION
 fuse_section ("Related projects", "Are there any related projects?", <<<END_SECTION
   <ul>
    <li><a href="libspectrum.php">libspectrum</a> is the library used by Fuse to handle various file formats.</li>
-   <li>Alexander Shabarshin's <a href="http://robots.ural.net/nedopc/sprinter/">SPRINT</a>, an emulator of the <a href="http://www.interface1.net/zx/clones/peters.html">Peters Plus</a> super-Speccy, the <a href="http://www.petersplus.com/sprinter/">Sprinter</a>. SPRINT is using Fuse's Z80 core for its CPU emulation.</li>
    <li>Mike Wynne's ZX81 emulator, <a href="http://www.chuntey.com/eightyone/">EightyOne</a> is also using Fuse's Z80 core.</li>
+   <li>Matthew Westcott's <a href="http://matt.west.co.tt/spectrum/jsspeccy/">JSSpeccy</a> uses a Z80 core based on translating Fuse's core to Javascript.</li>
+   <li>Alexander Shabarshin's <a href="http://robots.ural.net/nedopc/sprinter/">SPRINT</a>, an emulator of the <a href="http://www.interface1.net/zx/clones/peters.html">Peters Plus</a> super-Speccy, the <a href="http://www.petersplus.com/sprinter/">Sprinter</a>. SPRINT is using Fuse's Z80 core for its CPU emulation.</li>
    <li><a href="http://sourceforge.net/projects/z80ex/">z80ex</a>, a Z80 emulation library based on Fuse's Z80 core, used by zemu and <a href="http://pocketspeccy.narod.ru/">PocketSpeccy</a>.</li>
   </ul>
 
