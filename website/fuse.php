@@ -107,6 +107,9 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <h3>MorphOS</h3>
   <p>Q-Master has ported Fuse 0.10.0 to MorphOS, with <a href="http://www.amirus.org.ru/files/fuse_0.10.0_morphos.lha">binaries available from AmiRUS</a>.</p>
 
+  <h3>Gizmondo</h3>
+  <p>A port of 0.9.0 to the Gizmondo tablet is available. The source is available via <a href="http://opensvn.csie.org/GizPorts/trunk/sdlport/fuzegiz/README">csie.org</a>.</p>
+
   <h3>PSP</h3>
   <p>Akop Karapetyan has ported Fuse to the PSP. Binaries and source, based on Fuse 0.9.0, are available from the <a href="http://psp.akop.org/fuse">Fuse PSP</a> page.</p>
 
