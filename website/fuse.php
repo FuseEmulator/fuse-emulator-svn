@@ -82,7 +82,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
    <li><a href="http://fedoraproject.org/index.html">Fedora</a> has <a href="https://admin.fedoraproject.org/pkgdb/packages/name/fuse-emulator">packages</a> of 0.10.0.1 available.</li>
    <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.10.0 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a>.</li>
    <li>Nokia's <a href="http://maemo.org/">Maemo</a> platform has a port of <a href="http://maemo.org/downloads/product/OS2008/fuse-emulator/">0.10.0.1</a> available by Alberto Garcia.</li>
-   <li><a href="http://www.netbsd.org/">NetBSD</a> users can get version 0.10.0 from <a href="http://www.pkgsrc.org/">pkgsrc</a> (the NetBSD Packages Collection) as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse/">emulators/fuse</a> and <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse-utils/">emulators/fuse-utils</a>.</li>
+   <li><a href="http://www.netbsd.org/">NetBSD</a> users can get version 0.10.0.1 from <a href="http://www.pkgsrc.org/">pkgsrc</a> (the NetBSD Packages Collection) as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse/">emulators/fuse</a> and <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse-utils/">emulators/fuse-utils</a>.</li>
   </ul>
   <p>Packages of older versions of Fuse are also available for some other distributions:</p>
   <ul>
