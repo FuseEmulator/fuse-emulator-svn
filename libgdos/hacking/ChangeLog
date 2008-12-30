@@ -12,7 +12,5 @@
 20071202 image.c,internals.h,libgdos.h: add sector allocation map functions.
 20071209 file.c: don't allow directories to be opened.
 20071209 dir.c: fix libgdos_readdir().
-20081214 configure.in: remove --with-local-prefix as the removal as we no
-         longer use lib765 or libdsk (Fred).
 
 $Id$
