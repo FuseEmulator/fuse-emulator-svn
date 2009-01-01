@@ -135,13 +135,6 @@ internal_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
 }
 
 libspectrum_error
-libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-		      const size_t length )
-{
-  return internal_tap_read( tape, buffer, length, LIBSPECTRUM_ID_TAPE_TAP );
-}
-
-libspectrum_error
 internal_tap_write( libspectrum_byte **buffer, size_t *length,
 		    libspectrum_tape *tape, libspectrum_id_t type )
 {
@@ -228,13 +221,6 @@ internal_tap_write( libspectrum_byte **buffer, size_t *length,
   (*length) = ptr - *buffer;
 
   return LIBSPECTRUM_ERROR_NONE;
-}
-
-libspectrum_error
-libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_tape *tape )
-{
-  return internal_tap_write( buffer, length, tape, LIBSPECTRUM_ID_TAPE_TAP );
 }
 
 static libspectrum_error

@@ -5,10 +5,10 @@
 ; This program is licensed under the GNU General Public License. See the
 ; file `COPYING' for details
 
-; IM2 table from 0xfe00 to 0xff00
+; IM2 table from 0xbe00 to 0xbf00 (inclusive!)
 interruptsync_location equ 0xbe
 
-; IM2 routine at 0xfdfd
+; IM2 routine at 0xbdbd
 interruptsync_isrbyte equ interruptsync_location - 1
 sync_isr equ interruptsync_isrbyte * 0x0101
 
@@ -61,10 +61,10 @@ _isr
 	inc hl			; 49 - 52
 	ld (hl), _isr3 / 0x100	; 55 - 58
 
-_isr1	ld hl, 0xffff 		; 65 - 68
+_isr1	ld hl, 0xc000 		; 65 - 68
 	call delay		; 75 - 78
-	ld hl, (_delay)		; 65610 - 65613
-	call delay		; 65626 - 65629
+	ld hl, (_delay)		; 49227 - 49230
+	call delay		; 49243 - 49246
 
 				; 48K / 128K timings
 	ld hl, 0x0f78		; 65909 - 65912 / 66929 - 66932
@@ -89,7 +89,11 @@ _isr3	pop hl			; 29 - 32
 	xor a			; 78
 	ret			; 82
 
-_table	defw 0x011b, 0x011b + 0x03fc, 0x011b + 0x03fc, 0x011b + 0x0700
+_table	defw 0x411a
+        defw 0x411a + 0x03fc
+        defw 0x411a + 0x03fc
+        defw 0x411a + 0x0700
+        defw 0x411a - 0x2bc0
 
 _delay	defw 0x0000
 

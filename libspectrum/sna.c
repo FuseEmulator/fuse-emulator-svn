@@ -32,6 +32,8 @@
 #define LIBSPECTRUM_SNA_HEADER_LENGTH 27
 #define LIBSPECTRUM_SNA_128_HEADER_LENGTH 4
 
+#define SNA_OFFSET_SP 23
+
 static int identify_machine( size_t buffer_length, libspectrum_snap *snap );
 static int libspectrum_sna_read_header( const libspectrum_byte *buffer,
 					size_t buffer_length,
@@ -48,22 +50,15 @@ static int libspectrum_sna_read_128_data( const libspectrum_byte *buffer,
 
 static void
 write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
-	      size_t *length, libspectrum_byte **sp, libspectrum_snap *snap );
+	      size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_48k_sna( libspectrum_byte **buffer, libspectrum_byte **ptr,
-	       size_t *length, libspectrum_byte *sp, libspectrum_snap *snap );
+	       size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_128k_sna( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_page( libspectrum_byte *buffer, libspectrum_snap *snap, int page );
-
-libspectrum_error
-libspectrum_sna_read( libspectrum_snap *snap,
-	              const libspectrum_byte *buffer, size_t buffer_length )
-{
-  return internal_sna_read( snap, buffer, buffer_length );
-}
 
 libspectrum_error
 internal_sna_read( libspectrum_snap *snap,
@@ -287,7 +282,7 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
 		       int in_flags GCC_UNUSED )
 {
   libspectrum_error error = LIBSPECTRUM_ERROR_NONE;
-  libspectrum_byte *ptr, *sp;
+  libspectrum_byte *ptr;
 
   /* Minor info loss already due to things like tstate count, halted state,
      etc which are not stored in .sna format */
@@ -325,7 +320,7 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
 
   ptr = *buffer;
 
-  write_header( buffer, &ptr, length, &sp, snap );
+  write_header( buffer, &ptr, length, snap );
 
   switch( libspectrum_snap_machine( snap ) ) {
 
@@ -336,7 +331,7 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
     /* Fall through */
   case LIBSPECTRUM_MACHINE_16:
   case LIBSPECTRUM_MACHINE_48:
-    error = write_48k_sna( buffer, &ptr, length, sp, snap );
+    error = write_48k_sna( buffer, &ptr, length, snap );
     break;
     
   case LIBSPECTRUM_MACHINE_128:
@@ -370,7 +365,7 @@ libspectrum_sna_write( libspectrum_byte **buffer, size_t *length,
 
 static void
 write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
-	      size_t *length, libspectrum_byte **sp, libspectrum_snap *snap )
+	      size_t *length, libspectrum_snap *snap )
 {
   libspectrum_make_room( buffer, LIBSPECTRUM_SNA_HEADER_LENGTH, ptr, length );
 
@@ -392,8 +387,6 @@ write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   *(*ptr)++ = libspectrum_snap_f ( snap );
   *(*ptr)++ = libspectrum_snap_a ( snap );
 
-  /* Store this for later */
-  *sp = *ptr;
   libspectrum_write_word( ptr, libspectrum_snap_sp ( snap ) );
 
   *(*ptr)++ = libspectrum_snap_im( snap );
@@ -402,15 +395,15 @@ write_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 static libspectrum_error
 write_48k_sna( libspectrum_byte **buffer, libspectrum_byte **ptr,
-	       size_t *length, libspectrum_byte *sp, libspectrum_snap *snap )
+	       size_t *length, libspectrum_snap *snap )
 {
   libspectrum_error error;
-  libspectrum_byte *stack;
+  libspectrum_byte *stack, *sp;
 
-  /* Must have somewhere in RAM to store some registers */
+  /* Must have somewhere in RAM to store PC */
   if( libspectrum_snap_sp( snap ) < 0x4002 ) {
     libspectrum_print_error( LIBSPECTRUM_ERROR_INVALID,
-			     "SP is too low (0x%04x) to stack registers",
+			     "SP is too low (0x%04x) to stack PC",
 			     libspectrum_snap_sp( snap ) );
     return LIBSPECTRUM_ERROR_INVALID;
   }
@@ -431,7 +424,8 @@ write_48k_sna( libspectrum_byte **buffer, libspectrum_byte **ptr,
   *ptr += 0xc000;
 
   /* Store the new value of SP */
-  libspectrum_write_word( &sp, libspectrum_snap_sp( snap ) );
+  sp = *buffer + SNA_OFFSET_SP;
+  libspectrum_write_word( &sp, libspectrum_snap_sp( snap ) - 2 );
 
   return LIBSPECTRUM_ERROR_NONE;
 }

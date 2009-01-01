@@ -244,3 +244,45 @@
 	 object style API from libspectrum.
 20080701 audio2tape.c,snap2tzx.c,tapeconv.c: handle new void return values
          tape API from libspectrum (Fred).
+20080922 Makefile.am,audio2tape.[c|cc|h],configure.in,
+         converter/{findpilot.[cc|h],findsync1.[cc|h],getpulse1.[cc|h],
+         getpulse2.[cc|h],getsync2.[cc|h],romloader.[cc|h],romloaderstate.h},
+         importer/{interpolator.h,schmitt.h,simple.h,soundfile.[cc|h],
+         trigger.[cc|h]},man/audio2tape.1: add facility to recognise ROM blocks
+         when processing audio file (Fred).
+20080922 converter/romloader.cc: custom timings were only initialised when stats
+         were enabled (Fred).
+20080922 importer/soundfile.cc: initialise frequency table to 0 (Fred).
+20080928 tzxlist.c: add block and tape lengths to output (Fred).
+20081027 ChangeLog: bring up to date.
+20081109 hacking/cvs-tags: document 0.10.0 branch.
+20081116 tape2wav.c: fix buffer overflow in tape2wav (Jiri Benc).
+20081116 convertor/romloader.cc: add missing #include <limits>.
+20081117 configure.in: bump version number for 0.10.0-pre1 release (fuse-utils_0_10_0-branch).
+20081119 Makefile.am: Distribute audio2tape.h importer/{schmitt.h,simple.h,
+         soundfile.h} converter/romloader.h (thanks, Chris Young) (Fred).
+20081129 configure.in: also set CXXFLAGS for --with-local-prefix (fixes bug
+         #2358508) (Fred).
+20081129 Makefile.am,audio2tape.cc,configure.in,
+         converter/{romloader.cc,romloaderstate.cc,romloaderstate.h},
+         importer/{interpolator.h,soundfile.cc}: add warnings for C++ and clean
+         up warnings thus produced (Fred).
+20081129 configure.in,man/{audio2tape.1,createhdf.1,fuse-utils.1,listbasic.1,
+	 profile2map.1,raw2hdf.1,rzxcheck.1,rzxdump.1,rzxtool.1,scl2trd.1,
+	 snap2tzx.1,snapconv.1,tape2wav.1,tapeconv.1,tzxlist.1},README: final
+	 tweaks for 0.10.0 (fuse-utils_0_10_0-branch).
+20081203 configure.in,converter/romloader.cc,hacking/ChangeLog,man/{
+	 audio2tape.1,createhdf.1,fuse-utils.1,listbasic.1,profile2map.1,
+	 raw2hdf.1,rzxcheck.1,rzxdump.1,rzxtool.1,scl2trd.1,snap2tzx.1,
+	 snapconv.1,tape2wav.1,tapeconv.1,tzxlist.1},README: merge
+	 fuse-utils_0_10_0-branch changes onto trunk.
+20081205 Makefile.am: distribute converter/romloaderstate.h (thanks, Chris
+         Young) (Fred).
+20081206 Makefile.am: distribute the rest of converter/*.h and interpolator/*.h
+         (thanks, Lucuan Langa) (Fred).
+20081206 Makefile.am,configure.in: distribute importer/trigger.h, fix
+         compilation when audiofile isn't present (Fred, sigh).
+20081210 ChangeLog,configure.in,hacking/cvs-tags,man/{audio2tape.1,createhdf.1,
+	 fuse-utils.1,listbasic.1,profile2map.1,raw2hdf.1,rzxcheck.1,rzxdump.1,
+	 rzxtool.1,scl2trd.1,snap2tzx.1,snapconv.1,tape2wav.1,tapeconv.1,
+	 tzxlist.1},README: update for 0.10.0.1 release.

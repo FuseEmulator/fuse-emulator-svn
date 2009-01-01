@@ -1,3 +1,49 @@
+2008-11-??  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * libspectrum 0.5.0 released.
+
+	* Memory management change: memory allocation functions now abort
+	  on failure. Leads to simpler code both internally and for
+	  users of the library (Philip Kendall).
+
+	* Support for tape acceleration (Philip Kendall)
+
+	* IDE improvements to allow DivIDE to support FATware (Philip
+	  Kendall; thanks, http://www.dusky.sk/zxs/)
+
+	* New API to deal with flagging automatic snapshots in RZX files
+	  (Philip Kendall).
+
+	* New function to get length (time) of a tape block (Philip Kendall,
+	  Fredrick Meunier).
+
+	* 128K SNA files are now treated as being for the Pentagon 128
+	  rather than the Spectrum 128 (Fredrick Meunier)
+
+	* SNA files now written out correctly (Philip Kendall).
+
+	* Handle MDR write protection flag correctly (Philip Kendall)
+
+	* Allow MDR images with bad checksums to load (the error will
+	  be handled by the If1 ROM) (Gergely Szasz)
+
+        * Support saving custom ROMs in SZX snapshots (Fredrick Meunier,
+	  Stuart Brady)
+
+	* Support for DivIDE, Kempston mouse and the simple IDE interface
+	  in SZX snapshots (Fredrick Meunier)
+
+        * Allow building without libgcrypt (Stuart Brady)
+
+	* Amiga and MorphOS compilation fixes (Chris Young, Q-Master)
+
+	* Don't produce empty libraries to fix build process on
+	  OpenSolaris (Fredrick Meunier)
+
+	* Remove deprecated functions (Fredrick Meunier).
+
+	* Tweak timings for TS2068 (Fredrick Meunier; thanks Philip Kendall).
+
 2008-01-05  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
 	* libspectrum 0.4.0 released.

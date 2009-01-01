@@ -1,4 +1,4 @@
-libspectrum 0.4.0
+libspectrum 0.5.0
 =================
 
 libspectrum is a library which is designed to make the input and
@@ -13,6 +13,8 @@ Currently supported are:
 * Tape images: .tzx, .tap, .spc, .sta and .ltp (read/write) and
   Warajevo .tap, Z80Em and CSW version 1 (read only).
 * Input recordings: .rzx (read/write).
+* Disk images: .dsk (both plain and extended), .fdi, .sad, .scl, .td0,
+  .trd and .udi (identification only).
 * Timex cartridges: .dck (read only).
 * IDE hard disk images: .hdf (read/write).
 * Microdrive cartridge images: .mdr (read/write).
@@ -42,12 +44,12 @@ For updates for libspectrum, its homepage is at:
 
 http://fuse-emulator.sourceforge.net/libspectrum.php
 
-Compiling from CVS
-------------------
+Compiling from Subversion
+-------------------------
 
-If you're using version of libspectrum from CVS rather than one of the
-released tarballs, you'll need to run `autogen.sh' before running
-'configure' for the first time.
+If you're using version of libspectrum from Subversion rather than one
+of the released tarballs, you'll need to run `autogen.sh' before
+running 'configure' for the first time.
 
 Compiling for the Wii
 ---------------------
@@ -65,6 +67,6 @@ Wii. At the time of writing, those haven't been ported yet.
 Then, type "make" and if everything went well, "make install".
 
 Philip Kendall <philip-fuse@shadowmagic.org.uk>
-5 January 2008
+3 December 2008
 
 $Id$

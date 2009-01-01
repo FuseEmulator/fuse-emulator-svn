@@ -1,3 +1,33 @@
+2008-12-10  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+	* Version 0.10.0.1 released
+
+	* Ensure all audio2tape header files are distributed (Fredrick
+	  Meunier).
+
+	* Fix compilation when libaudiofile isn't present (Fredrick
+	  Meunier).
+
+2008-12-03  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+	* Version 0.10.0 released
+
+	* audio2tape can now recognise standard ROM loaders (Fredrick
+	  Meunier).
+
+	* tzxlist now outputs block and tape lengths (Fredrick Meunier).
+
+	* snap2tzx: add 0.1s pause between blocks to ensure a gap between
+	  edges (Fredrick Meunier).
+
+	* tapeconv: add options for embedding metadata into the created
+	  file (Fredrick Meunier).
+
+        * tape2wav: ensure pulses do not get rounded down inappropriately
+          (Fredrick Meunier).
+
+	* Allow building without libaudiofile (José Manuel Ferrer Ortiz).
+
 2008-01-05  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
 	* Version 0.9.0 released

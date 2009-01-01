@@ -233,13 +233,6 @@ internal_tzx_write( libspectrum_byte **buffer, size_t *length,
   return LIBSPECTRUM_ERROR_NONE;
 }
 
-libspectrum_error
-libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_tape *tape )
-{
-  return internal_tzx_write( buffer, length, tape );
-}
-
 static void
 tzx_write_rom( libspectrum_tape_block *block, libspectrum_byte **buffer,
 	       libspectrum_byte **ptr, size_t *length )

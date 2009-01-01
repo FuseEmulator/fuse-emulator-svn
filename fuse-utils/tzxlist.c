@@ -1,5 +1,5 @@
 /* tzxlist.c: Produce a listing of the blocks in a .tzx file
-   Copyright (c) 2001-2007 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2008 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -126,6 +126,7 @@ process_tape( char *filename )
   libspectrum_tape *tape;
   libspectrum_tape_iterator iterator;
   libspectrum_tape_block *block;
+  libspectrum_dword total_length = 0;
 
   size_t i;
 
@@ -155,6 +156,9 @@ process_tape( char *filename )
     if( error ) return 1;
     printf( "Block type 0x%02x (%s)\n", libspectrum_tape_block_type( block ),
 	    description );
+    printf("  Block duration: %.2f sec\n",
+           libspectrum_tape_block_length( block )/3500000.0 );
+    total_length += libspectrum_tape_block_length( block );
 
     switch( libspectrum_tape_block_type( block ) ) {
 
@@ -311,6 +315,8 @@ process_tape( char *filename )
     block = libspectrum_tape_iterator_next( &iterator );
 
   }
+
+  printf( "Total tape duration: %.2f sec\n", total_length/3500000.0 );
 
   error = libspectrum_tape_free( tape );
   if( error != LIBSPECTRUM_ERROR_NONE ) return error;

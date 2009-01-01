@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\"
 .\" audio2tape.1: audio2tape man page
-.\" Copyright (c) 2007 Fredrick Meunier
+.\" Copyright (c) 2007-2008 Fredrick Meunier
 .\"
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 .\" E-mail: fredm@spamcop.net
 .\"
 .\"
-.TH audio2tape 1 "5th January, 2008" "Version 0.9.0" "Emulators"
+.TH audio2tape 1 "10th December, 2008" "Version 0.10.0.1" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -36,9 +36,10 @@ audio2tape \- Sinclair ZX Spectrum audio to tape file converter
 .B audio2tape
 .RI "[\-t " type ]
 [\-s]
-.RI "[\-p " level ]
-.RI "[\-h " level ]
-.RI "[\-l " level ]
+[\-r]
+[\-k]
+.RI "[\-z " level ]
+.RI "[\-c " level ]
 .I infile outfile
 .PD 1
 .\"
@@ -68,26 +69,27 @@ trigger is "simple".
 causes the display of a frequency graph showing the sound levels present in the
 audio file. This can be useful when selecting good crossover points.
 .TP
-.RI "\-p " level
+\-r
+causes any ROM blocks that are recognised to use idealised timing figures
+rather than the exact ones found in the audio file.
+.TP
+\-k
+causes the tape file that is produced to keep any audio data from the original
+audio file that isn't recognised. This will allow unsupported loading schemes,
+encryption tones etc. to be preserved in the file that is produced.
+.TP
+.RI "\-z " level
 causes
 .I level
-to be used as the crossover point between a level of one or zero in the tape
-file output in the simple trigger. The default level is 127 from a range of
+to be used as the zero point in the supplied audio file, it allows adjustment
+for a DC offset in the audio file. The default level is 127 from a range of
 0-255.
 .TP
-.RI "\-h " level
+.RI "\-c " level
 causes
 .I level
-to be used as the low to high crossover point between a level of one or zero
-in the tape file output for the Schmitt trigger. The default level is 195 from a
-range of 0-255.
-.TP
-.RI "\-l " level
-causes
-.I level
-to be used as the high to low crossover point between a level of one or zero
-in the tape file output for the Schmitt trigger. The default level is 60 from a
-range of 0-255.
+to be used as the Schmitt trigger noise threshold, this reduces the sensitivity
+to noise in the provided file. The default level is 8 from a range of 0-127.
 .TP
 .I infile
 specifies the audio file to be converted. This file can be in any of the

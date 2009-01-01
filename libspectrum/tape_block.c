@@ -1,5 +1,5 @@
 /* tape_block.c: one tape block
-   Copyright (c) 2003-2007 Philip Kendall
+   Copyright (c) 2003-2008 Philip Kendall
 
    $Id$
 
@@ -36,6 +36,8 @@
    the .tzx specification AFAICT */
 static const size_t LIBSPECTRUM_TAPE_PILOTS_HEADER = 0x1f7f;
 static const size_t LIBSPECTRUM_TAPE_PILOTS_DATA   = 0x0c97;
+
+#define TZX_HZ 3500000
 
 /* Functions to initialise block types */
 
@@ -438,3 +440,233 @@ libspectrum_tape_block_zero( libspectrum_tape_block *block )
   }
 }
 
+/* Give the length of a tape block */
+
+#define BITS_SET_ARRAY_SIZE 256
+static int bits_set[ BITS_SET_ARRAY_SIZE ];
+
+static const int LIBSPECTRUM_BITS_IN_BYTE = 8;
+
+int
+libspectrum_bits_set_n_bits( libspectrum_byte byte, libspectrum_byte bits )
+{
+  int i;
+  int retval = 0;
+
+  if( bits > LIBSPECTRUM_BITS_IN_BYTE) bits = LIBSPECTRUM_BITS_IN_BYTE;
+
+  for( i = 0; i < bits; i++ ) {
+    if( byte & 0x80 ) retval++;
+    byte <<= 1;
+  }
+
+  return retval;
+}
+
+void
+libspectrum_init_bits_set( void )
+{
+  int i;
+
+  /* Not big or clever, but easy to understand */
+  for( i = 0; i < BITS_SET_ARRAY_SIZE; i++ ) {
+    bits_set[ i ] = libspectrum_bits_set_n_bits( (libspectrum_byte)i,
+                                                 LIBSPECTRUM_BITS_IN_BYTE );
+  }
+}
+
+static libspectrum_dword
+convert_pulses_to_tstates( libspectrum_dword set_bit_length,
+                           libspectrum_dword unset_bit_length,
+                           int bits_set_in_block, int bit_block_size )
+{
+  static const int pulses_in_bit = 2;
+  return ( pulses_in_bit * set_bit_length ) * bits_set_in_block +
+         ( pulses_in_bit * unset_bit_length ) * ( bit_block_size - bits_set_in_block );
+}
+
+static libspectrum_dword
+convert_ms_to_tstates( libspectrum_dword ms )
+{
+  static const libspectrum_dword tstates_per_ms = TZX_HZ / 1000;
+  return ms * tstates_per_ms;
+}
+
+static libspectrum_dword
+rom_block_length( libspectrum_tape_rom_block *rom )
+{
+  libspectrum_dword length = convert_ms_to_tstates( rom->pause );
+  size_t i;
+
+  for( i = 0; i < rom->length; i++ ) {
+    libspectrum_byte data = rom->data[ i ];
+    length += convert_pulses_to_tstates( LIBSPECTRUM_TAPE_TIMING_DATA1,
+                                         LIBSPECTRUM_TAPE_TIMING_DATA0,
+                                         bits_set[ data ],
+                                         LIBSPECTRUM_BITS_IN_BYTE );
+  }
+
+  return length;
+}
+
+static libspectrum_dword
+turbo_block_length( libspectrum_tape_turbo_block *turbo )
+{
+  libspectrum_dword length =
+    turbo->pilot_pulses * turbo->pilot_length +
+    turbo->sync1_length + turbo->sync2_length +
+    convert_ms_to_tstates( turbo->pause );
+  size_t i;
+  int bits_set_in_last_byte =
+    libspectrum_bits_set_n_bits( turbo->data[ turbo->length-1 ],
+                                 turbo->bits_in_last_byte );
+
+  for( i = 0; i < turbo->length-1; i++ ) {
+    libspectrum_byte data = turbo->data[ i ];
+    length += convert_pulses_to_tstates( turbo->bit1_length,
+                                         turbo->bit0_length,
+                                         bits_set[ data ],
+                                         LIBSPECTRUM_BITS_IN_BYTE );
+  }
+
+  /* handle bits in last byte correctly */
+  length += convert_pulses_to_tstates( turbo->bit1_length,
+                                       turbo->bit0_length,
+                                       bits_set_in_last_byte,
+                                       turbo->bits_in_last_byte );
+
+  return length;
+}
+
+static libspectrum_dword
+pulses_block_length( libspectrum_tape_pulses_block *pulses )
+{
+  libspectrum_dword length = 0;
+  size_t i;
+
+  for( i = 0; i < pulses->count; i++ ) length += pulses->lengths[ i ];
+
+  return length;
+}
+
+static libspectrum_dword
+pure_data_block_length( libspectrum_tape_pure_data_block *pure_data )
+{
+  libspectrum_dword length = convert_ms_to_tstates( pure_data->pause );
+  size_t i;
+  int bits_set_in_last_byte =
+    libspectrum_bits_set_n_bits( pure_data->data[ pure_data->length-1 ],
+                                 pure_data->bits_in_last_byte );
+
+  for( i = 0; i < pure_data->length-1; i++ ) {
+    libspectrum_byte data = pure_data->data[ i ];
+    length += convert_pulses_to_tstates( pure_data->bit1_length,
+                                         pure_data->bit0_length,
+                                         bits_set[ data ],
+                                         LIBSPECTRUM_BITS_IN_BYTE );
+  }
+    
+  /* handle bits in last byte correctly */
+  length += convert_pulses_to_tstates( pure_data->bit1_length,
+                                       pure_data->bit0_length,
+                                       bits_set_in_last_byte,
+                                       pure_data->bits_in_last_byte );
+
+  return length;
+}
+
+static libspectrum_dword
+raw_data_block_length( libspectrum_tape_raw_data_block *raw_data )
+{
+  libspectrum_dword length = convert_ms_to_tstates( raw_data->pause );
+
+  length += ( LIBSPECTRUM_BITS_IN_BYTE * raw_data->length -
+              ( LIBSPECTRUM_BITS_IN_BYTE - raw_data->bits_in_last_byte ) ) *
+              raw_data->bit_length;
+
+  return length;
+}
+
+static libspectrum_dword
+rle_pulse_block_length( libspectrum_tape_rle_pulse_block *rle_pulse )
+{
+  libspectrum_dword length = 0;
+  size_t i;
+
+  for( i = 0; i < rle_pulse->length; i++ ) {
+    length += rle_pulse->data[ i ] * rle_pulse->scale;
+  }
+
+  return length;
+}
+
+static libspectrum_dword
+generalised_data_block_length(
+                    libspectrum_tape_generalised_data_block *generalised_data )
+{
+  libspectrum_dword length = 0;
+  libspectrum_tape_generalised_data_block_state state;
+  libspectrum_dword tstates = 0;
+  /* Assume no special flags by default */
+  int flags = 0;
+  /* Has this edge ended the block? */
+  int end_of_block = 0;
+  libspectrum_error error = generalised_data_init( generalised_data, &state );
+
+  if( error ) return -1;
+
+  /* just reuse tape iteration for this as it is so nasty */
+  while( !end_of_block ) {
+    error = generalised_data_edge( generalised_data, &state, &tstates,
+                                   &end_of_block, &flags );
+    if( error ) return -1;
+
+    length += tstates;
+  }
+
+  return length;
+}
+
+libspectrum_dword
+libspectrum_tape_block_length( libspectrum_tape_block *block )
+{
+  libspectrum_tape_pure_tone_block *pure_tone;
+
+  switch( block->type ) {
+  case LIBSPECTRUM_TAPE_BLOCK_ROM:
+    return rom_block_length( &block->types.rom );
+  case LIBSPECTRUM_TAPE_BLOCK_TURBO:
+    return turbo_block_length( &block->types.turbo );
+  case LIBSPECTRUM_TAPE_BLOCK_PURE_TONE:
+    pure_tone = &block->types.pure_tone;
+    return pure_tone->pulses * pure_tone->length;
+  case LIBSPECTRUM_TAPE_BLOCK_PULSES:
+    return pulses_block_length( &block->types.pulses );
+  case LIBSPECTRUM_TAPE_BLOCK_PURE_DATA:
+    return pure_data_block_length( &block->types.pure_data );
+  case LIBSPECTRUM_TAPE_BLOCK_PAUSE:
+    return convert_ms_to_tstates( block->types.pause.length );
+  case LIBSPECTRUM_TAPE_BLOCK_RAW_DATA:
+    return raw_data_block_length( &block->types.raw_data );
+  case LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE:
+    return rle_pulse_block_length( &block->types.rle_pulse );
+  case LIBSPECTRUM_TAPE_BLOCK_GENERALISED_DATA:
+    return generalised_data_block_length( &block->types.generalised_data );
+  case LIBSPECTRUM_TAPE_BLOCK_GROUP_START:
+  case LIBSPECTRUM_TAPE_BLOCK_GROUP_END:
+  case LIBSPECTRUM_TAPE_BLOCK_JUMP:
+  case LIBSPECTRUM_TAPE_BLOCK_LOOP_START:
+  case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
+  case LIBSPECTRUM_TAPE_BLOCK_STOP48:
+  case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
+  case LIBSPECTRUM_TAPE_BLOCK_MESSAGE:
+  case LIBSPECTRUM_TAPE_BLOCK_ARCHIVE_INFO:
+  case LIBSPECTRUM_TAPE_BLOCK_HARDWARE:
+  case LIBSPECTRUM_TAPE_BLOCK_CUSTOM:
+  case LIBSPECTRUM_TAPE_BLOCK_CONCAT:
+  case LIBSPECTRUM_TAPE_BLOCK_SELECT:
+    return 0;
+  default:
+    return -1;
+  }
+}

@@ -673,3 +673,44 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20080717 make-perl.c,libspectrum.h.in: Win32: fix functions export for dll
 	 (Marek).
 20080821 sna.c: make 128Kb SNA files actually loadable again.
+20080911 internals.h,libspectrum.{c,h.in},tape_block.c,test/test.c: add
+	 function to get block length.
+20080928 internals.h,tape.c,tape_block.[ch],test/test.c: extend timing support
+         to raw data blocks, RLE pulse blocks and the block o' doom (Fred).
+20081020 tape_block.c: remove warning.
+20081021 sna.c,test/{empty.z80,test.c}: SP wasn't being decremented and
+         could have been written to freed memory.
+20081021 libspectrum.h.in,sna.c,tap.c,tzx_read.c,tzx_write.c,warajevo_read.c,
+         z80.c: remove deprecated functions libspectrum_sna_read(),
+         libspectrum_z80_read(),libspectrum_z80_write(),libspectrum_tap_read(),
+         libspectrum_tap_write(),libspectrum_tzx_read(),
+         libspectrum_tzx_write() and libspectrum_warajevo_read() (Fred).
+20081021 libspectrum.h.in,rzx.c: add "automatic" flag to snapshots in RZX
+	 files.
+20081027 ChangeLog: bring up to date.
+20081027 libspectrum.h.in: Win32: fixed dll export for
+	 libspectrum_tape_block_length (Marek).
+20081027 doc/libspectrum.txt: bring up to date.
+20081027 README: haven't been using CVS for a while now.
+20081108 doc/libspectrum.txt,libspectrum.c,libspectrum.h.in: allow for
+	 identification of more disk images (part of patch #2233744)
+	 (Gergely Szasz).
+20081109 doc/cvs-tags: document 0.5.0 branch tag.
+20081110 doc/libspectrum.txt: minor documentation updates
+         (libspectrum_0_5_0-branch).
+20081117 configure.in: bump version number for 0.5.0-pre1 release
+	 (libspectrum_0_5_0-branch).
+20081118 test/Makefile.am: distribute empty.z80 and writeprotected.mdr test
+         data files (Fred).
+20081118 configure.in: set glib status off if we can't find it (thanks, Chris
+         Young) (Fred).
+20081129 timings.c: correct first contended tstate for TS2068 based on updated
+         fusetest from Phil (Fred).
+20081129 configure.in,doc/libspectrum.{3,txt},hacking/ChangeLog,Makefile.am,
+	 README: final tweaks for 0.5.0 release (libspectrum_0_5_0-branch).
+20081130 ChangeLog: add reference to TS2068 timing update
+         (libspectrum_0_5_0-branch) (Fred).
+20081203 ChangeLog,Makefile.am,README,doc/libspectrum.{3,txt},hacking/ChangeLog,
+	 configure.in: merge libspectrum_0_5_0-branch changes onto trunk.
+20081214 libspectrum.c: loosen signature checks for .dsk files (Gergely;
+	 thanks, zx81 and Simon Owen).

@@ -493,6 +493,138 @@ test_23( void )
   return r;
 }
 
+static test_return_t
+test_24( void )
+{
+  const char *filename = DYNAMIC_TEST_PATH( "complete-tzx.tzx" );
+  libspectrum_byte *buffer;
+  size_t filesize;
+  libspectrum_tape *tape;
+  libspectrum_tape_iterator it;
+  libspectrum_tape_block *block;
+  libspectrum_dword expected_sizes[20] = {
+    8228020,	/* ROM */
+    3493371,	/* Turbo */
+    356310,	/* Pure tone */
+    1761,	/* Pulses */
+    1993724,	/* Pure data */
+    2163000,	/* Pause */
+    0,		/* Group start */
+    0,		/* Group end */
+    0,		/* Jump */
+    205434,	/* Pure tone */
+    0,		/* Loop start */
+    154845,	/* Pure tone */
+    0,		/* Loop end */
+    0,		/* Stop tape if in 48K mode */
+    0,		/* Comment */
+    0,		/* Message */
+    0,		/* Archive info */
+    0,		/* Hardware */
+    0,		/* Custom info */
+    771620,	/* Pure tone */
+  };
+  libspectrum_dword *next_size = &expected_sizes[ 0 ];
+  test_return_t r = TEST_PASS;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  tape = libspectrum_tape_alloc();
+
+  if( libspectrum_tape_read( tape, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename ) ) {
+    libspectrum_tape_free( tape );
+    libspectrum_free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_free( buffer );
+
+  block = libspectrum_tape_iterator_init( &it, tape );
+
+  while( block )
+  {
+    libspectrum_dword actual_size = libspectrum_tape_block_length( block ); 
+
+    if( actual_size != *next_size )
+    {
+      fprintf( stderr, "%s: block had length %lu, but expected %lu\n", progname, (unsigned long)actual_size, (unsigned long)*next_size );
+      r = TEST_FAIL;
+      break;
+    }
+
+    block = libspectrum_tape_iterator_next( &it );
+    next_size++;
+  }
+
+  if( libspectrum_tape_free( tape ) ) return TEST_INCOMPLETE;
+
+  return r;
+}
+
+static test_return_t
+test_25( void )
+{
+  const char *filename = STATIC_TEST_PATH( "empty.z80" );
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0, length = 0;
+  libspectrum_snap *snap;
+  int flags;
+  test_return_t r = TEST_INCOMPLETE;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  snap = libspectrum_snap_alloc();
+
+  if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename ) != LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: reading `%s' failed\n", progname, filename );
+    libspectrum_snap_free( snap );
+    libspectrum_free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_free( buffer );
+  buffer = NULL;
+
+  if( libspectrum_snap_write( &buffer, &length, &flags, snap,
+                              LIBSPECTRUM_ID_SNAPSHOT_SNA, NULL, 0 ) != 
+      LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: serialising to SNA failed\n", progname );
+    libspectrum_snap_free( snap );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_snap_free( snap );
+  snap = libspectrum_snap_alloc();
+
+  if( libspectrum_snap_read( snap, buffer, length, LIBSPECTRUM_ID_SNAPSHOT_SNA,
+                             NULL ) != LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: restoring from SNA failed\n", progname );
+    libspectrum_snap_free( snap );
+    libspectrum_free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_free( buffer );
+
+  if( libspectrum_snap_pc( snap ) != 0x1234 ) {
+    fprintf( stderr, "%s: PC is 0x%04x, not the expected 0x1234\n", progname,
+             libspectrum_snap_pc( snap ) );
+    r = TEST_FAIL;
+  } else if( libspectrum_snap_sp( snap ) != 0x8000 ) {
+    fprintf( stderr, "%s: SP is 0x%04x, not the expected 0x8000\n", progname,
+             libspectrum_snap_sp( snap ) );
+    r = TEST_FAIL;
+  } else {
+    r = TEST_PASS;
+  }
+
+  libspectrum_snap_free( snap );
+
+  return r;
+}
+
 struct test_description {
 
   test_fn test;
@@ -525,6 +657,8 @@ static struct test_description tests[] = {
   { test_21, "SNA file with SP = 0xffff", 0 },
   { test_22, "MDR write protection 1", 0 },
   { test_23, "MDR write protection 2", 0 },
+  { test_24, "Complete TZX timings", 0 },
+  { test_25, "Writing SNA file", 0 },
 };
 
 static size_t test_count = sizeof( tests ) / sizeof( tests[0] );

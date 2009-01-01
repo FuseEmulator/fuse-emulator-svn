@@ -1,5 +1,5 @@
-The Fuse utilities version 0.9.0
-================================
+The Fuse utilities version 0.10.0.1
+===================================
 
 The Fuse utilities are a few tools which may be of occasional use when
 dealing with ZX Spectrum emulator files. They were originally
@@ -52,14 +52,14 @@ http://fuse-emulator.sourceforge.net/fuse.php
 
 Please send any bug reports, comments, etc to me.
 
-Compiling from CVS
-------------------
+Compiling from Subversion
+-------------------------
 
-If you're using version of fuse-utils from CVS rather than one of the
-released tarballs, you'll need to run `autogen.sh' before running
-'configure' for the first time.
+If you're using version of fuse-utils from Subversion rather than one
+of the released tarballs, you'll need to run `autogen.sh' before
+running 'configure' for the first time.
 
 Philip Kendall <philip-fuse@shadowmagic.org.uk>
-5 January 2008
+10 December 2008
 
 $Id$

@@ -10,10 +10,11 @@
 bitnixtest
 PROC
 	ld ix, _data - 0x44
+        scf                     ; BIT n, <foo> does not affect carry flag
 	bit 5, (ix+0x44)
 	push af
 	pop bc
-	ld a, 0x30
+	ld a, 0x31
 	cp c
 	ret z
 	ld b, 0x00
@@ -42,6 +43,33 @@ PROC
 	ld a, b
 	ld b, 0x00
 	ret
+ENDP
+
+; Check the behaviour of the undocumented flags after OUTI (revision 3634)
+
+outitest
+PROC
+        ld de, _data
+        ld hl, 0x40fd
+        ld a, (hl)
+        ld (de), a
+        ld a, 0x12
+        ld (hl), a
+        ld bc, 0x01fe
+        outi
+        push af
+        ld a, 0x07
+        out (c), a
+        ld a, (de)
+        dec hl
+        ld (hl), a
+        pop bc
+        ld a, c
+        ld b, 0x00
+        cp 0x55
+        ret
+
+_data   defb 0x00
 ENDP
 
 ; Check the behaviour of LDIR at contended memory boundary (revision 2841).
@@ -89,11 +117,19 @@ PROC
 _isr	pop hl
 	ret
 
-_fail	ld b, 0x02
+_fail	ld b, 0x01
 	ret
 
-_table1	defw 0x3633, 0x3633 + 0x001a, 0x3654, 0x3633
-_table2	defw 0xd5b5, 0xd5b5 - 0x001a + 0x03fc, 0xd99b, 0xd5b5 + 0x0700 + 0x0012
+_table1	defw 0x3633
+        defw 0x3633 + 0x001a
+        defw 0x3654
+        defw 0x3633
+        defw 0x3633 - 0x142e
+_table2	defw 0xd5b5
+        defw 0xd5b5 - 0x001a + 0x03fc
+        defw 0xd99b
+        defw 0xd5b5 + 0x0700 + 0x0012
+        defw 0xd5b5 + 0x142e - 0x2bc0
 
 _delay1	defw 0x0000
 _delay2	defw 0x0000
@@ -148,7 +184,7 @@ _isr	ld b, 0x00
 	pop hl
 	ret
 
-_fail	ld b, 0x02
+_fail	ld b, 0x01
 	ret
 
 _table1	defw 0xa67e
@@ -169,11 +205,6 @@ ENDP
 
 floatingbustest
 PROC
-	; No point running this test on the +3 or Pentagon
-	ld a, (guessmachine_guess)
-	cp 0x02
-	jr nc, _skip
-
 	ld bc, _delay
 	ld hl, _table
 	call guessmachine_table
@@ -213,11 +244,7 @@ PROC
 _fail	pop bc
 	ld hl, 0x5a0f
 	ld (hl), b
-	ld b, 0x02
-	ret
-
-_skip	ld b, 0x01
-	add a, b
+	ld b, 0x01
 	ret
 
 _table	defw 0xa691, 0xa691 + 0x001a + 4 * 0x0080
@@ -272,7 +299,7 @@ PROC
 _isr	pop hl
 	ret
 
-_fail	ld b, 0x02
+_fail	ld b, 0x01
 	ret
 	
 _nop	nop			; 14335 / 14361 / 14363
@@ -322,10 +349,6 @@ ENDP
 
 highporttest2
 PROC
-	ld a, (guessmachine_guess)
-	cp 0x01
-	jr c, _skip
-	
 	ld a, (0x5b5c)
 	and 0xf8
 	or 7
@@ -341,13 +364,55 @@ PROC
 
 	jp contendedin1
 
-_skip	ld b, 0x01
-	ret
-
 _table	defw 0x65a9		; Not used
 	defw 0x65a9 - 0x001a - 4 * 0x0080 + 0x03fc - 0x000c
 	defw 0x65a9 - 0x001a - 4 * 0x0080 + 0x03fc
 	defw 0x65a9 + 0x0700
+
+ENDP
+
+; 0xbffd read test
+
+hexbffdreadtest
+PROC
+	ld bc, _result
+	ld hl, _table
+	call guessmachine_table
+	dec bc
+	ld a, (bc)
+	ld d, a
+
+	ld bc, 0xfffd
+	ld a, 0x0b
+	out (c), a
+
+	ld bc, 0xbffd
+	ld a, 0x55
+	out (c), a
+
+	; Sync with interrupts to ensure we get 0xff back from the
+        ; floating bus
+	ld hl, sync_isr + 1
+	ld (hl), _isr % 0x100
+	inc hl
+	ld (hl), _isr / 0x100
+	ei
+	halt
+
+	in a, (c)
+	sub d
+	ld b, 0x00
+	ret
+
+_table	defw 0x00ff	; 48K
+	defw 0x00ff	; 128K/+2
+	defw 0x0055	; +2A/+3
+	defw 0x00ff	; Pentagon
+
+_result	defw 0x0000
+
+_isr	ei
+	ret
 
 ENDP
 
@@ -387,10 +452,6 @@ hex7ffdreadtest_common
 PROC
 	push de
 	push hl
-	
-	ld a, (guessmachine_guess)
-	cp 0x01
-	jp nz, _skip
 
 	ld bc, _delay
 	pop hl
@@ -434,6 +495,14 @@ PROC
 	in a,(c)
 
 	ld a, (0xe000)
+
+        ; If we selected page 7, it's highly likely an emulator wrote
+        ; 0xff to 0x7ffd. This is unfortunate as it pages in the 128K ROM
+        ; and then locks us out from changing this. All we can really do
+        ; is hang...
+        cp 0x07
+        jr z, _hang
+
 	ld b, 0x00
 
 _end	push af
@@ -458,14 +527,11 @@ _end	push af
 
 _fail	pop hl
 	ld a, 0xff
-	ld b, 0x02
+	ld b, 0x01
 	jr _end
 
-_skip	pop hl
-	pop hl
-	ld a, 0xff
-	ld b, 0x01
-	ret
+_hang   di
+        halt
 
 _delay	defw 0x0000
 

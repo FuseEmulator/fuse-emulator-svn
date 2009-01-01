@@ -1,4 +1,4 @@
-libspectrum 0.4.0
+libspectrum 0.5.0
 =================
 
 libspectrum is a fairly simple library designed to make the handling
@@ -10,6 +10,8 @@ handles:
 * Tape images: .tzx, .tap, .spc, .sta and .ltp (read/write) and
   Warajevo .tap, Z80Em and CSW version 1 (read only). 
 * Input recordings: .rzx (read/write).
+* Disk images: .dsk (both plain and extended), .fdi, .sad, .scl, .td0,
+  .trd and .udi (identification only).
 * Timex cartridges: .dck (read only).
 * IDE hard disk images: .hdf (read/write).
 * Microdrive cartridge images: .mdr (read/write).
@@ -61,9 +63,9 @@ Initialisation etc
 libspectrum_error libspectrum_init( void )
 
 This routine must be called before any other libspectrum routines,
-other than `libspectrum_version' and `libspectrum_check_version' to
-initialise the library. If it isn't called, undefined behaviour may
-result.
+other than `libspectrum_version', `libspectrum_check_version' and
+`libspectrum_mem_set_vtable' to initialise the library. If it isn't
+called, undefined behaviour may result.
 
 const char *libspectrum_version( void )
 
@@ -82,6 +84,34 @@ This routine checks whether the version of libspectrum is at least
 `version', which should be specified in an "x.y.z.a" format. It
 returns non-zero if the libspectrum version in use is at least
 `version' or zero if it is not.
+
+Memory handling
+===============
+
+By default, libspectrum will use the standard library's malloc(),
+calloc(), realloc() and free() for memory handling, but wrapped so that
+they are "strong" (they will either succeed or abort the program). It is
+possible to replace these with custom allocation routines if you wish.
+
+typedef void* (*libspectrum_malloc_fn_t)( size_t size );
+typedef void* (*libspectrum_calloc_fn_t)( size_t nmemb, size_t size );
+typedef void* (*libspectrum_realloc_fn_t)( void *ptr, size_t size );
+typedef void (*libspectrum_free_fn_t)( void *ptr );
+
+typedef struct libspectrum_mem_vtable_t {
+  libspectrum_malloc_fn_t malloc;
+  libspectrum_calloc_fn_t calloc;
+  libspectrum_realloc_fn_t realloc;
+  libspectrum_free_fn_t free;
+} libspectrum_mem_vtable_t;
+
+void libspectrum_mem_set_vtable( libspectrum_mem_vtable_t *table )
+
+Set the memory handling routines to be those specified by `table'. This
+function may *not* be called after libspectrum_init() has been called.
+Note that libspectrum will ensure that the memory allocators are still
+strong, and will abort the program if any of the allocators returns
+NULL.
 
 Error handling
 ==============
@@ -183,6 +213,12 @@ LIBSPECTRUM_MACHINE_CAPABILITY_KEMPSTON_JOYSTICK
 LIBSPECTRUM_MACHINE_CAPABILITY_NTSC
   This machine has an NTSC video output.
 
+LIBSPECTRUM_MACHINE_CAPABILITY_PENT1024_MEMORY
+  This machine has 1024K of memory accessible as on the Pentagon 1024.
+
+LIBSPECTRUM_MACHINE_CAPABILITY_PENT512_MEMORY
+  This machine has 512K of memory accessible as on the Pentagon 512.
+
 LIBSPECTRUM_MACHINE_CAPABILITY_PLUS3_MEMORY
   This machine can change into all-RAM configurations as the +2A/+3.
 
@@ -242,8 +278,14 @@ LIBSPECTRUM_ID_COMPRESSED_BZ2	A bzip2 compressed file
 LIBSPECTRUM_ID_COMPRESSED_GZ	A gzip compressed file
 
 LIBSPECTRUM_ID_DISK_DSK		A .dsk +3 disk file
+LIBSPECTRUM_ID_DISK_CPC		A plain .dsk +3 disk file
+LIBSPECTRUM_ID_DISK_ECPC	An extended .dsk +3 disk file
+LIBSPECTRUM_ID_DISK_FDI		A .fdi generic disk file
+LIBSPECTRUM_ID_DISK_SAD		A .sad generic disk file
 LIBSPECTRUM_ID_DISK_SCL		A .scl TRDOS disk file
 LIBSPECTRUM_ID_DISK_TRD		A .trd TRDOS disk file
+LIBSPECTRUM_ID_DISK_TD0		A .td0 generic disk file
+LIBSPECTRUM_ID_DISK_UDI		A .udi generic disk file
 
 LIBSPECTRUM_ID_HARDDISK_HDF	A .hdf IDE hard disk image
 
@@ -267,6 +309,11 @@ LIBSPECTRUM_ID_TAPE_Z80EM	A Z80Em tape image
 LIBSPECTRUM_ID_TAPE_SPC		An SP-style .spc tape image
 LIBSPECTRUM_ID_TAPE_STA		A Speculator-style .sta tape image
 LIBSPECTRUM_ID_TAPE_LTP		A Nuclear ZX-style .ltp tape image
+
+Versions of libspectrum previous to 0.5.0 used LIBSPECTRUM_ID_DISK_DSK
+for both plain and extended .dsk images, but this is now deprecated in
+favour of the more specific LIBSPECTRUM_ID_DISK_CPC and
+LIBSPECTRUM_ID_DISK_ECPC.
 
 `libspectrum_identify_file_raw' looks for defined signatures in the
 file as well as the extension of the filename and a couple of
@@ -298,6 +345,8 @@ LIBSPECTRUM_CLASS_UNKNOWN		An unknown file type
 
 LIBSPECTRUM_CLASS_CARTRIDGE_TIMEX	A Timex dock cartridge
 LIBSPECTRUM_CLASS_CARTRIDGE_IF2		An Interface II cartridge
+LIBSPECTRUM_CLASS_DISK_GENERIC		A generic disk image
+LIBSPECTRUM_CLASS_DISK_PLUSD		An MGT/+D disk image
 LIBSPECTRUM_CLASS_DISK_PLUS3		A +3 disk image
 LIBSPECTRUM_CLASS_DISK_TRDOS		A TRDOS disk image
 LIBSPECTRUM_CLASS_HARDDISK		An IDE hard disk image
@@ -391,7 +440,7 @@ utilities to store some information regarding the creator of the file.
 libspectrum provides a `libspectrum_creator' structure to store this
 information.
 
-libspectrum_error libspectrum_creator_alloc( libspectrum_creator **creator )
+libspectrum_creator* libspectrum_creator_alloc( void )
 
 Allocate a new `libspectrum_creator' structure.
 
@@ -451,7 +500,7 @@ Functions for dealing with snapshot files. These act on an opaque
 `libspectrum_snap' structure, which can be accessed via the following
 routines:
 
-libspectrum_error libspectrum_snap_alloc( libspectrum_snap **snap )
+libspectrum_snap* libspectrum_snap_alloc( void )
 
 Allocate a new libspectrum_snap structure.
 
@@ -695,34 +744,6 @@ format will make any use of this information.
 The only formats for which serialisation is supported are .sna, .szx
 and .z80.
 
-Deprecated snapshot routines
-----------------------------
-
-There are also three format-specific functions. However, *these
-functions are deprecated and should not be used in new code*:
-
-libspectrum_error libspectrum_sna_read( libspectrum_snap *snap,
-		                        const libspectrum_byte *buffer,
-				        size_t buffer_length )
-
-Take the .sna snapshot of length `buffer_length' bytes at `buffer' and
-convert it to a `libspectrum_snap' structure.
-
-libspectrum_error libspectrum_z80_read( libspectrum_snap *snap,
-		                        const libspectrum_byte *buffer,
-					size_t buffer_length )
-
-Similarly for a .z80 snapshot.
-
-libspectrum_error libspectrum_z80_write( libspectrum_byte **buffer,
-					 size_t *length,
-					 libspectrum_snap *snap )
-
-Take the snapshot in `snap' and serialise it into a .z80 file at
-'*buffer'. On entry, '*buffer' is assumed to be allocated '*length'
-bytes, and will grow if necessary; if '*length' is zero, '*buffer' can
-be uninitialised on entry.
-
 Tape functions
 ==============
 
@@ -732,7 +753,7 @@ blocks, which are of the `libspectrum_tape_block' type detailed below.
 
 The routines for dealing with tapes are:
 
-libspectrum_error libspectrum_tape_alloc( libspectrum_tape **tape )
+libspectrum_tape* libspectrum_tape_alloc( void )
 
 Allocate a new libspectrum_tape object.
 
@@ -793,6 +814,10 @@ LIBSPECTRUM_TAPE_FLAGS_LEVEL_HIGH The input signal from the tape should be
 				  forced high at this edge
 LIBSPECTRUM_TAPE_FLAGS_NO_EDGE	This "edge" isn't really an edge and doesn't
 				change the input signal from the tape.
+LIBSPECTRUM_TAPE_FLAGS_LENGTH_SHORT This edge is a "short" edge; used
+				    for loader acceleration
+LIBSPECTRUM_TAPE_FLAGS_LENGTH_LONG This edge is a "long" edge; again
+                                   used for loader acceleration
 
 int libspectrum_tape_present( libspectrum_tape *tape )
 
@@ -809,11 +834,26 @@ libspectrum_error libspectrum_tape_nth_block( libspectrum_tape *tape, int n )
 Set the current block on the tape to be the `n'th block and initialise
 it. Again, the first block on the tape is block 0.
 
-libspectrum_error
+void
 libspectrum_tape_append_block( libspectrum_tape *tape,
                                libspectrum_tape_block *block )
 
 Append `block' to `tape'.
+
+void
+libspectrum_tape_remove_block( libspectrum_tape *tape,
+			       libspectrum_tape_iterator it )
+
+Remove the block pointed to by `it' (see the "Tape iterators" section)
+from the tape.
+
+libspectrum_error
+libspectrum_tape_insert_block( libspectrum_tape *tape,
+			       libspectrum_tape_block *block,
+			       size_t position )
+
+Insert `block' into `tape` in position `position', where position 0
+would make the new block the first block on the tape.
 
 libspectrum_tape_block*
 libspectrum_tape_current_block( libspectrum_tape *tape )
@@ -831,50 +871,6 @@ libspectrum_tape_select_next_block( libspectrum_tape *tape )
 
 Move the tape along so it points to the next block, initialise that
 block and return it.
-
-Deprecated tape routines
-------------------------
-
-*These functions are deprecated and should not be used in new code*:
-
-libspectrum_error
-libspectrum_tap_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-	              const size_t length )
-
-Form a tape object in `tape' from the .tap file of `length' bytes
-starting at `buffer'. This routine deals with the `normal' (Z80-style)
-.tap files, not with Warajevo .tap files.
-
-libspectrum_error
-libspectrum_tap_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_tape *tape )
-
-Attempt to convert the tape in `tape' to a .tap file in `*buffer', which
-has previously been allocated `*length' bytes by user code.  The .tap
-format can handle only standard speed loading blocks; a best guess
-attempt will be made to convert other blocks, but the resultant .tap
-file probably won't work.
-
-libspectrum_error
-libspectrum_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
-		      const size_t length )
-
-Just as `libspectrum_tap_read', but for .tzx format files.
-
-libspectrum_error
-libspectrum_tzx_write( libspectrum_byte **buffer, size_t *length,
-		       libspectrum_tape *tape )
-
-Just as `libspectrum_tap_write', but for .tzx files. The conversion to
-.tzx format is not lossy as it is with converting to .tap.
-
-libspectrum_error
-libspectrum_warajevo_read( libspectrum_tape *tape,
-			   const libspectrum_byte *buffer,
-			   const size_t length )
-
-Just as `libspectrum_tap_read', but for Warajevo-style .tap files.
-There is no currently no function to write a Warajevo-style .tap file.
 
 Tape iterators
 --------------
@@ -946,9 +942,8 @@ skipped; hence it will never appear in a libspectrum_tape_block.
 
 The basic routines for dealing with tape blocks are:
 
-libspectrum_error
-libspectrum_tape_block_alloc( libspectrum_tape_block **block,
-			      libspectrum_tape_type type )
+libspectrum_tape_block*
+libspectrum_tape_block_alloc( libspectrum_tape_type type )
 
 Allocate a new tape block of `type'.
 
@@ -993,6 +988,11 @@ libspectrum_tape_block_metadata( libspectrum_tape_block *block )
 
 Returns 1 if the block consists solely of metadata (comments, etc.) or
 0 if it contains real data.
+
+libspectrum_dword
+libspectrum_tape_block_length( libspectrum_tape_block *block )
+
+Returns the length (in tstates) of this block
 
 The `get' and `set' functions follow the same pattern as for the
 snapshot routines: the `get' functions are like
@@ -1160,7 +1160,7 @@ Input recording functions
 All input recording routines are accessed through the opaque
 `libspectrum_rzx' structure.
 
-libspectrum_error libspectrum_rzx_alloc( libspectrum_rzx **rzx )
+libspectrum_rzx* libspectrum_rzx_alloc( void )
 
 Allocate a new input recording object.
 
@@ -1169,7 +1169,7 @@ libspectrum_error libspectrum_rzx_free( libspectrum_rzx *rzx )
 Free the memory used by an input recording object as allocated by
 `libspectrum_rzx_alloc'.
 
-libspectrum_error
+void
 libspectrum_rzx_start_input( libspectrum_rzx *rzx, libspectrum_dword tstates )
 
 Start an input recording block int the object.
@@ -1179,9 +1179,13 @@ libspectrum_error libspectrum_rzx_stop_input( libspectrum_rzx *rzx )
 Stop the current input recording block.
 
 libspectrum_error
-libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap )
+libspectrum_rzx_add_snap( libspectrum_rzx *rzx, libspectrum_snap *snap,
+			  int automatic )
 
-Add `snap' to the input recording at this point.
+Add `snap' to the input recording at this point. `automatic' can be used
+to indicate whether this block was automatically added by the calling
+program (non-zero) or explicitly requested by the user (zero) and then
+fetched with libspectrum_rzx_iterator_snap_is_automatic() (see below).
 
 libspectrum_error
 libspectrum_rzx_rollback( libspectrum_rzx *rzx, libspectrum_snap **snap )
@@ -1256,11 +1260,11 @@ information on this. Files compressed with bzip2 or gzip will be
 automatically and transparently decompressed.
 
 libspectrum_error
-libspectrum_rzx_write2( libspectrum_byte **buffer, size_t *length,
-			libspectrum_rzx *rzx,
-		        libspectrum_byte *snap, libspectrum_id_t snap_format,
-			libspectrum_creator *creator,
-		        int compress, libspectrum_rzx_dsa_key *key )
+libspectrum_rzx_write( libspectrum_byte **buffer, size_t *length,
+		       libspectrum_rzx *rzx,
+		       libspectrum_byte *snap, libspectrum_id_t snap_format,
+		       libspectrum_creator *creator,
+		       int compress, libspectrum_rzx_dsa_key *key )
 
 Given input recording data in `rzx' and a snapshot in `snap', create a
 .rzx file in `*buffer'. If no embedded snapshot is required, set
@@ -1297,6 +1301,13 @@ libspectrum_rzx_iterator_get_snap( libspectrum_rzx_iterator it )
 
 Get the snapshot pointed to by `it'. If `it' does not point to a snapshot,
 NULL is returned.
+
+int
+libspectrum_rzx_iterator_snap_is_automatic( libspectrum_rzx_iterator it )
+
+Returns non-zero if `it' points to a snap which has its "automatic" flag
+(see libspectrum_rzx_add_snap()) set to true, or false if it doesn't (or
+if `it' doesn't point to a snapshot).
 
 Input recording iterators
 -------------------------
@@ -1466,8 +1477,8 @@ Routines
 Routines for handling images of microdrive cartridges. As usual, these
 are accessed through an opaque structure, libspectrum_microdrive.
 
-libspectrum_error
-libspectrum_microdrive_alloc( libspectrum_microdrive **microdrive )
+libspectrum_microdrive*
+libspectrum_microdrive_alloc( void )
 
 Allocate a microdrive structure.
 
@@ -1516,7 +1527,7 @@ correct, where <n> is specified by `which'.
 libspectrum_error
 libspectrum_microdrive_mdr_read( libspectrum_microdrive *microdrive,
                                  libspectrum_byte *buffer, size_t length )
-libspectrum_error
+void
 libspectrum_microdrive_mdr_write( const libspectrum_microdrive *microdrive,
                                   libspectrum_byte **buffer, size_t *length )
 
@@ -1566,7 +1577,7 @@ Any ROM or initialised RAM banks are in the `pages' field.
 
 The actual routines for handling dock files:
 
-libspectrum_error libspectrum_dck_alloc( libspectrum_dck **dck )
+libspectrum_dck* libspectrum_dck_alloc( void )
 
 Allocate a dock structure.
 
@@ -1592,9 +1603,8 @@ images. Due to the (potential) large size of these files, hard disk
 images are not handled entirely in memory as are the other file types,
 but require a real file.
 
-libspectrum_error
-libspectrum_ide_alloc( libspectrum_ide_channel **chn,
-		       libspectrum_ide_database databus )
+libspectrum_ide_channel*
+libspectrum_ide_alloc( libspectrum_ide_databus databus )
 
 Allocate a new IDE channel in `*chn' of type `databus'. `databus' can
 take the following values:

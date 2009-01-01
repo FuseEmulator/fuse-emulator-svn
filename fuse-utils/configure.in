@@ -23,10 +23,11 @@ AC_INIT(tzxlist.c)
 AM_CONFIG_HEADER(config.h)
 
 dnl Use automake to produce `Makefile.in'
-AM_INIT_AUTOMAKE(fuse-utils, 0.9.0)
+AM_INIT_AUTOMAKE(fuse-utils, 0.10.0.1)
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_LIBTOOL
 
 dnl Check for big endianness
@@ -38,9 +39,13 @@ AC_CHECK_HEADERS(strings.h)
 dnl Allow the user to say that various libraries are in one place
 AC_ARG_WITH(local-prefix,
 [  --with-local-prefix=PFX local libraries installed in PFX (optional)],
-CFLAGS="$CFLAGS -I$withval/include"; LDFLAGS="$LDFLAGS -L$withval/lib",
+CFLAGS="$CFLAGS -I$withval/include";
+CXXFLAGS="$CXXFLAGS -I$withval/include";
+LDFLAGS="$LDFLAGS -L$withval/lib",
 if test "$prefix" != "NONE"; then
-  CFLAGS="$CFLAGS -I$prefix/include"; LDFLAGS="$LDFLAGS -L$prefix/lib"
+  CFLAGS="$CFLAGS -I$prefix/include";
+  CXXFLAGS="$CXXFLAGS -I$prefix/include";
+  LDFLAGS="$LDFLAGS -L$prefix/lib"
 fi)
 
 dnl Check that libgcrypt is available
@@ -80,6 +85,7 @@ AC_MSG_RESULT($warnings)
 dnl If it appears we're using gcc as our compiler, turn on warnings
 if test "$ac_cv_prog_gcc" = yes; then
     CFLAGS="$CFLAGS -Wall"
+    CXXFLAGS="$CXXFLAGS -Wall"
     dnl And possibly lots of warnings
     if test "$warnings" = yes; then
         CFLAGS="$CFLAGS -Wstrict-prototypes -Wmissing-prototypes -Winline -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings -Waggregate-return -W -Wsign-compare"
@@ -121,7 +127,8 @@ AC_MSG_RESULT($audiofile)
 if test "$audiofile" = yes; then
   AM_PATH_AUDIOFILE(
     0.2.3,
-    AC_DEFINE([HAVE_LIB_AUDIOFILE], 1, [Defined if we've got audiofile])
+    AC_DEFINE([HAVE_LIB_AUDIOFILE], 1, [Defined if we've got audiofile]),
+    audiofile=no
   )
 fi
 AM_CONDITIONAL(BUILD_AUDIOTOOLS, test "$audiofile" = yes)
