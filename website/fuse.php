@@ -80,7 +80,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <p>Packages are available for some Unix distributions; in general, any problems which are specific to the packages should be sent to the package maintainer.</p>
   <ul>
    <li><a href="http://fedoraproject.org/index.html">Fedora</a> has <a href="https://admin.fedoraproject.org/pkgdb/packages/name/fuse-emulator">packages</a> of 0.10.0.1 available.</li>
-   <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.10.0 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a>.</li>
+   <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.10.0.1 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a>.</li>
    <li>Nokia's <a href="http://maemo.org/">Maemo</a> platform has a port of <a href="http://maemo.org/downloads/product/OS2008/fuse-emulator/">0.10.0.1</a> available by Alberto Garcia.</li>
    <li><a href="http://www.netbsd.org/">NetBSD</a> users can get version 0.10.0.1 from <a href="http://www.pkgsrc.org/">pkgsrc</a> (the NetBSD Packages Collection) as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse/">emulators/fuse</a> and <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse-utils/">emulators/fuse-utils</a>.</li>
   </ul>
@@ -99,7 +99,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <p>A native port to OS X by <a href="mailto:fredm@spamcop.net">Fredrick Meunier</a> is available on its own SourceForge project <a href="http://fuse-for-macosx.sourceforge.net//">here</a>, as well as a Spotlight importer for Mac OS X 10.4 Tiger users. Alternatively, the original version of Fuse will compile on OS X 10.3 (Panther) or later.</p>
 
   <h3>Windows</h3>
-  <p>A port to Windows of 0.10.0 by Marek Januszewski and Stuart Brady is available <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0-setup.exe?download">here</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0-setup.exe.sha1?download">SHA1 hash</a>). This is also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/pc/windows/fuse-0.10.0-setup.exe">Fuse</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/pc/windows/fuse-0.10.0-setup.exe.sha1">signature</a>).</p>
+  <p>A port to Windows of 0.10.0.1 by Marek Januszewski and Stuart Brady is available <a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0.1-setup.exe?download">here</a> (<a href="http://prdownloads.sourceforge.net/fuse-emulator/fuse-0.10.0.1-setup.exe.sha1?download">SHA1 hash</a>). This is also mirrored at <a href="http://www.worldofspectrum.org/">World of Spectrum</a>: <a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/pc/windows/fuse-0.10.0.1-setup.exe">Fuse</a> (<a href="ftp://ftp.worldofspectrum.org/pub/sinclair/emulators/pc/windows/fuse-0.10.0.1-setup.exe.sha1">signature</a>).</p>
 
   <h3>AmigaOS 4</h3>
   <p>Chris Young has ported Fuse 0.10.0 to AmigaOS 4, with binaries available from Aminet as <a href="http://aminet.net/package/misc/emu/fuse.lha">misc/emu/fuse.lha</a>.</p>
@@ -107,11 +107,11 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <h3>MorphOS</h3>
   <p>Q-Master has ported Fuse 0.10.0 to MorphOS, with <a href="http://www.amirus.org.ru/files/fuse_0.10.0_morphos.lha">binaries available from AmiRUS</a>.</p>
 
-  <h3>Gizmondo</h3>
-  <p>A port of 0.9.0 to the Gizmondo tablet is available. The source is available via <a href="http://opensvn.csie.org/GizPorts/trunk/sdlport/fuzegiz/README">csie.org</a>.</p>
-
   <h3>PSP</h3>
-  <p>Akop Karapetyan has ported Fuse to the PSP. Binaries and source, based on Fuse 0.9.0, are available from the <a href="http://psp.akop.org/fuse">Fuse PSP</a> page.</p>
+  <p>Akop Karapetyan has ported Fuse to the PSP. Binaries and source, based on Fuse 0.10.0.1, are available from the <a href="http://psp.akop.org/fuse">Fuse PSP</a> page.</p>
+
+  <h3>Gizmondo</h3>
+  <p>A port of 0.9.0 to the Gizmondo tablet is available. The source is available via <a href="http://opensvn.csie.org/GizPorts/trunk/sdlport/fuzegiz/">csie.org</a>.</p>
 
   <h3>GP2X</h3>
   <p>Ben O'Steen has made a GP2X port, based on Fuse 0.6. Binaries and source are available from <a href="http://www.zen71790.zen.co.uk/#fuse">his homepage</a>.</p>
