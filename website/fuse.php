@@ -105,7 +105,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <p>Chris Young has ported Fuse 0.10.0 to AmigaOS 4, with binaries available from Aminet as <a href="http://aminet.net/package/misc/emu/fuse.lha">misc/emu/fuse.lha</a>.</p>
 
   <h3>MorphOS</h3>
-  <p>Q-Master has ported Fuse 0.10.0 to MorphOS, with <a href="http://www.amirus.org.ru/files/fuse_0.10.0_morphos.lha">binaries available from AmiRUS</a>.</p>
+  <p>Q-Master has ported Fuse 0.10.0.1 to MorphOS, with <a href="http://www.amirus.org.ru/files/fuse_0.10.0.1_morphos.lha">binaries available from AmiRUS</a>.</p>
 
   <h3>PSP</h3>
   <p>Akop Karapetyan has ported Fuse to the PSP. Binaries and source, based on Fuse 0.10.0.1, are available from the <a href="http://psp.akop.org/fuse">Fuse PSP</a> page.</p>
