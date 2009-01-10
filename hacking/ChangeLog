@@ -2959,3 +2959,17 @@ snapshot.c: use the fully encapsulated libspectrum_snap
          O_TRUNC to ensure that any old data is cleared out. Also fix a
          dependency problem (thanks, Matthew Westcott).
 20081210 ChangeLog,configure.in,man/fuse.1,README: update for 0.10.0.1 release.
+20090110 Merge changes from trunk:
+	 * disk/disk.c: relax "Track-Info" check (Gergely Szasz; thanks, Simon
+	   Owen).
+	 * ui/widget/options-header.pl: remove unnecessary use directive (Fred).
+	 * event.[ch],disk/fdd.c: fix issue with FDD motor events preventing
+           both +3 disk drives from being used (bug #2424700) (Gergely Szasz).
+	 * ui/widget/query.c: make "Don't Save" return the correct enum (Fred).
+	 * disk/plusd.c: support +D switching between the two drives when the
+           motor on signal is 'ON' as when copying between drives (fixes bug
+           #2465540) (Gergely Szasz).
+	 * fuse.c: update copyright date.
+	 * loader.c: don't call readbyte_internal macro with an argument that
+	   has side effects (fixes accelerated loaders with gcc 3.x; thanks,
+	   Carlos Almeida, Alberto Garcia and Alexander Yurchenko).
