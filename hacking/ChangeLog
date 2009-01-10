@@ -710,3 +710,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 README: final tweaks for 0.5.0 release (libspectrum_0_5_0-branch).
 20081130 ChangeLog: add reference to TS2068 timing update
          (libspectrum_0_5_0-branch) (Fred).
+20090110 Merge fix from trunk:
+	 * libspectrum.c: loosen signature checks for .dsk files (Gergely;
+	   thanks, zx81 and Simon Owen).
