@@ -91,7 +91,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <ul>
    <li><a href="https://admin.fedoraproject.org/pkgdb/packages/name/libspectrum">Fedora</a> (0.5.0)</li>
    <li><a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/libspectrum/">FreeBSD</a> (0.5.0)</li>
-   <li><a href="http://www.netbsd.org/">NetBSD</a> has 0.5.0 available as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/libspectrum/">emulators/libspectrum</a> in <a href="http://www.pkgsrc.org/">pkgsrc</a>.</li>
+   <li><a href="http://www.netbsd.org/">NetBSD</a> has 0.5.0.1 available as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/libspectrum/">emulators/libspectrum</a> in <a href="http://www.pkgsrc.org/">pkgsrc</a>.</li>
    <li><a href="http://www.openbsd.org/">OpenBSD</a> users can find a port of 0.5.0 in <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/devel/libspectrum/">ports/devel/libspectrum</a>.</li>
    <li><a href="http://www.youmustbejoking.demon.co.uk/progs.stable.html">Debian stable</a> (Debian 4.0, "Etch"), <a href="http://www.youmustbejoking.demon.co.uk/progs.testing.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.unstable.html">unstable</a> or <a href="http://www.youmustbejoking.demon.co.uk/progs.oldstable.html">Debian 3.1 ("Sarge")</a> (all 0.2.2) by Darren Salt.</li>
    <li><a href="http://packages.gentoo.org/package/app-emulation/libspectrum?full_cat">Gentoo</a> (0.4.0)</li>
