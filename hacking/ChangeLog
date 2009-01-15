@@ -2973,3 +2973,5 @@ snapshot.c: use the fully encapsulated libspectrum_snap
 	 * loader.c: don't call readbyte_internal macro with an argument that
 	   has side effects (fixes accelerated loaders with gcc 3.x; thanks,
 	   Carlos Almeida, Alberto Garcia and Alexander Yurchenko).
+20090114 ui/win32/{Makefile.am,icons/Makefile.am}: Win32: Fixed autotools
+	 scripts so that 'make dist' works properly for win32 ui (Marek).

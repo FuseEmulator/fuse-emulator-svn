@@ -41,9 +41,11 @@ libuiwin32_a_SOURCES = binary.c \
 		       memorybrowser.c \
 		       memorybrowser.rc \
 		       menu_data.c \
+		       menu_data.rc \
 		       options.c \
 		       options.rc \
 		       picture.c \
+		       picture.rc \
 		       pokefinder.c \
 		       pokefinder.rc \
 		       rollback.c \
@@ -51,6 +53,7 @@ libuiwin32_a_SOURCES = binary.c \
 		       roms.c \
 		       roms.rc \
 		       statusbar.c \
+		       select_template.rc \
 		       statusbar.rc \
 		       win32display.c \
 		       win32joystick.c \
@@ -101,9 +104,12 @@ noinst_HEADERS = binary.h \
 		 pokefinder.h \
 		 rollback.h \
 		 roms.h \
+		 select_template.h \
 		 memorybrowser.h \
 		 menu_data.h \
+		 options.h \
 		 options.pl \
+		 options-header.pl \
 		 options-resource.pl \
 		 win32internals.h \
 		 win32joystick.h
