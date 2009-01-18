@@ -81,7 +81,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <ul>
    <li><a href="http://fedoraproject.org/index.html">Fedora</a> has <a href="https://admin.fedoraproject.org/pkgdb/packages/name/fuse-emulator">packages</a> of 0.10.0.1 available.</li>
    <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.10.0.1 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a>.</li>
-   <li>Nokia's <a href="http://maemo.org/">Maemo</a> platform has a port of <a href="http://maemo.org/downloads/product/OS2008/fuse-emulator/">0.10.0.1</a> available by Alberto Garcia.</li>
+   <li>Nokia's <a href="http://maemo.org/">Maemo</a> platform has a port of <a href="http://maemo.org/downloads/product/OS2008/fuse-emulator/">0.10.0.2</a> available by Alberto Garcia.</li>
    <li><a href="http://www.netbsd.org/">NetBSD</a> users can get version 0.10.0.2 from <a href="http://www.pkgsrc.org/">pkgsrc</a> (the NetBSD Packages Collection) as <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse/">emulators/fuse</a> and <a href="http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/emulators/fuse-utils/">emulators/fuse-utils</a>.</li>
    <li><a href="http://www.openbsd.org/">OpenBSD</a> users have version 0.10.0.1 available from ports as <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse/">ports/emulators/fuse</a>, and <a href="http://www.openbsd.org/cgi-bin/cvsweb/ports/emulators/fuse-utils/">ports/emulators/fuse-utils/</a>, with thanks to Alexander Yurchenko.</li>
   </ul>
@@ -109,6 +109,9 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
 
   <h3>PSP</h3>
   <p>Akop Karapetyan has ported Fuse to the PSP. Binaries and source, based on Fuse 0.10.0.1, are available from the <a href="http://psp.akop.org/fuse">Fuse PSP</a> page.</p>
+
+  <h3>Wii</h3>
+  <p>A Wii port, based on work by Bj&ouml;rn Giesler, is available from <a href="http://wiibrew.org/wiki/Fuse">WiiBrew</a>. This is based on what is essentially 0.10.0.2.</p>
 
   <h3>Gizmondo</h3>
   <p>A port of 0.9.0 to the Gizmondo tablet is available. The source is available via <a href="http://opensvn.csie.org/GizPorts/trunk/sdlport/fuzegiz/">csie.org</a>.</p>
