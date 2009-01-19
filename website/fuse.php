@@ -79,6 +79,7 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
   <h3>Unix</h3>
   <p>Packages are available for some Unix distributions; in general, any problems which are specific to the packages should be sent to the package maintainer.</p>
   <ul>
+   <li>Unofficial packages of 0.10.0.2 for <a href="http://www.debian.org/">Debian</a> (or <a href="http://www.ubuntu.com/">Ubuntu</a>) by Alberto Garcia are available from <a href="http://people.igalia.com/berto/">his personal webpage</a> (i386 binaries and source).</li>
    <li><a href="http://fedoraproject.org/index.html">Fedora</a> has <a href="https://admin.fedoraproject.org/pkgdb/packages/name/fuse-emulator">packages</a> of 0.10.0.1 available.</li>
    <li><a href="http://www.freebsd.org/">FreeBSD</a> has a port of 0.10.0.1 available as <a href="http://www.FreeBSD.org/cgi/cvsweb.cgi/ports/emulators/fuse/">emulators/fuse</a>.</li>
    <li>Nokia's <a href="http://maemo.org/">Maemo</a> platform has a port of <a href="http://maemo.org/downloads/product/OS2008/fuse-emulator/">0.10.0.2</a> available by Alberto Garcia.</li>
@@ -90,7 +91,6 @@ fuse_section ("Download", "Downloads", <<<END_SECTION
    <li><a href="http://www.gentoo.org/">Gentoo</a> users have an <a href="http://packages.gentoo.org/package/app-emulation/fuse?full_cat">ebuild</a> of 0.9.0 available.</li>
    <li><a href="http://www.mandriva.com/">Mandriva</a> packages of 0.9.0 are available from the <a href="http://plf.zarb.org/">PLF</a>, or Miguel Barrio Orsikowsky has some <a href="http://www.speccy.org/sinclairmania/arch/emu/mandrake/">older versions</a> available.</li>
    <li>Zoran Jekic has produced <a href="http://www.suse.com">SuSE</a> 11.3 packages of <a href="fuse-0.9.0-1.zj.i586.rpm">0.9.0</a> and the <a href="fuse-utils-0.9.0-1.zj.i586.rpm">utilities</a>.</li>
-   <li>Unofficial packages for <a href="http://www.debian.org/">Debian</a>, by Darren Salt: <a href="http://www.youmustbejoking.demon.co.uk/progs.etch.html">stable</a> (Debian 4.0, "Etch"), <a href="http://www.youmustbejoking.demon.co.uk/progs.lenny.html">testing</a>, <a href="http://www.youmustbejoking.demon.co.uk/progs.sid.html">unstable</a> or <a href="http://www.youmustbejoking.demon.co.uk/progs.sarge.html">Debian 3.1 ("Sarge")</a> (all 0.7.0).</li>
    <li>The <a href="http://en.docs.pld-linux.org/">Polish Linux Distribution</a> has packages of Fuse 0.6.2.1 and the utilities.</li>
    <li><a href="mailto:spec(at)webtech(dot)pl">Marek Januszewski</a> has produced a <a href="http://www.slackware.com/">Slackware</a> 9.1 packages of <a href="fuse-0.6.1.1-i386-1spec.tgz">0.6.1.1</a> (<a href="fuse-0.6.1.1-i386-1spec.tgz.md5">md5 sum</a>) and <a href="fuse-utils-0.6.1-i386-1spec.tgz">the utilities</a> (<a href="fuse-utils-0.6.1-i386-1spec.tgz.md5">md5 sum</a>).</li>
   </ul>
