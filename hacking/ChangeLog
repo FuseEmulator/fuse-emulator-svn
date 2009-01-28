@@ -714,3 +714,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 configure.in: merge libspectrum_0_5_0-branch changes onto trunk.
 20081214 libspectrum.c: loosen signature checks for .dsk files (Gergely;
 	 thanks, zx81 and Simon Owen).
+20090128 configure.in: add --without-(bzip2 /zlib) for gentoo and similar
+         distros (patch #2533274) (José Manuel Ferrer Ortiz).
