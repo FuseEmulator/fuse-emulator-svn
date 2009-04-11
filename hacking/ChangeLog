@@ -287,3 +287,5 @@
 	 rzxtool.1,scl2trd.1,snap2tzx.1,snapconv.1,tape2wav.1,tapeconv.1,
 	 tzxlist.1},README: update for 0.10.0.1 release.
 20090203 man/audio2tape.1: correct documentation of default trigger (Fred).
+20090411 tape2wav.c: use the new tape flag for end of tape (part of fixes for
+         bug #2743838) (Fred).

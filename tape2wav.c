@@ -131,7 +131,7 @@ write_tape( char *filename, libspectrum_tape *tape )
     return 1;
   }
 
-  while( !(flags & LIBSPECTRUM_TAPE_FLAGS_STOP) ) {
+  while( !(flags & LIBSPECTRUM_TAPE_FLAGS_TAPE) ) {
     libspectrum_dword pulse_length = 0;
     size_t i;
 
