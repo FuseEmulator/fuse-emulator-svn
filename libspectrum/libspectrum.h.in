@@ -526,6 +526,7 @@ extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_LEVEL_LOW; /* Set level low */
 extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_LEVEL_HIGH; /* Set level high */
 extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_LENGTH_SHORT;
 extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_LENGTH_LONG;
+extern const int WIN32_DLL LIBSPECTRUM_TAPE_FLAGS_TAPE;	/* Tape has finished */
 
 /* The states which a block can be in */
 typedef enum libspectrum_tape_state_type {
