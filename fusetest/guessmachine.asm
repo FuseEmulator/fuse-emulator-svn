@@ -7,7 +7,11 @@ PROC
         sbc hl, bc
         jr z, _mts2068
 
-	ld bc, 0x9100 - 0x6540
+	ld bc, 0x6700 - 0x6540
+	sbc hl, bc
+	jr z, _m48ntsc
+
+	ld bc, 0x9100 - 0x6700
 	sbc hl, bc
 	jr z, _m48
 	
@@ -25,6 +29,11 @@ PROC
 	
 _m48	xor a
 	ld hl, _m48string
+	jr _end
+
+_m48ntsc
+	ld a, 0x05
+	ld hl, _m48ntscstring
 	jr _end
 
 	;; Distinguish between 128K and +3 by looking at the partial
@@ -73,6 +82,7 @@ _end	ld (guessmachine_guess), a
 	ret
 
 _m48string defb '48K', 0x0d, 0
+_m48ntscstring defb '48K (NTSC)', 0x0d, 0
 _m128string defb '128K', 0x0d, 0
 _mplus3string defb '+3', 0x0d, 0
 _mpentstring defb 'Pentagon', 0x0d, 0
