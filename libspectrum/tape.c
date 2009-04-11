@@ -297,6 +297,7 @@ const int LIBSPECTRUM_TAPE_FLAGS_LEVEL_LOW  = 1 << 4; /* Set level low */
 const int LIBSPECTRUM_TAPE_FLAGS_LEVEL_HIGH = 1 << 5; /* Set level high */
 const int LIBSPECTRUM_TAPE_FLAGS_LENGTH_SHORT = 1 << 6;
 const int LIBSPECTRUM_TAPE_FLAGS_LENGTH_LONG = 1 << 7;
+const int LIBSPECTRUM_TAPE_FLAGS_TAPE       = 1 << 8; /* End of tape */
 
 libspectrum_error
 libspectrum_tape_get_next_edge_internal( libspectrum_dword *tstates,
@@ -442,6 +443,7 @@ libspectrum_tape_get_next_edge_internal( libspectrum_dword *tstates,
 	 then `rewind' to the start) */
       if( libspectrum_tape_iterator_current( it->current_block ) == NULL ) {
 	*flags |= LIBSPECTRUM_TAPE_FLAGS_STOP;
+        *flags |= LIBSPECTRUM_TAPE_FLAGS_TAPE;
         libspectrum_tape_iterator_init( &(it->current_block), tape );
       }
     }

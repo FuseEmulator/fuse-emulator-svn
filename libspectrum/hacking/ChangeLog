@@ -716,3 +716,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 thanks, zx81 and Simon Owen).
 20090128 configure.in: add --without-(bzip2 /zlib) for gentoo and similar
          distros (patch #2533274) (José Manuel Ferrer Ortiz).
+20090411 doc/libspectrum.txt,tape.c: add a new tape flag for end of tape
+         (part of fixes for bug #2743838) (Fred).

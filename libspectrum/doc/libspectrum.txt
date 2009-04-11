@@ -818,6 +818,7 @@ LIBSPECTRUM_TAPE_FLAGS_LENGTH_SHORT This edge is a "short" edge; used
 				    for loader acceleration
 LIBSPECTRUM_TAPE_FLAGS_LENGTH_LONG This edge is a "long" edge; again
                                    used for loader acceleration
+LIBSPECTRUM_TAPE_FLAGS_TAPE	The current tape ends with this edge
 
 int libspectrum_tape_present( libspectrum_tape *tape )
 
