@@ -28,7 +28,7 @@ PROC
 	ret			; Done
 
 _ok
-	push bc
+	ld (framelen), bc
 	
 	ld hl, _conststring
 	call printstring
@@ -41,7 +41,7 @@ _ok
 
 	ld hl, _machinetype
 	call printstring
-	pop hl
+	ld hl, (framelen)
 	call guessmachine
 	
 	ld hl, _offsetstring

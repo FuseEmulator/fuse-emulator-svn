@@ -156,3 +156,5 @@ _isr3
 	jp _phase3		; 39
 	
 ENDP
+
+framelen defw 0x0000

@@ -41,10 +41,12 @@ ENDP
 
 interruptsync
 PROC
-	ld bc, _delay
-	ld hl, _table
-	call guessmachine_table
-	
+	xor a
+	ld hl, (framelen)
+	ld bc, 0x4fe6
+	sbc hl, bc
+	ld (_delay), hl
+
 	ld hl, sync_isr + 1
 	ld (hl), _isr % 0x100
 	inc hl
@@ -88,12 +90,6 @@ _isr3	pop hl			; 29 - 32
 	pop hl			; 68
 	xor a			; 78
 	ret			; 82
-
-_table	defw 0x411a
-        defw 0x411a + 0x03fc
-        defw 0x411a + 0x03fc
-        defw 0x411a + 0x0700
-        defw 0x411a - 0x2bc0
 
 _delay	defw 0x0000
 
