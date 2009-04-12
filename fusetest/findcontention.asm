@@ -49,8 +49,8 @@ _loop
 	cp 0x80
 	jp nc, _end
 
-;	ld hl, _testingstring
-;	call printstring
+	im 1
+	ei
 	ld bc, (_testvalue)
 	ld a, b
 	call printa
@@ -62,6 +62,8 @@ _loop
 	call printa
 	ld hl, _ellipsisstring
 	call printstring
+	di
+	im 2	
 
 	ld hl, (_testvalue)
 	call testcontention
@@ -110,6 +112,17 @@ _uncontended
 _end
 	im 1
 	ei
+
+	ld hl, _resultstring
+	call printstring
+	ld de, (_testvalue)
+	ld a, d
+	call printa
+	ld a, e
+	call printa
+	ld a, 0x0d
+	rst 0x10
+
 	ret
 
 ; Define our state machine. Each state has four entries
@@ -168,10 +181,10 @@ _testvalue defw 19881   ; Current tstate being tested
 _framestring defb 'Frame length ', 0
 _unknownstring defb 'unknown', 0x0d, 0
 _conststring defb '0x8000 + 0x', 0
-_testingstring defb 'Testing 0x', 0
-_ellipsisstring defb '... ', 0
+_ellipsisstring defb ': ', 0
 _contendedstring defb 'contended', 0x0d, 0
 _uncontendedstring defb 'uncontended', 0x0d, 0
+_resultstring defb 0x0d, 'First contended tstate is 0x', 0
 
 _nop	nop
 	ret
