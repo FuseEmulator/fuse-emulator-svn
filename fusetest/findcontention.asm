@@ -44,17 +44,21 @@ _ok
 	call printa
 	ld a, 0x0d
 	rst 0x10
-
+_loop
 	ld a, (_state)
 	cp 0x80
 	jp nc, _end
 
-	ld hl, _testingstring
-	call printstring
+;	ld hl, _testingstring
+;	call printstring
 	ld bc, (_testvalue)
 	ld a, b
 	call printa
 	ld a, c
+	call printa
+	ld a, 0x20
+	rst 0x10
+	ld a, (_state)
 	call printa
 	ld hl, _ellipsisstring
 	call printstring
@@ -62,12 +66,43 @@ _ok
 	ld hl, (_testvalue)
 	call testcontention
 
+	push af
 	jr z, _uncontended
 	ld hl, _contendedstring
 _printresult
 	call printstring
-	jr z, _end
 
+	ld a, (_state)
+	add a, a
+	ld b, a
+	add a, a
+	add a, b
+	ld b, a
+
+	pop af
+	ld a, b
+	jr z, _uncontended2
+	add a, 0x03
+
+_uncontended2
+	ld c, a
+	ld b, 0x00
+
+	ld hl, _statemachine
+	add hl, bc
+
+	ld a, (hl)
+	ld (_state), a
+	inc hl
+	ld e, (hl)
+	inc hl
+	ld d, (hl)
+	ld hl, (_testvalue)
+	add hl, de
+	ld (_testvalue), hl
+
+	jr _loop
+	
 _uncontended
 	ld hl, _uncontendedstring
 	jr _printresult
@@ -128,7 +163,7 @@ _statemachine
 	defw -224
 
 _state	defb 0		; Our current state
-_testvalue defw 20000   ; Current tstate being tested
+_testvalue defw 19881   ; Current tstate being tested
 	
 _framestring defb 'Frame length ', 0
 _unknownstring defb 'unknown', 0x0d, 0
