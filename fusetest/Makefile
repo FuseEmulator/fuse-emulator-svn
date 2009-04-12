@@ -6,7 +6,7 @@
 Z80AS := pasmo
 Z80ASFLAGS := --alocal
 
-targets := fusetest.tap
+targets := findcontention.tap fusetest.tap
 
 all: $(targets)
 
@@ -20,6 +20,15 @@ contention.tap: \
 	guessmachine.asm \
 	print.asm \
 	sync.asm
+
+findcontention.tap: \
+	atiming.asm \
+	delay.asm \
+	findcontention.asm \
+	framelength.asm \
+	print.asm \
+	sync.asm \
+	testcontention.asm	
 
 fusetest.tap: \
 	atiming.asm \
