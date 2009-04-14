@@ -16,39 +16,32 @@ PROC
 	inc hl
 	ld (hl), 0xc9		; ret
 
-	ld hl, _testdata
+	ld hl, 0x9100		; framelength - 32768
+	ld (framelen), hl
 
-_next	ld a, (hl)
-	cp 0x00
-	jr z, _done
-	
-	ld de, delay1
-	ld bc, 0x0004
-	ldir
+	ld hl, (basedelay)
+
+_next  	ld de, 0xff5f
+	add hl, de
+	ld (delay1), hl
+
+	ld e, l
+	ld d, h
+
+	ld hl, (framelen)
+	ld bc, 0x7d2c
+	add hl, bc
+	xor a
+	sbc hl, de
+	ld (delay2), hl
 
 	call bigtest
 
+	ld hl, (basedelay)
+	inc hl
+	ld (basedelay), hl
+
 	jr _next 
-
-_done	halt
-
-_testdata
-	defw 0x375b, 0xd6d1	; 14332
-	defw 0x375c, 0xd6d0	; 14333
-	defw 0x375d, 0xd6cf	; 14334
-	defw 0x375e, 0xd6c8	; 14335
-	defw 0x375f, 0xd6c8	; 14336
-	defw 0x3760, 0xd6c8	; 14337
-	defw 0x3761, 0xd6c8	; 14338
-	defw 0x3762, 0xd6c8	; 14339
-	defw 0x3763, 0xd6c8	; 14340
-	defw 0x3764, 0xd6c8	; 14341
-	defw 0x3765, 0xd6c7	; 14342
-	defw 0x3766, 0xd6c0	; 14343
-	defw 0x3767, 0xd6c0	; 14344
-	defw 0x3768, 0xd6c0	; 14345
-	defw 0x3769, 0xd6c0	; 14346
-	defw 0
 
 ENDP
 
@@ -56,6 +49,20 @@ bigtest
 PROC
 	push de
 	push hl
+
+	im 1
+	ei
+
+	ld hl, (basedelay)
+	ld a, h
+	call printa
+	ld a, l
+	call printa
+	ld hl, _colonstring
+	call printstring
+
+	di
+	im 2
 
 	ld b, 0x00
 	push bc
@@ -112,6 +119,7 @@ PROC
 	call printstring
 
 	ld a, b
+	neg
 	call printa
 
 	ld a, 0x0d
@@ -122,6 +130,7 @@ PROC
 
 	ret
 
+_colonstring defb ': ', 0
 _finalstring defb ' = ', 0
 
 ENDP
@@ -150,13 +159,14 @@ _isr	pop hl
 	ret
 ENDP
 
-delay1	defw 0x0000
-delay2	defw 0x0000
+basedelay defw 0x37fc
+delay1 defw 0000
+delay2 defw 0000
 
 INCLUDE atiming.asm
 INCLUDE delay.asm
 INCLUDE print.asm
 INCLUDE sync.asm
-INCLUDE guessmachine.asm
+INCLUDE framelength.asm
 
 END	main
