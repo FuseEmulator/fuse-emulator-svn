@@ -17,6 +17,7 @@ PROC
 	ld (hl), 0xc9		; ret
 
 	ld hl, 0x9100		; framelength - 32768
+;	ld hl, 0x6700		; 48K NTSC
 	ld (framelen), hl
 
 	ld hl, (basedelay)
@@ -160,6 +161,7 @@ _isr	pop hl
 ENDP
 
 basedelay defw 0x37fc
+;basedelay defw 0x22f8		; 48K NTSC
 delay1 defw 0000
 delay2 defw 0000
 

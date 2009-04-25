@@ -180,15 +180,15 @@ _incompletestring1 defb '... incomplete (B=0x', 0
 
 _testdata
 	defb 'BIT n,(IX+d)', 0
-        defb 0x1f
+        defb 0x3f
 	defw bitnixtest
 
 	defb 'DAA', 0
-        defb 0x1f
+        defb 0x3f
 	defw daatest
 
         defb 'OUTI', 0
-        defb 0x1f
+        defb 0x3f
         defw outitest
 
 	defb 'LDIR', 0
@@ -216,7 +216,7 @@ _testdata
 	defw highporttest2
 
 	defb '0xbffd read', 0
-        defb 0x1f
+        defb 0x3f
 	defw hexbffdreadtest
 
 	defb '0x3ffd read', 0

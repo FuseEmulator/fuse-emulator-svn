@@ -8,16 +8,22 @@
 first_contended
 PROC
 	ld hl, first_offset
-	ld a, 0x00
+	xor a
 	ld (hl), a
-	
-	ld hl, _predelay_table
-	ld bc, _predelay
-	call guessmachine_table
 
-	ld hl, _postdelay_table
-	ld bc, _postdelay
-	call guessmachine_table
+	ld hl, (guessmachine_contended)
+	ld de, 0x00b7
+	xor a
+	sbc hl, de
+	ld (_predelay), hl
+
+	ex de, hl
+	ld hl, (framelen)
+	xor a
+	sbc hl, de
+	ld de, 0x7d21
+	add hl, de
+	ld (_postdelay), hl
 
 	ld hl, _nop
 	ld de, 0x8001 - ( _nopend - _nop )
@@ -83,9 +89,6 @@ _nopend
 
 _predelay  defw 0x0000
 _postdelay defw 0x0000
-
-_predelay_table  defw 0x3748, 0x3762, 0x3762, 0x458c, 0x2319
-_postdelay_table defw 0xd6d9, 0xdabb, 0xdabb, 0xcf94, 0xbf48
 
 ENDP
 

@@ -411,6 +411,8 @@ _table	defw 0x00ff	; 48K
 	defw 0x00ff	; 128K/+2
 	defw 0x0055	; +2A/+3
 	defw 0x00ff	; Pentagon
+	defw 0x0000	; TS2068 (not used)
+	defw 0x00ff	; 48K NTSC
 
 _result	defw 0x0000
 

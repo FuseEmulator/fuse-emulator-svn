@@ -1,5 +1,6 @@
 ; Guess which machine we're running on
-; Currently, detects 48K (or +), 128K (or +2), +3 (or +2A) and Pentagon.
+; Currently, detects 48K (or +), 128K (or +2), +3 (or +2A), Pentagon,
+; TS2068 and NTSC 48K.
 
 guessmachine
 PROC
@@ -79,6 +80,11 @@ _mts2068
 
 _end	ld (guessmachine_guess), a
 	call printstring
+      
+	ld hl, _contention_table
+	ld bc, guessmachine_contended
+	call guessmachine_table
+
 	ret
 
 _m48string defb '48K', 0x0d, 0
@@ -90,16 +96,28 @@ _mts2068string defb 'TS2068', 0x0d, 0
 
 _unknown defb 'unknown', 0x0d, 0
 
+; First contended cycle for each machine
+
+_contention_table
+    defw 0x37ff		; 48K
+    defw 0x3819		; 128K/+2
+    defw 0x3819		; +2A/+3
+    defw 0x4643		; Pentagon (see below)
+    defw 0x23d0		; TS2068
+    defw 0x22ff		; 48K NTSC
+
+; The Pentagon has no contended memory. The number here
+; is one pixel before the screen.
+
 ENDP
 
 guessmachine_table
 PROC
-	xor a
 	ld a, (guessmachine_guess)
 	ld d, 0x00
 	ld e, a
-	adc hl, de
-	adc hl, de
+	add hl, de
+	add hl, de
 	ld a, (hl)
 	ld (bc), a
 	inc hl
@@ -110,4 +128,4 @@ PROC
 ENDP
 
 guessmachine_guess defb 0x00
-
+guessmachine_contended defw 0x0000
