@@ -719,3 +719,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20090411 doc/libspectrum.txt,tape.c: add a new tape flag for end of tape
          (part of fixes for bug #2743838) (Fred).
 20090411 libspectrum.h.in: export new end of tape flag.
+20090509 tape_block.c: handle querying the block length for turbo and pure data
+         blocks with 0 length (Fred).
