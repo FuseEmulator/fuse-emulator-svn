@@ -517,23 +517,25 @@ turbo_block_length( libspectrum_tape_turbo_block *turbo )
     turbo->sync1_length + turbo->sync2_length +
     convert_ms_to_tstates( turbo->pause );
   size_t i;
-  int bits_set_in_last_byte =
-    libspectrum_bits_set_n_bits( turbo->data[ turbo->length-1 ],
-                                 turbo->bits_in_last_byte );
+  if( turbo->length ) {
+    int bits_set_in_last_byte =
+      libspectrum_bits_set_n_bits( turbo->data[ turbo->length-1 ],
+                                   turbo->bits_in_last_byte );
 
-  for( i = 0; i < turbo->length-1; i++ ) {
-    libspectrum_byte data = turbo->data[ i ];
+    for( i = 0; i < turbo->length-1; i++ ) {
+      libspectrum_byte data = turbo->data[ i ];
+      length += convert_pulses_to_tstates( turbo->bit1_length,
+                                           turbo->bit0_length,
+                                           bits_set[ data ],
+                                           LIBSPECTRUM_BITS_IN_BYTE );
+    }
+
+    /* handle bits in last byte correctly */
     length += convert_pulses_to_tstates( turbo->bit1_length,
                                          turbo->bit0_length,
-                                         bits_set[ data ],
-                                         LIBSPECTRUM_BITS_IN_BYTE );
+                                         bits_set_in_last_byte,
+                                         turbo->bits_in_last_byte );
   }
-
-  /* handle bits in last byte correctly */
-  length += convert_pulses_to_tstates( turbo->bit1_length,
-                                       turbo->bit0_length,
-                                       bits_set_in_last_byte,
-                                       turbo->bits_in_last_byte );
 
   return length;
 }
@@ -554,23 +556,25 @@ pure_data_block_length( libspectrum_tape_pure_data_block *pure_data )
 {
   libspectrum_dword length = convert_ms_to_tstates( pure_data->pause );
   size_t i;
-  int bits_set_in_last_byte =
-    libspectrum_bits_set_n_bits( pure_data->data[ pure_data->length-1 ],
-                                 pure_data->bits_in_last_byte );
+  if( pure_data->length ) {
+    int bits_set_in_last_byte =
+      libspectrum_bits_set_n_bits( pure_data->data[ pure_data->length-1 ],
+                                   pure_data->bits_in_last_byte );
 
-  for( i = 0; i < pure_data->length-1; i++ ) {
-    libspectrum_byte data = pure_data->data[ i ];
+    for( i = 0; i < pure_data->length-1; i++ ) {
+      libspectrum_byte data = pure_data->data[ i ];
+      length += convert_pulses_to_tstates( pure_data->bit1_length,
+                                           pure_data->bit0_length,
+                                           bits_set[ data ],
+                                           LIBSPECTRUM_BITS_IN_BYTE );
+    }
+      
+    /* handle bits in last byte correctly */
     length += convert_pulses_to_tstates( pure_data->bit1_length,
                                          pure_data->bit0_length,
-                                         bits_set[ data ],
-                                         LIBSPECTRUM_BITS_IN_BYTE );
+                                         bits_set_in_last_byte,
+                                         pure_data->bits_in_last_byte );
   }
-    
-  /* handle bits in last byte correctly */
-  length += convert_pulses_to_tstates( pure_data->bit1_length,
-                                       pure_data->bit0_length,
-                                       bits_set_in_last_byte,
-                                       pure_data->bits_in_last_byte );
 
   return length;
 }
