@@ -627,6 +627,8 @@ The available properties (along with their types) are:
 * libspectrum_byte* divide_eprom[1]
 * libspectrum_byte* divide_ram[4]
 
+* int fuller_box_active
+
 Most of those should be fairly self-explanatory; those which may not
 be are:
 
