@@ -721,3 +721,6 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20090411 libspectrum.h.in: export new end of tape flag.
 20090509 tape_block.c: handle querying the block length for turbo and pure data
          blocks with 0 length (Fred).
+20090608 accessor.pl,doc/libspectrum.txt,libspectrum.c,snap_accessors.txt,
+         snapshot.c,szx.c,z80.c: add support for the Fuller Box in snapshots
+         (Fred).

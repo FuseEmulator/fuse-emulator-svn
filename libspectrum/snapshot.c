@@ -1,5 +1,5 @@
 /* snapshot.c: Snapshot handling routines
-   Copyright (c) 2001-2008 Philip Kendall, Darren Salt
+   Copyright (c) 2001-2009 Philip Kendall, Darren Salt
 
    $Id$
 
@@ -181,6 +181,8 @@ libspectrum_snap_alloc( void )
   for( i = 0; i < SNAPSHOT_DIVIDE_PAGES; i++ ) {
     libspectrum_snap_set_divide_ram( snap, i, NULL );
   }
+
+  libspectrum_snap_set_fuller_box_active( snap, 0 );
 
   return snap;
 }

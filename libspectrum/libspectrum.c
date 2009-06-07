@@ -1,5 +1,5 @@
 /* libspectrum.c: Some general routines
-   Copyright (c) 2001-2004 Philip Kendall, Darren Salt, Fredrick Meunier
+   Copyright (c) 2001-2009 Philip Kendall, Darren Salt, Fredrick Meunier
 
    $Id$
 
@@ -347,7 +347,7 @@ libspectrum_machine_capabilities( libspectrum_machine type )
     break;
   }
 
-  /* TRDOS-style disk */
+  /* Built-in TRDOS-style disk */
   switch( type ) {
   case LIBSPECTRUM_MACHINE_PENT:
   case LIBSPECTRUM_MACHINE_PENT512: case LIBSPECTRUM_MACHINE_PENT1024:

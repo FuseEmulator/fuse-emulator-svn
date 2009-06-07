@@ -1,5 +1,5 @@
 # snap_accessors.txt: simple accessors for libspectrum_snap
-# Copyright (c) 2003-2008 Philip Kendall
+# Copyright (c) 2003-2009 Philip Kendall
 
 # $Id$
 
@@ -144,3 +144,5 @@ libspectrum_byte divide_control
 size_t divide_pages
 libspectrum_byte* divide_eprom 1
 libspectrum_byte* divide_ram 1
+
+int fuller_box_active

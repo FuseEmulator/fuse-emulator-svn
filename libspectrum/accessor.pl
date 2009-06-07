@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # accessor.pl: generate accessor functions
-# Copyright (c) 2003-2008 Philip Kendall
+# Copyright (c) 2003-2009 Philip Kendall
 
 # $Id$
 
@@ -27,7 +27,7 @@ use strict;
 
 print << "CODE";
 /* snap_accessors.c: simple accessor functions for libspectrum_snap
-   Copyright (c) 2003-2008 Philip Kendall
+   Copyright (c) 2003-2009 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -189,6 +189,9 @@ struct libspectrum_snap {
   size_t divide_pages;
   libspectrum_byte* divide_eprom[ 1 ];
   libspectrum_byte* divide_ram[ SNAPSHOT_DIVIDE_PAGES ];
+
+  /* Fuller box status */
+  int fuller_box_active;
 };
 
 /* Initialise a libspectrum_snap structure */
