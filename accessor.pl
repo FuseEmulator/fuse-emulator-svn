@@ -192,6 +192,9 @@ struct libspectrum_snap {
 
   /* Fuller box status */
   int fuller_box_active;
+
+  /* Melodik status */
+  int melodik_active;
 };
 
 /* Initialise a libspectrum_snap structure */

@@ -381,6 +381,7 @@ read_ay_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 
   flags = **buffer; (*buffer)++;
   libspectrum_snap_set_fuller_box_active( snap, flags & ZXSTAYF_FULLERBOX );
+  libspectrum_snap_set_melodik_active( snap, !!( flags & ZXSTAYF_128AY ) );
 
   libspectrum_snap_set_out_ay_registerport( snap, **buffer ); (*buffer)++;
 
@@ -1847,6 +1848,7 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
   if( error ) return error;
 
   if( libspectrum_snap_fuller_box_active( snap ) ||
+      libspectrum_snap_melodik_active( snap ) ||
       capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_AY ) {
     error = write_ay_chunk( buffer, &ptr, length, snap );
     if( error ) return error;
@@ -2498,6 +2500,7 @@ write_ay_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   flags = 0;
   if( libspectrum_snap_fuller_box_active( snap ) ) flags |= ZXSTAYF_FULLERBOX;
+  if( libspectrum_snap_melodik_active( snap ) ) flags |= ZXSTAYF_128AY;
   *(*ptr)++ = flags;
 
   *(*ptr)++ = libspectrum_snap_out_ay_registerport( snap );
