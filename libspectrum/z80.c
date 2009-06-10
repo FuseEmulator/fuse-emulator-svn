@@ -113,6 +113,9 @@ static size_t slt_signature_length = 6;
 /* Bits used in extended header to flag that a Fuller Box is in use */
 static const libspectrum_byte fuller_box_flags = 0x44;
 
+/* Bits used in extended header to flag that a Melodik is in use */
+static const libspectrum_byte melodik_flags = 0x04;
+
 static libspectrum_error
 read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 	     const libspectrum_byte **data, int *version, int *compressed );
@@ -332,7 +335,7 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
          b.. Any valid 128k identifier should be taken as +2
          c.. Any valid +3 identifier (7 or 8) should be taken as +2A
 
-       Support for Fuller Box / AY sound in 48k mode (not implemented)
+       Support for Fuller Box / AY sound in 48k mode
        
        Spectaculator recognises xzx's extension of setting bit 2 of byte 37 to
        specify AY sound in 48k mode. In addition, if this and also bit 6 is
@@ -358,6 +361,8 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
 
     if( ( extra_header[5] & fuller_box_flags ) == fuller_box_flags ) {
       libspectrum_snap_set_fuller_box_active( snap, 1 );
+    } else if( ( extra_header[5] & melodik_flags ) == melodik_flags ) {
+      libspectrum_snap_set_melodik_active( snap, 1 );
     }
 
     capabilities =
@@ -374,6 +379,7 @@ read_header( const libspectrum_byte *buffer, libspectrum_snap *snap,
     }
 
     if( libspectrum_snap_fuller_box_active( snap ) ||
+        libspectrum_snap_melodik_active( snap ) ||
         capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_AY ) {
       libspectrum_snap_set_out_ay_registerport( snap, extra_header[ 6] );
       for( i = 0; i < 16; i++ ) {
@@ -1361,6 +1367,11 @@ write_extended_header( libspectrum_byte **buffer, libspectrum_byte **ptr,
   if( libspectrum_snap_fuller_box_active( snap ) ) {
     /* Fuller is set by having bit 2 and 6 on */
     hardware_flag |= fuller_box_flags;
+  }
+
+  if( libspectrum_snap_melodik_active( snap ) ) {
+    /* Melodik is set by having bit 2 on */
+    hardware_flag |= melodik_flags;
   }
 
   *(*ptr)++ = hardware_flag;

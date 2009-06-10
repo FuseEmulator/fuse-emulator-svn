@@ -184,6 +184,8 @@ libspectrum_snap_alloc( void )
 
   libspectrum_snap_set_fuller_box_active( snap, 0 );
 
+  libspectrum_snap_set_melodik_active( snap, 0 );
+
   return snap;
 }
 
