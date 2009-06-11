@@ -727,3 +727,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20090610 accessor.pl,doc/libspectrum.txt,libspectrum.c,snap_accessors.txt,
          snapshot.c,szx.c,z80.c: add support for the Melodik and similar AY
          interfaces (feature request #1841501) (Fred).
+20090611 sna.c: note info loss of Fuller or Melodik info when writing sna
+         format snapshots (Fred).
