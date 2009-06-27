@@ -331,7 +331,7 @@ tzx_write_raw_data( libspectrum_tape_block *block, libspectrum_byte **buffer,
 
   /* Make room for the ID byte, the metadata and the actual data */
   data_length = libspectrum_tape_block_data_length( block );
-  libspectrum_make_room( buffer, 8 + data_length, ptr, length );
+  libspectrum_make_room( buffer, 9 + data_length, ptr, length );
 
   /* Write the ID byte and the metadata */
   *(*ptr)++ = LIBSPECTRUM_TAPE_BLOCK_RAW_DATA;

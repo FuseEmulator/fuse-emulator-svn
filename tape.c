@@ -37,6 +37,9 @@ struct libspectrum_tape {
   /* All the blocks */
   GSList* blocks;
 
+  /* The last block */
+  GSList* last_block;
+
   /* The state of the current block */
   libspectrum_tape_block_state state;
 
@@ -112,6 +115,7 @@ libspectrum_tape_alloc( void )
 {
   libspectrum_tape *tape = libspectrum_malloc( sizeof( *tape ) );
   tape->blocks = NULL;
+  tape->last_block = NULL;
   libspectrum_tape_iterator_init( &(tape->state.current_block), tape );
   tape->state.loop_block = NULL;
   return tape;
@@ -835,8 +839,8 @@ libspectrum_tape_raw_data_next_bit( libspectrum_tape_raw_data_block *block,
       if( state->bytes_through_block == block->length )
 	break;
     }
-  } while( (block->data[state->bytes_through_block] << state->bits_through_byte
-            & 0x80 ) != state->last_bit) ;
+  } while( ( block->data[state->bytes_through_block] <<
+             state->bits_through_byte & 0x80 ) != state->last_bit) ;
 
   state->bit_tstates = length * block->bit_length;
   state->last_bit ^= 0x80;
@@ -1039,6 +1043,13 @@ libspectrum_tape_peek_next_block( libspectrum_tape *tape )
   return block ? block : tape->blocks->data;
 }
 
+/* Peek at the last block on the tape */
+libspectrum_tape_block WIN32_DLL *
+libspectrum_tape_peek_last_block( libspectrum_tape *tape )
+{
+  return tape->last_block ? tape->last_block->data : NULL;
+}
+
 /* Cause the next block on the tape to be active, initialise it
    and return it */
 libspectrum_tape_block*
@@ -1105,7 +1116,13 @@ void
 libspectrum_tape_append_block( libspectrum_tape *tape,
 			       libspectrum_tape_block *block )
 {
-  tape->blocks = g_slist_append( tape->blocks, (gpointer)block );
+  if( tape->blocks == NULL ) {
+    tape->blocks = g_slist_append( tape->blocks, (gpointer)block );
+    tape->last_block = tape->blocks;
+  } else {
+    tape->last_block =
+      g_slist_append( tape->last_block, (gpointer)block )->next;
+  }
 
   /* If we previously didn't have a tape loaded ( implied by
      tape->current_block == NULL ), set up so that we point to the
@@ -1122,6 +1139,7 @@ libspectrum_tape_remove_block( libspectrum_tape *tape,
 {
   if( it->data ) libspectrum_tape_block_free( it->data );
   tape->blocks = g_slist_delete_link( tape->blocks, it );
+  tape->last_block = g_slist_last( tape->blocks );
 }
 
 libspectrum_error
@@ -1130,6 +1148,7 @@ libspectrum_tape_insert_block( libspectrum_tape *tape,
 			       size_t position )
 {
   tape->blocks = g_slist_insert( tape->blocks, block, position );
+  tape->last_block = g_slist_last( tape->blocks );
 
   return LIBSPECTRUM_ERROR_NONE;
 }

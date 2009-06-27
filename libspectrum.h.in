@@ -612,6 +612,10 @@ libspectrum_tape_set_state( libspectrum_tape *tape,
 libspectrum_tape_block WIN32_DLL *
 libspectrum_tape_peek_next_block( libspectrum_tape *tape );
 
+/* Peek at the last block on the tape */
+libspectrum_tape_block WIN32_DLL *
+libspectrum_tape_peek_last_block( libspectrum_tape *tape );
+
 /* Cause the next block on the tape to be active, initialise it
    and return it */
 libspectrum_tape_block WIN32_DLL *

@@ -154,7 +154,6 @@ lsb2dword( const libspectrum_byte *mem )
           mem[1] *     0x100 +
           mem[2] *   0x10000 +
           mem[3] * 0x1000000 ;
-
 } 
   
 static libspectrum_word
@@ -201,7 +200,7 @@ internal_warajevo_read( libspectrum_tape *tape,
     error = get_next_block( &offset, ptr, end, tape );
     if( error != LIBSPECTRUM_ERROR_NONE ) return error;
   }
-  
+
   return LIBSPECTRUM_ERROR_NONE;
 }
 
@@ -260,7 +259,8 @@ exec_command( libspectrum_byte *dest, const libspectrum_byte *src,
   for( i = 0; i < 8; i++ ) {
     bit = ( command_byte & ( 0x80 >> i ) ) ? 1 : 0;
 
-    error = add_bit_to_copy_command( dest, src, dest + to_write, bit, sp, bytes_written );
+    error = add_bit_to_copy_command( dest, src, dest + to_write, bit, sp,
+                                     bytes_written );
     if( error ) { return error; }
 
     if( *bytes_written >= to_write ) break;
@@ -541,7 +541,9 @@ read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
 
     error = decompress_block( block_data, data, end,
 			      lsb2word( ptr + offset + 15 ), length );
-    if( error ) { libspectrum_free( block_data ); libspectrum_free( block ); return error; }
+    if( error ) {
+      libspectrum_free( block_data ); libspectrum_free( block ); return error;
+    }
   } else {
     /* Uncompressed block: just copy the data across */
     memcpy( block_data, data, length );
@@ -568,8 +570,44 @@ read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
   libspectrum_tape_block_set_bits_in_last_byte( block,
 						status.bits.bits_used + 1 );
 
-  /* Put the block into the block list */
-  libspectrum_tape_append_block( tape, block );
+  /* Warajevo TAPs have a relatively short limit on RAW blocks of 64995 bytes
+     which is only 11.74 secs at 44100Hz.
+
+     As a result when these blocks are used they often are a sequence of these
+     short blocks as opposed to other formats which have a long single block
+     corresponding to the sampled section of tape.
+
+     This presents a problem for libspectrum which assumes that a pulse cannot
+     span two different blocks, so we will work around this limitation by
+     coalesing adjacent compatible RAW blocks to ensure the pulse structure is
+     preserved.
+     */
+
+  /* Check if the last block was also a raw block of the same sample rate
+     and with all 8 bits used in the last byte */
+  libspectrum_tape_block *last_block = libspectrum_tape_peek_last_block( tape );
+  if( last_block &&
+      libspectrum_tape_block_type( last_block ) ==
+        LIBSPECTRUM_TAPE_BLOCK_RAW_DATA && 
+      libspectrum_tape_block_bit_length( last_block ) == bit_length &&
+      libspectrum_tape_block_bits_in_last_byte( last_block ) == 8 ) {
+    /* Combine the two blocks */
+    size_t new_length = libspectrum_tape_block_data_length( last_block ) + 
+                          length;
+    block_data = libspectrum_realloc( libspectrum_tape_block_data( last_block ),
+                                      new_length * sizeof( libspectrum_byte ) );
+
+    memcpy( block_data + libspectrum_tape_block_data_length( last_block ),
+            libspectrum_tape_block_data( block ), length );
+    libspectrum_tape_block_set_data( last_block, block_data );
+    libspectrum_tape_block_set_data_length( last_block, new_length );
+    libspectrum_tape_block_set_bits_in_last_byte( last_block,
+                                                  status.bits.bits_used + 1 );
+    libspectrum_tape_block_free( block );
+  } else {
+    /* Put the block into the block list */
+    libspectrum_tape_append_block( tape, block );
+  }
 
   /* And return with no error */
   return LIBSPECTRUM_ERROR_NONE;
