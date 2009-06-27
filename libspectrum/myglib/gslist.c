@@ -246,6 +246,18 @@ GSList* g_slist_delete_link	(GSList		*list,
   return list;
 }
 
+GSList*
+g_slist_last (GSList *list)
+{
+  if (list)
+    {
+      while (list->next)
+      list = list->next;
+    }
+
+  return list;
+}
+
 guint
 g_slist_length (GSList *list)
 {
@@ -283,6 +295,24 @@ void	g_slist_free		(GSList		*list) {
       last_node->next = free_list;
       free_list = list;
     }
+}
+
+GSList*
+g_slist_reverse (GSList *list)
+{
+  GSList *prev = NULL;
+
+  while (list)
+    {
+      GSList *next = list->next;
+
+      list->next = prev;
+
+      prev = list;
+      list = next;
+    }
+
+  return prev;
 }
 
 GSList* g_slist_nth		(GSList		*list,
