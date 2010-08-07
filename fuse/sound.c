@@ -30,6 +30,8 @@
 
 #include "fuse.h"
 #include "machine.h"
+#include "movie.h"
+#include "screenshot.h"
 #include "options.h"
 #include "settings.h"
 #include "sound.h"
@@ -198,6 +200,9 @@ sound_init( const char *device )
 
   if( ret )
     return;
+
+/* initialize movie settings... */
+  movie_init_sound( settings_current.sound_freq, sound_stereo );
 
   if( !sound_init_blip(&left_buf, &left_beeper_synth) ) return;
   if( sound_stereo && !sound_init_blip(&right_buf, &right_beeper_synth) ) return;
@@ -618,6 +623,8 @@ sound_frame( void )
 
   sound_lowlevel_frame( samples, count );
 
+  if( screenshot_movie_record == 3 )
+      movie_add_sound( samples, count );
   ay_change_count = 0;
 }
 

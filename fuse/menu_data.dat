@@ -47,6 +47,7 @@ File/Save S_creen as PNG..., Item
 #endif
 
 File/_Movies, Branch
+File/Movies/Record _Movie File..., Item
 File/Movies/Record Movie as _SCR..., Item
 #ifdef USE_LIBPNG
 File/Movies/Record Movie as _PNG..., Item
@@ -102,6 +103,10 @@ Options/F_ull screen, Item, F11
 #endif
 
 Options/_Disk options..., Item
+
+#ifdef USE_FFMPEG
+Options/_Movie options..., Item
+#endif
 
 Options/separator, Separator
 Options/S_ave, Item

@@ -125,6 +125,7 @@ MENU_CALLBACK( menu_file_aylogging_record );
 MENU_CALLBACK( menu_file_savescreenasscr );
 MENU_CALLBACK( menu_file_savescreenaspng );
 
+MENU_CALLBACK( menu_file_movies_recordmoviefile );
 MENU_CALLBACK( menu_file_movies_recordmovieasscr );
 MENU_CALLBACK( menu_file_movies_recordmovieaspng );
 
@@ -133,6 +134,7 @@ MENU_CALLBACK( menu_options_sound );
 MENU_CALLBACK( menu_options_peripherals );
 MENU_CALLBACK( menu_options_rzx );
 MENU_CALLBACK( menu_options_diskoptions );
+MENU_CALLBACK( menu_options_movieoptions );
 MENU_DETAIL( menu_plus3a_detail );
 MENU_DETAIL( menu_plus3b_detail );
 MENU_DETAIL( menu_beta128a_detail );

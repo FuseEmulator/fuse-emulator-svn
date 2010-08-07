@@ -83,3 +83,15 @@ Combo, (O)pus Drive 1, drive_opus1_type, INPUT_KEY_o, *Single-sided 40 track|Dou
 Combo, O(p)us Drive 2, drive_opus2_type, INPUT_KEY_p, Disabled|*Single-sided 40 track|Double-sided 40 track|Single-sided 80 track|Double-sided 80 track
 Combo, (T)ry merge 'B' side of disks, disk_try_merge, INPUT_KEY_t, Never|*With single-sided drives|Always
 Checkbox, Con(f)irm merge disk sides, disk_ask_merge, INPUT_KEY_f
+
+movieoptions
+Movie Options
+Combo, (F)ile format, movie_format_sel, INPUT_KEY_f, *Default|Matroska|MPEG|MPEG-4|DVD|Flash|iPod|Other
+Combo, (V)ideo codec, movie_vcodec_sel, INPUT_KEY_v, *Default|MPEG-2|MPEG-4|MS MPEG-4|H.263+
+Combo, (A)udio codec, movie_acodec_sel, INPUT_KEY_a, *Default|MP2|MP3|AAC|PCM|Vorbis
+Combo, Video frame (r)ate, movie_frate_sel, INPUT_KEY_r, Native|*Default|PAL|NTSC|Movie
+Combo, Video bi(t)rate strategy, movie_vrate_sel, INPUT_KEY_t, *Default|Codec default
+Entry, Select video (b)itrate, movie_vrate, INPUT_KEY_b, 0, bit/s
+Entry, Select audio b(i)trate, movie_arate, INPUT_KEY_i, 0, bit/s
+Checkbox, (D)ouble size video, movie_double, INPUT_KEY_d
+

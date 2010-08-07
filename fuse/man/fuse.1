@@ -476,6 +476,35 @@ option.
 Specify Interface I Microdrive cartridge files to open.
 .RE
 .PP
+.I \-\-movie-start filename
+.br
+.I \-\-movie-format format
+.br
+.I \-\-movie-acodec audio_codec
+.br
+.I \-\-movie-acodec_sel audio_codec
+.br
+.I \-\-movie-arate audio_bitrate
+.br
+.I \-\-movie-frate framerate
+.br
+.I \-\-movie-vcodec video_codec
+.br
+.I \-\-movie-vcodec_sel video_codec
+.br
+.I \-\-movie-vrate_sel video_bitrate_strategy
+.br
+.I \-\-movie-vrate video_bitrate
+.br
+.I \-\-movie-double
+.RS
+If Fuse compiled with FFMPEG support (avformat, avcodec, swscale libraries)
+you can save a video file like AVI or MPEG from fuse.
+See the
+.B "MOVIE RECORDING"
+section
+.RE
+.PP
 .I \-\-opus
 .RS
 Emulate a Opus Discovery interface. Same as the Peripherals Options dialog's
@@ -1401,6 +1430,15 @@ Save the current screen as a PNG file. You will be prompted for a
 filename to save the screenshot to.
 .RE
 .PP
+.I "File, Movies, Record Movie File..."
+.RS
+If Fuse compiled with FFMPEG support (avformat, avcodec, swscale libraries)
+you can save a video file like AVI or MPEG from fuse.
+You will be prompted for a filename to save video. Please see
+.B "MOVIE RECORDING"
+section.
+.RE
+.PP
 .I "File, Movies, Record Movie as SCR..."
 .RS
 Start recording a `movie' as a series of SCR screenshots. You will be
@@ -2046,6 +2084,18 @@ section for more details.
 .RS
 Switch Fuse between full screen and windowed mode.
 This menu is only available under the SDL UI.
+.RE
+.PP
+.I "Options, Movie..."
+.RS
+If Fuse compiled with FFMPEG support (avformat, avcodec, swscale libraries)
+you can save a video file like AVI or MPEG from fuse.
+Here you can select some basic parameters of the generated video file
+(file format, compression metods, etc...)
+Please see
+.B "MOVIE RECORDING"
+section.
+.RE
 .PP
 .I "Options, Save"
 .RS
@@ -3632,6 +3682,203 @@ Two disk image formats (Extended DSK and UDI) can store this type
 of data.
 Fuse can read and use weak sector data from EDSK and UDI files when
 present, and can save back weak sector data to UDI image format.
+.\"
+.\"------------------------------------------------------------------
+.\"
+.SH MOVIE RECORDING
+.PP
+If Fuse compiled with FFMPEG support (avformat, avcodec, swscale libraries)
+you can save a video file like AVI or MPEG from fuse.
+In the
+.I "Options, Movie..."
+menu, you can set some basic parameters of recording.
+.PP
+.B "File format"
+.PP
+You can choose a predefined file format (container) for recording. The default
+is AVI. This option is identical with the
+.B "--movie-format-sel <predefined format name>"
+command line option. If you select 
+.I "Other"
+, FFMPEG try to identify the file format from the given filename.
+.PP
+With the
+.B "--movie-format <format name>"
+command line option you can select any output file format with FFMPEG's short name or
+MIME type. e.g.:
+.I "fuse --movie-format application/vnd.rn-realmedia
+select RealMedia file format.
+.PP
+You can obtain a list of the available file formats with
+.IR "--movie-format ?" " or " "--movie-format list" " or " "--movie-format help"
+command line option.
+.PP
+.B "Video codec"
+.PP
+You can choose a predefined video codec for recording. The default
+is the default video codec of the file format. This option is identical with the
+.B "--movie-vcodec-sel <predefined codec name>"
+command line option.
+.PP
+With the
+.B "--movie-vcodec <codec name>"
+command line option you can select any video codec by FFMPEG's short name e.g.:
+.I "fuse --movie-vcodec mpeg1video
+select MPEG-1 video codec.
+.PP
+You can obtain a list of the available video codecs with
+.IR "--movie-vcodec ?" " or " "--movie-vcodec list" " or " "--movie-vcodec help"
+command line option.
+.PP
+If you select an incompatible video codec for a file format or other parameters,
+FFMPEG refuse to record video file.
+.PP
+.B "Audio codec"
+.PP
+You can choose a predefined audio codec for recording. The default
+is the default audio codec of the file format. This option is identical with the
+.B "--movie-acodec-sel <predefined codec name>"
+command line option.
+.PP
+With the
+.B "--movie-acodec <codec name>"
+command line option you can select any audio codec by FFMPEG's short name e.g.:
+.I "fuse --movie-acodec ac3
+select AC-3 audio codec.
+.PP
+You can obtain a list of the available audio codecs with
+.IR "--movie-acodec ?" " or " "--movie-acodec list" " or " "--movie-acodec help"
+command line option.
+.PP
+If you select an incompatible audio codec for a file format or other parameters,
+FFMPEG refuse to record video file.
+.PP
+.B "Video frame rate"
+.PP
+You can choose a predefined video frame rate. The default
+is to fuse try
+.I Native, PAL, NTSC, Movie, Codec default
+in this order. This option is identical with the
+.B "--movie-frate-sel <rate name>"
+command line option.
+.PP
+.I Native
+means current frame rate, e.g. 50.08 frame/sec for ZX Spectrum 48k.
+.I PAL
+is 25frame/sec
+.I NTSC
+is 29.97 frame/sec and
+.I Movie
+is 24 frame/sec.
+.PP
+With the
+.B "--movie-frate <video frame rate>"
+command line option you can select any video frame rate for recording.
+.PP
+The "Native" frame rate depend the "Frame rate" settings, so if we use 2 or 3
+for 
+.I "Options/General/Frame rate 1:n"
+then the "Native" frame rate halfed or divided by 3.
+.PP
+You can see all of the "gfx" effects, if you record video at "Native" framerate and set
+.I "Frame rate"
+to 1. Sometimes this need a very big processing power (e.g. Eyeache2).
+.PP
+In "normal" case you can safely use
+.I --rate 2
+command line option or set
+.I "Options/General/Frame rate 1:n"
+to 2, in order to reduce the frame rate around 25 frame/sec.
+.PP
+If you select an incompatible video framerate for a file format and/or video codec,
+or other parameters, FFMPEG refuse to record video file.
+.PP
+.B "Video bitrate strategy"
+.PP
+You can choose a predefined video bitrate strategy. Because the Spectrum screen is rather
+line-art than a real picture, the default frame rates mostly gives blurry and/or degraded
+compressed video. So, the default is to use twice the codec default bitrate value unless
+you specified some value in the
+.I "Video bitrate"
+entry. This option is identical with the
+.B "--movie-vrate-sel <strategy name>"
+command line option.
+.PP
+.B "Video bitrate"
+.PP
+You can choose a video bitrate for compression. If this value lower or equal 0 then Fuse
+uses bitrate from codec default as determined by
+.I "Video bitrate strategy"
+option.
+This option is identical with the
+.B "--movie-vrate <bitrate>"
+command line option.
+.PP
+.B "Double size video"
+.PP
+Most of the FFMPEG video codecs uses YUV420 color space for input, so we can see a noticeable
+color subsampling effect on the recorded video.
+If you select this option, fuse record double size video (e.g.: 640x480 for normal ZX Spectrum) in
+order to eliminate this type of color degradation.
+This option is identical with the
+.B "--movie-double"
+command line option.
+.PP
+.B "--movie-start <filename>"
+.PP
+With this command line option, Fuse start movie recording as started.
+So you can make recordings from the "beginning".
+.PP
+.B Extra options
+.PP
+You can select audio or video only file formats. (e.g.: to select audio only
+WAV output, set
+.IR "File format " to " Other"
+and give a file name like
+.IR "test.wav",
+now Fuse records only the sound.)
+.PP
+You can save a series of pictures (screenshots) if you select a single image
+file format, with a %d in the filename. (e.g.: set
+.IR "File format " to " Other"
+and give a file name like
+.IR "test_%05d.jpg",
+now Fuse save file test_00001.jpg, test_00002.jpg, and so on...)
+.PP
+For debugging purpose Fuse can save movie with sound in a specific format (FMF).
+This recording is very fast, and has a moderate size, but you need a specific
+program to analyse or convert into regular video and or audio file.
+Fuse has some command line option for this format:
+.I --movie-fmf
+.PP
+set movie file format to FMF.
+.PP
+.I --movie-fmf-compress <compression rate>
+.PP
+if Fuse compiled with Zlib support, this option set the compression rate from 1
+to 9. 0 switch off the Zlib compression.
+.I --movie-fmf-sound <sound format code>
+.PP
+set the recorded sound format: 1 - u-Law, 2 - A-Law, any other 16 bit PCM
+.PP
+.B Examples
+.PP
+.B fuse --movie-start test.avi
+.PP
+Start recording a movie to file 'test.avi' with the default options.
+.PP
+.B fuse --movie-format video/mpeg --movie-frate-sel PAL --movie-start test.vob
+.PP
+Start recording a DVD compatible MPEG-PS file (VOB) with 25 frame/sec frame rate.
+.PP
+.B fuse --movie-double --movie-frate 25/9 --movie-start test_%05d.png
+.PP
+Start recording screenshots at 25 shot per 9 seconds rate with double size, so
+the color subsampling effect is minimal on the 640x480 PNG pictures.
+.PP
+.B fuse --movie-format mp3 --movie-acodec libmp3lame --movie-start test.mp3
+.PP
+Start recording a MP3 audio file.
 .\"
 .\"------------------------------------------------------------------
 .\"

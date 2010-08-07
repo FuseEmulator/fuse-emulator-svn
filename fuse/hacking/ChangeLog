@@ -3306,3 +3306,7 @@
          the Fuse window is resized by the user.
 20100719 disk/disk.c: set track lengths when inserting a new disk (fixes bug
          #3031299) (Gergely Szasz).
+20100807 display.[ch],ffmpeg.c,movie.[ch],movie_tables.c,Makefile.am,
+         configure.in,fuse.c,man/fuse.1,menu.[ch],menu_data.dat,settings.dat,
+         sound.c,ui.c,ui/options.dat: add support for recording videos of the
+         emulator output using ffmpeg (patch #3034770) (Gergely Szasz).

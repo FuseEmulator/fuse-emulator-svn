@@ -62,6 +62,7 @@ fuse_SOURCES = ay.c \
 	dck.c \
 	display.c \
 	event.c \
+	ffmpeg.c \
 	fuller.c \
 	fuse.c \
 	if1.c \
@@ -76,6 +77,7 @@ fuse_SOURCES = ay.c \
 	memory.c \
 	mempool.c \
 	menu.c \
+	movie.c \
 	module.c \
 	periph.c \
 	printer.c \
@@ -189,6 +191,7 @@ noinst_HEADERS = ay.h \
 	memory.h \
 	mempool.h \
 	menu.h \
+	movie.h \
 	module.h \
 	periph.h \
 	psg.h \

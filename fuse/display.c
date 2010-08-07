@@ -35,6 +35,7 @@
 #include "event.h"
 #include "fuse.h"
 #include "machine.h"
+#include "movie.h"
 #include "rectangle.h"
 #include "screenshot.h"
 #include "settings.h"
@@ -53,7 +54,7 @@ libspectrum_byte display_last_border;
 
 /* Stores the pixel, attribute and SCLD screen mode information used to
    draw each 8x1 group of pixels (including border) last frame */
-static libspectrum_dword
+libspectrum_dword
 display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT ];
 
 /* Offsets as to where the data and the attributes for each pixel
@@ -884,8 +885,14 @@ update_ui_screen( void )
 
   if( settings_current.frame_rate <= ++frame_count ) {
     frame_count = 0;
+    if( screenshot_movie_record == 3 ) {
+      movie_start_frame();
+    }
 
     if( display_redraw_all ) {
+      if( screenshot_movie_record == 3 ) {
+        movie_add_area( 0, 0, DISPLAY_ASPECT_WIDTH >> 3, DISPLAY_SCREEN_HEIGHT );
+      }
       uidisplay_area( 0, 0,
 		      scale * DISPLAY_ASPECT_WIDTH,
 		      scale * DISPLAY_SCREEN_HEIGHT );
@@ -894,6 +901,9 @@ update_ui_screen( void )
       for( i = 0, ptr = rectangle_inactive;
 	   i < rectangle_inactive_count;
 	   i++, ptr++ ) {
+	    if( screenshot_movie_record == 3 ) {
+	      movie_add_area( ptr->x, ptr->y, ptr->w, ptr->h );
+    	    }
             uidisplay_area( 8 * scale * ptr->x, scale * ptr->y,
 			8 * scale * ptr->w, scale * ptr->h );
       }
