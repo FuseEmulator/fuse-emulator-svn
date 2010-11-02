@@ -3362,3 +3362,5 @@
          between Timex and non-Timex modes (fixes bug #3084862) (thanks, Phil)
          (Fred).
 20101029 man/fuse.1: some updates to bring things a bit more up to date (Fred).
+20101102 man/fuse.1: remove reference to fixed issue in RZX playback command
+         line ordering (patch #3100707) (Sergio Baldovi).
