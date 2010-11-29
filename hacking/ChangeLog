@@ -3366,3 +3366,4 @@
          line ordering (patch #3100707) (Sergio Baldovi).
 20101129 ui/fb/fbdisplay.c: only call fbdisplay_end() when display is
          initialised (fixes bug #3119382) (rkd77).
+20101129 ChangeLog,README,man/fuse.1: more 1.0 updates.
