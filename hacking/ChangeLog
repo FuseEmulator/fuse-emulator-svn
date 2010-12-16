@@ -793,3 +793,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20101216 README,configure.in,doc/libspectrum.3: bump version numbers and dates
          for 1.0.0 release.
 20101216 ChangeLog: update date here as well.
+20101216 test/Makefile.am: ensure all test files are distributed.
