@@ -316,3 +316,4 @@
 20101206 Makefile.am: remember to put all compat directories in the dist tarball
          (thanks, kizmiaz).
 20101216 README,configure.in,man/*.1: updates for 1.0.0 release.
+20101216 ChangeLog: update date here as well.
