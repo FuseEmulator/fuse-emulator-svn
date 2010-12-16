@@ -792,3 +792,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20101130 Makefile.am,configure.in: bump version numbers for 1.0 release.
 20101216 README,configure.in,doc/libspectrum.3: bump version numbers and dates
          for 1.0.0 release.
+20101216 ChangeLog: update date here as well.
