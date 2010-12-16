@@ -60,6 +60,6 @@ of the released tarballs, you'll need to run `autogen.sh' before
 running 'configure' for the first time.
 
 Philip Kendall <philip-fuse@shadowmagic.org.uk>
-FIXME December 2010
+16 December 2010
 
 $Id$
