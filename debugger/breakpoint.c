@@ -237,19 +237,26 @@ int
 debugger_check( debugger_breakpoint_type type, libspectrum_dword value )
 {
   GSList *ptr; debugger_breakpoint *bp;
+  GSList *ptr_next;
 
   switch( debugger_mode ) {
 
   case DEBUGGER_MODE_INACTIVE: return 0;
 
   case DEBUGGER_MODE_ACTIVE:
-    for( ptr = debugger_breakpoints; ptr; ptr = ptr->next ) {
+    for( ptr = debugger_breakpoints; ptr; ptr = ptr_next ) {
 
       bp = ptr->data;
+      ptr_next = ptr->next;
 
       if( breakpoint_check( bp, type, value ) ) {
-	debugger_mode = DEBUGGER_MODE_HALTED;
-	debugger_command_evaluate( bp->commands );
+        debugger_mode = DEBUGGER_MODE_HALTED;
+        debugger_command_evaluate( bp->commands );
+
+        if( bp->life == DEBUGGER_BREAKPOINT_LIFE_ONESHOT ) {
+          debugger_breakpoints = g_slist_remove( debugger_breakpoints, bp );
+          free( bp );
+        }
       }
 
     }
@@ -351,11 +358,6 @@ debugger_breakpoint_trigger( debugger_breakpoint *bp )
 
   if( bp->condition && !debugger_expression_evaluate( bp->condition ) )
     return 0;
-
-  if( bp->life == DEBUGGER_BREAKPOINT_LIFE_ONESHOT ) {
-    debugger_breakpoints = g_slist_remove( debugger_breakpoints, bp );
-    free( bp );
-  }
 
   if( bp->type == DEBUGGER_BREAKPOINT_TYPE_TIME )
     bp->value.time.triggered = 1;

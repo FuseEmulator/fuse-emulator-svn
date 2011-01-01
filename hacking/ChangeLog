@@ -3373,3 +3373,11 @@
          system (fixes bugs #3124787 and #3124788) (rkd77).
 20101216 ChangeLog,README,configure.in,man/fuse.1: update for 1.0.0 release.
 20101217 keysyms.pl: fix SVGAlib compilation (rkd77).
+20101229 debugger/breakpoint.c: don't free temporary breakpoint until after we have run
+         it (fixes bug #3084862) (thanks, Chris Cowley) (Fred).
+20101230 debugger/breakpoint.c: stop evaluating breakpoints when we have hit a
+         temporary breakpoint (really fixes bug #3084862) (patch #3142840)
+         (Sergio Baldovi).
+20110101 debugger/breakpoint.c: evaluate all breakpoints again, but store the
+         next breakpoint before deleteing the current one from the list 
+         (really really fixes bug #3084862) (thanks, Phil) (Fred).
