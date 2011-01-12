@@ -1,3 +1,12 @@
+2011-01-12  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
+
+        * Fuse 1.0.0.1 released.
+
+        * Fix temporary breakpoints on platforms using replacement Glib
+          (Fredrick Meunier, Sergio Baldovi; thanks, Chris Cowley)
+        * Ensure Amiga port can load files (Chris Young)
+        * Fix SVGAlib compilation (rkd77)
+
 2010-12-16  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
         * Fuse 1.0.0 released.
