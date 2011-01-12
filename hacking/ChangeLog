@@ -3382,3 +3382,4 @@
          next breakpoint before deleteing the current one from the list 
          (really really fixes bug #3084862) (thanks, Phil) (Fred).
 20110109 ui/widget/filesel.c: make Amiga work again (Chris Young).
+20110112 ChangeLog,README,configure.in,man/fuse.1: updates for 1.0.0.1 release.
