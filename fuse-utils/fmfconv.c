@@ -189,6 +189,7 @@ int snd_rte, snd_chn, snd_fsz, snd_len;	/* sound rate (Hz), sound channels (1/2)
 int snd_header_ok = 0;			/* sound header ok? */
 
 int sound_pcm = 1;			/* by default always convert sound to PCM */
+int sound_only = 0;			/* by default process video */
 
 libspectrum_signed_word ulaw_table[256] = { ULAW_TAB };
 libspectrum_signed_word alaw_table[256] = { ALAW_TAB };
@@ -580,8 +581,9 @@ open_out()
   };
 
   if( do_info ) return 0;
+  if( out_t == TYPE_NONE ) return 0;
 
-  if( out_t == TYPE_UNSET ) {	/* try to identify the file type */
+  if( out_name && out_t == TYPE_UNSET ) {	/* try to identify the file type */
 #ifdef USE_FFMPEG
     out_t = TYPE_FFMPEG;	/* default to FFMPEG */
 #else
@@ -612,6 +614,7 @@ open_out()
 	 if( out_t != TYPE_FFMPEG )
 #endif
   {
+    out_t = TYPE_YUV;		/* default to YUV */
     out = stdout;
     out_name = "(-=stdout=-)";
   }
@@ -1392,8 +1395,8 @@ parse_args( int argc, char *argv[] )
     {"input", 1, NULL, 'i'},
     {"output", 1, NULL, 'o'},
     {"sound", 1, NULL, 's'},
+    {"sound-only", 0, NULL, 0x103},
 /*
-    {"no-video", 0, &sound_only, 1},
     {"no-sound", 0, &video_only, 1},
 */
     {"wav",    0, NULL, 'w'},		/* save .wav sound */
@@ -1479,6 +1482,9 @@ parse_args( int argc, char *argv[] )
       break;
     case 0x102:
       force_aifc = 1;
+      break;
+    case 0x103:
+      out_t = TYPE_NONE;
       break;
     case 'S':		/* SCR output */
       out_t = TYPE_SCR;
@@ -1670,7 +1676,7 @@ parse_args( int argc, char *argv[] )
 
     default:
       printe ("%s: getopt_long returned `%c'\n",
-		  "scrconv", (char) c);
+		  "fmfconv", (char) c);
       break;
 
     }
@@ -1683,7 +1689,7 @@ parse_args( int argc, char *argv[] )
   if( optind < argc )
     snd_name = argv[optind++];
   if( optind < argc ) {
-    printe ("Too many filename...\n");
+    printe ("Too many filenames...\n");
     return ERR_BAD_PARAM;
   }
   return 0;
