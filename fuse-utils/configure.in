@@ -35,6 +35,7 @@ AC_C_BIGENDIAN
 
 dnl Check for header files
 AC_CHECK_HEADERS(strings.h)
+AC_CHECK_HEADERS(termios.h)
 
 dnl Check for zlib (the UNIX version is called z, Win32 zdll)
 AC_MSG_CHECKING(whether to use zlib)

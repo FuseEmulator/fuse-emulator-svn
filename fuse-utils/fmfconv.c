@@ -37,6 +37,10 @@
 #endif /* #ifdef HAVE_STRINGS_H */
 #include <fcntl.h>
 
+#ifdef HAVE_TERMIOS_H
+#include <termios.h>
+#endif
+
 #include "libspectrum.h"
 #include "movie_tables.h"
 
@@ -614,12 +618,25 @@ open_out()
 	 if( out_t != TYPE_FFMPEG )
 #endif
   {
-    out_t = TYPE_YUV;		/* default to YUV */
-    out = stdout;
-    out_name = "(-=stdout=-)";
+#ifdef HAVE_TERMIOS_H
+    struct termios term;
+    if( !tcgetattr( STDOUT_FILENO, &term ) ) {
+      out_t = TYPE_NONE;
+      out = NULL;
+      out_name = "(-=null=-)";
+    } else {
+#endif
+      out_t = TYPE_YUV;		/* default to YUV */
+      out = stdout;
+      out_name = "(-=stdout=-)";
+#ifdef HAVE_TERMIOS_H
+    }
+#endif
   }
 
-  if( !( out_t >= TYPE_SCR && out_t <= TYPE_JPEG ) ) {
+  if( out_t == TYPE_NONE ) {
+    printi( 0, "open_out(): Output is a terminal, cannot dump binary data.\n" );
+  } else if( !( out_t >= TYPE_SCR && out_t <= TYPE_JPEG ) ) {
     printi( 0, "open_out(): Output file (%s) opened as %s file.\n", out_name,
 		out_tstr[out_t - TYPE_SCR] );
   } else {
@@ -672,6 +689,7 @@ open_snd()
       return ERR_OPEN_SND;
     }
   } else {
+    snd_t = TYPE_NONE;
     return 0;
   }
   if( snd_t == TYPE_UNSET ) {	/* try to identify the file type */
