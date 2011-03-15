@@ -688,6 +688,9 @@ open_snd()
       printe( "Cannot open sound file '%s'...\n", snd_name );
       return ERR_OPEN_SND;
     }
+  } else if( out_t == TYPE_FFMPEG ) {	/* FFMPEG video and audio if nothing else specified */
+    snd_t = TYPE_FFMPEG;
+    return 0;
   } else {
     snd_t = TYPE_NONE;
     return 0;
