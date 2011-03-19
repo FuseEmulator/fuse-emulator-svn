@@ -85,6 +85,7 @@ typedef enum {
   DO_EOP,		/* end of input(s) */
 } do_t;
 
+int help_exit = 0;	/* exit after print help */
 int verbose = 0;
 int do_info = 0;	/* no output and verbose 2 */
 do_t do_now = DO_FILE;
@@ -725,6 +726,9 @@ open_inp()
       printe( "Cannot open input file '%s'...\n", inp_name );
       return ERR_OPEN_INP;
     }
+  } else if( out_t == TYPE_FFMPEG ) {	/* FFMPEG video and audio if nothing else specified */
+    snd_t = TYPE_FFMPEG;
+    return 0;
   } else {
     inp = stdin;
     inp_name = "(-=stdin=-)";
@@ -1667,9 +1671,7 @@ parse_args( int argc, char *argv[] )
 #endif
     case 'h':
 	print_help();
-#ifdef USE_FFMPEG
-	ffmpeg_list = 99;
-#endif
+	help_exit = 1;
 	break;
     case 'V':
 	break;
@@ -1722,8 +1724,8 @@ main( int argc, char *argv[] )
   int err, eop = 0;
 
   if( ( err = parse_args( argc, argv ) ) ) return err;
+  if( help_exit ) return 0;
 #ifdef USE_FFMPEG
-  if( ffmpeg_list >= 99 ) return 0;
   if( ffmpeg_list >= 0 ) {
     ffmpeg_list_ffmpeg( ffmpeg_list );
     return 0;

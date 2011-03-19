@@ -842,7 +842,7 @@ show_formats()
             mime_type ? mime_type:"---",
             long_name ? long_name:"---" );
     }
-    printf( "-------------------------------------------------------------------------------\n\n" );
+    printf( "-------------------------------------------------------------------------------\n" );
 }
 
 void
@@ -889,7 +889,37 @@ show_codecs( int what )
 /*              p2->mime_type ? p2->mime_type : "---", */
               p2->long_name ? p2->long_name : "---" );
     }
-    printf( "-------------------------------------------------------------------------------\n\n" );
+    printf( "-------------------------------------------------------------------------------\n" );
+}
+
+void
+ffmpeg_print_idents()
+{
+  if( verbose > 0 ) {
+    printf( "FFmpeg libraries:\n" );
+    printf( "  libavcodec:  %s\n  libavformat: %s\n  libavutil:   %s\n  libswscale:  %s\n",
+#ifdef LIBAVCODEC_IDENT
+    LIBAVCODEC_IDENT,
+#else
+    "<unknown>",
+#endif
+#ifdef LIBAVFORMAT_IDENT
+    LIBAVFORMAT_IDENT,
+#else
+    "<unknown>",
+#endif
+#ifdef LIBAVUTIL_IDENT
+    LIBAVUTIL_IDENT,
+#else
+    "<unknown>",
+#endif
+#ifdef LIBSWSCALE_IDENT
+    LIBSWSCALE_IDENT
+#else
+    "<unknown>"
+#endif
+    );
+  }
 }
 
 void
@@ -899,5 +929,7 @@ ffmpeg_list_ffmpeg( int what )
   if( what == 0 ) show_formats();
   if( what == 1 ) show_codecs( 0 );
   if( what == 2 ) show_codecs( 1 );
+  ffmpeg_print_idents();
+  putc('\n', stdout);
 }
 #endif	/* ifdef USE_FFMPEG */
