@@ -3383,3 +3383,8 @@
          (really really fixes bug #3084862) (thanks, Phil) (Fred).
 20110109 ui/widget/filesel.c: make Amiga work again (Chris Young).
 20110112 ChangeLog,README,configure.in,man/fuse.1: updates for 1.0.0.1 release.
+20110327 man/fuse.1,roms/{128p-[01].rom,256s-[0123].rom,Makefile.am,
+         README.copyright,gluck.rom,if1-[12].rom,opus.rom,trdos.rom,
+         Makefile.am}: remove ROMs that there is no formal permission to
+         distribute.
+20110327 roms/Makefile.am: distribute README.copyright.
