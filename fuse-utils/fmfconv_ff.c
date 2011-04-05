@@ -69,7 +69,7 @@ static int sws_flags = SWS_BICUBIC | SWS_CPU_CAPS_3DNOW | SWS_CPU_CAPS_MMX2;
 
 int ffmpeg_arate = 0;		/* audio bitrate */
 int ffmpeg_vrate = 0;		/* video bitrate */
-AVRational ffmpeg_aspect = { 0, 0 };
+AVRational ffmpeg_aspect = { 1, 1 };
 int ffmpeg_libx264 = 0;
 char *ffmpeg_frate = NULL;
 char *ffmpeg_format = NULL;
