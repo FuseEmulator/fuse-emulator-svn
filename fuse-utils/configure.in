@@ -62,7 +62,7 @@ AC_MSG_RESULT($ffmpeglib)
 if test "$ffmpeglib" = yes; then
   AC_CHECK_HEADERS(
     libavformat/avformat.h libswscale/swscale.h,
-    FFMPEG_LIBS="-lavformat -lavcodec -lswscale",
+    FFMPEG_LIBS="-lavformat -lavcodec -lswscale -lavutil",
     FFMPEG_LIBS=''; break
   )
   if test "x$FFMPEG_LIBS" != "x"
