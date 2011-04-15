@@ -37,10 +37,6 @@
 #endif /* #ifdef HAVE_STRINGS_H */
 #include <fcntl.h>
 
-#ifdef HAVE_TERMIOS_H
-#include <termios.h>
-#endif
-
 #include "libspectrum.h"
 #include "movie_tables.h"
 
@@ -619,20 +615,19 @@ open_out()
 	 if( out_t != TYPE_FFMPEG )
 #endif
   {
-#ifdef HAVE_TERMIOS_H
-    struct termios term;
-    if( !tcgetattr( STDOUT_FILENO, &term ) ) {
+
+    if( isatty( fileno( stdout ) ) ) {
       out_t = TYPE_NONE;
       out = NULL;
       out_name = "(-=null=-)";
     } else {
-#endif
       out_t = TYPE_YUV;		/* default to YUV */
       out = stdout;
       out_name = "(-=stdout=-)";
-#ifdef HAVE_TERMIOS_H
+#ifdef WIN32
+      setmode( fileno( stdout ), O_BINARY );
+#endif				/* #ifdef WIN32 */
     }
-#endif
   }
 
   if( out_t == TYPE_NONE ) {
@@ -1714,6 +1709,20 @@ parse_args( int argc, char *argv[] )
   if( optind < argc ) {
     printe ("Too many filenames...\n");
     return ERR_BAD_PARAM;
+  }
+
+  if( !help_exit && !inp_name ) {
+    int fd = fileno( stdin );
+    if( isatty( fd ) ) {
+      printe( "%s: no input file specified\n", "fmfconv" );
+      fprintf( stderr, "Try `fmfconv --help' for more information.\n" );
+      help_exit = 1;
+    }
+#ifdef WIN32
+    else {
+      setmode( fd ), O_BINARY );
+    }
+#endif				/* #ifdef WIN32 */
   }
   return 0;
 }
