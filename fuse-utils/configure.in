@@ -21,6 +21,7 @@ dnl E-mail: philip-fuse@shadowmagic.org.uk
 
 AC_INIT(tzxlist.c)
 AM_CONFIG_HEADER(config.h)
+AC_CANONICAL_SYSTEM
 
 dnl Use automake to produce `Makefile.in'
 AM_INIT_AUTOMAKE(fuse-utils, 0.10.0.1)
@@ -75,11 +76,11 @@ fi
 dnl Allow the user to say that various libraries are in one place
 AC_ARG_WITH(local-prefix,
 [  --with-local-prefix=PFX local libraries installed in PFX (optional)],
-CFLAGS="$CFLAGS -I$withval/include";
+CPPFLAGS="$CPPFLAGS -I$withval/include";
 CXXFLAGS="$CXXFLAGS -I$withval/include";
 LDFLAGS="$LDFLAGS -L$withval/lib",
 if test "$prefix" != "NONE"; then
-  CFLAGS="$CFLAGS -I$prefix/include";
+  CPPFLAGS="$CPPLAGS -I$prefix/include";
   CXXFLAGS="$CXXFLAGS -I$prefix/include";
   LDFLAGS="$LDFLAGS -L$prefix/lib"
 fi)
@@ -146,7 +147,7 @@ AC_ARG_WITH(libspectrum-prefix,
 LIBSPEC_CFLAGS=-I$withval/include; LIBSPEC_LIBS=-L$withval/lib,
 LIBSPEC_CFLAGS=""; LIBSPEC_LIBS="")
 ac_save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CFLAGS $LIBSPEC_CFLAGS $GLIB_CFLAGS"
+CPPFLAGS="$CPPFLAGS $LIBSPEC_CFLAGS $GLIB_CFLAGS"
 AC_CHECK_HEADERS(libspectrum.h,LIBSPEC_LIBS="$LIBSPEC_LIBS -lspectrum $GLIBS",
 	         AC_MSG_ERROR(Sorry - I need libspectrum to be available))
 CPPFLAGS="$ac_save_CPPFLAGS"
@@ -189,6 +190,10 @@ case "$target_os" in
   amigaos)
     COMPAT_OSNAME='amiga'
     ;;
+  mingw32*)
+    COMPAT_OSNAME='win32'
+    CXXFLAGS="$CXXFLAGS -static-libgcc -static-libstdc++"
+    ;;
   *)
     COMPAT_OSNAME='unix'
   ;;
@@ -217,6 +222,7 @@ fi
 AC_OUTPUT(Makefile \
 compat/amiga/Makefile \
 compat/unix/Makefile \
+compat/win32/Makefile \
 fuse-utils.qpg \
 hacking/Makefile \
 man/Makefile)

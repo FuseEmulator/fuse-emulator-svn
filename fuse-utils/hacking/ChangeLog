@@ -305,3 +305,5 @@
 20100806 Makefile.am,acinclude.m4,config.rpath,configure.in,man/tzxlist.1,
          tzxlist.c: support the de-facto standard Windows-1252 charset in TZX
          text (Fred).
+20110122 compat/win32/{Makefile.am,osname.c},configure.in: add compatibility
+         function support for Windows (patch #3163680) (Sergio Baldovi).
