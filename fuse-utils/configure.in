@@ -70,6 +70,10 @@ if test "$ffmpeglib" = yes; then
   then
     AC_SUBST(FFMPEG_LIBS)
     AC_DEFINE([USE_FFMPEG], 1, [Defined if ffmpeg available and requested])
+    AC_CHECK_LIB(avcore, av_get_bits_per_sample_fmt,
+      AC_DEFINE([HAVE_FFMPEG_SAMPLE_FMT],1,[Defined if av_get_bits_per_sample_fmt available]),
+      true
+    )
   fi
 fi
 

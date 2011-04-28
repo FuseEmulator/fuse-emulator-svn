@@ -106,40 +106,40 @@ static AVFrame *alloc_picture( enum PixelFormat pix_fmt, int width, int height, 
 static enum PixelFormat out_pix_fmt = PIX_FMT_NONE;
 /* FFMPEG utility functions */
 
-static int res_chn = -1, res_rte;
+static int res_rte = -1;
 
 int
 ffmpeg_resample_audio()
 {
   int len;
 
-  if( audio_resample_ctx && ( res_chn != out_chn || res_rte != out_rte ) ) {
+  if( audio_resample_ctx && res_rte != snd_rte ) {
     audio_resample_close( audio_resample_ctx );
     audio_resample_ctx = NULL;
     av_free( audio_tmp_inpbuf );
-    res_chn = -1;
     ffmpeg_sound = &sound16;
-    printi( 2, "ffmpeg_resample_audio(): reinit resample %d,%d -> %d,%d\n", res_chn, res_rte, out_chn, out_rte );
+    printi( 2, "ffmpeg_resample_audio(): reinit resample %dHz -> %dHz\n", snd_rte, out_rte );
+    res_rte = -1;
   }
-  if( res_chn == -1 ) {
-    res_chn = out_chn;
-    res_rte = out_rte;
+  if( res_rte == -1 ) {
+    res_rte = snd_rte;
     out_fsz = 2 * out_chn;
   }
   if( !audio_resample_ctx ) {
     audio_resample_ctx = av_audio_resample_init( out_chn, snd_chn,
 						 out_rte, snd_rte,
 						 SAMPLE_FMT_S16, SAMPLE_FMT_S16,
-						 16, 10, 0, 0.8 );
+						 16, 8, 1, 1.0 );
     audio_tmp_inpbuf_size = (float)audio_outbuf_size * out_rte / snd_rte * (float)out_chn / snd_chn + 1.0;
     audio_tmp_inpbuf = av_malloc( audio_tmp_inpbuf_size );
     ffmpeg_sound = (void *)(&audio_tmp_inpbuf);
-    printi( 2, "ffmpeg_resample_audio(): alloc resample context %d,%d %d byte len\n", out_chn, out_rte, audio_tmp_inpbuf_size );
+    printi( 2, "ffmpeg_resample_audio(): alloc resample context (%dHz -> %dHz) %d byte len\n", snd_rte, out_rte, audio_tmp_inpbuf_size );
   }
   if( !audio_resample_ctx ) {
     printe( "FFMPEG: Could not allocate audio resample context\n" );
     return 1;
   }
+
   len = audio_resample( audio_resample_ctx,
                   (short *)audio_tmp_inpbuf, (short *)sound16,
                   snd_len / snd_fsz );
@@ -258,7 +258,11 @@ open_audio()
   if( codec->sample_fmts != NULL )
     c->sample_fmt = codec->sample_fmts[0];
 
+#ifdef HAVE_FFMPEG_SAMPLE_FMT
+  audio_oframe_size = ( av_get_bits_per_sample_fmt( c->sample_fmt ) + 7 ) / 8 * out_chn;
+#else
   audio_oframe_size = ( av_get_bits_per_sample_format( c->sample_fmt ) + 7 ) / 8 * out_chn;
+#endif
   audio_input_frames = c->frame_size;
 
   if( audio_input_frames <= 1 ) {
@@ -266,7 +270,7 @@ open_audio()
   } else {
     audio_outbuf_size = audio_input_frames * audio_oframe_size * 125 / 100;
     if( audio_outbuf_size < FF_MIN_BUFFER_SIZE ) audio_outbuf_size = FF_MIN_BUFFER_SIZE;
-    audio_inpbuf = av_malloc( audio_input_frames * audio_iframe_size );
+    audio_inpbuf = av_malloc( audio_input_frames * 4 );  /* alloc buffer as stereo PCM */
     audio_inpbuf_len = 0;
   }
   audio_outbuf = av_malloc( audio_outbuf_size );
@@ -288,12 +292,13 @@ ffmpeg_add_sound_ffmpeg( int len )
   buf = *ffmpeg_sound;
   c = audio_st->codec;
   coded_bps = av_get_bits_per_sample( c->codec_id );
+  audio_iframe_size = snd_chn > 1 ? 4 : 2;
 
   if( audio_input_frames > 1 && audio_inpbuf_len + len < audio_input_frames ) {
   /* store the full sound buffer and wait for more...*/
     memcpy( (char *)audio_inpbuf + ( audio_inpbuf_len * audio_iframe_size ), buf, len * audio_iframe_size );
     audio_inpbuf_len += len;
-    printi( 3, "ffmpeg_add_sound_ffmpeg(): store %d samples\n", audio_input_frames );
+    printi( 3, "ffmpeg_add_sound_ffmpeg(): store %d samples (%d/%d)\n", len, audio_input_frames, audio_iframe_size );
     return;
   }
 
@@ -708,7 +713,6 @@ out_write_ffmpegheader()
       close_video();
       return 1;
     }
-    audio_iframe_size = out_chn > 1 ? 4 : 2;
   }
 
     /* set the output parameters (must be done even if no
@@ -803,7 +807,7 @@ show_formats()
 {
   AVInputFormat *ifmt = NULL;
   AVOutputFormat *ofmt = NULL;
-  const char *last_name, *mime_type;
+  const char *last_name, *mime_type = NULL;
 
   printf( "List of available FFMPEG file formats:\n"
           "  name       mime type        long name\n"

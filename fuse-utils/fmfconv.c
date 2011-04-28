@@ -106,6 +106,8 @@ char *out_cut = NULL;
 
 int inp_ftell = 0;
 
+int sound_exists = 0;				/* FMF frame without sound */
+
 unsigned long long int input_no = 0;		/* current file (input) no */
 unsigned long long int input_last_no = 0;	/* number of files (input) - 1 */
 
@@ -174,7 +176,7 @@ int out_w, out_h;
 int out_fps = 0;			/* desired output frame rate */
 int out_header_ok = 0;			/* output header ok? */
 
-int out_chn = -1, out_rte = -1, out_fsz, out_len;
+int out_chn = 2, out_rte = -1, out_fsz, out_len;	/* by default convert sound to 2 channel (STEREO) */
 
 /* fmf variables */
 int fmf_compr = 0;			/* fmf compressed or not */
@@ -185,14 +187,15 @@ unsigned long long int fmf_sound_no = 0;
 
 /* sound variables */
 #define SOUND_BUFF_MAX_SIZE 65536	/* soft max size of collected sound samples */
-type_t snd_enc;				/* sound type (pcm/alaw/ulaw) */
+type_t snd_enc;				/* sound type (pcm/alaw) */
 int snd_rte, snd_chn, snd_fsz, snd_len;	/* sound rate (Hz), sound channels (1/2), sound length in byte  */
 int snd_header_ok = 0;			/* sound header ok? */
 
+int sound_raw = 0;			/* do not do law->PCM and channels conversion */
 int sound_pcm = 1;			/* by default always convert sound to PCM */
+int sound_stereo = 1;			/* by default always convert sound to STEREO */
 int sound_only = 0;			/* by default process video */
 
-libspectrum_signed_word ulaw_table[256] = { ULAW_TAB };
 libspectrum_signed_word alaw_table[256] = { ALAW_TAB };
 
 libspectrum_byte fhead[32];		/* fmf file/frame/slice header */
@@ -350,13 +353,14 @@ law_2_pcm()
   int err;
   libspectrum_signed_byte *s;
   libspectrum_signed_word *t;
-  libspectrum_signed_word *table = snd_enc == TYPE_ALW ? alaw_table : ulaw_table;
+
+  if( snd_t == TYPE_NONE ) return 0;
 
   if( ( err = alloc_sound_buff( snd_len * 2 ) ) ) return err;
 
   for( s = sound8 + snd_len - 1, t = sound16 + snd_len - 1 ;
 		s >= sound8; s--, t-- ) {
-    *t = table[*(libspectrum_byte*)s];
+    *t = alaw_table[*(libspectrum_byte*)s];
   }
 #ifdef WORDS_BIGENDIAN
   snd_little_endian = 0;
@@ -383,6 +387,76 @@ pcm_swap_endian()	/* buff == sound */
     s++;
   }
   printi( 3, "pcm_swap_endian(): %d sample converted\n", snd_len / 2 );
+}
+
+/*
+    [1][2][3][4][5] -> [1][2][3][4][5][ ][ ][ ][5][5][6][6] ->  [1][1][2][2][3][3][4][4][5][5][6][6]
+*/
+int
+mono_2_stereo()
+{
+  int err;
+
+  if( snd_t == TYPE_NONE ) return 0;
+
+  if( ( err = alloc_sound_buff( snd_len * 2 ) ) ) return err;
+
+  if( snd_enc == TYPE_PCM ) {
+    libspectrum_signed_word *s;
+    libspectrum_signed_word *t;
+    for( s = sound16 + snd_len / 2 - 1, t = sound16 + snd_len - 1 ;
+		s >= sound16; s--, t-- ) {
+      *t = *s; t--; *t = *s;
+    }
+  } else {
+    libspectrum_signed_byte *s;
+    libspectrum_signed_byte *t;
+    for( s = sound8 + snd_len - 1, t = sound8 + 2 * snd_len - 1 ;
+		s >= sound8; s--, t-- ) {
+      *t = *s; t--; *t = *s;
+    }
+  }
+  snd_chn = 2;
+  snd_fsz <<= 1;		/* 1/2byte -> 2/4byte */
+  snd_len <<= 1;		/* 1/2byte -> 2/4byte */
+
+  printi( 3, "mono_2_stereo(): %d sample converted (%d)\n", snd_len / snd_fsz, snd_len );
+
+  return 0;
+}
+
+/*
+    [1][1][2][2][3][3][4][4][5][5][6][6] -> [1][2][3][4][5][ ][ ][ ][5][5][6][6] -> [1][2][3][4][5]
+*/
+int
+stereo_2_mono()
+{
+  void *buff_end;
+
+  if( snd_t == TYPE_NONE ) return 0;
+
+  if( snd_enc == TYPE_PCM ) {
+    libspectrum_signed_word *s;
+    libspectrum_signed_word *t;
+    buff_end = sound16 + snd_len;
+    for( s = t = sound16; (void *)s < buff_end; s++, t++ ) {
+      *t = *s; s++; *t = ( (libspectrum_signed_dword)*t + *s + 1 ) / 2;
+    }
+  } else {
+    libspectrum_signed_byte *s;
+    libspectrum_signed_byte *t;
+    buff_end = sound16 + snd_len;
+    for( s = t = sound8; (void *)s < buff_end; s++, t++ ) {
+      *t = *s; s++; *t = ( (libspectrum_signed_dword)*t + *s + 1 ) / 2;
+    }
+  }
+  snd_chn = 1;
+  snd_fsz >>= 1;		/* 1/2byte -> 2/4byte */
+  snd_len >>= 1;		/* 1/2byte -> 2/4byte */
+
+  printi( 3, "stereo_2_mono(): %d sample converted (%d)\n", snd_len / snd_fsz, snd_len );
+
+  return 0;
 }
 
 char *
@@ -816,7 +890,7 @@ check_fmf_head()
   if( out_fps == 0 ) out_fps = inp_fps;	/* later may change */
 
 /* Check initial sound parameters */
-  if( fhead[7] != 'P' && fhead[7] != 'U' && fhead[0] != 'A' ) {
+  if( fhead[7] != 'P' && fhead[0] != 'A' ) {
     printe( "Unknown FMF sound encoding type '%d', sorry...\n", fhead[7] );
     return ERR_CORRUPT_INP;
   }
@@ -937,7 +1011,7 @@ fmf_read_sound()
   }
 
   fmf_snd_head_read = 1;
-  if( fhead[0] != 'P' && fhead[0] != 'U' && fhead[0] != 'A' ) {
+  if( fhead[0] != 'P' && fhead[0] != 'A' ) {
     printe( "Unknown FMF sound encoding type '%d', sorry...\n", fhead[0] );
     return ERR_CORRUPT_INP;
   }
@@ -965,6 +1039,7 @@ fmf_read_sound()
   snd_fsz = ( snd_enc == TYPE_PCM ? 2 : 1 ) * snd_chn;
   len = ( fhead[4] + ( fhead[5] << 8 ) + 1 ) * snd_fsz;
 
+  if( sound_stereo == -1 ) out_chn = snd_chn;
   if( ( err = alloc_sound_buff( snd_len + len ) ) ) return err;
   if( fread_compr( (void *)( sound8 + snd_len ), len, 1, inp ) != 1 ) {
     printe( "\n\nCorrupt input file (S) @0x%08lx.\n", (unsigned long)ftell( inp ) );
@@ -990,6 +1065,8 @@ snd_write_sound()
   if( snd_len <= 0 ) return 0;
 
   if( snd_enc != TYPE_PCM && sound_pcm && ( err = law_2_pcm() ) ) return err;
+  if( snd_chn == 1 && sound_stereo == 1 && ( err = mono_2_stereo() ) ) return err;
+  if( snd_chn == 2 && sound_stereo == 0 && ( err = stereo_2_mono() ) ) return err;
 
   if( snd_t == TYPE_WAV )
     err = snd_write_wav();
@@ -1004,6 +1081,33 @@ snd_write_sound()
   snd_len = 0;
   if( err ) return err;
 
+  return 0;
+}
+
+int
+fmf_gen_sound()
+{
+  int err;
+  static libspectrum_word len_frag = 0;
+  libspectrum_qword len;
+
+  if( snd_t == TYPE_NONE ) return 0;
+
+/* spectrum frame length * frame rate * freq * framesize 20000 * 9 * 64000 * 4 ~ 5*10^10 so we need 64bit! */
+  len = (libspectrum_qword)len_frag + (libspectrum_qword)machine_ftime[frm_mch - 'A'] * frm_rte * snd_rte * snd_fsz;
+  len_frag = len - (len / 1000000) * 1000000;
+  len = len / 1000000;
+
+  if( ( err = alloc_sound_buff( snd_len + len ) ) ) return err;
+  memset((void *)( sound8 + snd_len ), snd_enc == 'P' ? 0 : 0xd5, len);	/* only A-Law!!!*/
+  snd_len += len;
+  printi( 3, "fmf_gen_sound(): store %dHz %c encoded %s %d samples (%d bytes) silence\n", snd_rte, snd_enc,
+		 snd_chn == 2 ? "stereo" : "mono", (int)len/snd_fsz, (int)len );
+  if( snd_len >= SOUND_BUFF_MAX_SIZE ) {
+    if( ( err = snd_write_sound() ) ) return err;
+    if( do_info ) snd_len = 0;			/* anyhow, we have to empty sound buffer */
+    printi( 3, "fmf_gen_sound(): flush sound buffer because full\n" );
+  }
   return 0;
 }
 
@@ -1110,25 +1214,27 @@ fmf_read_screen()
 int
 fmf_read_slice()
 {
-  int err;
+  int err = 0;
   if( ( err = fmf_read_chunk_head() ) ) return err;
 
   if( fhead[0] == 'N' ) {		/* end of frame, start new frame! */
     do_now = DO_FRAME;
+    if( sound_exists == 0 ) err = fmf_gen_sound();	/* generate silence */
+    sound_exists = 0;
   } else if( fhead[0] == 'X' ) {
     do_now = DO_LAST_FRAME;
   } else if( fhead[0] == 'S' ) {
+    sound_exists = 1;			/* found a sound chunk */
     return fmf_read_sound();
   } else {				/* read screen */
     return fmf_read_screen();
   }
-  return 0;
+  return err;
 }
 
 int
 scr_read_scr()
 {
-/* fmf_slice_x = 0; fmf_slice_y = 0; fmf_slice_w = 40; fmf_slice_h = 240; */
   return 0;
 }
 
@@ -1316,12 +1422,18 @@ print_help ()
 	  "  -i --input <filename>        Input file\n"
 	  "  -o --output <filename>       Output file\n"
 	  "  -s --sound <filename>        Output sound file\n"
-	  "     --raw-sound               Do not convert sound to 16 bit signed PCM\n"
+	  "     --sound-only              Process only the sound from an 'fmf' file\n"
+	  "     --mono                    Convert sound to mono (by default sound converted to stereo)\n"
+	  "     --raw-sound               Do not convert sound to 16 bit signed PCM and STEREO or MONO\n"
+	  "                                 This is an advanced option. If stereo/mono or audio encoding\n"
+	  "                                 change through 'fmf' file, your sound will be crappy.\n"
+#ifdef USE_FFMPEG
+	  "                                 note: FFMPEG needs PCM audio without change the channel number too\n"
+#endif /* USE_FFMPEG */
 	  "  -w --wav                     Save sound to Microsoft audio (wav) file\n"
 	  "  -u --au                      Save sound to Sun Audio (au) file\n"
 	  "  -m --aiff                    Save sound to Apple Computer audio (aiff/aiff-c) file\n"
 	  "     --aifc                    Force AIFF-C output if sound format is AIFF\n"
-	  "     --sound-only              Process only the sound from an 'fmf' file\n"
 	  "  -Y --yuv                     Save video as yuv4mpeg2.\n"
 	  "     --yuv-format <frm>        Set yuv4mpeg2 file frame format to 'frm',\n"
 	  "                                 where 'frm' is one of '444', '422',\n"
@@ -1363,8 +1475,6 @@ print_help ()
 	  "  -E --srate <rate>            Resample audio to <rate> sampling rate where <rate> is\n"
 	  "                                 'cd' for 44100 or 'dat' for 48000 or a number.\n"
 	  "                                 ('cd' and 'dat' set 'stereo' also)\n"
-	  "     --mono                    Convert sound to mono\n"
-	  "     --stereo                  Convert sound to stereo\n"
 	  "     --formats                 List available FFMPEG formats (see -F/--format)\n"
 	  "     --vcodecs                 List available FFMPEG video codecs (see -c/--vcodec)\n"
 	  "     --acodecs                 List available FFMPEG audio codecs (see -a/--acodec)\n"
@@ -1416,6 +1526,8 @@ parse_args( int argc, char *argv[] )
     {"output", 1, NULL, 'o'},
     {"sound", 1, NULL, 's'},
     {"sound-only", 0, NULL, 0x103},
+    {"mono",   0, &sound_stereo, 0},		/* set mono */
+    {"raw-sound",0, &sound_raw, 1},		/* do not convert fmf sound to PCM_S16LE */
 /*
     {"no-sound", 0, &video_only, 1},
 */
@@ -1423,8 +1535,6 @@ parse_args( int argc, char *argv[] )
     {"au",     0, NULL, 'u'},		/* save .au sound */
     {"aiff",   0, NULL, 'm'},		/* save .aiff sound */
     {"aifc",   0, NULL, 0x102},		/* force aifc */
-
-    {"raw-sound",0, &sound_pcm, 0},		/* do not convert fmf sound to PCM_S16LE */
 /*
     {"simple-height", 0, &simple_height, 1},
     {"no-aspect", 0, &simple_height, -1},
@@ -1446,8 +1556,6 @@ parse_args( int argc, char *argv[] )
     {"vrate",  1, NULL, 'r'},		/* video bitrate */
     {"resize", 1, NULL, 'R'},		/* resize video */
     {"srate",  1, NULL, 'E'},		/* audio new samplerate cd/dat set 'stereo' also */
-    {"stereo", 0, &out_chn, 2},		/* set stereo */
-    {"mono",   0, &out_chn, 1},		/* set mono */
     {"formats",0, &ffmpeg_list, 0},	/* list formats */
     {"acodecs",0, &ffmpeg_list, 1},	/* list formats */
     {"vcodecs",0, &ffmpeg_list, 2},	/* list formats */
@@ -1504,6 +1612,7 @@ parse_args( int argc, char *argv[] )
       force_aifc = 1;
       break;
     case 0x103:
+      sound_only = 1;
       out_t = TYPE_NONE;
       break;
     case 'S':		/* SCR output */
@@ -1582,19 +1691,19 @@ parse_args( int argc, char *argv[] )
 	out_w = 720; out_h = 576; out_fps = 25000;
 	ffmpeg_format = "vob"; ffmpeg_arate = 192000; ffmpeg_vrate = 5000000;
 	ffmpeg_aspect.num = 48; ffmpeg_aspect.den = 45;
-	out_rte = 48000; out_chn = 2;
+	out_rte = 48000; sound_stereo = 1;
       } else if( !strcmp( optarg, "svcd" ) ) {
 	ffmpeg_rescale = TYPE_RESCALE_WH;
 	out_w = 480; out_h = 576; out_fps = 25000;
 	ffmpeg_format = "svcd"; ffmpeg_arate = 192000; ffmpeg_vrate = 2600000;
 	ffmpeg_aspect.num = 48; ffmpeg_aspect.den = 45;
-	out_rte = 48000; out_chn = 2;
+	out_rte = 48000; sound_stereo = 1;
       } else if( !strcmp( optarg, "ipod" ) ) {
 	ffmpeg_rescale = TYPE_RESCALE_WH;
 	out_w = 320; out_h = 240; out_fps = 30000;
 	ffmpeg_acodec = "aac"; ffmpeg_vcodec = "libx264";
 	ffmpeg_format = "ipod"; ffmpeg_arate = 128000;ffmpeg_vrate = 256000;
-	out_rte = 44100; out_chn = 2; ffmpeg_libx264 = 1;
+	out_rte = 44100; sound_stereo = 1; ffmpeg_libx264 = 1;
       } else {
 	printe( "Unknow value for '-p/--profile' ...\n");
 	return ERR_BAD_PARAM;
@@ -1652,9 +1761,9 @@ parse_args( int argc, char *argv[] )
       break;
     case 'E':
       if( !strcmp( optarg, "cd" ) )
-        out_rte = 44100, out_chn = 2;
+        out_rte = 44100, sound_stereo = 1;
       else if( !strcmp( optarg, "dat" ) )
-        out_rte = 48000, out_chn = 2;
+        out_rte = 48000, sound_stereo = 1;
       else
         out_rte = atoi( optarg );
 
@@ -1702,7 +1811,7 @@ parse_args( int argc, char *argv[] )
 
   if( optind < argc )
     inp_name = argv[optind++];
-  if( optind < argc )
+  if( !sound_only && optind < argc )		/* if sound only, we use second nonopt arg as sound filename*/
     out_name = argv[optind++];
   if( optind < argc )
     snd_name = argv[optind++];
@@ -1745,13 +1854,21 @@ main( int argc, char *argv[] )
     out_t = TYPE_NONE;
     if( verbose < 1 ) verbose = 1;
   }
-  if( ( err = open_out() ) ) return err;
+  if( sound_only ) {
+    out_t = TYPE_NONE;
+  }
+  if( !sound_only && ( err = open_out() ) ) return err;
   if( ( err = open_snd() ) ) return err;
 
   if( snd_t == TYPE_UNSET && out_t == TYPE_FFMPEG ) {
     snd_t = TYPE_FFMPEG;
-    sound_pcm = 1;			/* ffmpeg always use PCM sound */
   }
+  if( sound_raw ) {
+    sound_pcm = 0;
+    sound_stereo = -1;
+  }
+  if( sound_stereo == 1 ) out_chn = 2;
+  else if( sound_stereo == 0 ) out_chn = 1;
 
 #ifdef USE_ZLIB
   zstream.zalloc = Z_NULL;
