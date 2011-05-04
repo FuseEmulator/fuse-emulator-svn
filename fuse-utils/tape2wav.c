@@ -26,6 +26,7 @@
 #include <config.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -165,6 +166,11 @@ write_tape( char *filename, libspectrum_tape *tape )
       }
     }
 
+    if( flags & LIBSPECTRUM_TAPE_FLAGS_LEVEL_LOW )
+      level = 0;
+    else if( flags & LIBSPECTRUM_TAPE_FLAGS_LEVEL_HIGH )
+      level = 1;
+
     for( i = 0; i < pulse_length; i++ ) {
       buffer[ tape_length++ ] = level ? 0xff : 0x00;
     }
@@ -177,7 +183,24 @@ write_tape( char *filename, libspectrum_tape *tape )
   afInitSampleFormat( setup, AF_DEFAULT_TRACK, AF_SAMPFMT_UNSIGNED, 8 );
   afInitRate( setup, AF_DEFAULT_TRACK, sample_rate );
 
-  file = afOpenFile( filename, "w", setup );
+  if( strncmp( filename, "-", 1 ) == 0 ) {
+    int fd = fileno( stdout );
+    if( isatty( fd ) ) {
+      fprintf( stderr, "%s: won't output binary data to a terminal\n",
+               progname );
+      free( buffer );
+      afFreeFileSetup( setup );
+      return 1;
+    }
+
+#ifdef WIN32
+    setmode( fd, O_BINARY );
+#endif				/* #ifdef WIN32 */
+
+    file = afOpenFD( fd, "w", setup );
+  } else {
+    file = afOpenFile( filename, "w", setup );
+  }
   if( file == AF_NULL_FILEHANDLE ) {
     fprintf( stderr, "%s: unable to open file '%s' for writing\n", progname,
              filename );

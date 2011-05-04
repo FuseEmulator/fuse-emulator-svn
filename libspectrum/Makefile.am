@@ -35,6 +35,7 @@ libspectrum_la_SOURCES = bzip2.c \
                          memory.c \
 			 microdrive.c \
 			 plusd.c \
+			 pzx_read.c \
 			 rzx.c \
 			 sna.c \
 			 snp.c \
@@ -51,6 +52,7 @@ libspectrum_la_SOURCES = bzip2.c \
 		 	 timings.c \
 			 tzx_read.c \
 			 tzx_write.c \
+			 utilities.c \
 			 warajevo_read.c \
 			 wav.c \
                          windres.rc \

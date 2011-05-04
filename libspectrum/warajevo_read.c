@@ -496,7 +496,7 @@ read_rom_block( libspectrum_tape *tape, const libspectrum_byte *ptr,
     block_data[ length - 1 ] ^= block_data[i];
 
   /* Give a 1s pause after each block */
-  libspectrum_tape_block_set_pause( block, 1000 );
+  libspectrum_set_pause_ms( block, 1000 );
 
   /* Put the block into the block list */
   libspectrum_tape_append_block( tape, block );
@@ -567,7 +567,7 @@ read_raw_data( libspectrum_tape *tape, const libspectrum_byte *ptr,
   }
   libspectrum_tape_block_set_bit_length( block, bit_length );
 
-  libspectrum_tape_block_set_pause( block, 0 );
+  libspectrum_set_pause_tstates( block, 0 );
   libspectrum_tape_block_set_bits_in_last_byte( block,
 						status.bits.bits_used + 1 );
 

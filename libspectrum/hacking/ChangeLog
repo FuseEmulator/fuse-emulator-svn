@@ -222,7 +222,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20040526 accessor.pl,internals.h,snapshot.c,szx.c: tidy up snapshot
 	 alloc/free routines.
 20040527 timings.c: small timing tweak for 128K machines; we now match
-	 the timines for (at least some!) 48K/128K machines.
+	 the timings for (at least some!) 48K/128K machines.
 20040527 szx.c: Write scld block when machine has SE memory capability.
 20040601 libspectrum.c,libspectrum.h.in: Add LIBSPECTRUM_CLASS_CARTRIDGE_IF2
          and LIBSPECTRUM_ID_CARTRIDGE_IF2.
@@ -265,9 +265,9 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          LIBSPECTRUM_FLAG_SNAPSHOT_ALWAYS_COMPRESS flag for use with
          libspectrum_snap_write
 20040814 configure.in,dll.c,internals.h,zlib.c: small Visual C++
-	 compatability fixes.
+	 compatibility fixes.
 20040814 generate.pl.in,libspectrum.h.in,make-perl.c: more Visual C++
-	 compatability fixes.
+	 compatibility fixes.
 20040905 libspectrum.h.in,rzx.c: support multiple input recording blocks
 	 in an RZX file.
 20040906 crypto.c,libspectrum.h.in,rzx.c: re-add support for creator and
@@ -287,7 +287,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 (closes bug #1053346).
 20041230 libspectrum.c,libspectrum.h.in: add identification of .mdr files
 	 (part of patch #1085429) (Gergely Szasz).
-20050102 libspectrum.h.in,microdrive.c: variable length microdrive cartridge
+20050102 libspectrum.h.in,microdrive.c: variable length Microdrive cartridge
 	 handling (rest of patch #1085429) (Gergely Szasz).
 20050102 libspectrum.{c,h.in},sna.c,szx.c,timings.c,z80.c: TS2068 support
 	 (patch #1080531) (Fred).
@@ -382,7 +382,7 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 preparation for a release.
 20070120 doc/libspectrum.txt: document RZX iterators.
 20070120 libspectrum.h.in,microdrive.c,doc/libspectrum.txt: tidy up and
-	 document microdrive routines.
+	 document Microdrive routines.
 20070121 ChangeLog: bring up to date.
 20070121 tzx_write.c: support for writing 0x19 blocks.
 20070121 tzx_write.c: we now write TZX v1.20 files.
@@ -662,8 +662,8 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 	 code does not correctly handle write protect flag.
 20080625 microdrive.c: fix write protect flag handling (fixes bug #2002682).
 20080630 libspectrum.h.in: fix prototype for libspectrum_ide_alloc (Fred).
-20080630 myglib/{garray.c,ghash.c}: add <string.h> to elimiate warnings (Fred).
-20080630 rzx.c,sna.c: initialise error as it can be used unintialised (Fred).
+20080630 myglib/{garray.c,ghash.c}: add <string.h> to eliminate warnings (Fred).
+20080630 rzx.c,sna.c: initialise error as it can be used uninitialised (Fred).
 20080701 csw.c,libspectrum.h.in,tap.c,tape.c,tape_block.[ch],tzx_read.c,
          tzx_write.c,warajevo_read.c,wav.c,z80em.c: various functions
          (notably tzx_write_bytes) could never fail but returned an error
@@ -805,3 +805,39 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          Mitchell).
 20110131 sna.c,z80.c: note info loss of SpecDrum info when writing sna or z80
          format snapshots (Fred).
+20110327 configure.in: allow the user to say they do not want to use windres
+         (works around bug #3248008; thanks, Cygnus).
+20110405 libspectrum.h.in: add missing WIN32_DLL (Stuart).
+20110407 accessor.pl,snap_accessors.txt,snapshot.c,szx.c: add support for Beta
+         128 interface autoboot setting in SZX snapshots (Fred).
+20110422 tape_block.c: ROM block duration didn't take into account pilot and
+         sync pulses (Fred).
+20110422 tape.c: don't expect an edge for a jump, group start/end, loop
+         start/end or other non-audio blocks (Fred).
+20110427 Makefile.am,internals.h,tap.c,tape_block.c,tzx_read.c,utilities.c,
+         warajevo_read.c: centralise ms/tstate conversions and tape block pause
+         setting functions (Fred).
+20110427 tzx_read.c,tzx_write.c,warajevo_read.c,wav.c: complete centralisation
+         of tape block pause setting functions (Fred).
+20110427 libspectrum.h.in,tape.c: add comments for
+         LIBSPECTRUM_TAPE_FLAGS_LENGTH_SHORT and
+         LIBSPECTRUM_TAPE_FLAGS_LENGTH_LONG (Fred).
+20110427 tape.c,test/test15.c: use centralised methods for ms/tstate conversions
+         (Fred).
+20110427 tape.c,test/test15.c: use more centralised methods for ms/tstate
+         conversions (Fred).
+20110427 z80.c: initialise machine_type to avoid a warning (Fred).
+20110427 test/test.c: test needed updating for ROM block duration fix (Fred).
+20110427 tzx_read.c: message time in the TZX is in seconds not ms (Fred).
+20110427 doc/libspectrum.txt,tape.c,tape_accessors.txt,tape_block.[ch],
+         utilities.c: directly store pause tstates values in blocks to allow
+         access to either original values or native tstates values (Fred).
+20110427 Makefile.am,doc/{libspectrum.3,libspectrum.txt},internals.h,
+         libspectrum.c,libspectrum.h.in,pzx_read.c,tap.c,tape.c,
+         tape_accessors.txt,tape_block.[ch],tzx_read.c: add read support for PZX
+         tape files (Fred).
+20110429 wav.c: use some more LIBSPECTRUM_BITS_IN_BYTE constants (Fred).
+20110429 tape.c: have raw data blocks report the polarity of pulses (Fred).
+20100502 configure.in: remove unneeded AM_SUBST_NOTMAKE macro as it doesn't get
+         along with older autotools (patch #3295662) (thanks, Tomáš Franke)
+         (Sergio Baldoví)
