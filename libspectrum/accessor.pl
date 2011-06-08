@@ -216,6 +216,11 @@ struct libspectrum_snap {
   /* Cheetah SpecDrum status */
   int specdrum_active;
   libspectrum_signed_byte specdrum_dac;
+
+  /* Spectranet status */
+  int spectranet_active;
+  int spectranet_all_traps_disabled;
+  int spectranet_rst8_trap_disabled;
 };
 
 /* Initialise a libspectrum_snap structure */

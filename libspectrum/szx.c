@@ -66,7 +66,7 @@ static const size_t signature_length = 4;
 static const char *libspectrum_string = "libspectrum: ";
 
 static const libspectrum_byte SZX_VERSION_MAJOR = 1;
-static const libspectrum_byte SZX_VERSION_MINOR = 3;
+static const libspectrum_byte SZX_VERSION_MINOR = 5;
 
 /* Constants etc for each chunk type */
 
@@ -191,6 +191,10 @@ static const libspectrum_word ZXSTDIVIDE_COMPRESSED = 4;
 
 #define ZXSTBID_DIVIDERAMPAGE "DIRP"
 
+#define ZXSTBID_SPECTRANET "SNET"
+static const libspectrum_word ZXSTSNET_ALL_DISABLED = 1;
+static const libspectrum_word ZXSTSNET_RST8_DISABLED = 2;
+
 static libspectrum_error
 read_chunk( libspectrum_snap *snap, libspectrum_word version,
 	    const libspectrum_byte **buffer, const libspectrum_byte *end,
@@ -277,6 +281,9 @@ write_side_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap );
 static libspectrum_error
 write_drum_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap );
+static libspectrum_error
+write_snet_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap );
 
 #ifdef HAVE_ZLIB_H
@@ -1896,6 +1903,30 @@ read_dirp_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 }
 
 static libspectrum_error
+read_snet_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+		 const libspectrum_byte **buffer,
+		 const libspectrum_byte *end GCC_UNUSED, size_t data_length,
+                 szx_context *ctx GCC_UNUSED )
+{
+  libspectrum_word flags;
+
+  if( data_length != 2 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
+			     "read_snet_chunk: unknown length %lu",
+			     (unsigned long)data_length );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  libspectrum_snap_set_spectranet_active( snap, 1 );
+
+  flags = libspectrum_read_word( buffer );
+  libspectrum_snap_set_spectranet_all_traps_disabled( snap, flags & ZXSTSNET_ALL_DISABLED );
+  libspectrum_snap_set_spectranet_rst8_trap_disabled( snap, flags & ZXSTSNET_RST8_DISABLED );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
 skip_chunk( libspectrum_snap *snap GCC_UNUSED,
 	    libspectrum_word version GCC_UNUSED,
 	    const libspectrum_byte **buffer,
@@ -1944,6 +1975,7 @@ static struct read_chunk_t read_chunks[] = {
   { ZXSTBID_SIMPLEIDE,	    read_side_chunk },
   { ZXSTBID_SPECDRUM,	    read_drum_chunk },
   { ZXSTBID_SPECREGS,	    read_spcr_chunk },
+  { ZXSTBID_SPECTRANET,     read_snet_chunk },
   { ZXSTBID_TIMEXREGS,	    read_scld_chunk },
   { ZXSTBID_USPEECH,	    skip_chunk      },
   { ZXSTBID_Z80REGS,	    read_z80r_chunk },
@@ -2293,6 +2325,11 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
       error = write_dirp_chunk( buffer, &ptr, length, snap, i, compress );
       if( error ) return error;
     }
+  }
+
+  if( libspectrum_snap_spectranet_active( snap ) ) {
+    error = write_snet_chunk( buffer, &ptr, length, snap );
+    if( error ) return error;
   }
 
   /* Set length to be actual length, not allocated length */
@@ -3448,6 +3485,24 @@ write_dirp_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
   error = write_ram_page( buffer, ptr, length, ZXSTBID_DIVIDERAMPAGE, data,
 			  0x2000, page, compress, 0x00 );
   if( error ) return error;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_snet_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+		  size_t *length, libspectrum_snap *snap )
+{
+  libspectrum_word flags;
+
+  write_chunk_header( buffer, ptr, length, ZXSTBID_SPECTRANET, 2 );
+
+  flags = 0;
+  if( libspectrum_snap_spectranet_all_traps_disabled( snap ) )
+    flags |= ZXSTSNET_ALL_DISABLED;
+  if( libspectrum_snap_spectranet_rst8_trap_disabled( snap ) )
+    flags |= ZXSTSNET_RST8_DISABLED;
+  libspectrum_write_word( ptr, flags );
 
   return LIBSPECTRUM_ERROR_NONE;
 }

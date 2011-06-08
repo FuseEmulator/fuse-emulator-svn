@@ -210,6 +210,10 @@ libspectrum_snap_alloc( void )
 
   libspectrum_snap_set_melodik_active( snap, 0 );
 
+  libspectrum_snap_set_spectranet_active( snap, 0 );
+  libspectrum_snap_set_spectranet_all_traps_disabled( snap, 0 );
+  libspectrum_snap_set_spectranet_rst8_trap_disabled( snap, 0 );
+
   return snap;
 }
 
