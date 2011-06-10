@@ -852,3 +852,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          tone blocks (Fred).
 20110608 accessor.pl,snap_accessors.txt,snapshot.c,szx.c: beginnings of
          Spectranet snapshot support.
+20110610 accessor.pl,snap_accessors.txt,szx.c: pretty much working Spectranet
+         snapshot support.

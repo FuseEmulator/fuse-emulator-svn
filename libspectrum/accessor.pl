@@ -219,8 +219,13 @@ struct libspectrum_snap {
 
   /* Spectranet status */
   int spectranet_active;
+  int spectranet_paged;
   int spectranet_all_traps_disabled;
   int spectranet_rst8_trap_disabled;
+  int spectranet_page_a;
+  int spectranet_page_b;
+  libspectrum_byte *spectranet_flash[1];
+  libspectrum_byte *spectranet_ram[1];
 };
 
 /* Initialise a libspectrum_snap structure */
