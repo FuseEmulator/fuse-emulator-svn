@@ -854,3 +854,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          Spectranet snapshot support.
 20110610 accessor.pl,snap_accessors.txt,szx.c: pretty much working Spectranet
          snapshot support.
+20110611 accessor.pl,snap_accessors.txt,szx.c: implement Spectranet
+         programmable trap support.

@@ -193,10 +193,12 @@ static const libspectrum_word ZXSTDIVIDE_COMPRESSED = 4;
 
 #define ZXSTBID_SPECTRANET "SNET"
 static const libspectrum_word ZXSTSNET_PAGED = 1;
-static const libspectrum_word ZXSTSNET_ALL_DISABLED = 2;
-static const libspectrum_word ZXSTSNET_RST8_DISABLED = 4;
-static const libspectrum_word ZXSTSNET_FLASH_COMPRESSED = 8;
-static const libspectrum_word ZXSTSNET_RAM_COMPRESSED = 16;
+static const libspectrum_word ZXSTSNET_PROGRAMMABLE_TRAP_ACTIVE = 2;
+static const libspectrum_word ZXSTSNET_PROGRAMMABLE_TRAP_MSB = 4;
+static const libspectrum_word ZXSTSNET_ALL_DISABLED = 8;
+static const libspectrum_word ZXSTSNET_RST8_DISABLED = 16;
+static const libspectrum_word ZXSTSNET_FLASH_COMPRESSED = 32;
+static const libspectrum_word ZXSTSNET_RAM_COMPRESSED = 64;
 
 static libspectrum_error
 read_chunk( libspectrum_snap *snap, libspectrum_word version,
@@ -1993,6 +1995,10 @@ read_snet_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 
   flags = libspectrum_read_word( buffer );
   libspectrum_snap_set_spectranet_paged( snap, flags & ZXSTSNET_PAGED );
+  libspectrum_snap_set_spectranet_programmable_trap_active( snap,
+    flags & ZXSTSNET_PROGRAMMABLE_TRAP_ACTIVE );
+  libspectrum_snap_set_spectranet_programmable_trap_msb( snap,
+    flags & ZXSTSNET_PROGRAMMABLE_TRAP_MSB );
   libspectrum_snap_set_spectranet_all_traps_disabled( snap, flags & ZXSTSNET_ALL_DISABLED );
   libspectrum_snap_set_spectranet_rst8_trap_disabled( snap, flags & ZXSTSNET_RST8_DISABLED );
   flash_compressed = flags & ZXSTSNET_FLASH_COMPRESSED;
@@ -2001,7 +2007,10 @@ read_snet_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   libspectrum_snap_set_spectranet_page_a( snap, **buffer ); (*buffer)++;
   libspectrum_snap_set_spectranet_page_b( snap, **buffer ); (*buffer)++;
 
-  data_remaining = data_length - 4;
+  libspectrum_snap_set_spectranet_programmable_trap( snap,
+    libspectrum_read_word( buffer ) );
+
+  data_remaining = data_length - 6;
 
   error = read_snet_memory( snap, buffer, flash_compressed, &data_remaining,
     libspectrum_snap_set_spectranet_flash );
@@ -3636,12 +3645,16 @@ write_snet_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 #endif
 
-  block_size = 12 + flash_length + ram_length;
+  block_size = 14 + flash_length + ram_length;
 
   write_chunk_header( buffer, ptr, length, ZXSTBID_SPECTRANET, block_size );
 
   if( libspectrum_snap_spectranet_paged( snap ) )
     flags |= ZXSTSNET_PAGED;
+  if( libspectrum_snap_spectranet_programmable_trap_active( snap ) )
+    flags |= ZXSTSNET_PROGRAMMABLE_TRAP_ACTIVE;
+  if( libspectrum_snap_spectranet_programmable_trap_msb( snap ) )
+    flags |= ZXSTSNET_PROGRAMMABLE_TRAP_MSB;
   if( libspectrum_snap_spectranet_all_traps_disabled( snap ) )
     flags |= ZXSTSNET_ALL_DISABLED;
   if( libspectrum_snap_spectranet_rst8_trap_disabled( snap ) )
@@ -3654,6 +3667,9 @@ write_snet_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   *(*ptr)++ = libspectrum_snap_spectranet_page_a( snap );
   *(*ptr)++ = libspectrum_snap_spectranet_page_b( snap );
+
+  libspectrum_write_word( ptr,
+    libspectrum_snap_spectranet_programmable_trap( snap ) );
 
   libspectrum_write_dword( ptr, flash_length );
   memcpy( *ptr, flash_data, flash_length ); *ptr += flash_length;
