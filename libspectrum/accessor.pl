@@ -224,6 +224,7 @@ struct libspectrum_snap {
   int spectranet_programmable_trap_msb;
   int spectranet_all_traps_disabled;
   int spectranet_rst8_trap_disabled;
+  int spectranet_deny_downstream_a15;
   int spectranet_page_a;
   int spectranet_page_b;
   libspectrum_word spectranet_programmable_trap;

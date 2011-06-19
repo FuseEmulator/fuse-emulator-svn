@@ -197,8 +197,9 @@ static const libspectrum_word ZXSTSNET_PROGRAMMABLE_TRAP_ACTIVE = 2;
 static const libspectrum_word ZXSTSNET_PROGRAMMABLE_TRAP_MSB = 4;
 static const libspectrum_word ZXSTSNET_ALL_DISABLED = 8;
 static const libspectrum_word ZXSTSNET_RST8_DISABLED = 16;
-static const libspectrum_word ZXSTSNET_FLASH_COMPRESSED = 32;
-static const libspectrum_word ZXSTSNET_RAM_COMPRESSED = 64;
+static const libspectrum_word ZXSTSNET_DENY_DOWNSTREAM_A15 = 32;
+static const libspectrum_word ZXSTSNET_FLASH_COMPRESSED = 64;
+static const libspectrum_word ZXSTSNET_RAM_COMPRESSED = 128;
 
 static libspectrum_error
 read_chunk( libspectrum_snap *snap, libspectrum_word version,
@@ -2001,6 +2002,7 @@ read_snet_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
     flags & ZXSTSNET_PROGRAMMABLE_TRAP_MSB );
   libspectrum_snap_set_spectranet_all_traps_disabled( snap, flags & ZXSTSNET_ALL_DISABLED );
   libspectrum_snap_set_spectranet_rst8_trap_disabled( snap, flags & ZXSTSNET_RST8_DISABLED );
+  libspectrum_snap_set_spectranet_deny_downstream_a15( snap, flags & ZXSTSNET_DENY_DOWNSTREAM_A15 );
   flash_compressed = flags & ZXSTSNET_FLASH_COMPRESSED;
   ram_compressed = flags & ZXSTSNET_RAM_COMPRESSED;
 
@@ -3659,6 +3661,8 @@ write_snet_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
     flags |= ZXSTSNET_ALL_DISABLED;
   if( libspectrum_snap_spectranet_rst8_trap_disabled( snap ) )
     flags |= ZXSTSNET_RST8_DISABLED;
+  if( libspectrum_snap_spectranet_deny_downstream_a15( snap ) )
+    flags |= ZXSTSNET_DENY_DOWNSTREAM_A15;
   if( flash_compressed )
     flags |= ZXSTSNET_FLASH_COMPRESSED;
   if( ram_compressed )

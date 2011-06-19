@@ -856,3 +856,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          snapshot support.
 20110611 accessor.pl,snap_accessors.txt,szx.c: implement Spectranet
          programmable trap support.
+20110619 accessor.pl,snap_accessors.txt,szx.c: implement Spectranet "deny
+         downstream A15 flag".
