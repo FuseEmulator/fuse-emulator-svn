@@ -193,13 +193,14 @@ static const libspectrum_word ZXSTDIVIDE_COMPRESSED = 4;
 
 #define ZXSTBID_SPECTRANET "SNET"
 static const libspectrum_word ZXSTSNET_PAGED = 1;
-static const libspectrum_word ZXSTSNET_PROGRAMMABLE_TRAP_ACTIVE = 2;
-static const libspectrum_word ZXSTSNET_PROGRAMMABLE_TRAP_MSB = 4;
-static const libspectrum_word ZXSTSNET_ALL_DISABLED = 8;
-static const libspectrum_word ZXSTSNET_RST8_DISABLED = 16;
-static const libspectrum_word ZXSTSNET_DENY_DOWNSTREAM_A15 = 32;
-static const libspectrum_word ZXSTSNET_FLASH_COMPRESSED = 64;
-static const libspectrum_word ZXSTSNET_RAM_COMPRESSED = 128;
+static const libspectrum_word ZXSTSNET_PAGED_VIA_IO = 2;
+static const libspectrum_word ZXSTSNET_PROGRAMMABLE_TRAP_ACTIVE = 4;
+static const libspectrum_word ZXSTSNET_PROGRAMMABLE_TRAP_MSB = 8;
+static const libspectrum_word ZXSTSNET_ALL_DISABLED = 16;
+static const libspectrum_word ZXSTSNET_RST8_DISABLED = 32;
+static const libspectrum_word ZXSTSNET_DENY_DOWNSTREAM_A15 = 64;
+static const libspectrum_word ZXSTSNET_FLASH_COMPRESSED = 128;
+static const libspectrum_word ZXSTSNET_RAM_COMPRESSED = 256;
 
 static libspectrum_error
 read_chunk( libspectrum_snap *snap, libspectrum_word version,
@@ -1996,6 +1997,7 @@ read_snet_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 
   flags = libspectrum_read_word( buffer );
   libspectrum_snap_set_spectranet_paged( snap, flags & ZXSTSNET_PAGED );
+  libspectrum_snap_set_spectranet_paged_via_io( snap, flags & ZXSTSNET_PAGED_VIA_IO );
   libspectrum_snap_set_spectranet_programmable_trap_active( snap,
     flags & ZXSTSNET_PROGRAMMABLE_TRAP_ACTIVE );
   libspectrum_snap_set_spectranet_programmable_trap_msb( snap,
@@ -3653,6 +3655,8 @@ write_snet_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   if( libspectrum_snap_spectranet_paged( snap ) )
     flags |= ZXSTSNET_PAGED;
+  if( libspectrum_snap_spectranet_paged_via_io( snap ) )
+    flags |= ZXSTSNET_PAGED_VIA_IO;
   if( libspectrum_snap_spectranet_programmable_trap_active( snap ) )
     flags |= ZXSTSNET_PROGRAMMABLE_TRAP_ACTIVE;
   if( libspectrum_snap_spectranet_programmable_trap_msb( snap ) )

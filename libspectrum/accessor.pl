@@ -220,6 +220,7 @@ struct libspectrum_snap {
   /* Spectranet status */
   int spectranet_active;
   int spectranet_paged;
+  int spectranet_paged_via_io;
   int spectranet_programmable_trap_active;
   int spectranet_programmable_trap_msb;
   int spectranet_all_traps_disabled;

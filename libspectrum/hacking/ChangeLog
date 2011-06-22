@@ -858,3 +858,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          programmable trap support.
 20110619 accessor.pl,snap_accessors.txt,szx.c: implement Spectranet "deny
          downstream A15 flag".
+20110621 accessor.pl,snap_accessors.txt,szx.c: implement Spectranet "paged via
+         IO port" flag.
