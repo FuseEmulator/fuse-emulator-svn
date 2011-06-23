@@ -229,6 +229,7 @@ struct libspectrum_snap {
   int spectranet_page_a;
   int spectranet_page_b;
   libspectrum_word spectranet_programmable_trap;
+  libspectrum_byte *spectranet_w5100[1];
   libspectrum_byte *spectranet_flash[1];
   libspectrum_byte *spectranet_ram[1];
 };

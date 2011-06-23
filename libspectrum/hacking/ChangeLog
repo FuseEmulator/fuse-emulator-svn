@@ -860,3 +860,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          downstream A15 flag".
 20110621 accessor.pl,snap_accessors.txt,szx.c: implement Spectranet "paged via
          IO port" flag.
+20110622 accessor.pl,snapshot.c,snap_accessors.txt,szx.c: store core W5100
+         state in snapshots.

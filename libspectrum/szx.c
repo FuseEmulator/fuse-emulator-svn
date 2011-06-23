@@ -1991,7 +1991,16 @@ read_snet_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   libspectrum_word flags;
   int flash_compressed, ram_compressed;
   libspectrum_error error;
+  libspectrum_byte *w5100;
   size_t data_remaining;
+
+  if( data_length < 62 ) {
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_UNKNOWN,
+      "read_snet_chunk: length %lu too short", (unsigned long)data_length
+    );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
 
   libspectrum_snap_set_spectranet_active( snap, 1 );
 
@@ -2014,7 +2023,12 @@ read_snet_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
   libspectrum_snap_set_spectranet_programmable_trap( snap,
     libspectrum_read_word( buffer ) );
 
-  data_remaining = data_length - 6;
+  w5100 = libspectrum_malloc( 0x30 * sizeof( libspectrum_byte ) );
+  libspectrum_snap_set_spectranet_w5100( snap, 0, w5100 );
+  memcpy( w5100, *buffer, 0x30 );
+  (*buffer) += 0x30;
+
+  data_remaining = data_length - 54;
 
   error = read_snet_memory( snap, buffer, flash_compressed, &data_remaining,
     libspectrum_snap_set_spectranet_flash );
@@ -3649,7 +3663,7 @@ write_snet_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
 #endif
 
-  block_size = 14 + flash_length + ram_length;
+  block_size = 62 + flash_length + ram_length;
 
   write_chunk_header( buffer, ptr, length, ZXSTBID_SPECTRANET, block_size );
 
@@ -3678,6 +3692,9 @@ write_snet_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   libspectrum_write_word( ptr,
     libspectrum_snap_spectranet_programmable_trap( snap ) );
+
+  memcpy( *ptr, libspectrum_snap_spectranet_w5100( snap, 0 ), 0x30 );
+  (*ptr) += 0x30;
 
   libspectrum_write_dword( ptr, flash_length );
   memcpy( *ptr, flash_data, flash_length ); *ptr += flash_length;
