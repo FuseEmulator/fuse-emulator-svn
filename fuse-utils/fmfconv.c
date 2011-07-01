@@ -890,7 +890,7 @@ check_fmf_head()
   if( out_fps == 0 ) out_fps = inp_fps;	/* later may change */
 
 /* Check initial sound parameters */
-  if( fhead[7] != 'P' && fhead[0] != 'A' ) {
+  if( fhead[7] != 'P' && fhead[7] != 'A' ) {
     printe( "Unknown FMF sound encoding type '%d', sorry...\n", fhead[7] );
     return ERR_CORRUPT_INP;
   }
