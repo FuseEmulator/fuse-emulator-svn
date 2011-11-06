@@ -1714,7 +1714,6 @@ read_if2r_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 
   libspectrum_byte *buffer2;
 
-  size_t compressed_length;
   size_t uncompressed_length;
 
   libspectrum_error error;
@@ -1727,7 +1726,8 @@ read_if2r_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
     return LIBSPECTRUM_ERROR_UNKNOWN;
   }
 
-  compressed_length = libspectrum_read_dword( buffer );
+  /* Skip the compressed length as we never actually use it - bug? */
+  libspectrum_read_dword( buffer );
 
   uncompressed_length = 0x4000;
 
