@@ -224,6 +224,8 @@ decode_header( libspectrum_tape_block *block )
     case 3:
       printf("  CODE: ");
       print_block_name( data );
+      printf("\n  Start: %d\n", data[14] + data[15] * 0x100 );
+      printf("  Length: %d", data[12] + data[13] * 0x100 );
       break;
     default:
       printf("  Unknown");
@@ -394,6 +396,11 @@ process_tape( char *filename )
     case LIBSPECTRUM_TAPE_BLOCK_LOOP_END:
     case LIBSPECTRUM_TAPE_BLOCK_STOP48:
       /* Do nothing */
+      break;
+
+    case LIBSPECTRUM_TAPE_BLOCK_SET_SIGNAL_LEVEL:
+      printf( "  Polarity: %s\n",
+                libspectrum_tape_block_level( block ) ? "high" : "low" );
       break;
 
     case LIBSPECTRUM_TAPE_BLOCK_JUMP:
