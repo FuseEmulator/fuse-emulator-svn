@@ -37,6 +37,12 @@
 #endif /* #ifdef HAVE_STRINGS_H */
 #include <fcntl.h>
 
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#else
+#define PRIu64 "llu"
+#endif /* #ifdef HAVE_INTTYPES_H */
+
 #include "libspectrum.h"
 #include "movie_tables.h"
 
@@ -100,7 +106,7 @@ char *out_pfix = NULL;		/* after number */
 char *out_nmbr = NULL;		/* start of number */
 char *out_next = NULL;		/* multiple out filename next name */
 
-unsigned long long int cut_frm = 0, cut__to = 0;
+libspectrum_qword cut_frm = 0, cut__to = 0;
 type_t cut_f_t, cut_t_t, cut_cmd = TYPE_NONE;
 char *out_cut = NULL;
 
@@ -108,8 +114,8 @@ int inp_ftell = 0;
 
 int sound_exists = 0;				/* FMF frame without sound */
 
-unsigned long long int input_no = 0;		/* current file (input) no */
-unsigned long long int input_last_no = 0;	/* number of files (input) - 1 */
+libspectrum_qword input_no = 0;         /* current file (input) no */
+libspectrum_qword input_last_no = 0;    /* number of files (input) - 1 */
 
 
 int inp_fps = 50000;
@@ -162,11 +168,11 @@ libspectrum_byte *pix_yuv[3] = {		/* other view of data */
   pix_rgb, NULL, NULL
 };
 
-unsigned long long int frame_no = 0;	/* current frame (input) no */
-unsigned long long int time_sec = 0, time_frm = 0;	/* current time (input) no */
-unsigned long long int drop_no = 0;	/* dropped frame no */
-unsigned long long int dupl_no = 0;	/* duplicated frame no */
-unsigned long long int output_no = 0;	/* output frame no */
+libspectrum_qword frame_no = 0;	/* current frame (input) no */
+libspectrum_qword time_sec = 0, time_frm = 0;	/* current time (input) no */
+libspectrum_qword drop_no = 0;	/* dropped frame no */
+libspectrum_qword dupl_no = 0;	/* duplicated frame no */
+libspectrum_qword output_no = 0;	/* output frame no */
 int frm_scr = 0, frm_rte = 0, frm_mch = 0; /* screen type, frame rate, machine type (A/B/C/D) */
 int frm_slice_x, frm_slice_y, frm_slice_w, frm_slice_h;
 int frm_w = -1, frm_h = -1;
@@ -182,8 +188,8 @@ int out_chn = 2, out_rte = -1, out_fsz, out_len;	/* by default convert sound to 
 int fmf_compr = 0;			/* fmf compressed or not */
 int fmf_little_endian = 0;		/* little endian PCM */
 int snd_little_endian = -1;			/* little endian PCM */
-unsigned long long int fmf_slice_no = 0;
-unsigned long long int fmf_sound_no = 0;
+libspectrum_qword fmf_slice_no = 0;
+libspectrum_qword fmf_sound_no = 0;
 
 /* sound variables */
 #define SOUND_BUFF_MAX_SIZE 65536	/* soft max size of collected sound samples */
@@ -472,15 +478,15 @@ find_filename_ext( char *filename )
 }
 
 int
-inp_get_cut_value( char *s, unsigned long long int *value, type_t *type )
+inp_get_cut_value( char *s, libspectrum_qword *value, type_t *type )
 {
   int n = 0;
-  unsigned long long int frm = 0;
+  libspectrum_qword frm = 0;
 
   char *tmp = strchr( s, ':' );
   if( tmp ) {		/*OK, min:sec */
     unsigned int sec = 0;
-    if( ( sscanf( s, "%llu:%n%u", &frm, &n, &sec) != 2 ) || sec > 59 ) {	/* OK, unknown value.. */
+    if( ( sscanf( s, "%"PRIu64":%n%u", &frm, &n, &sec) != 2 ) || sec > 59 ) {	/* OK, unknown value.. */
       printe( "Bad intervall definition in a -C/--cut option\n" );
       return 6;
     }
@@ -489,7 +495,7 @@ inp_get_cut_value( char *s, unsigned long long int *value, type_t *type )
     *type = TYPE_TIME;
     return 0;
   }
-  if( ( sscanf( s, "%llu", &frm) != 1 ) ) {	/* OK, unknown value.. */
+  if( ( sscanf( s, "%"PRIu64, &frm) != 1 ) ) {	/* OK, unknown value.. */
       printe( "Bad intervall definition in a -C/--cut option\n" );
       return 6;
   }
@@ -1510,7 +1516,7 @@ print_progress( int force )
   npos = ftell( inp );
   if( npos <= fpos ) return;
 
-  perc = (long long int)npos * 1009 / inp_ftell / 10;
+  perc = (libspectrum_signed_qword)npos * 1009 / inp_ftell / 10;
 
   if( !force && last_perc == perc ) return;
   if( perc > 100 ) perc = 100;
@@ -1520,9 +1526,9 @@ print_progress( int force )
   else if( prg_t == TYPE_BAR )
     fprintf( stderr, "[%s%s]\r", bar + 78 - 78 * perc / 100, spc + 78 * perc / 100 );
   else if( prg_t == TYPE_FRAME )
-    fprintf( stderr, "[%s%s]%8llu\r", bar + 78 - 70 * perc / 100, spc + 8 + 70 * perc / 100, frame_no );
+    fprintf( stderr, "[%s%s]%8"PRIu64"\r", bar + 78 - 70 * perc / 100, spc + 8 + 70 * perc / 100, frame_no );
   else if( prg_t == TYPE_TIME )
-    fprintf( stderr, "[%s%s]%8llu\r", bar + 78 - 70 * perc / 100, spc + 8 + 70 * perc / 100, time_sec );
+    fprintf( stderr, "[%s%s]%8"PRIu64"\r", bar + 78 - 70 * perc / 100, spc + 8 + 70 * perc / 100, time_sec );
   last_perc = perc;
 }
 
@@ -1954,10 +1960,10 @@ main( int argc, char *argv[] )
   close_snd();				/* close snd file */
   close_out();				/* close out file */
   if( prg_t != TYPE_NONE ) fprintf( stderr, "\n" );
-  printi( 0, "main(): read %llu frame (%llusec) and %llu fmf slice and %llu fmf sound chunk\n",
+  printi( 0, "main(): read %"PRIu64" frame (%"PRIu64" sec) and %"PRIu64" fmf slice and %"PRIu64" fmf sound chunk\n",
 		frame_no, time_sec, fmf_slice_no, fmf_sound_no );
   if( !do_info )
-    printi( 0, "main(): wrote %llu frame dropped %llu frame and inserted %llu frame\n",
+    printi( 0, "main(): wrote %"PRIu64" frame dropped %"PRIu64" frame and inserted %"PRIu64" frame\n",
 		output_no, drop_no, dupl_no );
 
 #ifdef USE_ZLIB
