@@ -108,6 +108,7 @@ char *out_next = NULL;		/* multiple out filename next name */
 
 libspectrum_qword cut_frm = 0, cut__to = 0;
 type_t cut_f_t, cut_t_t, cut_cmd = TYPE_NONE;
+int cut_cut = 0;
 char *out_cut = NULL;
 
 int inp_ftell = 0;
@@ -465,6 +466,17 @@ stereo_2_mono()
   return 0;
 }
 
+/*
+   [-/^^^^\______/-] ->
+
+int
+resample_sound()
+{
+  return 0;
+}
+
+*/
+
 char *
 find_filename_ext( char *filename )
 {
@@ -510,6 +522,7 @@ inp_get_next_cut( void )
   char *mns, *tmp;
   int err;
 
+  cut_cut = 0;
   if( !out_cut || *out_cut == '\0' ) {	/* End of cut!!! */
     cut_cmd = TYPE_NONE;
     return 0;
@@ -1030,9 +1043,9 @@ fmf_read_sound()
     return ERR_CORRUPT_INP;
   }
 
-  if( snd_len && ( snd_enc != fhead[0] ||		/* P U A */
-		snd_rte != fhead[1] + ( fhead[2] << 8 ) ||
-		snd_chn != ( fhead[3] == TYPE_STEREO ? 2 : 1 ) ) ) {
+  if( snd_len && ( snd_enc != fhead[0] ||		/* encoding change */
+		snd_rte != fhead[1] + ( fhead[2] << 8 ) || /* sampling rate change */
+		snd_chn != ( fhead[3] == TYPE_STEREO ? 2 : 1 ) ) ) { /* channels change */
     printi( 3, "fmf_read_sound(): sound parameters changed flush sound buffer\n" );
     do_now = DO_SOUND_FLUSH;
     return 0;
@@ -1052,13 +1065,13 @@ fmf_read_sound()
     return ERR_CORRUPT_INP;
   }
   fmf_sound_no++;
-  snd_len += len;
+  if( !cut_cut ) snd_len += len;
   if( snd_len >= SOUND_BUFF_MAX_SIZE ) {
     printi( 3, "fmf_read_sound(): flush sound buffer because full\n" );
     do_now = DO_SOUND;
     return 0;
   }
-  printi( 3, "fmf_read_sound(): store %dHz %c encoded %s %d samples (%d bytes) sound\n", snd_rte, snd_enc,
+  printi( 3, "fmf_read_sound(): %s %dHz %c encoded %s %d samples (%d bytes) sound\n", cut_cut ? "skip" : "store", snd_rte, snd_enc,
 		 snd_chn == 2 ? "stereo" : "mono", len/snd_fsz, len );
   return 0;
 }
@@ -1120,6 +1133,7 @@ fmf_gen_sound()
 void
 close_snd()
 {
+  snd_write_sound(); /* write pending sound data */
   if( snd_t == TYPE_WAV )
     snd_finalize_wav();
   else if( snd_t == TYPE_AU )
@@ -1225,7 +1239,21 @@ fmf_read_slice()
 
   if( fhead[0] == 'N' ) {		/* end of frame, start new frame! */
     do_now = DO_FRAME;
-    if( sound_exists == 0 ) err = fmf_gen_sound();	/* generate silence */
+
+/*
+we have to handle cut here
+*/
+  if( cut_cmd != TYPE_NONE ) {
+    if( cut_cmd == TYPE_CUT && ( cut_t_t == TYPE_FRAME ? frame_no > cut__to : time_sec > cut__to ) )
+      inp_get_next_cut();
+    if( ( cut_f_t == TYPE_FRAME ? frame_no >= cut_frm : time_sec >= cut_frm ) &&
+	( cut_cmd == TYPE_CUTFROM || ( cut_t_t == TYPE_FRAME ? frame_no <= cut__to : time_sec <= cut__to ) ) ) {
+      drop_no++;
+      cut_cut = 1;
+    }
+  }
+
+  if( sound_exists == 0 && !cut_cut ) err = fmf_gen_sound();	/* generate silence */
     sound_exists = 0;
   } else if( fhead[0] == 'X' ) {
     do_now = DO_LAST_FRAME;
@@ -1347,15 +1375,10 @@ out_write_frame()
     printi( 2, "out_write_frame(): drop this frame.\n" );
   }
 
-  if( cut_cmd != TYPE_NONE ) {
-    if( cut_cmd == TYPE_CUT && ( cut_t_t == TYPE_FRAME ? frame_no > cut__to : time_sec > cut__to ) )
-      inp_get_next_cut();
-    if( ( cut_f_t == TYPE_FRAME ? frame_no >= cut_frm : time_sec >= cut_frm ) &&
-	( cut_cmd == TYPE_CUTFROM || ( cut_t_t == TYPE_FRAME ? frame_no <= cut__to : time_sec <= cut__to ) ) ) {
-      drop_no++;
-      printi( 2, "out_write_frame(): cut this frame.\n" );
-      return 0;
-    }
+  if( cut_cut ) {
+    drop_no++;
+    printi( 2, "out_write_frame(): cut this frame.\n" );
+    return 0;
   }
 
   while( frm_fps <= 0 ) {
@@ -1915,7 +1938,7 @@ main( int argc, char *argv[] )
       } else {						/* read SCR file */
         if( ( err = scr_read_scr() ) ) eop = 1;
       }
-      if( out_t != TYPE_NONE ) {			/* convert slice to RGB or YUV if needed */
+      if( !cut_cut && out_t != TYPE_NONE ) {		/* convert slice to RGB or YUV if needed */
         if( out_t >= TYPE_YUV )
           out_2_yuv();
         else if( out_t >= TYPE_PPM )
