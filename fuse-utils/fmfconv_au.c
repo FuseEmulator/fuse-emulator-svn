@@ -39,14 +39,14 @@ snd_write_auheader()
 #ifdef WORDS_BIGENDIAN
   buff[0] = 0x2e736e64UL;		/* magic id */
   buff[1] = 24 + 64;
-  buff[2] = ~0UL;
+  buff[2] = ~0U;
   buff[3] = snd_enc == TYPE_PCM ? 3 : ( snd_enc == TYPE_ULW ? 1 : 27 );
   buff[4] = snd_rte;
   buff[5] = snd_chn;
 #else
   buff[0] = swap_endian_dword( 0x2e736e64UL );		/* magic id */
   buff[1] = swap_endian_dword( 24 + 64 );
-  buff[2] = swap_endian_dword( ~0UL );
+  buff[2] = swap_endian_dword( ~0U );
   buff[3] = swap_endian_dword( snd_enc == TYPE_PCM ? 3 : ( snd_enc == TYPE_ULW ? 1 : 27 ) );
   buff[4] = swap_endian_dword( snd_rte );
   buff[5] = swap_endian_dword( snd_chn );
