@@ -70,8 +70,21 @@ if test "$ffmpeglib" = yes; then
   then
     AC_SUBST(FFMPEG_LIBS)
     AC_DEFINE([USE_FFMPEG], 1, [Defined if ffmpeg available and requested])
-    AC_CHECK_LIB(avcore, av_get_bits_per_sample_fmt,
+dnl AC_CHECK_LIB(avcore, av_get_bytes_per_sample,
+    AC_CHECK_LIB(avutil, av_get_bytes_per_sample,
+      AC_DEFINE([HAVE_FFMPEG_BYTES_SAMPLE],1,[Defined if av_get_bytes_per_sample available]),
+      true
+    )
+    AC_CHECK_LIB(avutil, av_get_bits_per_sample_fmt,
       AC_DEFINE([HAVE_FFMPEG_SAMPLE_FMT],1,[Defined if av_get_bits_per_sample_fmt available]),
+      true
+    )
+    AC_CHECK_LIB(avformat, avio_open,
+      AC_DEFINE([HAVE_FFMPEG_AVIO_OPEN],1,[Defined if avio_open available]),
+      true
+    )
+    AC_CHECK_LIB(avformat, avformat_write_header,
+      AC_DEFINE([HAVE_FFMPEG_AVFORMAT_WRITE_HEADER],1,[Defined if avformat_write_header available]),
       true
     )
   fi

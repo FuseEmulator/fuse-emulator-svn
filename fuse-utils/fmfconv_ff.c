@@ -258,7 +258,9 @@ open_audio()
   if( codec->sample_fmts != NULL )
     c->sample_fmt = codec->sample_fmts[0];
 
-#ifdef HAVE_FFMPEG_SAMPLE_FMT
+#ifdef HAVE_FFMPEG_BYTES_SAMPLE
+  audio_oframe_size = ( av_get_bytes_per_sample( c->sample_fmt ) + 7 ) / 8 * out_chn;
+#elif defined(HAVE_FFMPEG_SAMPLE_FMT)
   audio_oframe_size = ( av_get_bits_per_sample_fmt( c->sample_fmt ) + 7 ) / 8 * out_chn;
 #else
   audio_oframe_size = ( av_get_bits_per_sample_format( c->sample_fmt ) + 7 ) / 8 * out_chn;
@@ -717,13 +719,14 @@ out_write_ffmpegheader()
 
     /* set the output parameters (must be done even if no
        parameters). */
+#ifndef HAVE_FFMPEG_AVFORMAT_WRITE_HEADER
   if( av_set_parameters( oc, NULL ) < 0 ) {
     printe( "FFMPEG: Invalid output format parameters\n" );
     close_video();
     close_audio();
     return 1;
   }
-
+#endif
 /* dump_format( oc, 0, out_name, 1 ); */
 
     /* now that all the parameters are set, we can open the audio and
@@ -741,13 +744,24 @@ out_write_ffmpegheader()
 
     /* open the output file, if needed */
   if( !( fmt->flags & AVFMT_NOFILE ) ) {
+#ifdef HAVE_FFMPEG_AVIO_OPEN
+    if( avio_open( &oc->pb, out_name, AVIO_FLAG_WRITE ) < 0 ) {
+      printe( "FFMPEG: Could not open '%s'\n", out_name );
+      return 1;
+    }
+#else
     if( url_fopen( &oc->pb, out_name, URL_WRONLY ) < 0 ) {
       printe( "FFMPEG: Could not open '%s'\n", out_name );
       return 1;
     }
+#endif
   }
     /* write the stream header, if any */
+#ifdef HAVE_FFMPEG_AVFORMAT_WRITE_HEADER
+  avformat_write_header( oc, NULL );
+#else
   av_write_header( oc );
+#endif
 
   out_header_ok = 1;
 
@@ -793,7 +807,11 @@ out_finalize_ffmpeg()
 
   if( !( fmt->flags & AVFMT_NOFILE ) ) {
         /* close the output file */
+#ifdef HAVE_FFMPEG_AVIO_OPEN
+    avio_close( oc->pb );
+#else
     url_fclose( oc->pb );
+#endif
   }
 
     /* free the stream */

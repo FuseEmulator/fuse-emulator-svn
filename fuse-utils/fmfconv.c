@@ -1857,7 +1857,11 @@ parse_args( int argc, char *argv[] )
     return ERR_BAD_PARAM;
   }
 
-  if( !help_exit && !inp_name ) {
+  if( !help_exit && !inp_name
+#ifdef USE_FFMPEG
+      && ffmpeg_list < 0
+#endif
+  ) {
     int fd = fileno( stdin );
     if( isatty( fd ) ) {
       printe( "%s: no input file specified\n", "fmfconv" );
