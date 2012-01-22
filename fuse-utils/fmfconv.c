@@ -1938,7 +1938,7 @@ main( int argc, char *argv[] )
       } else {						/* read SCR file */
         if( ( err = scr_read_scr() ) ) eop = 1;
       }
-      if( !cut_cut && out_t != TYPE_NONE ) {		/* convert slice to RGB or YUV if needed */
+      if( out_t != TYPE_NONE ) {		/* convert slice to RGB or YUV if needed */
         if( out_t >= TYPE_YUV )
           out_2_yuv();
         else if( out_t >= TYPE_PPM )
