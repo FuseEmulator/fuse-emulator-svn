@@ -503,7 +503,7 @@ test_24( void )
   libspectrum_tape_iterator it;
   libspectrum_tape_block *block;
   libspectrum_dword expected_sizes[20] = {
-    8228020,	/* ROM */
+    15216886,	/* ROM */
     3493371,	/* Turbo */
     356310,	/* Pure tone */
     1761,	/* Pulses */
@@ -625,6 +625,113 @@ test_25( void )
   return r;
 }
 
+/* Tests for bug #3078262: last out to 0x1ffd is not serialised into .z80
+   files */
+static test_return_t
+test_26( void )
+{
+  const char *filename = STATIC_TEST_PATH( "plus3.z80" );
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0, length = 0;
+  libspectrum_snap *snap;
+  int flags;
+  test_return_t r = TEST_INCOMPLETE;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  snap = libspectrum_snap_alloc();
+
+  if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename ) != LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: reading `%s' failed\n", progname, filename );
+    libspectrum_snap_free( snap );
+    libspectrum_free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_free( buffer );
+  buffer = NULL;
+
+  if( libspectrum_snap_write( &buffer, &length, &flags, snap,
+                              LIBSPECTRUM_ID_SNAPSHOT_Z80, NULL, 0 ) != 
+      LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: serialising to Z80 failed\n", progname );
+    libspectrum_snap_free( snap );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_snap_free( snap );
+  snap = libspectrum_snap_alloc();
+
+  if( libspectrum_snap_read( snap, buffer, length, LIBSPECTRUM_ID_SNAPSHOT_Z80,
+                             NULL ) != LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: restoring from Z80 failed\n", progname );
+    libspectrum_snap_free( snap );
+    libspectrum_free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  if( libspectrum_snap_out_plus3_memoryport( snap ) == 0xaa ) {
+    r = TEST_PASS;
+  } else {
+    fprintf( stderr,
+             "%s: Last out to 0x1ffd is 0x%02x, not the expected 0xaa\n",
+             progname, libspectrum_snap_out_plus3_memoryport( snap ) );
+    r = TEST_FAIL;
+  }
+
+  libspectrum_snap_free( snap );
+
+  return r;
+}
+
+/* Tests for bug #2857419: SZX files were written with A and F reversed */
+static test_return_t
+test_27( void )
+{
+  const char *filename = STATIC_TEST_PATH( "empty.szx" );
+  libspectrum_byte *buffer = NULL;
+  size_t filesize = 0;
+  libspectrum_snap *snap;
+  test_return_t r = TEST_INCOMPLETE;
+
+  if( read_file( &buffer, &filesize, filename ) ) return TEST_INCOMPLETE;
+
+  snap = libspectrum_snap_alloc();
+
+  if( libspectrum_snap_read( snap, buffer, filesize, LIBSPECTRUM_ID_UNKNOWN,
+			     filename ) != LIBSPECTRUM_ERROR_NONE ) {
+    fprintf( stderr, "%s: reading `%s' failed\n", progname, filename );
+    libspectrum_snap_free( snap );
+    libspectrum_free( buffer );
+    return TEST_INCOMPLETE;
+  }
+
+  libspectrum_free( buffer );
+
+  if( libspectrum_snap_a( snap ) != 0x12 ) {
+    fprintf( stderr, "%s: A is 0x%02x, not the expected 0x12\n", progname,
+             libspectrum_snap_a( snap ) );
+    r = TEST_FAIL;
+  } else if( libspectrum_snap_f( snap ) != 0x34 ) {
+    fprintf( stderr, "%s: F is 0x%02x, not the expected 0x34\n", progname,
+             libspectrum_snap_f( snap ) );
+    r = TEST_FAIL;
+  } else if( libspectrum_snap_a_( snap ) != 0x56 ) {
+    fprintf( stderr, "%s: A' is 0x%02x, not the expected 0x56\n", progname,
+             libspectrum_snap_a_( snap ) );
+    r = TEST_FAIL;
+  } else if( libspectrum_snap_f_( snap ) != 0x78 ) {
+    fprintf( stderr, "%s: F' is 0x%02x, not the expected 0x78\n", progname,
+             libspectrum_snap_f_( snap ) );
+    r = TEST_FAIL;
+  } else {
+    r = TEST_PASS;
+  }
+
+  return r;
+}
+
 struct test_description {
 
   test_fn test;
@@ -659,6 +766,8 @@ static struct test_description tests[] = {
   { test_23, "MDR write protection 2", 0 },
   { test_24, "Complete TZX timings", 0 },
   { test_25, "Writing SNA file", 0 },
+  { test_26, "Writing +3 .Z80 file", 0 },
+  { test_27, "Reading old SZX file", 0 },
 };
 
 static size_t test_count = sizeof( tests ) / sizeof( tests[0] );

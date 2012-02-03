@@ -35,6 +35,7 @@ libspectrum_la_SOURCES = bzip2.c \
                          memory.c \
 			 microdrive.c \
 			 plusd.c \
+			 pzx_read.c \
 			 rzx.c \
 			 sna.c \
 			 snp.c \
@@ -51,14 +52,16 @@ libspectrum_la_SOURCES = bzip2.c \
 		 	 timings.c \
 			 tzx_read.c \
 			 tzx_write.c \
+			 utilities.c \
 			 warajevo_read.c \
 			 wav.c \
+                         windres.rc \
 			 z80.c \
 			 z80em.c \
 			 zlib.c \
 			 zxs.c
 
-libspectrum_la_LDFLAGS = -version-info 7:0:0 -no-undefined @WINDRES_LDFLAGS@
+libspectrum_la_LDFLAGS = -version-info 8:0:0 -no-undefined @WINDRES_LDFLAGS@
 
 libspectrum_la_LIBADD = @AUDIOFILE_LIBS@ -lm
 

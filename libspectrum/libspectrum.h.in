@@ -210,6 +210,10 @@ typedef enum libspectrum_id_t {
 
   LIBSPECTRUM_ID_DISK_OPD,		/* .opu/.opd Opus Discovery disk image */
 
+  LIBSPECTRUM_ID_TAPE_PZX,		/* PZX tape image */
+
+  LIBSPECTRUM_ID_AUX_POK,		/* POKE file */
+
 } libspectrum_id_t;
 
 /* And 'classes' of file */
@@ -245,6 +249,8 @@ typedef enum libspectrum_class_t {
   /* Below here, present only in 0.5.0 and later */
 
   LIBSPECTRUM_CLASS_DISK_GENERIC,	/* generic disk image */
+
+  LIBSPECTRUM_CLASS_AUXILIARY,	        /* auxiliary supported file */
 
 } libspectrum_class_t;
 
@@ -499,6 +505,7 @@ typedef enum libspectrum_tape_type {
   LIBSPECTRUM_TAPE_BLOCK_SELECT = 0x28,
 
   LIBSPECTRUM_TAPE_BLOCK_STOP48 = 0x2a,
+  LIBSPECTRUM_TAPE_BLOCK_SET_SIGNAL_LEVEL,
 
   LIBSPECTRUM_TAPE_BLOCK_COMMENT = 0x30,
   LIBSPECTRUM_TAPE_BLOCK_MESSAGE,
@@ -512,6 +519,10 @@ typedef enum libspectrum_tape_type {
   /* Past here are block types not in the .tzx format */
 
   LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE = 0x100,
+
+  /* PZX format blocks */
+  LIBSPECTRUM_TAPE_BLOCK_PULSE_SEQUENCE,
+  LIBSPECTRUM_TAPE_BLOCK_DATA_BLOCK,
 
 } libspectrum_tape_type;
 
@@ -529,8 +540,10 @@ extern WIN32_DLL const int LIBSPECTRUM_TAPE_FLAGS_STOP48; /* Stop tape if in 48K
 extern WIN32_DLL const int LIBSPECTRUM_TAPE_FLAGS_NO_EDGE; /* Edge isn't really an edge */
 extern WIN32_DLL const int LIBSPECTRUM_TAPE_FLAGS_LEVEL_LOW; /* Set level low */
 extern WIN32_DLL const int LIBSPECTRUM_TAPE_FLAGS_LEVEL_HIGH; /* Set level high */
-extern WIN32_DLL const int LIBSPECTRUM_TAPE_FLAGS_LENGTH_SHORT;
-extern WIN32_DLL const int LIBSPECTRUM_TAPE_FLAGS_LENGTH_LONG;
+extern WIN32_DLL const int LIBSPECTRUM_TAPE_FLAGS_LENGTH_SHORT;/* Short edge;
+                                                used for loader acceleration */
+extern WIN32_DLL const int LIBSPECTRUM_TAPE_FLAGS_LENGTH_LONG; /* Long edge;
+                                                used for loader acceleration */
 extern WIN32_DLL const int LIBSPECTRUM_TAPE_FLAGS_TAPE;	/* Tape has finished */
 
 /* The states which a block can be in */
@@ -538,12 +551,13 @@ typedef enum libspectrum_tape_state_type {
 
   LIBSPECTRUM_TAPE_STATE_INVALID = 0,
 
-  LIBSPECTRUM_TAPE_STATE_PILOT,	/* Pilot pulses */
-  LIBSPECTRUM_TAPE_STATE_SYNC1,	/* First sync pulse */
-  LIBSPECTRUM_TAPE_STATE_SYNC2,	/* Second sync pulse */
-  LIBSPECTRUM_TAPE_STATE_DATA1,	/* First edge of a data bit */
-  LIBSPECTRUM_TAPE_STATE_DATA2,	/* Second edge of a data bit */
-  LIBSPECTRUM_TAPE_STATE_PAUSE,	/* The pause at the end of a block */
+  LIBSPECTRUM_TAPE_STATE_PILOT, /* Pilot pulses */
+  LIBSPECTRUM_TAPE_STATE_SYNC1, /* First sync pulse */
+  LIBSPECTRUM_TAPE_STATE_SYNC2, /* Second sync pulse */
+  LIBSPECTRUM_TAPE_STATE_DATA1, /* First edge of a data bit */
+  LIBSPECTRUM_TAPE_STATE_DATA2, /* Second edge of a data bit */
+  LIBSPECTRUM_TAPE_STATE_PAUSE, /* The pause at the end of a block */
+  LIBSPECTRUM_TAPE_STATE_TAIL,  /* The pulse at the end of a block */
 
 } libspectrum_tape_state_type;
 
@@ -772,7 +786,7 @@ typedef enum libspectrum_rzx_block_id {
 
 } libspectrum_rzx_block_id;
 
-void
+WIN32_DLL void
 libspectrum_rzx_insert_snap( libspectrum_rzx *rzx, libspectrum_snap *snap,
 			     int where );
 

@@ -166,6 +166,7 @@ extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC1;
 extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_SYNC2;
 extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA0;
 extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_DATA1;
+extern const libspectrum_dword LIBSPECTRUM_TAPE_TIMING_TAIL;
 
 /* Tape routines */
 
@@ -218,6 +219,10 @@ libspectrum_csw_write( libspectrum_byte **buffer, size_t *length,
 libspectrum_error
 libspectrum_wav_read( libspectrum_tape *tape, const char *filename );
 
+libspectrum_error
+internal_pzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
+                   const size_t length );
+
 libspectrum_tape_block*
 libspectrum_tape_block_internal_init(
                                 libspectrum_tape_block_state *iterator,
@@ -234,5 +239,23 @@ libspectrum_error
 libspectrum_sign_data( libspectrum_byte **signature, size_t *signature_length,
 		       libspectrum_byte *data, size_t data_length,
 		       libspectrum_rzx_dsa_key *key );
+
+/* Utility functions */
+
+libspectrum_dword 
+libspectrum_ms_to_tstates( libspectrum_dword ms );
+
+libspectrum_dword 
+libspectrum_tstates_to_ms( libspectrum_dword tstates );
+
+void
+libspectrum_set_pause_ms( libspectrum_tape_block *block,
+                          libspectrum_dword pause_ms );
+
+void
+libspectrum_set_pause_tstates( libspectrum_tape_block *block,
+                               libspectrum_dword pause_tstates );
+
+extern const int LIBSPECTRUM_BITS_IN_BYTE;
 
 #endif				/* #ifndef LIBSPECTRUM_INTERNALS_H */

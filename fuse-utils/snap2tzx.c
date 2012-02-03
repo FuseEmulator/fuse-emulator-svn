@@ -61,8 +61,14 @@ static libspectrum_byte WorkBuffer[65535];
 
 static int verbose = 0;
 
+static void print_error( const char *format, ... )
+     GCC_PRINTF( 1, 2 );
+
+static void print_verbose( const char *format, ... )
+     GCC_PRINTF( 1, 2 );
+
 static void
-print_error( char *format, ... )
+print_error( const char *format, ... )
 {
   va_list ap;
 
@@ -76,7 +82,7 @@ print_error( char *format, ... )
 }
 
 static void
-print_verbose( char *format, ... )
+print_verbose( const char *format, ... )
 {
   va_list ap;
 
@@ -169,7 +175,6 @@ int test_decz80(libspectrum_byte *source, int final_len, int source_len)
 	libspectrum_byte b1;
 	libspectrum_byte b2;
 	libspectrum_byte times;
-	libspectrum_byte value;
 
 	int off = src_pnt;
 
@@ -183,7 +188,6 @@ int test_decz80(libspectrum_byte *source, int final_len, int source_len)
 		{
 		  /* Repeat */
 			times = source[(src_pnt-off)+1];
-			value = source[(src_pnt-off)+2];
 			dst_pnt += times;
 			src_pnt+=3;
 		}
@@ -213,7 +217,6 @@ test_rev_decz80( libspectrum_byte *source, int final_len, int source_len )
 	libspectrum_byte b1;
 	libspectrum_byte b2;
 	libspectrum_byte times;
-	libspectrum_byte value;
 
 	while (dst_pnt >=0 && !overwrite)
 	{
@@ -225,7 +228,6 @@ test_rev_decz80( libspectrum_byte *source, int final_len, int source_len )
 		{
 		  /* Repeat */
 			times = source[src_pnt-1];
-			value = source[src_pnt-2];
 			dst_pnt -= times;
 			src_pnt-=3;
 		}
@@ -1211,13 +1213,13 @@ add_page( libspectrum_tape *tape, libspectrum_snap *snap, int page,
     /* compressed_length == 0 => block could not be compressed */
     if( !compressed_length ) {
       print_verbose(
-        "- adding separate loading screen (uncompressed) length: %04x\n",
-	page_length
+        "- adding separate loading screen (uncompressed) length: %04lx\n",
+	(unsigned long)page_length
       );
     } else {
       print_verbose(
-        "- adding separate loading screen   (compressed) length: %04x\n",
-	compressed_length
+        "- adding separate loading screen   (compressed) length: %04lx\n",
+	(unsigned long)compressed_length
       );
     }
 
@@ -1283,13 +1285,13 @@ add_page( libspectrum_tape *tape, libspectrum_snap *snap, int page,
 
     if( compressed_length == 0 ) {
       print_verbose(
-        "- adding memory page %d           (uncompressed) length: %04x\n",
-	page, page_length
+        "- adding memory page %d           (uncompressed) length: %04lx\n",
+	page, (unsigned long)page_length
       );
     } else {
       print_verbose(
-	"- adding memory page %d             (compressed) length: %04x\n",
-	page, compressed_length
+	"- adding memory page %d             (compressed) length: %04lx\n",
+	page, (unsigned long)compressed_length
       );
     }
 

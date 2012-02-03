@@ -524,6 +524,7 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
       { LIBSPECTRUM_ID_TAPE_LTP,      "ltp", 3, "\x11\0\0",	    0, 3, 1 },
       { LIBSPECTRUM_ID_TAPE_TZX,      "tzx", 3, "ZXTape!",	    0, 7, 4 },
       { LIBSPECTRUM_ID_TAPE_WARAJEVO, "tap", 2, "\xff\xff\xff\xff", 8, 4, 2 },
+      { LIBSPECTRUM_ID_TAPE_PZX,      "pzx", 3, "PZXT",		    0, 4, 4 },
 
       { LIBSPECTRUM_ID_DISK_SCL,      "scl", 3, "SINCLAIR",         0, 8, 4 },
       { LIBSPECTRUM_ID_DISK_TRD,      "trd", 3, NULL,		    0, 0, 0 },
@@ -551,6 +552,8 @@ libspectrum_identify_file_raw( libspectrum_id_t *type, const char *filename,
 
       { LIBSPECTRUM_ID_DISK_OPD,      "opd", 3, NULL,		    0, 0, 0 },
       { LIBSPECTRUM_ID_DISK_OPD,      "opu", 3, NULL,		    0, 0, 0 },
+
+      { LIBSPECTRUM_ID_AUX_POK,       "pok", 3, NULL,		    0, 0, 0 },
 
       { -1, NULL, 0, NULL, 0, 0, 0 }, /* End marker */
 
@@ -708,6 +711,7 @@ libspectrum_identify_class( libspectrum_class_t *libspectrum_class,
   case LIBSPECTRUM_ID_TAPE_Z80EM:
   case LIBSPECTRUM_ID_TAPE_CSW:
   case LIBSPECTRUM_ID_TAPE_WAV:
+  case LIBSPECTRUM_ID_TAPE_PZX:
     *libspectrum_class = LIBSPECTRUM_CLASS_TAPE; return 0;
 
   case LIBSPECTRUM_ID_CARTRIDGE_IF2:
@@ -719,6 +723,8 @@ libspectrum_identify_class( libspectrum_class_t *libspectrum_class,
   case LIBSPECTRUM_ID_DISK_TD0:
     *libspectrum_class = LIBSPECTRUM_CLASS_DISK_GENERIC; return 0;
 
+  case LIBSPECTRUM_ID_AUX_POK:
+    *libspectrum_class = LIBSPECTRUM_CLASS_AUXILIARY; return 0;
   }
 
   libspectrum_print_error( LIBSPECTRUM_ERROR_UNKNOWN,
@@ -908,9 +914,7 @@ void
 libspectrum_make_room( libspectrum_byte **dest, size_t requested,
 		       libspectrum_byte **ptr, size_t *allocated )
 {
-  size_t current_length;
-
-  current_length = *ptr - *dest;
+  size_t current_length = 0;
 
   if( *allocated == 0 ) {
 
@@ -918,6 +922,7 @@ libspectrum_make_room( libspectrum_byte **dest, size_t requested,
     *dest = libspectrum_malloc( requested * sizeof( **dest ) );
 
   } else {
+    current_length = *ptr - *dest;
 
     /* If there's already enough room here, just return */
     if( current_length + requested <= (*allocated) ) return;

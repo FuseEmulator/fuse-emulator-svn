@@ -1,4 +1,4 @@
-libspectrum 0.5.0
+libspectrum 1.0.0
 =================
 
 libspectrum is a fairly simple library designed to make the handling
@@ -166,6 +166,7 @@ values:
 
 LIBSPECTRUM_MACHINE_16		16K Spectrum
 LIBSPECTRUM_MACHINE_48		48K Spectrum
+LIBSPECTRUM_MACHINE_48_NTSC     NTSC version of 48K Spectrum
 LIBSPECTRUM_MACHINE_128		(Original) 128K Spectrum
 LIBSPECTRUM_MACHINE_PLUS2	Spectrum +2 (the grey one)
 LIBSPECTRUM_MACHINE_PLUS2A	Spectrum +2A (the black one)
@@ -309,6 +310,7 @@ LIBSPECTRUM_ID_TAPE_Z80EM	A Z80Em tape image
 LIBSPECTRUM_ID_TAPE_SPC		An SP-style .spc tape image
 LIBSPECTRUM_ID_TAPE_STA		A Speculator-style .sta tape image
 LIBSPECTRUM_ID_TAPE_LTP		A Nuclear ZX-style .ltp tape image
+LIBSPECTRUM_ID_TAPE_PZX		A .pzx tape image
 
 Versions of libspectrum previous to 0.5.0 used LIBSPECTRUM_ID_DISK_DSK
 for both plain and extended .dsk images, but this is now deprecated in
@@ -677,6 +679,9 @@ The available properties (along with their types) are:
 * int fuller_box_active
 * int melodik_active
 
+* int specdrum_active
+* libspectrum_signed_byte specdrum_dac
+
 Most of those should be fairly self-explanatory; those which may not
 be are:
 
@@ -979,6 +984,7 @@ LIBSPECTRUM_TAPE_BLOCK_LOOP_END		0x25
 LIBSPECTRUM_TAPE_BLOCK_SELECT		0x28
 
 LIBSPECTRUM_TAPE_BLOCK_STOP48		0x2a
+LIBSPECTRUM_TAPE_BLOCK_SET_SIGNAL_LEVEL	0x2b
 
 LIBSPECTRUM_TAPE_BLOCK_COMMENT		0x30
 LIBSPECTRUM_TAPE_BLOCK_MESSAGE		0x31
@@ -989,9 +995,16 @@ LIBSPECTRUM_TAPE_BLOCK_CUSTOM		0x35
 
 LIBSPECTRUM_TAPE_BLOCK_CONCAT		0x5a
 
-The following block is not defined in the TZX format
+The following blocks are not defined in the TZX format
 
 LIBSPECTRUM_TAPE_BLOCK_RLE_PULSE	A run-length encoded list of pulses
+
+The following two blocks are defined in the PZX format
+
+LIBSPECTRUM_TAPE_BLOCK_PULSE_SEQUENCE   A run-length encoded list of pulses with					polarity specified
+LIBSPECTRUM_TAPE_BLOCK_DATA_BLOCK       A block of data without pilot or sync
+					pulses with bit encoding and polarity
+					specified
 
 These values are defined in the `libspectrum_tape_type' enumeration.
 The `concatenation' block (0x5a) is recognised on input, but just
@@ -1087,6 +1100,7 @@ libspectrum_dword bit1_length		PURE_DATA
 size_t bits_in_last_byte		PURE_DATA
 					RAW_DATA
 					TURBO
+					DATA_BLOCK
 
 size_t count				PURE_TONE
 					PULSES
@@ -1094,18 +1108,22 @@ size_t count				PURE_TONE
 					SELECT
 					ARCHIVE_INFO
 					HARDWARE
+					PULSE_SEQUENCE
+					DATA_BLOCK
 
 libspectrum_byte* data			CUSTOM
 					PURE_DATA
 					RAW_DATA
 					ROW
 					TURBO
+					DATA_BLOCK
 
 size_t data_length			CUSTOM
 					PURE_DATA
 					RAW_DATA
 					ROM
 					TURBO
+					DATA_BLOCK
 
 libspectrum_tape_generalised_data_symbol_table
 data_table				GENERALISED_DATA
@@ -1117,7 +1135,16 @@ int offset				JUMP
 
 int offsets[]				SELECT
 
-libspectrum_dword pause			MESSAGE
+libspectrum_dword pause			GENERALISED_DATA
+					MESSAGE
+					PAUSE
+					PURE_DATA
+					RAW_DATA
+					ROM
+					TURBO
+
+libspectrum_dword pause_tstates		GENERALISED_DATA
+					MESSAGE
 					PAUSE
 					PURE_DATA
 					RAW_DATA
@@ -1138,10 +1165,15 @@ pilot_table				GENERALISED_DATA
 libspectrum_dword pulse_length		LENGTH
 
 libspectrum_dword pulse_lengths[]	PULSES
+					PULSE_SEQUENCE
+
+libspectrum_dword pulse_repeats[]	PULSE_SEQUENCE
 
 libspectrum_dword sync1_length		TURBO
 
 libspectrum_dword sync2_length		TURBO
+
+libspectrum_dword tail_length		DATA_BLOCK
 
 char* text				GROUP_START
 					COMMENT
@@ -1155,6 +1187,18 @@ int types[]				HARDWARE
 
 int values[]				HARDWARE
 
+int level				DATA_BLOCK
+					PAUSE
+					SET_SIGNAL_LEVEL
+
+libspectrum_byte bit0_pulse_count	DATA_BLOCK
+
+libspectrum_byte bit1_pulse_count	DATA_BLOCK
+
+libspectrum_word bit0_pulses[]		DATA_BLOCK
+
+libspectrum_word bit1_pulses[]		DATA_BLOCK
+
 There is one further parameter which can be accessed for PURE_DATA,
 RAW_DATA, ROM and TURBO blocks, which is `libspectrum_tape_state_type
 state'. This determines the part of the block which is currently being
@@ -1167,6 +1211,7 @@ LIBSPECTRUM_TAPE_STATE_SYNC1 	/* First sync pulse */
 LIBSPECTRUM_TAPE_STATE_SYNC2 	/* Second sync pulse */
 LIBSPECTRUM_TAPE_STATE_DATA1 	/* First edge of a data bit */
 LIBSPECTRUM_TAPE_STATE_DATA2 	/* Second edge of a data bit */
+LIBSPECTRUM_TAPE_STATE_TAIL 	/* The tail pause following the last data bit */
 LIBSPECTRUM_TAPE_STATE_PAUSE 	/* The pause at the end of a block */
 
 Setting this value to anything other than

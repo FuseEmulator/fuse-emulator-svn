@@ -40,6 +40,7 @@ typedef struct libspectrum_tape_rom_block {
   size_t length;		/* How long is this block */
   libspectrum_byte *data;	/* The actual data */
   libspectrum_dword pause;	/* Pause after block (milliseconds) */
+  libspectrum_dword pause_tstates; /* Pause after block (tstates) */
 
 } libspectrum_tape_rom_block;
 
@@ -67,6 +68,7 @@ typedef struct libspectrum_tape_turbo_block {
   size_t bits_in_last_byte;	/* How many bits are in the last byte? */
   libspectrum_byte *data;	/* The actual data */
   libspectrum_dword pause;	/* Pause after data (in ms) */
+  libspectrum_dword pause_tstates; /* Pause after block (tstates) */
 
   libspectrum_dword pilot_length; /* Length of pilot pulse (in tstates) */
   size_t pilot_pulses;		/* Number of pilot pulses */
@@ -132,6 +134,7 @@ typedef struct libspectrum_tape_pure_data_block {
   size_t bits_in_last_byte;	/* How many bits are in the last byte? */
   libspectrum_byte *data;	/* The actual data */
   libspectrum_dword pause;	/* Pause after data (in ms) */
+  libspectrum_dword pause_tstates; /* Pause after block (tstates) */
 
   libspectrum_dword bit0_length, bit1_length; /* Length of (re)set bits */
 
@@ -159,6 +162,7 @@ typedef struct libspectrum_tape_raw_data_block {
   size_t bits_in_last_byte;	/* How many bits are in the last byte? */
   libspectrum_byte *data;	/* The actual data */
   libspectrum_dword pause;	/* Pause after data (in ms) */
+  libspectrum_dword pause_tstates; /* Pause after block (tstates) */
 
   libspectrum_dword bit_length; /* Bit length. *Not* pulse length! */
 
@@ -198,6 +202,7 @@ struct libspectrum_tape_generalised_data_symbol_table {
 typedef struct libspectrum_tape_generalised_data_block {
 
   libspectrum_dword pause;	/* Pause after data (in ms) */
+  libspectrum_dword pause_tstates; /* Pause after block (tstates) */
 
   libspectrum_tape_generalised_data_symbol_table pilot_table, data_table;
 
@@ -228,10 +233,14 @@ typedef struct libspectrum_tape_generalised_data_block_state {
 
 } libspectrum_tape_generalised_data_block_state;
 
-/* A pause block */
+/* A pause block - some formats use pause in ms, some use tstates. Fuse uses
+   tstates but wants to be able to write back the original value to a file
+   if re-saved so store both */
 typedef struct libspectrum_tape_pause_block {
 
   libspectrum_dword length;
+  libspectrum_dword length_tstates;
+  int level; /* 0/1 for low and high, anything else for not specified */
 
 } libspectrum_tape_pause_block;
 
@@ -274,6 +283,13 @@ typedef struct libspectrum_tape_select_block {
 
 /* No `stop tape if in 48K mode' block as it contains no data */
 
+/* A set signal level block */
+typedef struct libspectrum_tape_set_signal_level_block {
+
+  int level;			/* Mic level 0/1 */
+
+} libspectrum_tape_set_signal_level_block;
+
 /* A comment block */
 typedef struct libspectrum_tape_comment_block {
 
@@ -285,6 +301,7 @@ typedef struct libspectrum_tape_comment_block {
 typedef struct libspectrum_tape_message_block {
 
   int time;
+  int time_tstates;
   char *text;
 
 } libspectrum_tape_message_block;
@@ -347,6 +364,66 @@ typedef struct libspectrum_tape_rle_pulse_block_state {
 
 } libspectrum_tape_rle_pulse_block_state;
 
+/* A PZX pulse sequence block */
+typedef struct libspectrum_tape_pulse_sequence_block {
+
+  size_t count;
+  libspectrum_dword *lengths; /* Length of pulse (in tstates) */
+  size_t *pulse_repeats;      /* Number of pulses */
+
+} libspectrum_tape_pulse_sequence_block;
+
+typedef struct libspectrum_tape_pulse_sequence_block_state {
+
+  /* Private data */
+
+  size_t index;
+  size_t pulse_count;		/* Number of pulses to go */
+  int level;			/* Mic level 0/1 */
+
+} libspectrum_tape_pulse_sequence_block_state;
+
+/* A PZX data block */
+typedef struct libspectrum_tape_data_block {
+
+  size_t count;			   /* Length of data in bits */
+  int initial_level;		   /* Mic level 0/1 */
+  libspectrum_byte *data;	   /* The actual data */
+  libspectrum_dword tail_length;   /* Length of tail pulse (in tstates) */
+
+  size_t bit0_pulse_count, bit1_pulse_count; /* Pulse count in (re)set bits */
+  libspectrum_word *bit0_pulses;   /* Reset bits pulses */
+  libspectrum_word *bit1_pulses;   /* Set bits pulses */
+
+  size_t length;		/* Length of data in bytes */
+  size_t bits_in_last_byte;	/* How many bits are in the last byte? */
+
+} libspectrum_tape_data_block;
+
+typedef struct libspectrum_tape_data_block_state {
+
+  /* Private data */
+
+  libspectrum_tape_state_type state;
+
+  int bit0_flags;		 /* Any flags to be set when bit0 is returned */
+  int bit1_flags;		 /* Any flags to be set when bit1 is returned */
+
+  size_t bytes_through_block;
+  size_t bits_through_byte;	/* How far through the data are we? */
+
+  libspectrum_byte current_byte; /* The current data byte; gets shifted out
+				    as we read bits from it */
+  size_t pulse_count;		 /* Pulse count in current bit */
+  libspectrum_word *bit_pulses;  /* Current bit pulses */
+  int bit_flags;		 /* Any flags to be set when this bit is
+				    returned */
+  int level;			 /* Mic level 0/1 */
+
+  size_t index;			 /* Location in active pulse sequence */
+
+} libspectrum_tape_data_block_state;
+
 /*
  * The generic tape block
  */
@@ -376,6 +453,7 @@ struct libspectrum_tape_block {
 
     /* No `stop tape if in 48K mode' block as it contains no data */
 
+    libspectrum_tape_set_signal_level_block set_signal_level;
     libspectrum_tape_comment_block comment;
     libspectrum_tape_message_block message;
     libspectrum_tape_archive_info_block archive_info;
@@ -384,6 +462,10 @@ struct libspectrum_tape_block {
     libspectrum_tape_custom_block custom;
 
     libspectrum_tape_rle_pulse_block rle_pulse;
+
+    libspectrum_tape_pulse_sequence_block pulse_sequence;
+    libspectrum_tape_data_block data_block;
+
   } types;
 
 };
@@ -407,6 +489,8 @@ struct libspectrum_tape_block_state {
     libspectrum_tape_raw_data_block_state raw_data;
     libspectrum_tape_generalised_data_block_state generalised_data;
     libspectrum_tape_rle_pulse_block_state rle_pulse;
+    libspectrum_tape_pulse_sequence_block_state pulse_sequence;
+    libspectrum_tape_data_block_state data_block;
 
   } block_state;
 
@@ -424,7 +508,9 @@ generalised_data_edge( libspectrum_tape_generalised_data_block *block,
                        libspectrum_tape_generalised_data_block_state *state,
 		       libspectrum_dword *tstates, int *end_of_block,
 		       int *flags );
+libspectrum_error
+libspectrum_tape_data_block_next_bit( libspectrum_tape_data_block *block,
+                                    libspectrum_tape_data_block_state *state );
 
 
 #endif				/* #ifndef LIBSPECTRUM_TAPE_BLOCK_H */
-

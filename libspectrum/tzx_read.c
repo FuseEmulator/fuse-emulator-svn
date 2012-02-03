@@ -78,6 +78,9 @@ static libspectrum_error
 tzx_read_stop( libspectrum_tape *tape, const libspectrum_byte **ptr,
 	       const libspectrum_byte *end );
 static libspectrum_error
+tzx_read_set_signal_level( libspectrum_tape *tape, const libspectrum_byte **ptr,
+                           const libspectrum_byte *end );
+static libspectrum_error
 tzx_read_comment( libspectrum_tape *tape, const libspectrum_byte **ptr,
 		  const libspectrum_byte *end );
 static libspectrum_error
@@ -211,6 +214,11 @@ internal_tzx_read( libspectrum_tape *tape, const libspectrum_byte *buffer,
       if( error ) { libspectrum_tape_clear( tape ); return error; }
       break;
 
+    case LIBSPECTRUM_TAPE_BLOCK_SET_SIGNAL_LEVEL:
+      error = tzx_read_set_signal_level( tape, &ptr, end );
+      if( error ) { libspectrum_tape_clear( tape ); return error; }
+      break;
+
     case LIBSPECTRUM_TAPE_BLOCK_COMMENT:
       error = tzx_read_comment( tape, &ptr, end );
       if( error ) { libspectrum_tape_clear( tape ); return error; }
@@ -270,7 +278,7 @@ tzx_read_rom_block( libspectrum_tape *tape, const libspectrum_byte **ptr,
   block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_ROM );
 
   /* Get the pause length */
-  libspectrum_tape_block_set_pause( block, (*ptr)[0] + (*ptr)[1] * 0x100 );
+  libspectrum_set_pause_ms( block, (*ptr)[0] + (*ptr)[1] * 0x100 );
   (*ptr) += 2;
 
   /* And the data */
@@ -323,7 +331,7 @@ tzx_read_turbo_block( libspectrum_tape *tape, const libspectrum_byte **ptr,
 					   (*ptr)[0] + (*ptr)[1] * 0x100 );
   (*ptr) += 2;
   libspectrum_tape_block_set_bits_in_last_byte( block, **ptr ); (*ptr)++;
-  libspectrum_tape_block_set_pause       ( block,
+  libspectrum_set_pause_ms               ( block,
 					   (*ptr)[0] + (*ptr)[1] * 0x100 );
   (*ptr) += 2;
 
@@ -439,7 +447,7 @@ tzx_read_pure_data( libspectrum_tape *tape, const libspectrum_byte **ptr,
 					  (*ptr)[0] + (*ptr)[1] * 0x100 );
   (*ptr) += 2;
   libspectrum_tape_block_set_bits_in_last_byte( block, **ptr ); (*ptr)++;
-  libspectrum_tape_block_set_pause( block, (*ptr)[0] + (*ptr)[1] * 0x100 );
+  libspectrum_set_pause_ms( block, (*ptr)[0] + (*ptr)[1] * 0x100 );
   (*ptr) += 2;
 
   /* And the actual data */
@@ -473,8 +481,7 @@ tzx_read_raw_data (libspectrum_tape *tape, const libspectrum_byte **ptr,
   /* Get the metadata */
   libspectrum_tape_block_set_bit_length( block,
 					 (*ptr)[0] + (*ptr)[1] * 0x100 );
-  libspectrum_tape_block_set_pause     ( block,
-					 (*ptr)[2] + (*ptr)[3] * 0x100 );
+  libspectrum_set_pause_ms( block, (*ptr)[2] + (*ptr)[3] * 0x100 );
   libspectrum_tape_block_set_bits_in_last_byte( block, (*ptr)[4] );
   (*ptr) += 5;
 
@@ -536,7 +543,7 @@ tzx_read_generalised_data( libspectrum_tape *tape,
 
   libspectrum_tape_block_zero( block );
 
-  libspectrum_tape_block_set_pause( block, (*ptr)[0] + (*ptr)[1] * 0x100 );
+  libspectrum_set_pause_ms( block, (*ptr)[0] + (*ptr)[1] * 0x100 );
   (*ptr) += 2;
 
   error = libspectrum_tape_block_read_symbol_table_parameters( block, 1, ptr );
@@ -639,7 +646,9 @@ tzx_read_pause( libspectrum_tape *tape, const libspectrum_byte **ptr,
   block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_PAUSE );
 
   /* Get the pause length */
-  libspectrum_tape_block_set_pause( block, (*ptr)[0] + (*ptr)[1] * 0x100 );
+  libspectrum_set_pause_ms( block, (*ptr)[0] + (*ptr)[1] * 0x100 );
+  /* TZX format spec says pause is low */
+  libspectrum_tape_block_set_level( block, 0 );
   (*ptr) += 2;
 
   libspectrum_tape_append_block( tape, block );
@@ -823,6 +832,32 @@ tzx_read_stop( libspectrum_tape *tape, const libspectrum_byte **ptr,
 }  
 
 static libspectrum_error
+tzx_read_set_signal_level( libspectrum_tape *tape, const libspectrum_byte **ptr,
+                           const libspectrum_byte *end )
+{
+  libspectrum_tape_block *block;
+
+  /* Check the length field exists and signal level is available */
+  if( end - (*ptr) < 5 ) {
+    libspectrum_print_error( LIBSPECTRUM_ERROR_CORRUPT,
+                       "tzx_read_set_signal_level: not enough data in buffer" );
+    return LIBSPECTRUM_ERROR_CORRUPT;
+  }
+
+  /* But then just skip over it, as I don't care what it is */
+  (*ptr) += 4;
+
+  block =
+    libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_SET_SIGNAL_LEVEL );
+
+  libspectrum_tape_block_set_level( block, !!(**ptr) ); (*ptr)++;
+
+  libspectrum_tape_append_block( tape, block );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}  
+
+static libspectrum_error
 tzx_read_comment( libspectrum_tape *tape, const libspectrum_byte **ptr,
 		  const libspectrum_byte *end )
 {
@@ -866,8 +901,8 @@ tzx_read_message( libspectrum_tape *tape, const libspectrum_byte **ptr,
 
   block = libspectrum_tape_block_alloc( LIBSPECTRUM_TAPE_BLOCK_MESSAGE );
 
-  /* Get the time */
-  libspectrum_tape_block_set_pause( block, **ptr ); (*ptr)++;
+  /* Get the time in seconds */
+  libspectrum_set_pause_ms( block, (**ptr) * 1000 ); (*ptr)++;
 
   /* Get the message itself */
   error = tzx_read_string( ptr, end, &text );
