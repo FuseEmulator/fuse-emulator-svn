@@ -20,7 +20,6 @@
    Author contact information:
 
    E-mail: szaszg@hu.inter.net
-
 */
 
 #include <config.h>
@@ -131,7 +130,7 @@ int machine_ftime[] = {
 };
 
 char *machine_name[] = {
- "ZX Spectrum 16K/48K, Timex TC2048/2068, Scorpion. Spectrum SE",
+ "ZX Spectrum 16K/48K, Timex TC2048/2068, Scorpion, Spectrum SE",
  "ZX Spectrum 128K/+2/+2A/+3/+3E",
  "Timex TS2068", "Pentagon 128K/256K/512K"
  "ZX Spectrum 48K (NTSC)"
@@ -397,7 +396,7 @@ pcm_swap_endian()	/* buff == sound */
 }
 
 /*
-    [1][2][3][4][5] -> [1][2][3][4][5][ ][ ][ ][5][5][6][6] ->  [1][1][2][2][3][3][4][4][5][5][6][6]
+  [1][2][3][4][5] -> [1][2][3][4][5][ ][ ][ ][5][5][6][6] ->  [1][1][2][2][3][3][4][4][5][5][6][6]
 */
 int
 mono_2_stereo()
@@ -433,7 +432,7 @@ mono_2_stereo()
 }
 
 /*
-    [1][1][2][2][3][3][4][4][5][5][6][6] -> [1][2][3][4][5][ ][ ][ ][5][5][6][6] -> [1][2][3][4][5]
+  [1][1][2][2][3][3][4][4][5][5][6][6] -> [1][2][3][4][5][ ][ ][ ][5][5][6][6] -> [1][2][3][4][5]
 */
 int
 stereo_2_mono()
@@ -499,7 +498,7 @@ inp_get_cut_value( char *s, libspectrum_qword *value, type_t *type )
   if( tmp ) {		/*OK, min:sec */
     unsigned int sec = 0;
     if( ( sscanf( s, "%"PRIu64":%n%u", &frm, &n, &sec) != 2 ) || sec > 59 ) {	/* OK, unknown value.. */
-      printe( "Bad intervall definition in a -C/--cut option\n" );
+      printe( "Bad interval definition in a -C/--cut option\n" );
       return 6;
     }
     frm = frm * 60 + sec;
@@ -508,7 +507,7 @@ inp_get_cut_value( char *s, libspectrum_qword *value, type_t *type )
     return 0;
   }
   if( ( sscanf( s, "%"PRIu64, &frm) != 1 ) ) {	/* OK, unknown value.. */
-      printe( "Bad intervall definition in a -C/--cut option\n" );
+      printe( "Bad interval definition in a -C/--cut option\n" );
       return 6;
   }
   *value = frm;
@@ -620,7 +619,8 @@ parse_outname()
     out_nmbr = out_next + ( perc - out_name );
     out_pfix = perc + len;
   }
-  printi( 2, "parse_outname(): Multiple output file No. template: %s.\n", out_tmpl );
+  printi( 2, "parse_outname(): Multiple output file No. template: %s.\n",
+          out_tmpl );
 
   return 0;
 }
@@ -794,7 +794,8 @@ open_snd()
       }
     }
   }
-  printi( 0, "open_snd(): Sound file (%s) opened as %s file.\n", snd_name, snd_tstr[snd_t - TYPE_FFMPEG] );
+  printi( 0, "open_snd(): Sound file (%s) opened as %s file.\n", snd_name,
+          snd_tstr[snd_t - TYPE_FFMPEG] );
   return 0;
 }
 
@@ -840,7 +841,8 @@ open_inp()
       inp_t = TYPE_SCR;
   }
   do_now = inp_t == TYPE_FMF ? DO_HEAD : DO_SLICE;
-  printi( 0, "open_inp(): Input file (%s) opened as %s file.\n", inp_name, inp_t == TYPE_FMF ? "FMF" : "SCR" );
+  printi( 0, "open_inp(): Input file (%s) opened as %s file.\n", inp_name,
+          inp_t == TYPE_FMF ? "FMF" : "SCR" );
   return 0;
 }
 
@@ -867,8 +869,8 @@ int
 check_fmf_head()
 {
   if( memcmp( fhead, "FMF_", 4 ) ) {
-      printe( "Not a Fuse Movie File '%s'\n", inp_name );
-      return ERR_CORRUPT_INP;
+    printe( "Not a Fuse Movie File '%s'\n", inp_name );
+    return ERR_CORRUPT_INP;
   }
   if( fread_buff( fhead, 12, FROM_BUFF ) != 1 ||
 	fhead[0] != 'V' ||
@@ -893,7 +895,8 @@ check_fmf_head()
     printe( "Wrong Frame rate '%d', sorry...\n", fhead[4] );
     return ERR_CORRUPT_INP;
   }
-  if( fhead[5] != TYPE_ZXS && fhead[5] != TYPE_TXS && fhead[5] != TYPE_HRE && fhead[5] != TYPE_HCO ) {
+  if( fhead[5] != TYPE_ZXS && fhead[5] != TYPE_TXS && fhead[5] != TYPE_HRE &&
+      fhead[5] != TYPE_HCO ) {
     printe( "Unknown Screen$ type '%d', sorry...\n", fhead[5] );
     return ERR_CORRUPT_INP;
   }
@@ -931,12 +934,12 @@ check_fmf_head()
   if( out_rte == -1 ) out_rte = snd_rte;
   if( out_chn == -1 ) out_chn = snd_chn;
   do_now = DO_SLICE;
-  printi( 1, "check_fmf_head(): file:  FMF V1 %s endian %scompressed.\n", fmf_little_endian ? "little" : "big",
-							fmf_compr ? "" : "un" );
+  printi( 1, "check_fmf_head(): file:  FMF V1 %s endian %scompressed.\n",
+          fmf_little_endian ? "little" : "big", fmf_compr ? "" : "un" );
   printi( 1, "check_fmf_head(): video: frame rate = 1:%d frame time: %dus %s machine timing.\n", frm_rte, machine_ftime[frm_mch - 'A'],
-								machine_name[frm_mch - 'A'] );
-  printi( 1, "check_fmf_head(): audio: sampling rate %dHz %c encoded %s sound.\n", snd_rte, snd_enc,
-		 snd_chn == 2 ? "stereo" : "mono" );
+          machine_name[frm_mch - 'A'] );
+  printi( 1, "check_fmf_head(): audio: sampling rate %dHz %c encoded %s sound.\n",
+          snd_rte, snd_enc, snd_chn == 2 ? "stereo" : "mono" );
   return 0;
 }
 
@@ -951,14 +954,16 @@ int
 fmf_read_frame_head()
 {
   if( fread_compr( fhead, 3, 1, inp ) != 1 ) {
-    printe( "\n\nfmf_read_frame_head(): Corrupt input file (N) @0x%08lx.\n", (unsigned long)ftell( inp ) );
+    printe( "\n\nfmf_read_frame_head(): Corrupt input file (N) @0x%08lx.\n",
+            (unsigned long)ftell( inp ) );
     return ERR_CORRUPT_INP;
   }
   if( fhead[0] < 1 ) {
     printe( "Wrong Frame rate '%d', sorry...\n", fhead[0] );
     return ERR_CORRUPT_INP;
   }
-  if( fhead[1] != TYPE_ZXS && fhead[1] != TYPE_TXS && fhead[1] != TYPE_HRE && fhead[1] != TYPE_HCO ) {
+  if( fhead[1] != TYPE_ZXS && fhead[1] != TYPE_TXS && fhead[1] != TYPE_HRE &&
+      fhead[1] != TYPE_HCO ) {
     printe( "Unknown Screen$ type '%d', sorry...\n", fhead[1] );
     return ERR_CORRUPT_INP;
   }
@@ -982,8 +987,8 @@ fmf_read_frame_head()
     time_frm -= 1000000;
     time_sec++;
   }
-  printi( 2, "fmf_read_frame_head(): rate = 1:%d frame time: %dus %s machine.\n", frm_rte, machine_ftime[frm_mch - 'A'],
-								machine_name[frm_mch - 'A'] );
+  printi( 2, "fmf_read_frame_head(): rate = 1:%d frame time: %dus %s machine.\n",
+          frm_rte, machine_ftime[frm_mch - 'A'], machine_name[frm_mch - 'A'] );
   return 0;
 }
 
@@ -991,7 +996,8 @@ int
 fmf_read_chunk_head()
 {
   if( fread_compr( fhead, 1, 1, inp ) != 1 ) {	/* */
-    printe( "Unexpected end of input file @0x%08lx.\n", (unsigned long)ftell( inp )  );
+    printe( "Unexpected end of input file @0x%08lx.\n",
+            (unsigned long)ftell( inp )  );
     return ERR_ENDOFFILE;
   }
   if( fhead[0] != 'N' && fhead[0] != '$' && fhead[0] != 'S' && fhead[0] != 'X' ) {
@@ -1319,7 +1325,6 @@ out_2_yuv()
 void
 out_2_rgb()
 {
-
   libspectrum_byte *bitmap, *attr;
   int i, w, idx;
   int R, G, B;
