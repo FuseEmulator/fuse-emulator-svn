@@ -4481,3 +4481,4 @@
 20130505 peripherals/if1.c: put braces around empty body in ‘do’ statements
          (Sergio).
 20130516 man/fuse.1: update date and version for 1.1 release.
+20130516 ChangeLog: update date in main changelog.
