@@ -363,8 +363,15 @@ widget_options_print_combo( int left_edge, int width, int number, const char *pr
 int
 widget_options_finish( widget_finish_state finished )
 {
+  int error;
+
   /* If we exited normally, actually set the options */
   if( finished == WIDGET_FINISHED_OK ) {
+    /* Get a copy of current settings */
+    settings_info original_settings;
+    memset( &original_settings, 0, sizeof( settings_info ) );
+    settings_copy( &original_settings, &settings_current );
+
     /* Apply new options */
     settings_copy( &settings_current, &widget_options_settings );
 
