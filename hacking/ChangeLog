@@ -4480,6 +4480,12 @@
          complete some missing field initializers (Sergio).
 20130505 peripherals/if1.c: put braces around empty body in ‘do’ statements
          (Sergio).
+20130512 ui/win32/options.pl: refactor options dialogs to split *_init and
+         *_done functions out of *_proc function (Sergio).
+20130513 settings-header.pl,settings.pl: change settings_defaults(),
+         settings_copy() and settings_copy_internal() to void functions (Fred).
+20130513 ui/widget/{options.pl,roms.c}: change settings_copy() to void function
+         on widget UIs (Sergio).
 20130516 man/fuse.1: update date and version for 1.1 release.
 20130516 ChangeLog: update date in main changelog.
 20130517 README: update date for 1.1 release.
