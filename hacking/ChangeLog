@@ -4515,3 +4515,4 @@
 20130519 Makefile.am,hacking/Makefile.am,sound/Makefile.am,ui/wii/Makefile.am:
          distribute PORTING,hacking/valgrind.supp,sound/wiisound.c,
          ui/wii/wiimouse.h (Stuart).
+20130524 ChangeLog,README: updates for a "1.1.1" release (Fred).
