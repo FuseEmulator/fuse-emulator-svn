@@ -420,3 +420,7 @@
          (Alberto).
 20130520 man/fmfconv.1: fix syntax error (patch #311) (Alberto).
 20130524 ChangeLog,README: updates for a "1.1.1" release (Fred).
+20130524 README,configure.ac,man/{audio2tape.1,createhdf.1,fmfconv.1,
+         fuse-utils.1,listbasic.1,profile2map.1,raw2hdf.1,rzxcheck.1,rzxdump.1,
+         rzxtool.1,scl2trd.1,snap2tzx.1,snapconv.1,tape2wav.1,tapeconv.1,
+         tzxlist.1}: further updates for "1.1.1" (Stuart).
