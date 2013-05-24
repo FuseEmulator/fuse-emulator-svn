@@ -951,3 +951,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          libspectrum 1.0.0 (Stuart).
 20130524 ChangeLog,README,configure.ac,doc/libspectrum.{3,txt},
          hacking/ChangeLog: updates for a "1.1.1" release (Stuart).
+20130524 doc/libspectrum,README: further updates for 1.1.1(Stuart).
