@@ -4518,3 +4518,5 @@
 20130524 ChangeLog,README: updates for a "1.1.1" release (Fred).
 20130524 ChangeLog,README,configure.ac,man/fuse.1: fill in date and bump
          version number (Stuart).
+20130526 Makefile.am,ui/win32/installer/fuse.nsi.in: distribute ChangeLog and
+         build notes in Windows packages (Sergio).
