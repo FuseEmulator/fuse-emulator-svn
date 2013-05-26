@@ -953,3 +953,4 @@ hacking/ChangeLog: the small scale changelog for libspectrum
          hacking/ChangeLog: updates for a "1.1.1" release (Stuart).
 20130524 doc/libspectrum,README: further updates for 1.1.1(Stuart).
 20130524 ChangeLog: fill in date (Stuart).
+20130526 Makefile.am: add dll.c into the dist tarball (Sergio).
