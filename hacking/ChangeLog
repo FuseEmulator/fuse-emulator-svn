@@ -425,3 +425,5 @@
          rzxtool.1,scl2trd.1,snap2tzx.1,snapconv.1,tape2wav.1,tapeconv.1,
          tzxlist.1}: further updates for "1.1.1" (Stuart).
 20130524 ChangeLog: fill in date (Stuart).
+20130526 Makefile.am: distribute ChangeLog in Windows packages (Sergio).
+20130526 Makefile.am: add compat/getopt.h into the dist tarball (Sergio).
