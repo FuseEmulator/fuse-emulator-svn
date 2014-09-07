@@ -37,6 +37,7 @@
 #include "machine.h"
 #include "movie.h"
 #include "peripherals/scld.h"
+#include "peripherals/ulaplus.h"
 #include "rectangle.h"
 #include "screenshot.h"
 #include "settings.h"
@@ -48,14 +49,18 @@
 int display_ui_initialised = 0;
 
 /* The current border colour */
-libspectrum_byte display_lores_border;
-libspectrum_byte display_hires_border;
-libspectrum_byte display_last_border;
+libspectrum_word display_lores_border;
+libspectrum_word display_hires_border;
+static libspectrum_word display_last_border;
 
 /* Stores the pixel, attribute and SCLD screen mode information used to
    draw each 8x1 group of pixels (including border) last frame */
 libspectrum_dword
 display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT ];
+
+libspectrum_word
+display_last_screen_ulaplus[ DISPLAY_SCREEN_WIDTH_COLS * 
+                             DISPLAY_SCREEN_HEIGHT ];
 
 /* Offsets as to where the data and the attributes for each pixel
    line start */
@@ -109,7 +114,7 @@ int critical_region_x = 0, critical_region_y = 0;
 /* The border colour changes which have occurred in this frame */
 struct border_change_t {
   int x, y;
-  int colour;
+  libspectrum_word colour;
 };
 
 display_dirty_fn display_dirty;
@@ -194,6 +199,9 @@ display_init( int *argc, char ***argv )
     }
 
   display_frame_count=0; display_flash_reversed=0;
+
+  memset( display_last_screen_ulaplus, 0,
+          sizeof( display_last_screen_ulaplus ) );
 
   display_refresh_all();
 
@@ -407,6 +415,85 @@ display_write_if_dirty_timex( int x, int y )
   }
 }
 
+void
+display_write_if_dirty_timex_ulaplus( int x, int y )
+{
+  int beam_x, beam_y;
+  int index;
+  libspectrum_word offset;
+  libspectrum_word last_ulaplus_chunk_detail;
+  libspectrum_byte *screen;
+  libspectrum_byte data, data2;
+  libspectrum_byte ink, paper;
+  libspectrum_byte screen_mode;
+  libspectrum_dword mode_data;
+  libspectrum_dword last_chunk_detail;
+
+  beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
+  beam_y = y + DISPLAY_BORDER_HEIGHT;
+  offset = display_get_addr( x, y );
+
+  /* Read byte, atrr/byte, and screen mode */
+  screen = RAM[ memory_current_screen ];
+  data = screen[ offset ];
+  mode_data = scld_last_dec.byte;
+
+  if( scld_last_dec.name.hires ) {
+    switch( scld_last_dec.mask.scrnmode ) {
+
+    case HIRESATTRALTD:
+      offset = display_attr_start[ y ] + x + ALTDFILE_OFFSET;
+      data2 = screen[ offset ];
+      break;
+
+    case HIRES:
+      data2 = screen[ offset + ALTDFILE_OFFSET ];
+      break;
+
+    case HIRESDOUBLECOL:
+      data2 = data;
+      break;
+
+    default: /* case HIRESATTR: */
+      offset = display_attr_start[ y ] + x;
+      data2 = screen[ offset ];
+      break;
+
+    }
+  } else {
+    data2 = display_get_attr_byte( x, y );
+  }
+
+  screen_mode = ( ulaplus_palette_enabled )? 0x10 : display_flash_reversed;
+
+  last_chunk_detail = (screen_mode << 24) | (mode_data << 16) |
+                      (data2 << 8) | data;
+
+  display_get_attr( x, y, &ink, &paper );
+  last_ulaplus_chunk_detail = ( ink << 8 ) | paper;
+
+  /* And draw it if it is different to what was there last time */
+  index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
+
+  if( display_last_screen[ index ] != last_chunk_detail ||
+      display_last_screen_ulaplus[ index ] != last_ulaplus_chunk_detail ) {
+
+    if( scld_last_dec.name.hires ) {
+      libspectrum_word hires_data = (data << 8) + data2;
+      uidisplay_plot16( beam_x, beam_y, hires_data, ink, paper );
+    } else {
+      uidisplay_plot8( beam_x, beam_y, data, ink, paper );
+    }
+
+    /* Update last display record */
+    display_last_screen[ index ] = last_chunk_detail;
+    display_last_screen_ulaplus[ index ] = last_ulaplus_chunk_detail;
+
+    /* And now mark it dirty */
+    display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
+  }
+}
+
 inline static void
 pentagon_16c_get_colour( libspectrum_byte data, libspectrum_byte *colour1,
                          libspectrum_byte *colour2 )
@@ -513,6 +600,43 @@ display_write_if_dirty_sinclair( int x, int y )
   if( display_last_screen[ index ] != last_chunk_detail ) {
     libspectrum_byte ink, paper;
     display_parse_attr( data2, &ink, &paper );
+    uidisplay_plot8( beam_x, beam_y, data, ink, paper );
+
+    /* Update last display record */
+    display_last_screen[ index ] = last_chunk_detail;
+
+    /* And now mark it dirty */
+    display_is_dirty[ beam_y ] |= ( (libspectrum_qword)1 << beam_x );
+  }
+}
+
+void
+display_write_if_dirty_sinclair_ulaplus( int x, int y )
+{
+  int beam_x, beam_y;
+  int index;
+  libspectrum_word offset;
+  libspectrum_byte *screen;
+  libspectrum_byte data;
+  libspectrum_byte ink, paper;
+  libspectrum_byte screen_mode = 0;
+  libspectrum_dword last_chunk_detail;
+
+  beam_x = x + DISPLAY_BORDER_WIDTH_COLS;
+  beam_y = y + DISPLAY_BORDER_HEIGHT;
+  offset = display_get_addr( x, y );
+
+  /* Read byte, atrr/byte, and screen mode */
+  screen = RAM[ memory_current_screen ];
+  data = screen[ offset ];
+  display_get_attr( x, y, &ink, &paper );
+  screen_mode = ( ulaplus_palette_enabled )? 0x10 : display_flash_reversed;
+
+  last_chunk_detail = (screen_mode << 24) | (ink << 16) | (paper << 8) | data;
+
+  /* And draw it if it is different to what was there last time */
+  index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
+  if( display_last_screen[ index ] != last_chunk_detail ) {
     uidisplay_plot8( beam_x, beam_y, data, ink, paper );
 
     /* Update last display record */
@@ -694,17 +818,32 @@ void
 display_parse_attr( libspectrum_byte attr,
 		    libspectrum_byte *ink, libspectrum_byte *paper )
 {
-  if( (attr & 0x80) && display_flash_reversed ) {
-    *ink  = (attr & ( 0x0f << 3 ) ) >> 3;
-    *paper= (attr & 0x07) + ( (attr & 0x40) >> 3 );
+  if( ulaplus_available && ulaplus_palette_enabled ) {
+
+    libspectrum_byte ink2, paper2, base;
+
+    ink2 = attr & 7;
+    paper2 = ( attr >> 3 ) & 7;
+    base = ( ( attr >> 6 ) & 3 ) << 4;
+
+    *ink = ulaplus_palette[ base + ink2 ];
+    *paper = ulaplus_palette[ base + paper2 + 8 ];
+
   } else {
-    *ink= (attr & 0x07) + ( (attr & 0x40) >> 3 );
-    *paper= (attr & ( 0x0f << 3 ) ) >> 3;
-  }
+
+    if( (attr & 0x80) && display_flash_reversed ) {
+      *ink  = (attr & ( 0x0f << 3 ) ) >> 3;
+      *paper= (attr & 0x07) + ( (attr & 0x40) >> 3 );
+    } else {
+      *ink= (attr & 0x07) + ( (attr & 0x40) >> 3 );
+      *paper= (attr & ( 0x0f << 3 ) ) >> 3;
+    }
+
+  }  
 }
 
 static void
-push_border_change( int colour )
+push_border_change( libspectrum_word colour )
 {
   int beam_x, beam_y;
   struct border_change_t *change;
@@ -740,34 +879,57 @@ check_border_change( void )
 }
 
 void
-display_set_lores_border( int colour )
+display_set_lores_border( libspectrum_byte colour )
 {
-  if( display_lores_border != colour ) {
-    display_lores_border = colour;
+  libspectrum_word last_chunk_detail;
+  libspectrum_byte screen_mode = 0;
+
+  if( ulaplus_available && ulaplus_palette_enabled ) {
+    colour = ulaplus_palette[ colour | 0x08 ];
+    screen_mode = ( ulaplus_palette_enabled << 1 );
+  }
+
+  last_chunk_detail = ( screen_mode << 8 ) | colour;
+
+  if( display_lores_border != last_chunk_detail ) {
+    display_lores_border = last_chunk_detail;
   }
   check_border_change();
 }
 
 void
-display_set_hires_border( int colour )
+display_set_hires_border( libspectrum_byte colour )
 {
-  if( display_hires_border != colour ) {
-    display_hires_border = colour;
+  libspectrum_word last_chunk_detail;
+  libspectrum_byte screen_mode = 0;
+
+  if( ulaplus_available && ulaplus_palette_enabled ) {
+    colour = ulaplus_palette[ colour | 0x18 ];
+    screen_mode = ( ulaplus_palette_enabled << 1 );
+  }
+
+  last_chunk_detail = ( screen_mode << 8 ) | colour;
+
+  if( display_hires_border != last_chunk_detail ) {
+    display_hires_border = last_chunk_detail;
   }
   check_border_change();
 }
 
 static void
-set_border( int y, int start, int end, int colour )
+set_border( int y, int start, int end, libspectrum_word colour )
 {
-  libspectrum_dword chunk_detail = colour << 11;
+  libspectrum_dword chunk_detail;
   int index = start + y * DISPLAY_SCREEN_WIDTH_COLS;
+  libspectrum_byte screen_mode = ( colour >> 8 ) & 0xff;
+  libspectrum_byte paper = colour & 0xff;
+
+  chunk_detail = ( screen_mode << 24 ) | ( paper << 8 );
 
   for( ; start < end; start++ ) {
-    /* Draw it if it is different to what was there last time - we know that
-    data and mode will have been the same */
+    /* Draw it if it is different to what was there last time */
     if( display_last_screen[ index ] != chunk_detail ) {
-      uidisplay_plot8( start, y, 0x00, 0, colour );
+      uidisplay_plot8( start, y, 0x00, 0, paper );
 
       /* Update last display record */
       display_last_screen[ index ] = chunk_detail;
@@ -780,7 +942,7 @@ set_border( int y, int start, int end, int colour )
 }
 
 static void
-border_change_write( int y, int start, int end, int colour )
+border_change_write( int y, int start, int end, libspectrum_word colour )
 {
   if(   y <  DISPLAY_BORDER_HEIGHT                    ||
       ( y >= DISPLAY_BORDER_HEIGHT + DISPLAY_HEIGHT )    ) {
@@ -811,13 +973,13 @@ border_change_write( int y, int start, int end, int colour )
 }
 
 static void
-border_change_line_part( int y, int start, int end, int colour )
+border_change_line_part( int y, int start, int end, libspectrum_word colour )
 {
   border_change_write( y, start, end, colour );
 }
 
 static void
-border_change_line( int y, int colour )
+border_change_line( int y, libspectrum_word colour )
 {
   border_change_write( y, 0, DISPLAY_SCREEN_WIDTH_COLS, colour );
 }
@@ -924,15 +1086,15 @@ display_frame( void )
   update_ui_screen();
 
   display_frame_count++;
-  if(display_frame_count==16) {
-    display_flash_reversed=1;
+  if( display_frame_count == 16 ) {
+    display_flash_reversed = 1;
     display_dirty_flashing();
-  } else if(display_frame_count==32) {
-    display_flash_reversed=0;
+  } else if( display_frame_count == 32 ) {
+    display_flash_reversed = 0;
     display_dirty_flashing();
-    display_frame_count=0;
+    display_frame_count = 0;
   }
-  
+
   return 0;
 }
 
@@ -963,7 +1125,11 @@ display_dirty_flashing_timex(void)
 
     } else { /* Standard Speccy screen */
 
-      display_dirty_flashing_sinclair();
+      if( ulaplus_palette_enabled ) {
+        display_dirty_flashing_sinclair_ulaplus();
+      } else {
+        display_dirty_flashing_sinclair();
+      }
 
     }
   }
@@ -987,6 +1153,16 @@ display_dirty_flashing_sinclair(void)
   for( offset = 0x1800; offset < 0x1b00; offset++ ) {
     attr = screen[ offset ];
     if( attr & 0x80 ) display_dirty64( offset );
+  }
+}
+
+void
+display_dirty_flashing_sinclair_ulaplus(void)
+{
+  /* ULAplus: FLASH doesn't work in the 64-colour mode. You get extra colours
+     instead */
+  if( !ulaplus_palette_enabled ) {
+    display_dirty_flashing_sinclair();
   }
 }
 

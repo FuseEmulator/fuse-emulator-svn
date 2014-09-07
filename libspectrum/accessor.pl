@@ -240,6 +240,12 @@ struct libspectrum_snap {
 
   /* Printer emulation */
   int zx_printer_active;
+  
+  /* ULAplus emulation */
+  int ulaplus_active;
+  int ulaplus_palette_enabled;
+  libspectrum_byte ulaplus_current_register;
+  libspectrum_byte* ulaplus_palette[1];
 };
 
 /* Initialise a libspectrum_snap structure */

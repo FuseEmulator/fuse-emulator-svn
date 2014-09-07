@@ -194,3 +194,8 @@ libspectrum_byte* spectranet_ram 1
 int late_timings
 
 int zx_printer_active
+
+int ulaplus_active
+int ulaplus_palette_enabled
+libspectrum_byte ulaplus_current_register
+libspectrum_byte* ulaplus_palette 1

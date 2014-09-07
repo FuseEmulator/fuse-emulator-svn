@@ -962,3 +962,5 @@ hacking/ChangeLog: the small scale changelog for libspectrum
 20140504 tape.c: ensure that we have an edge at the end of a tape to ensure that
          the last pulse is terminated - fixes loading of Moon Cresta (thanks,
          Lee Tonks) (Fred).
+20140907 accessor.pl,snap_accessors.txt,snapshot.c,szx.c,z80.c: initial ULAplus
+         code (part of patch #323) (Sergio).

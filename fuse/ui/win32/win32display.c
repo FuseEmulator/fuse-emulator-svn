@@ -28,6 +28,7 @@
 #include "display.h"
 #include "fuse.h"
 #include "machine.h"
+#include "peripherals/ulaplus.h"
 #include "settings.h"
 #include "ui/ui.h"
 #include "ui/uidisplay.h"
@@ -88,6 +89,8 @@ static const unsigned char rgb_colours[16][3] = {
 
 libspectrum_dword win32display_colours[16];
 static libspectrum_dword bw_colours[16];
+static libspectrum_dword ulaplus_colours[256];
+static libspectrum_dword bw_ulaplus_colours[256];
 
 /* The current size of the window (in units of DISPLAY_SCREEN_*) */
 static int win32display_current_size=1;
@@ -170,14 +173,33 @@ win32display_init( void )
   return 0;
 }
 
+static libspectrum_dword
+win32display_map_RGB( libspectrum_byte red, libspectrum_byte green,
+                      libspectrum_byte blue )
+{
+  libspectrum_dword colour;
+
+#ifdef WORDS_BIGENDIAN
+
+  colour =  red << 24 | green << 16 | blue << 8;
+
+#else                           /* #ifdef WORDS_BIGENDIAN */
+
+  colour =  red | green << 8 | blue << 16;
+
+#endif                          /* #ifdef WORDS_BIGENDIAN */
+
+  return colour;
+}
+
 static int
 init_colours( void )
 {
-  size_t i;
+  int i;
+  libspectrum_byte red, green, blue, grey;
 
+  /* Standard palette colours */
   for( i = 0; i < 16; i++ ) {
-
-    unsigned char red, green, blue, grey;
 
     red   = rgb_colours[i][0];
     green = rgb_colours[i][1];
@@ -186,18 +208,26 @@ init_colours( void )
     /* Addition of 0.5 is to avoid rounding errors */
     grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
 
-#ifdef WORDS_BIGENDIAN
+    win32display_colours[i] = win32display_map_RGB( red, green, blue );
+    bw_colours[i] = win32display_map_RGB( grey, grey, grey );
+  }
 
-    win32display_colours[i] =  red << 24 | green << 16 | blue << 8;
-              bw_colours[i] = grey << 24 |  grey << 16 | grey << 8;
+  /* ULAplus colours */
+  for( i = 0; i < 256; i++ ) {
 
-#else                           /* #ifdef WORDS_BIGENDIAN */
+    green = ( i >> 5 ) & 7;
+    red   = ( i >> 2 ) & 7;
+    blue  = ( ( i & 3 ) << 1 ) | ( i & 1 );
 
-    win32display_colours[i] =  red | green << 8 | blue << 16;
-              bw_colours[i] = grey |  grey << 8 | grey << 16;
+    green = ( green << 5 ) | ( green << 2 ) | ( green >> 1 );
+    red   = (   red << 5 ) | (   red << 2 ) | (   red >> 1 );
+    blue  = (  blue << 5 ) | (  blue << 2 ) | (  blue >> 1 );
 
-#endif                          /* #ifdef WORDS_BIGENDIAN */
+    /* Addition of 0.5 is to avoid rounding errors */
+    grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
 
+    ulaplus_colours[i] = win32display_map_RGB( red, green, blue );
+    bw_ulaplus_colours[i] = win32display_map_RGB( grey, grey, grey );
   }
 
   return 0;
@@ -325,7 +355,11 @@ uidisplay_area( int x, int y, int w, int h )
 
   scaled_x = scale * x; scaled_y = scale * y;
 
-  palette = settings_current.bw_tv ? bw_colours : win32display_colours;
+  if( ulaplus_available && ulaplus_palette_enabled ) {
+    palette = settings_current.bw_tv ? bw_ulaplus_colours : ulaplus_colours;
+  } else {
+    palette = settings_current.bw_tv ? bw_colours : win32display_colours;
+  }
 
   /* Create the RGB image */
   for( yy = y; yy < y + h; yy++ ) {

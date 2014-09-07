@@ -36,6 +36,7 @@
 #include "periph.h"
 #include "peripherals/disk/beta.h"
 #include "peripherals/scld.h"
+#include "peripherals/ulaplus.h"
 #include "settings.h"
 #include "spec48.h"
 #include "tc2068.h"
@@ -45,6 +46,11 @@ static int tc2048_reset( void );
 int
 tc2048_port_from_ula( libspectrum_word port )
 {
+  /* Ports supplied by ULAplus */
+  if( ulaplus_available && ( port == 0xbf3b || port == 0xff3b ) ) {
+    return 1;
+  }
+
   /* Ports F4 (HSR), FE (SCLD) and FF (DEC) supplied by ULA */
   port &= 0xff;
 

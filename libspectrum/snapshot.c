@@ -223,6 +223,11 @@ libspectrum_snap_alloc( void )
   
   libspectrum_snap_set_zx_printer_active( snap, 0 );
 
+  libspectrum_snap_set_ulaplus_active( snap, 0 );
+  libspectrum_snap_set_ulaplus_palette_enabled( snap, 0 );
+  libspectrum_snap_set_ulaplus_current_register( snap, 0 );
+  libspectrum_snap_set_ulaplus_palette( snap, 0, NULL );
+
   return snap;
 }
 
@@ -270,6 +275,9 @@ libspectrum_snap_free( libspectrum_snap *snap )
     libspectrum_free( libspectrum_snap_spectranet_flash( snap, 0 ) );
   if( libspectrum_snap_spectranet_ram( snap, 0 ) )
     libspectrum_free( libspectrum_snap_spectranet_ram( snap, 0 ) );
+
+  if( libspectrum_snap_ulaplus_palette( snap, 0 ) )
+    libspectrum_free( libspectrum_snap_ulaplus_palette( snap, 0 ) );
 
   libspectrum_free( snap );
 

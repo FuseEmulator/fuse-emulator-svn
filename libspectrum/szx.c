@@ -218,6 +218,9 @@ static const libspectrum_byte ZXSTSNEF_FLASH_COMPRESSED = 1;
 #define ZXSTBID_SPECTRANETRAMPAGE "SNER"
 static const libspectrum_byte ZXSTSNER_RAM_COMPRESSED = 1;
 
+#define ZXSTBID_PALETTE "PLTT"
+static const libspectrum_byte ZXSTPALETTE_ENABLED = 1;
+
 static libspectrum_error
 read_chunk( libspectrum_snap *snap, libspectrum_word version,
 	    const libspectrum_byte **buffer, const libspectrum_byte *end,
@@ -314,6 +317,9 @@ write_snef_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 static libspectrum_error
 write_sner_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 		  size_t *length, libspectrum_snap *snap, int compress );
+static libspectrum_error
+write_pltt_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+                  size_t *length, libspectrum_snap *snap, int compress );
 
 #ifdef HAVE_ZLIB_H
 
@@ -2146,6 +2152,37 @@ read_sner_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
 }
 
 static libspectrum_error
+read_pltt_chunk( libspectrum_snap *snap, libspectrum_word version GCC_UNUSED,
+                 const libspectrum_byte **buffer,
+                 const libspectrum_byte *end GCC_UNUSED, size_t data_length,
+                 szx_context *ctx GCC_UNUSED )
+{
+  libspectrum_byte flags;
+  libspectrum_byte *palette;
+
+  if( data_length < 66 ) {
+    libspectrum_print_error(
+      LIBSPECTRUM_ERROR_UNKNOWN,
+      "read_pltt_chunk: length %lu too short", (unsigned long)data_length
+    );
+    return LIBSPECTRUM_ERROR_UNKNOWN;
+  }
+
+  flags = **buffer; (*buffer)++;
+
+  libspectrum_snap_set_ulaplus_active( snap, 1 );
+  libspectrum_snap_set_ulaplus_palette_enabled( snap, flags & ZXSTPALETTE_ENABLED );
+  libspectrum_snap_set_ulaplus_current_register( snap, **buffer ); (*buffer)++;
+
+  palette = libspectrum_malloc( 64 * sizeof( libspectrum_byte ) );
+  libspectrum_snap_set_ulaplus_palette( snap, 0, palette );
+  memcpy( palette, *buffer, 64 );
+  (*buffer) += 64;
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
 skip_chunk( libspectrum_snap *snap GCC_UNUSED,
 	    libspectrum_word version GCC_UNUSED,
 	    const libspectrum_byte **buffer,
@@ -2188,6 +2225,7 @@ static struct read_chunk_t read_chunks[] = {
   { ZXSTBID_MULTIFACE,	         skip_chunk      },
   { ZXSTBID_OPUS,	         read_opus_chunk },
   { ZXSTBID_OPUSDISK,	         skip_chunk      },
+  { ZXSTBID_PALETTE,	         read_pltt_chunk },
   { ZXSTBID_PLUS3DISK,	         skip_chunk      },
   { ZXSTBID_PLUSD,	         read_plsd_chunk },
   { ZXSTBID_PLUSDDISK,	         skip_chunk      },
@@ -2581,6 +2619,11 @@ libspectrum_szx_write( libspectrum_byte **buffer, size_t *length,
 
   error = write_zxpr_chunk( buffer, &ptr, length, out_flags, snap );
   if( error ) return error;
+
+  if( libspectrum_snap_ulaplus_active( snap ) ) {
+    error = write_pltt_chunk( buffer, &ptr, length, snap, compress );
+    if( error ) return error;
+  }
 
   /* Set length to be actual length, not allocated length */
   *length = ptr - *buffer;
@@ -3909,6 +3952,26 @@ write_sner_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
 
   if( ram_compressed )
     libspectrum_free( compressed_ram_data );
+
+  return LIBSPECTRUM_ERROR_NONE;
+}
+
+static libspectrum_error
+write_pltt_chunk( libspectrum_byte **buffer, libspectrum_byte **ptr,
+                  size_t *length, libspectrum_snap *snap, int compress )
+{
+  libspectrum_byte flags = 0;
+
+  write_chunk_header( buffer, ptr, length, ZXSTBID_PALETTE, 66 );
+
+  if( libspectrum_snap_ulaplus_palette_enabled( snap ) )
+    flags |= ZXSTPALETTE_ENABLED;
+  *(*ptr)++ = flags;
+
+  *(*ptr)++ = libspectrum_snap_ulaplus_current_register( snap );
+
+  memcpy( *ptr, libspectrum_snap_ulaplus_palette( snap, 0 ), 64 );
+  (*ptr) += 64;
 
   return LIBSPECTRUM_ERROR_NONE;
 }

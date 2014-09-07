@@ -34,6 +34,7 @@
 #include "memory.h"
 #include "periph.h"
 #include "peripherals/disk/beta.h"
+#include "peripherals/ulaplus.h"
 #include "settings.h"
 #include "spec128.h"
 #include "spec48.h"
@@ -45,7 +46,14 @@ int
 spec48_port_from_ula( libspectrum_word port )
 {
   /* All even ports supplied by ULA */
-  return !( port & 0x0001 );
+  if( !( port & 0x0001 ) ) return 1;
+
+  /* Ports supplied by ULAplus */
+  if( ulaplus_available && ( port == 0xbf3b || port == 0xff3b ) ) {
+    return 1;
+  }
+
+  return 0;
 }
 
 int spec48_init( fuse_machine_info *machine )

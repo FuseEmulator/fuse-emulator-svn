@@ -36,6 +36,7 @@
 #include "fuse.h"
 #include "machine.h"
 #include "peripherals/scld.h"
+#include "peripherals/ulaplus.h"
 #include "screenshot.h"
 #include "settings.h"
 #include "ui/ui.h"
@@ -56,6 +57,9 @@ static int sdl_status_updated;
 static int tmp_screen_width;
 
 static Uint32 colour_values[16];
+static Uint32 bw_values[16];
+static Uint32 colour_ulaplus_values[256];
+static Uint32 bw_ulaplus_values[256];
 
 static SDL_Color colour_palette[] = {
   {   0,   0,   0,   0 }, 
@@ -75,8 +79,6 @@ static SDL_Color colour_palette[] = {
   { 255, 255,   0,   0 }, 
   { 255, 255, 255,   0 }
 };
-
-static Uint32 bw_values[16];
 
 /* This is a rule of thumb for the maximum number of rects that can be updated
    each frame. If more are generated we just update the whole screen */
@@ -99,8 +101,7 @@ static int image_height;
 static int timex;
 
 static void init_scalers( void );
-static int sdldisplay_allocate_colours( int numColours, Uint32 *colour_values,
-                                        Uint32 *bw_values );
+static void init_colours( void );
 
 static int sdldisplay_load_gfx_mode( void );
 
@@ -259,14 +260,14 @@ uidisplay_init( int width, int height )
   return 0;
 }
 
-static int
-sdldisplay_allocate_colours( int numColours, Uint32 *colour_values,
-                             Uint32 *bw_values )
+static void
+init_colours( void )
 {
   int i;
   Uint8 red, green, blue, grey;
 
-  for( i = 0; i < numColours; i++ ) {
+  /* Standard palette colours */
+  for( i = 0; i < 16; i++ ) {
 
       red = colour_palette[i].r;
     green = colour_palette[i].g;
@@ -279,7 +280,25 @@ sdldisplay_allocate_colours( int numColours, Uint32 *colour_values,
     bw_values[i]     = SDL_MapRGB( tmp_screen->format, grey,  grey, grey );
   }
 
-  return 0;
+  /* ULAplus colours */
+  for( i = 0; i < 256; i++ ) {
+
+    green = ( i >> 5 ) & 7;
+    red   = ( i >> 2 ) & 7;
+    blue  = ( ( i & 3 ) << 1 ) | ( i & 1 );
+
+    green = ( green << 5 ) | ( green << 2 ) | ( green >> 1 );
+    red   = (   red << 5 ) | (   red << 2 ) | (   red >> 1 );
+    blue  = (  blue << 5 ) | (  blue << 2 ) | (  blue >> 1 );
+
+    /* Addition of 0.5 is to avoid rounding errors */
+    grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
+
+    colour_ulaplus_values[i] = SDL_MapRGB( tmp_screen->format, red, green,
+                                           blue );
+    bw_ulaplus_values[i] = SDL_MapRGB( tmp_screen->format, grey, grey, grey );
+  }
+
 }
 
 static void
@@ -380,7 +399,7 @@ sdldisplay_load_gfx_mode( void )
     fuse_abort();
   }
 
-  sdldisplay_allocate_colours( 16, colour_values, bw_values );
+  init_colours();
 
   /* Redraw the entire screen... */
   display_refresh_all();
@@ -590,8 +609,14 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
 	         libspectrum_byte ink, libspectrum_byte paper )
 {
   libspectrum_word *dest;
-  Uint32 *palette_values = settings_current.bw_tv ? bw_values :
-                           colour_values;
+  Uint32 *palette_values;
+
+  if( ulaplus_available && ulaplus_palette_enabled ) {
+    palette_values = settings_current.bw_tv ? bw_ulaplus_values : 
+                                              colour_ulaplus_values;
+  } else {
+    palette_values = settings_current.bw_tv ? bw_values : colour_values;
+  }
 
   Uint32 palette_ink = palette_values[ ink ];
   Uint32 palette_paper = palette_values[ paper ];

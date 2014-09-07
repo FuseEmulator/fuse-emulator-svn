@@ -81,6 +81,7 @@
 #include "peripherals/speccyboot.h"
 #include "peripherals/spectranet.h"
 #include "peripherals/ula.h"
+#include "peripherals/ulaplus.h"
 #include "pokefinder/pokemem.h"
 #include "profile.h"
 #include "psg.h"
@@ -290,6 +291,7 @@ static int fuse_init(int argc, char **argv)
   if( divide_init() ) return 1;
   scld_init();
   ula_init();
+  ulaplus_init();
   ay_init();
   slt_init();
   profile_init();

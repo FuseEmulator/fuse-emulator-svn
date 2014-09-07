@@ -46,6 +46,7 @@ Checkbox, Spec(D)rum interface, specdrum, INPUT_KEY_d
 Checkbox, Spectra(n)et, spectranet, INPUT_KEY_n
 Checkbox, Spe(c)tranet disable, spectranet_disable, INPUT_KEY_c
 #endif
+Checkbox, U(L)Aplus, ulaplus, INPUT_KEY_l
 Postcheck, periph_postcheck
 Posthook, periph_posthook
 

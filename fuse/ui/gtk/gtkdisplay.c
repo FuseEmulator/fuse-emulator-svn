@@ -34,6 +34,7 @@
 #include "display.h"
 #include "fuse.h"
 #include "gtkinternals.h"
+#include "peripherals/ulaplus.h"
 #include "screenshot.h"
 #include "ui/ui.h"
 #include "ui/uidisplay.h"
@@ -89,6 +90,8 @@ static const guchar rgb_colours[16][3] = {
 /* And the colours (and black and white 'colours') in 32-bit format */
 libspectrum_dword gtkdisplay_colours[16];
 static libspectrum_dword bw_colours[16];
+static libspectrum_dword ulaplus_colours[256];
+static libspectrum_dword bw_ulaplus_colours[256];
 
 /* Colour format for the back buffer in endianess-order */
 typedef enum {
@@ -126,16 +129,47 @@ static gboolean gtkdisplay_draw( GtkWidget *widget, cairo_t *cr,
 static gint drawing_area_resize_callback( GtkWidget *widget, GdkEvent *event,
                                           gpointer data );
 
+static libspectrum_dword
+gtkdisplay_map_RGB( colour_format_t format, guchar red, guchar green,
+                    guchar blue )
+{
+  libspectrum_dword colour;
+
+#ifdef WORDS_BIGENDIAN
+
+  switch( format ) {
+  case FORMAT_x8b8g8r8:
+    colour =  red << 24 | green << 16 | blue << 8;
+    break;
+  case FORMAT_x8r8g8b8:
+    colour = blue << 24 | green << 16 |  red << 8;
+    break;
+  }
+
+#else                           /* #ifdef WORDS_BIGENDIAN */
+
+  switch( format ) {
+  case FORMAT_x8b8g8r8:
+    colour =  red | green << 8 | blue << 16;
+    break;
+  case FORMAT_x8r8g8b8:
+    colour = blue | green << 8 |  red << 16;
+    break;
+  }
+
+#endif                          /* #ifdef WORDS_BIGENDIAN */
+
+  return colour;
+}
+
 static int
 init_colours( colour_format_t format )
 {
-  size_t i;
+  int i;
+  guchar red, green, blue, grey;
 
+  /* Standard palette colours */
   for( i = 0; i < 16; i++ ) {
-
-
-    guchar red, green, blue, grey;
-
     red   = rgb_colours[i][0];
     green = rgb_colours[i][1];
     blue  = rgb_colours[i][2];
@@ -143,34 +177,26 @@ init_colours( colour_format_t format )
     /* Addition of 0.5 is to avoid rounding errors */
     grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
 
-#ifdef WORDS_BIGENDIAN
+    gtkdisplay_colours[i] = gtkdisplay_map_RGB( format, red, green, blue );
+    bw_colours[i] = gtkdisplay_map_RGB( format, grey, grey, grey );
+  }
 
-    switch( format ) {
-    case FORMAT_x8b8g8r8:
-      gtkdisplay_colours[i] =  red << 24 | green << 16 | blue << 8;
-      break;
-    case FORMAT_x8r8g8b8:
-      gtkdisplay_colours[i] = blue << 24 | green << 16 |  red << 8;
-      break;
-    }
+  /* ULAplus colours */
+  for( i = 0; i < 256; i++ ) {
 
-              bw_colours[i] = grey << 24 |  grey << 16 | grey << 8;
+    green = ( i >> 5 ) & 7;
+    red   = ( i >> 2 ) & 7;
+    blue  = ( ( i & 3 ) << 1 ) | ( i & 1 );
 
-#else                           /* #ifdef WORDS_BIGENDIAN */
+    green = ( green << 5 ) | ( green << 2 ) | ( green >> 1 );
+    red   = (   red << 5 ) | (   red << 2 ) | (   red >> 1 );
+    blue  = (  blue << 5 ) | (  blue << 2 ) | (  blue >> 1 );
 
-    switch( format ) {
-    case FORMAT_x8b8g8r8:
-      gtkdisplay_colours[i] =  red | green << 8 | blue << 16;
-      break;
-    case FORMAT_x8r8g8b8:
-      gtkdisplay_colours[i] = blue | green << 8 |  red << 16;
-      break;
-    }
+    /* Addition of 0.5 is to avoid rounding errors */
+    grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
 
-              bw_colours[i] = grey |  grey << 8 | grey << 16;
-
-#endif                          /* #ifdef WORDS_BIGENDIAN */
-
+    ulaplus_colours[i] = gtkdisplay_map_RGB( format, red, green, blue );
+    bw_ulaplus_colours[i] = gtkdisplay_map_RGB( format, grey, grey, grey );
   }
 
   return 0;
@@ -346,7 +372,11 @@ uidisplay_area( int x, int y, int w, int h )
 
   scaled_x = scale * x; scaled_y = scale * y;
 
-  palette = settings_current.bw_tv ? bw_colours : gtkdisplay_colours;
+  if( ulaplus_available && ulaplus_palette_enabled ) {
+    palette = settings_current.bw_tv ? bw_ulaplus_colours : ulaplus_colours;
+  } else {
+    palette = settings_current.bw_tv ? bw_colours : gtkdisplay_colours;
+  }
 
   /* Create the RGB image */
   for( yy = y; yy < y + h; yy++ ) {

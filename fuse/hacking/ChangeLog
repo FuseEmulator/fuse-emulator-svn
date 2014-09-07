@@ -4624,3 +4624,8 @@
 20140804 ui/gtk/{gtkcompat.h,gtkui.c}: replace deprecated gtk_widget_modify_font
          and remove obsolete gtk_window_set_wmclass (Sergio).
 20140907 autogen.sh: select glibtoolize where required (Sergio).
+20140907 display.[ch],fuse.c,machines/{machines_periph.c,spec48.c,tc2048.c},
+         periph.h,peripherals/{Makefile.am,ulaplus.[ch]},settings.dat,
+         ui/{gtk/gtkdisplay.c,options.dat,sdl/sdldisplay.c,
+         win32/win32display.c}: initial ULAplus code (part of patch #323)
+         (Gilberto Almeida, Fred and Sergio).

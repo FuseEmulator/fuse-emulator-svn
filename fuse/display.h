@@ -64,8 +64,8 @@
 
 extern int display_ui_initialised;
 
-extern libspectrum_byte display_lores_border;
-extern libspectrum_byte display_hires_border;
+extern libspectrum_word display_lores_border;
+extern libspectrum_word display_hires_border;
 
 extern libspectrum_dword
 display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT ];
@@ -90,8 +90,10 @@ typedef void (*display_write_if_dirty_fn)( int x, int y );
 /* Function to write a dirty 8x1 chunk of pixels to the display */
 extern display_write_if_dirty_fn display_write_if_dirty;
 void display_write_if_dirty_timex( int x, int y );
+void display_write_if_dirty_timex_ulaplus( int x, int y );
 void display_write_if_dirty_pentagon_16_col( int x, int y );
 void display_write_if_dirty_sinclair( int x, int y );
+void display_write_if_dirty_sinclair_ulaplus( int x, int y );
 
 typedef void (*display_dirty_flashing_fn)(void);
 /* Function to dirty the pixels which are changed by virtue of having a flash
@@ -100,12 +102,13 @@ extern display_dirty_flashing_fn display_dirty_flashing;
 void display_dirty_flashing_timex(void);
 void display_dirty_flashing_pentagon_16_col(void);
 void display_dirty_flashing_sinclair(void);
+void display_dirty_flashing_sinclair_ulaplus(void);
 
 void display_parse_attr( libspectrum_byte attr, libspectrum_byte *ink,
 			 libspectrum_byte *paper );
 
-void display_set_lores_border(int colour);
-void display_set_hires_border(int colour);
+void display_set_lores_border( libspectrum_byte spectrum_colour );
+void display_set_hires_border( libspectrum_byte spectrum_colour );
 int display_dirty_border(void);
 
 int display_frame(void);
