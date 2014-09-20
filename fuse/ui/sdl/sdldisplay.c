@@ -285,7 +285,7 @@ init_colours( void )
 
     green = ( i >> 5 ) & 7;
     red   = ( i >> 2 ) & 7;
-    blue  = ( ( i & 3 ) << 1 ) | ( i & 1 );
+    blue  = ( ( i & 3 ) << 1 ) | ( ( i & 2 ) >> 1 ) | ( i & 1 );
 
     green = ( green << 5 ) | ( green << 2 ) | ( green >> 1 );
     red   = (   red << 5 ) | (   red << 2 ) | (   red >> 1 );

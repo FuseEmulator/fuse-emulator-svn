@@ -4628,4 +4628,6 @@
          periph.h,peripherals/{Makefile.am,ulaplus.[ch]},settings.dat,
          ui/{gtk/gtkdisplay.c,options.dat,sdl/sdldisplay.c,
          win32/win32display.c}: initial ULAplus code (part of patch #323)
-         (Gilberto Almeida, Fred and Sergio).
+         (thanks, Stuart) (Gilberto Almeida, Fred and Sergio).
+20140920 ui/{gtk/gtkdisplay.c,sdl/sdldisplay.c,win32/win32display.c}: scale
+         blue component as specified by ULAplus 1.1 (Sergio).
