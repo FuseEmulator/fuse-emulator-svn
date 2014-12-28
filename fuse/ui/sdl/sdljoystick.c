@@ -53,7 +53,7 @@ ui_joystick_init( void )
 {
   int error, retval;
 
-#ifdef UI_SDL
+#if defined UI_SDL || defined UI_SDL2
   error = SDL_InitSubSystem( SDL_INIT_JOYSTICK );
 #else
   /* Other UIs could handle joysticks by the SDL library */
@@ -109,7 +109,7 @@ ui_joystick_poll( void )
   /* No action needed in SDL UI; joysticks already handled by the SDL events
      system */
 
-#ifndef UI_SDL
+#if !defined UI_SDL && !defined UI_SDL2
   SDL_Event event;
 
   while( SDL_PollEvent( &event ) ) {
@@ -209,7 +209,7 @@ ui_joystick_end( void )
 
   }
 
-#ifdef UI_SDL
+#if defined UI_SDL || defined UI_SDL2
   SDL_QuitSubSystem( SDL_INIT_JOYSTICK );
 #else
   SDL_Quit();

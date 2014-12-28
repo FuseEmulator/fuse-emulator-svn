@@ -137,6 +137,11 @@ my %ui_data = (
     wii => { headers => [ 'ui/wii/wiikeysyms.h' ],
 	      max_length => 24,
 	      skips => { map { $_ => 1 } ( 'numbersign',
+					   'at', 'asciitilde',
+					   'quotedbl', 'question',
+					   'underscore', 'braceleft',
+					   'braceright','quoteleft',
+					   'bracketleft', 'bracketright',
 					   'Shift_L', 'Shift_R',
 					   'Control_L', 'Control_R',
 					   'Alt_L', 'Alt_R',
@@ -155,10 +160,11 @@ my %ui_data = (
 	      function => sub ($) { "GDK_KEY_$_[0]" },
     	    },
 
-    sdl  => { headers => [ 'SDL.h' ],
+    sdl  => { headers => [ 'SDL.h', 'sdl2keyboard.h' ],
 	      max_length => 15,
 	      skips => { map { $_ => 1 } ( 'Hyper_L','Hyper_R','Caps_Lock',
-                         'A' .. 'Z', 'bar', 'dead_circumflex' ) },
+                         'A' .. 'Z', 'bar', 'percent', 'dead_circumflex',
+                         'braceleft', 'braceright', 'asciitilde' ) },
 	      unicode_skips => { map { $_ => 1 } qw( Hyper_L Hyper_R Caps_Lock
                          Escape F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12
                          BackSpace Tab Caps_Lock Return Shift_L Shift_R
@@ -179,12 +185,18 @@ my %ui_data = (
 		  Page_Down   => 'PAGEDOWN',
 		  parenleft   => 'LEFTPAREN',
 		  parenright  => 'RIGHTPAREN',
+		  bracketleft => 'LEFTBRACKET',
+		  bracketright=> 'RIGHTBRACKET',
+		  quoteleft   => 'BACKQUOTE',
+		  asciitilde  => 'TILDE',
 	      },
 	      unicode_translations => {
                   space       => ' ',
                   exclam      => '!',
+                  quotedbl    => '"',
                   dollar      => '$',
                   numbersign  => '#',
+                  percent     => '%',
                   ampersand   => "&",
                   apostrophe  => "'",
                   parenleft   => "(",
@@ -195,13 +207,23 @@ my %ui_data = (
                   minus       => '-',
                   period      => '.',
                   slash       => '/',
+                  question    => '?',
                   colon       => ':',
                   semicolon   => ';',
                   less        => '<',
                   equal       => '=',
                   greater     => '>',
+                  at          => '@',
+                  bracketleft => '[',
+                  bracketright=> ']',
+                  braceleft   => '{',
+                  braceright  => '}',
                   asciicircum => '^',
                   bar         => '|',
+                  underscore  => '_',
+                  backslash   => '\\\\',
+                  quoteleft   => '`',
+                  asciitilde  => '~',
 	      },
 	      function => \&sdl_keysym,
 	      unicode_function => \&sdl_unicode_keysym,
@@ -210,8 +232,10 @@ my %ui_data = (
     svga => { headers => [ 'vgakeyboard.h' ],
 	      max_length => 26,
 	      skips => { map { $_ => 1 } qw( Hyper_L Hyper_R Super_L Super_R
-                 dollar less greater exclam ampersand parenleft parenright
-                 asterisk plus colon asciicircum dead_circumflex bar ) },
+                 dollar less greater exclam percent ampersand parenleft parenright
+                 asterisk at plus colon asciicircum asciitilde dead_circumflex bar 
+                 quotedbl question underscore braceleft braceright quoteleft 
+                 bracketleft bracketright ) },
 	      translations => {
 		  Caps_Lock  => 'CAPSLOCK',
 		  numbersign => 'BACKSLASH',
@@ -244,7 +268,10 @@ my %ui_data = (
 					   'ampersand','parenleft','parenright',
 					   'asterisk','plus','colon','bar',
 					   'asciicircum','dead_circumflex',
-					   'A' .. 'Z' ) },
+					   'A' .. 'Z','percent','at','backslash',
+					   'quotedbl','question','underscore',
+					   'braceleft','braceright','quoteleft',
+					   'bracketleft','bracketright','asciitilde' ) },
 	      translations => { 
 		  numbersign  => 'OEM_5',
 		  apostrophe  => 'OEM_7',

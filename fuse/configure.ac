@@ -238,21 +238,77 @@ dnl Look for SDL (default=no)
 if test -z "$UI"; then
   AC_MSG_CHECKING(whether SDL UI requested)
   AC_ARG_WITH(sdl,
-  [  --with-sdl              use SDL for user interface],
-  if test "$withval" = no; then sdl=no; else sdl=yes; fi,
-  sdl=no)
+    AS_HELP_STRING([--with-sdl],
+                   [use SDL for user interface (=1 to force SDL1)]),
+    if test "$withval" = no; then sdl=no; else sdl=yes; fi,
+    sdl=no
+  )
+  if test "$withval" = 1; then sdl1=yes; else sdl1=no; fi
   AC_MSG_RESULT($sdl)
+
   if test "$sdl" = yes; then
-    SDL_VERSION=1.2.4
-    AM_PATH_SDL($SDL_VERSION,
-		AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
-		AC_DEFINE([USE_WIDGET], 1,
-		          [Defined if we're using a widget-based UI])
-		UI=sdl; WIDGET=widget;
-	        UI_LIBS="ui/sdl/libuisdl.a ui/widget/libwidget.a", 
-                AC_MSG_ERROR([SDL version $SDL_VERSION not found]))
+    if test "$sdl1" = no; then
+      SDL_VERSION=2.0.0
+      PKG_CHECK_MODULES([SDL2], [sdl2 >= $SDL_VERSION],
+        AC_DEFINE([UI_SDL2], 1, [Defined if the SDL2 UI in use])
+        AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])
+        UI=sdl; WIDGET=widget;
+        UI_LIBS="ui/sdl/libuisdl.a ui/widget/libwidget.a",
+        AC_MSG_RESULT([SDL version $SDL_VERSION not found])
+        SDL_VERSION=1.2.4
+      )
+
+      if test "$UI" = sdl; then
+        AC_MSG_CHECKING(whether WM aspect hint enabled)
+        AC_ARG_ENABLE(wm-aspect-hint,
+          AS_HELP_STRING([--enable-wm-aspect-hint],
+            [enable WM aspect hint for SDL2 UI (auto x11) [default=auto]]),
+          if test "$enableval" = yes; then wmaspect=auto
+          elif test "$enableval" = no; then wmaspect=no
+          else wmaspect="$enableval"; fi,
+          wmaspect=auto
+        )
+
+        if test "$wmaspect" = no; then
+          wmtestres=no; else wmtestres="yes ($wmaspect)";
+        fi
+        AC_MSG_RESULT($wmtestres)
+
+        if test "$wmaspect" = auto || test "$wmaspect" = x11; then
+          AC_CHECK_HEADERS( [X11/Xutil.h],
+            AC_DEFINE([USE_WM_ASPECT_X11], 1,
+                      [Defined if we're using WM aspect hints])
+            wmaspect=x11; LIBS="$LIBS -lX11",
+            wmaspectnotfound=1
+          )
+        elif test "$wmaspect" = auto || test "$wmaspect" = osx; then
+          wmaspectnotfound=1
+        fi
+
+        if test "$wmaspectnotfound" = 1; then
+          AC_MSG_RESULT([  ... cannot enable WM aspect hints ($wmaspect)])
+        else
+          AC_MSG_RESULT([  ... WM aspect hints ($wmaspect) enabled])
+        fi
+      fi
+    else
+      AC_MSG_RESULT([    ... forced to use SDL 1.x.x])
+      SDL_VERSION=1.2.4
+    fi
+
+    if test "$SDL_VERSION" = "1.2.4"; then
+      AM_PATH_SDL($SDL_VERSION,
+        AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
+        AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])
+        UI=sdl; WIDGET=widget; sdl1=yes
+        UI_LIBS="ui/sdl/libuisdl.a ui/widget/libwidget.a",
+        AC_MSG_ERROR([SDL version $SDL_VERSION not found])
+      )
+    fi
   fi
 fi
+
+AM_CONDITIONAL(HAVE_SDL2, test "$sdl1" != yes)
 
 dnl Look for GTK+ (default=yes)
 if test -z "$UI"; then

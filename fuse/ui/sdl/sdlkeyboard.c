@@ -67,24 +67,70 @@ sdlkeyboard_init(void)
   for( ptr3 = (keysyms_map_t *)unicode_keysyms_map; ptr3->ui; ptr3++ )
     g_hash_table_insert( unicode_keysyms_hash, &( ptr3->ui ),
                          &( ptr3->fuse ) );
-
+#ifdef UI_SDL2
+  SDL_StartTextInput();
+#else
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+#endif
 }
 
 void
 sdlkeyboard_end(void)
 {
+#ifdef UI_SDL2
+  SDL_StopTextInput();
+#endif
   g_hash_table_destroy( unicode_keysyms_hash );
 }
+
+#ifdef UI_SDL2
+void
+sdlkeyboard_text( SDL_TextInputEvent *textevent )
+{
+  input_key unicode_keysym;
+  input_event_t fuse_event;
+
+  /* Currently unicode_keysyms_map contains ASCII character keys */ 
+  unicode_keysym = unicode_keysyms_remap( textevent->text[0] );
+
+  if( unicode_keysym == INPUT_KEY_NONE )
+    return;
+
+  fuse_event.type = INPUT_EVENT_KEYPRESS;
+  fuse_event.types.key.native_key = unicode_keysym;
+  fuse_event.types.key.spectrum_key = INPUT_KEY_NONE;
+
+  input_event( &fuse_event );
+}
+#endif
 
 void
 sdlkeyboard_keypress( SDL_KeyboardEvent *keyevent )
 {
-  input_key fuse_keysym, unicode_keysym;
+  input_key fuse_keysym;
+#ifdef UI_SDL
+  input_key unicode_keysym;
+#endif
   input_event_t fuse_event;
+
+#ifdef UI_SDL2
+  /* SDL2 uses TextInput for widget system... */
+  if( ui_widget_level >= 0 &&
+      keyevent->keysym.sym >= SDLK_SPACE &&
+      keyevent->keysym.sym <= SDLK_z )
+    return;
+#endif
 
   fuse_keysym = keysyms_remap( keyevent->keysym.sym );
 
+#ifdef UI_SDL2
+  if( fuse_keysym == INPUT_KEY_NONE )
+    return;
+
+  fuse_event.types.key.native_key = fuse_keysym;
+#endif
+
+#ifdef UI_SDL
   /* Currently unicode_keysyms_map contains ASCII character keys */
   if( ( keyevent->keysym.unicode & 0xFF80 ) == 0 ) 
     unicode_keysym = unicode_keysyms_remap( keyevent->keysym.unicode );
@@ -94,11 +140,13 @@ sdlkeyboard_keypress( SDL_KeyboardEvent *keyevent )
   if( fuse_keysym == INPUT_KEY_NONE && unicode_keysym == INPUT_KEY_NONE )
     return;
 
-  fuse_event.type = INPUT_EVENT_KEYPRESS;
   if( unicode_keysym == INPUT_KEY_NONE )
     fuse_event.types.key.native_key = fuse_keysym;
   else
     fuse_event.types.key.native_key = unicode_keysym;
+#endif
+
+  fuse_event.type = INPUT_EVENT_KEYPRESS;
   fuse_event.types.key.spectrum_key = fuse_keysym;
 
   input_event( &fuse_event );
@@ -109,6 +157,14 @@ sdlkeyboard_keyrelease( SDL_KeyboardEvent *keyevent )
 {
   input_key fuse_keysym;
   input_event_t fuse_event;
+
+#ifdef UI_SDL2
+  /* SDL2 uses TextInput for widget system... */
+  if( ui_widget_level >= 0 &&
+      keyevent->keysym.sym >= SDLK_SPACE &&
+      keyevent->keysym.sym <= SDLK_z )
+    return;
+#endif
 
   fuse_keysym = keysyms_remap( keyevent->keysym.sym );
 

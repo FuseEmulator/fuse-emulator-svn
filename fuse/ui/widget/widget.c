@@ -698,6 +698,7 @@ widget_t widget_data[] = {
 };
 
 #ifndef UI_SDL
+#ifndef UI_SDL2
 #ifndef UI_X
 /* The statusbar handling functions */
 /* TODO: make these do something useful */
@@ -712,6 +713,7 @@ ui_statusbar_update_speed( float speed )
 {
   return 0;
 }
+#endif
 #endif
 #endif                          /* #ifndef UI_SDL */
 
@@ -829,6 +831,11 @@ ui_popup_menu( int native_key )
   case INPUT_KEY_F10:
     fuse_emulation_pause();
     menu_file_exit( 0 );
+    fuse_emulation_unpause();
+    break;
+  case INPUT_KEY_F11:
+    fuse_emulation_pause();
+    menu_options_fullscreen( 0 );
     fuse_emulation_unpause();
     break;
 

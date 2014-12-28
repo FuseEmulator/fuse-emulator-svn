@@ -257,3 +257,7 @@ disk_try_merge, string, NULL
 disk_ask_merge, boolean, 1
 
 debugger_command, string, NULL
+
+#ifdef UI_SDL2
+sdl_scale_quality, string, NULL
+#endif

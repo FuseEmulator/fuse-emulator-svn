@@ -34,9 +34,10 @@ Escape
 
 space
 exclam
-
+quotedbl
 numbersign
 dollar
+percent
 ampersand
 apostrophe
 parenleft
@@ -64,7 +65,9 @@ semicolon
 less
 equal
 greater
+question
 
+at
 A
 B
 C
@@ -92,9 +95,15 @@ X
 Y
 Z
 
+bracketleft
+backslash
+bracketright
+
 asciicircum
 dead_circumflex
 
+underscore
+quoteleft
 a
 b
 c
@@ -122,7 +131,10 @@ x
 y
 z
 
+braceleft
 bar
+braceright
+asciitilde
 BackSpace
 
 KP_Enter

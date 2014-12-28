@@ -27,13 +27,18 @@ AM_CPPFLAGS = -I$(srcdir)/../..
 
 noinst_LIBRARIES = libuisdl.a
 
-AM_CPPFLAGS += @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@ @SDL_CFLAGS@
+AM_CPPFLAGS += @GLIB_CFLAGS@ @LIBSPEC_CFLAGS@ @SDL2_CFLAGS@ @SDL_CFLAGS@
 
-libuisdl_a_SOURCES = sdldisplay.c \
-		     sdljoystick.c \
+libuisdl_a_SOURCES = sdljoystick.c \
 		     sdlkeyboard.c \
 		     sdlui.c \
 		     keysyms.c
+
+if HAVE_SDL2
+libuisdl_a_SOURCES += sdl2display.c
+else
+libuisdl_a_SOURCES += sdldisplay.c
+endif
 
 BUILT_SOURCES = keysyms.c
 

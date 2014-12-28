@@ -50,10 +50,12 @@ typedef enum input_key {
 
   INPUT_KEY_space = 0x20,
   INPUT_KEY_exclam,
+  INPUT_KEY_quotedbl,
 
   INPUT_KEY_numbersign = 0x23,
   INPUT_KEY_dollar,
-  INPUT_KEY_ampersand = 0x26,
+  INPUT_KEY_percent,
+  INPUT_KEY_ampersand,
   INPUT_KEY_apostrophe,
   INPUT_KEY_parenleft,
   INPUT_KEY_parenright,
@@ -80,8 +82,10 @@ typedef enum input_key {
   INPUT_KEY_less,
   INPUT_KEY_equal,
   INPUT_KEY_greater,
+  INPUT_KEY_question,
 
-  INPUT_KEY_A = 0x41,
+  INPUT_KEY_at = 0x40,
+  INPUT_KEY_A,
   INPUT_KEY_B,
   INPUT_KEY_C,
   INPUT_KEY_D,
@@ -108,8 +112,15 @@ typedef enum input_key {
   INPUT_KEY_Y,
   INPUT_KEY_Z,
 
+  INPUT_KEY_bracketleft,
+  INPUT_KEY_backslash,
+  INPUT_KEY_bracketright,
+
   INPUT_KEY_asciicircum = 0x5e,
   INPUT_KEY_dead_circumflex = 0x5e,
+
+  INPUT_KEY_underscore,
+  INPUT_KEY_quoteleft,
 
   INPUT_KEY_a = 0x61,
   INPUT_KEY_b,
@@ -138,7 +149,11 @@ typedef enum input_key {
   INPUT_KEY_y,
   INPUT_KEY_z,
 
+  INPUT_KEY_braceleft,
   INPUT_KEY_bar = 0x7c,
+  INPUT_KEY_braceright,
+  INPUT_KEY_asciitilde,
+
   INPUT_KEY_BackSpace = 0x7f,
 
   INPUT_KEY_KP_Enter = 0x8d,

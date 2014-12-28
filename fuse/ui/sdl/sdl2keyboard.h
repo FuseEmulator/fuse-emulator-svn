@@ -1,5 +1,5 @@
-/* sdldisplay.h: Routines for dealing with the SDL display
-   Copyright (c) 2000-2003 Philip Kendall, Fredrick Meunier
+/* sdl2keyboard.h: macros for dealing with SDL-SDL2 SDLK_.. difference
+   Copyright (c) 2014 Gergely Szasz
 
    $Id$
 
@@ -19,24 +19,21 @@
 
    Author contact information:
 
-   E-mail: philip-fuse@shadowmagic.org.uk
+   E-mail: szaszg@hu.inter.net
 
 */
 
-#ifndef FUSE_SDLDISPLAY_H
-#define FUSE_SDLDISPLAY_H
+#ifndef FUSE_SDL2KEYBOARD_H
+#define FUSE_SDL2KEYBOARD_H
 
-#ifdef UI_SDL
-extern SDL_Surface *sdldisplay_gc;    /* Hardware screen */
-#endif
+#include <config.h>
 
 #ifdef UI_SDL2
-extern SDL_Window *sdlwin;    /* Hardware screen */
-extern SDL_Renderer *sdlren;
-extern int sdldisplay_force_full_refresh;
-#ifdef USE_WM_ASPECT_X11
-extern int sdldisplay_use_wm_aspect_hint;
-#endif
+#define SDLK_LMETA SDLK_LGUI
+#define SDLK_RMETA SDLK_RGUI
+
+#define SDLK_LSUPER -1
+#define SDLK_RSUPER -1
 #endif
 
-#endif			/* #ifndef FUSE_SDLDISPLAY_H */
+#endif                  /* #ifndef FUSE_SDL2KEYBOARD_H */

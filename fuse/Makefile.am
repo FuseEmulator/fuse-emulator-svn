@@ -116,6 +116,7 @@ z80/libz80.a \
 @PNG_LIBS@ \
 @SOUND_LIBS@ \
 @SDL_LIBS@ \
+@SDL2_LIBS@ \
 @X_LIBS@ \
 @XML_LIBS@ \
 compat/libcompatos.a \

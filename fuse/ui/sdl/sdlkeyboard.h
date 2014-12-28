@@ -29,6 +29,9 @@
 
 void sdlkeyboard_init(void);
 void sdlkeyboard_end(void);
+#ifdef UI_SDL2
+void sdlkeyboard_text( SDL_TextInputEvent *textevent );
+#endif
 void sdlkeyboard_keypress(SDL_KeyboardEvent *keyevent);
 void sdlkeyboard_keyrelease(SDL_KeyboardEvent *keyevent);
 
