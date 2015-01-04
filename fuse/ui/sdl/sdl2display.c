@@ -752,11 +752,8 @@ uidisplay_frame_end( void )
     SDL_UpdateTexture( sdltxt, r, pixel_data, scl_screen_pitch );
   }
 
-  updated_rects[0].x = 0;
-  updated_rects[0].y = 0;
-  updated_rects[0].w = image_width * image_scale >> 2;
-  updated_rects[0].h = image_height * image_scale >> 2;
-  SDL_RenderCopy( sdlren, sdltxt, updated_rects, updated_rects );
+  SDL_RenderClear( sdlren );
+  SDL_RenderCopy( sdlren, sdltxt, NULL, NULL );
 
   if( settings_current.statusbar )
     sdl_icon_overlay( tmp_screen_pitch, scl_screen_pitch );

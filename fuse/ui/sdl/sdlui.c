@@ -154,7 +154,7 @@ ui_event( void )
             SDL_SetWindowSize( sdlwin, 4 * event.window.data2 / 3,
                                event.window.data2 );
         }
-        SDL_RenderClear( sdlren );
+
         sdldisplay_force_full_refresh = 1;
         if( ui_widget_level >= 0 ) {
           uidisplay_frame_end();

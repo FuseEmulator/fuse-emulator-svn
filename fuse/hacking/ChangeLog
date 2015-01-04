@@ -4630,5 +4630,7 @@
 20141228 Makefile.am,configure.ac,input.h,keysyms.{dat,pl},settings.dat,
          sound/Makefile.am,timer/Makefile.am,ui/options.dat,ui/sdl/{Makefile.am,
          sdl2display.c,sdl2keyboard.h,sdldisplay.h,sdljoystick.c,
-         sdlkeyboard.[c|h],sdlui.c},ui/widget/widget.c: Initial SDL2 UI code
+         sdlkeyboard.[c|h],sdlui.c},ui/widget/widget.c: initial SDL2 UI code
          (patch #326) (Gergely Szasz).
+20150104 ui/sdl/{sdl2display.c,sdlui.c}: clear renderer on every frame to remove
+         garbage (Sergio).
