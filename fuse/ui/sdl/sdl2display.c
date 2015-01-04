@@ -502,7 +502,7 @@ sdl_blit_icon( icon_t *icon, SDL_Rect *r )
 }
 
 static void
-sdl_icon_overlay( int tmp_screen_pitch, Uint32 dstPitch )
+sdl_icon_overlay( void )
 {
   SDL_Rect r = { 243, 218, red_disk.w, red_disk.h };
 
@@ -756,7 +756,7 @@ uidisplay_frame_end( void )
   SDL_RenderCopy( sdlren, sdltxt, NULL, NULL );
 
   if( settings_current.statusbar )
-    sdl_icon_overlay( tmp_screen_pitch, scl_screen_pitch );
+    sdl_icon_overlay();
 
   SDL_RenderPresent( sdlren );
 

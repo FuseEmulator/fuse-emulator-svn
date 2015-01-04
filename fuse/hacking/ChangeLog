@@ -4634,3 +4634,4 @@
          (patch #326) (Gergely Szasz).
 20150104 ui/sdl/{sdl2display.c,sdlui.c}: clear renderer on every frame to remove
          garbage (Sergio).
+20150104 ui/sdl/sdl2display.c: remove unused parameters (Sergio).
